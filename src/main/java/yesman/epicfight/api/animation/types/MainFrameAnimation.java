@@ -12,6 +12,7 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.datastruct.TypeFlexibleHashMap;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.entity.eventlistener.ActionEvent;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 
@@ -52,7 +53,12 @@ public class MainFrameAnimation extends StaticAnimation {
 					playerpatch.getEventListener().triggerEvents(EventType.ACTION_EVENT_CLIENT, new ActionEvent<>(playerpatch, this.getAccessor()));
 				}
 			} else {
-				playerpatch.getEventListener().triggerEvents(EventType.ACTION_EVENT_SERVER, new ActionEvent<>(playerpatch, this.getAccessor()));
+				ActionEvent<ServerPlayerPatch> actionEvent = new ActionEvent<>(playerpatch, this.getAccessor());
+				playerpatch.getEventListener().triggerEvents(EventType.ACTION_EVENT_SERVER, actionEvent);
+				
+				if (actionEvent.shouldResetActionTick()) {
+					playerpatch.resetActionTick();
+				}
 			}
 		}
 	}

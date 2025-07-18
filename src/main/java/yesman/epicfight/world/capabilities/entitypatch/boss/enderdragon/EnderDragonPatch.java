@@ -8,7 +8,6 @@ import com.google.common.collect.Maps;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -27,9 +26,16 @@ import net.minecraft.world.entity.boss.enderdragon.phases.DragonPhaseInstance;
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -54,16 +60,18 @@ import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.data.loot.function.SetSkillFunction;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.EpicFightSkills;
 import yesman.epicfight.gameasset.EpicFightSounds;
+import yesman.epicfight.network.EntityPairingPacketTypes;
+import yesman.epicfight.network.server.SPEntityPairingPacket;
 import yesman.epicfight.world.capabilities.entitypatch.MobPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.ai.attribute.EpicFightAttributes;
 import yesman.epicfight.world.item.EpicFightItems;
-import yesman.epicfight.world.item.SkillBookItem;
 
 public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKinematicsSimulatable, BossPatch<EnderDragon> {
 	public static final TargetingConditions DRAGON_TARGETING = TargetingConditions.forCombat().ignoreLineOfSight();
@@ -105,8 +113,13 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void processEntityPacket(FriendlyByteBuf buf) {
-		this.processOwnerRecordPacket(buf);
+	@OnlyIn(Dist.CLIENT)
+	public void entityPairing(SPEntityPairingPacket packet) {
+		super.entityPairing(packet);
+		
+		if (packet.getPairingPacketType() == EntityPairingPacketTypes.SET_BOSS_EVENT_OWNER) {
+			this.processOwnerRecordPacket(packet.getBuffer());
+		}
 	}
 	
 	@Override
@@ -312,8 +325,21 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 
 		for (Player player : this.contributors.keySet()) {
 			ItemStack skillbook = new ItemStack(EpicFightItems.SKILLBOOK.get());
-			SkillBookItem.setContainingSkill(EpicFightSkills.DEMOLITION_LEAP, skillbook);
-			player.addItem(skillbook);
+			ItemStack modified = SetSkillFunction.builder(EpicFightSkills.DEMOLITION_LEAP.getRegistryName().toString())
+				.build()
+				.apply(skillbook,
+					new LootContext.Builder(
+						new LootParams.Builder(((ServerPlayer)player).serverLevel())
+							.withParameter(LootContextParams.THIS_ENTITY, this.original)
+							.withParameter(LootContextParams.ORIGIN, player.position())
+							.create(LootContextParamSets.ADVANCEMENT_ENTITY)
+					)
+					.create(null)
+				);
+			
+			if (!modified.is(Items.AIR)) {
+				player.addItem(modified);
+			}
 		}
 	}
 	

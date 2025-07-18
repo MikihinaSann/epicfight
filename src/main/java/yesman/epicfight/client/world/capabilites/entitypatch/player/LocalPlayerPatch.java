@@ -106,7 +106,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void tick(LivingEvent.LivingTickEvent event) {
 		this.staminaO = this.getStamina();
 		
-		if (this.isChargingSkill()) {
+		if (this.isChargingAny()) {
 			this.prevChargingAmount = this.getChargingSkill().getChargingAmount(this);
 		} else {
 			this.prevChargingAmount = 0;
@@ -218,6 +218,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 				if (this.targetLockedOn) {
 					this.original.setXRot(this.lockOnXRot);
 					this.original.setYRot(this.lockOnYRot);
+					this.targetLockedOn = false;
 				}
 				
 				this.rayTarget = null;
@@ -391,11 +392,16 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	}
 	
 	public void setLockOn(boolean targetLockedOn) {
+		if (this.targetLockedOn && this.rayTarget != null) {
+			this.original.setXRot(this.lockOnXRot);
+			this.original.setYRot(this.lockOnYRot);
+		}
+		
 		this.targetLockedOn = targetLockedOn;
 	}
 	
 	public void toggleLockOn() {
-		this.targetLockedOn = !this.targetLockedOn;
+		this.setLockOn(!this.targetLockedOn);
 	}
 	
 	public FirstPersonLayer getFirstPersonLayer() {
@@ -425,11 +431,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	@Override
 	public void setModelYRot(float amount, boolean sendPacket) {
-		/**
-		if (this.isFirstPerson() && !this.useModelYRot) {
-			this.fixFpvRotation(0.0F, amount);
-		}
-		**/
 		super.setModelYRot(amount, sendPacket);
 		
 		if (sendPacket) {

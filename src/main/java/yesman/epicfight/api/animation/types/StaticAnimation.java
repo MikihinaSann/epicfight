@@ -17,7 +17,6 @@ import io.netty.util.internal.StringUtil;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -248,7 +247,7 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 		this.getAnimationClip();
 		
 		// Please fix this implementation when minecraft supports any mixinable method that returns noPhysics variable 
-		this.getProperty(StaticAnimationProperty.NO_PHYSICS).ifPresent((val) -> {
+		this.getProperty(StaticAnimationProperty.NO_PHYSICS).ifPresent(val -> {
 			if (val) {
 				entitypatch.getAnimator().getVariables().put(HAD_NO_PHYSICS, this.getAccessor(), entitypatch.getOriginal().noPhysics);
 				entitypatch.getOriginal().noPhysics = true;
@@ -256,7 +255,7 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 		});
 		
 		if (entitypatch.isLogicalClient()) {
-			this.getProperty(ClientAnimationProperties.TRAIL_EFFECT).ifPresent((trailInfos) -> {
+			this.getProperty(ClientAnimationProperties.TRAIL_EFFECT).ifPresent(trailInfos -> {
 				int idx = 0;
 				
 				for (TrailInfo trailInfo : trailInfos) {
@@ -266,8 +265,7 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 					double index = Double.longBitsToDouble((long)idx++);
 					
 					if (trailInfo.hand() != null) {
-						ItemStack stack = entitypatch.getOriginal().getItemInHand(trailInfo.hand());
-						RenderItemBase renderitembase = ClientEngine.getInstance().renderEngine.getItemRenderer(stack);
+						RenderItemBase renderitembase = ClientEngine.getInstance().renderEngine.getItemRenderer(entitypatch.getAdvancedHoldingItemStack(trailInfo.hand()));
 						
 						if (renderitembase != null && renderitembase.trailInfo() != null) {
 							trailInfo = renderitembase.trailInfo().overwrite(trailInfo);
@@ -283,7 +281,7 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 			});
 		}
 		
-		this.getProperty(StaticAnimationProperty.ON_BEGIN_EVENTS).ifPresent((events) -> {
+		this.getProperty(StaticAnimationProperty.ON_BEGIN_EVENTS).ifPresent(events -> {
 			for (SimpleEvent<?> event : events) {
 				event.execute(entitypatch, this.getAccessor(), 0.0F, 0.0F);
 			}
@@ -467,6 +465,13 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 	public <A extends StaticAnimation, V> A addProperty(StaticAnimationProperty<V> propertyType, V value) {
 		this.properties.put(propertyType, value);
 		this.getSubAnimations().forEach((subAnimation) -> subAnimation.get().addProperty(propertyType, value));
+		return (A)this;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <A extends StaticAnimation> A removeProperty(StaticAnimationProperty<?> propertyType) {
+		this.properties.remove(propertyType);
+		this.getSubAnimations().forEach((subAnimation) -> subAnimation.get().removeProperty(propertyType));
 		return (A)this;
 	}
 	

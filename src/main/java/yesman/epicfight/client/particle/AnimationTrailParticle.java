@@ -40,6 +40,7 @@ import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.renderer.patched.item.RenderItemBase;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
 @OnlyIn(Dist.CLIENT)
 public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPatch<?>> {
@@ -80,9 +81,9 @@ public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPa
 				.rotateDeg(180.0F, Vec3f.Y_AXIS)
 				.mulBack(this.owner.getModelMatrix(1.0F));
 		
-		OpenMatrix4f prevJointTf = this.owner.getArmature().getBindedTransformFor(prevPose, this.joint).mulFront(prvmodelTf);
-		OpenMatrix4f middleJointTf = this.owner.getArmature().getBindedTransformFor(middlePose, this.joint).mulFront(middleModelTf);
-		OpenMatrix4f currentJointTf = this.owner.getArmature().getBindedTransformFor(currentPose, this.joint).mulFront(curModelTf);
+		OpenMatrix4f prevJointTf = this.owner.getArmature().getBoundTransformFor(prevPose, this.joint).mulFront(prvmodelTf);
+		OpenMatrix4f middleJointTf = this.owner.getArmature().getBoundTransformFor(middlePose, this.joint).mulFront(middleModelTf);
+		OpenMatrix4f currentJointTf = this.owner.getArmature().getBoundTransformFor(currentPose, this.joint).mulFront(curModelTf);
 		
 		Vec3 prevStartPos = OpenMatrix4f.transform(prevJointTf, trailInfo.start());
 		Vec3 prevEndPos = OpenMatrix4f.transform(prevJointTf, trailInfo.end());
@@ -125,9 +126,9 @@ public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPa
 		this.lastPos = new Vec3(0.0D, 0.0D, 0.0D);
 		this.lastTransform = JointTransform.fromMatrix(this.owner.getModelMatrix(1.0F));
 		
-		OpenMatrix4f prevJointTf = armature.getBindedTransformFor(prevPose, this.joint);
-		OpenMatrix4f middleJointTf = armature.getBindedTransformFor(middlePose, this.joint);
-		OpenMatrix4f currentJointTf = armature.getBindedTransformFor(currentPose, this.joint);
+		OpenMatrix4f prevJointTf = armature.getBoundTransformFor(prevPose, this.joint);
+		OpenMatrix4f middleJointTf = armature.getBoundTransformFor(middlePose, this.joint);
+		OpenMatrix4f currentJointTf = armature.getBoundTransformFor(currentPose, this.joint);
 		
 		Vec3 prevStartPos = OpenMatrix4f.transform(prevJointTf, trailInfo.start());
 		Vec3 prevEndPos = OpenMatrix4f.transform(prevJointTf, trailInfo.end());
@@ -212,9 +213,9 @@ public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPa
 				.rotateDeg(180.0F, Vec3f.Y_AXIS)
 				.mulBack(curModelMatrix);
 		
-		OpenMatrix4f prevJointTf = this.owner.getArmature().getBindedTransformFor(prevPose, this.joint).mulFront(prvmodelTf);
-		OpenMatrix4f middleJointTf = this.owner.getArmature().getBindedTransformFor(middlePose, this.joint).mulFront(middleModelTf);
-		OpenMatrix4f currentJointTf = this.owner.getArmature().getBindedTransformFor(currentPose, this.joint).mulFront(curModelTf);
+		OpenMatrix4f prevJointTf = this.owner.getArmature().getBoundTransformFor(prevPose, this.joint).mulFront(prvmodelTf);
+		OpenMatrix4f middleJointTf = this.owner.getArmature().getBoundTransformFor(middlePose, this.joint).mulFront(middleModelTf);
+		OpenMatrix4f currentJointTf = this.owner.getArmature().getBoundTransformFor(currentPose, this.joint).mulFront(curModelTf);
 		Vec3 prevStartPos = OpenMatrix4f.transform(prevJointTf, trailInfo.start());
 		Vec3 prevEndPos = OpenMatrix4f.transform(prevJointTf, trailInfo.end());
 		Vec3 middleStartPos = OpenMatrix4f.transform(middleJointTf, trailInfo.start());
@@ -321,6 +322,8 @@ public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPa
 					result = renderItemBase.trailInfo().overwrite(result);
 				}
 			}
+			
+			result = entitypatch.getEntityDecorations().getModifiedTrailInfo(result, result.hand() == null ? CapabilityItem.EMPTY : entitypatch.getAdvancedHoldingItemCapability(result.hand()));
 			
 			if (result.playable()) {
 				return new AnimationTrailParticle(level, entitypatch, entitypatch.getArmature().searchJointById(jointId), animation, result);

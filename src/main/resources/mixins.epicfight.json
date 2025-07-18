@@ -29,10 +29,12 @@
 	],
 	"mixins": [
 		"common.MixinCrossbowAttack",
+		"common.MixinDamageSources",
 		"common.MixinEntity",
 		"common.MixinLivingEntity",
 		"common.MixinMob",
 		"common.MixinPlayer",
+		"common.MixinProjectile",
 		"common.MixinRangedAttackGoal",
 		"common.MixinRangedBowAttackGoal",
 		"common.MixinRangedCrossbowAttackGoal",

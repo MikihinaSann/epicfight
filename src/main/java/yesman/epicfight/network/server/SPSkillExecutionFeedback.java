@@ -28,7 +28,7 @@ public class SPSkillExecutionFeedback {
 		return new SPSkillExecutionFeedback(slotIndex, FeedbackType.EXPIRED);
 	}
 	
-	public static SPSkillExecutionFeedback chargingBegin(int slotIndex) {
+	public static SPSkillExecutionFeedback startCharging(int slotIndex) {
 		return new SPSkillExecutionFeedback(slotIndex, FeedbackType.CHARGING_BEGIN);
 	}
 
@@ -84,14 +84,15 @@ public class SPSkillExecutionFeedback {
 
 						if (skillContainer.getSkill() instanceof ChargeableSkill chargeableSkill) {
 							playerpatch.startSkillCharging(chargeableSkill);
-							ClientEngine.getInstance().controlEngine.setChargingKey(skillContainer.getSlot(), chargeableSkill.getKeyMapping());
+							ClientEngine.getInstance().controlEngine.setHoldingKey(skillContainer.getSlot(), chargeableSkill.getKeyMapping());
 						}
 					}
 					case HOLDING_START -> {
 						SkillContainer container = playerpatch.getSkill(msg.skillSlot);
+						
 						if (container.getSkill() instanceof HoldableSkill holdableSkill) {
 							playerpatch.startSkillHolding(holdableSkill);
-							ClientEngine.getInstance().controlEngine.setChargingKey(container.getSlot(), holdableSkill.getKeyMapping());
+							ClientEngine.getInstance().controlEngine.setHoldingKey(container.getSlot(), holdableSkill.getKeyMapping());
 						}
 					}
 					case EXPIRED -> {

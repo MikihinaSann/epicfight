@@ -13,7 +13,12 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.TextureSheetParticle;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
+import net.minecraft.world.level.BlockAndTintGetter;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -165,6 +170,36 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 	protected void makeTrailEdges(List<Vec3> startPositions, List<Vec3> endPositions, List<TrailEdge> dest) {
 		for (int i = 0; i < startPositions.size(); i++) {
 			dest.add(new TrailEdge(startPositions.get(i), endPositions.get(i), this.trailInfo.trailLifetime()));
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	@Override
+	protected int getLightColor(float pPartialTick) {
+		BlockPos blockpos = BlockPos.containing(this.x, this.y, this.z);
+		return this.level.hasChunkAt(blockpos) ? this.getLightColor(this.level, this.level.getBlockState(blockpos), blockpos) : 0;
+	}
+	
+	/**
+	 * A copy for {@link LevelRenderer#getLightColor(BlockAndTintGetter, BlockState, BlockPos)} 
+	 * @param level
+	 * @param state
+	 * @param pos
+	 * @return
+	 */
+	private int getLightColor(BlockAndTintGetter level, BlockState state, BlockPos pos) {
+		if (state.emissiveRendering(level, pos)) {
+			return 15728880;
+		} else {
+			int i = Mth.clamp(Math.max(this.trailInfo.skyLight(), level.getBrightness(LightLayer.SKY, pos)), 0, 15);
+			int j = Mth.clamp(Math.max(this.trailInfo.blockLight(), level.getBrightness(LightLayer.BLOCK, pos)), 0, 15);
+			int k = state.getLightEmission(level, pos);
+			
+			if (j < k) {
+				j = k;
+			}
+			
+			return i << 20 | j << 4;
 		}
 	}
 	

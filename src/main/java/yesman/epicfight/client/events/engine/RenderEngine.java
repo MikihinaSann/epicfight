@@ -14,7 +14,6 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.Window;
@@ -88,6 +87,7 @@ import yesman.epicfight.client.gui.screen.overlay.OverlayManager;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.mesh.HumanoidMesh;
 import yesman.epicfight.client.renderer.AimHelperRenderer;
+import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.FirstPersonRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCreeperRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCustomEntityRenderer;
@@ -123,7 +123,6 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerP
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
@@ -149,8 +148,7 @@ public class RenderEngine {
 	private final Map<EntityType<?>, PatchedEntityRenderer> entityRendererCache;
 	private final Map<Item, RenderItemBase> itemRendererMapByInstance;
 	private final Map<Class<?>, RenderItemBase> itemRendererMapByClass;
-	private final Map<UUID, BossPatch> bossEventOwners = Maps.newHashMap();
-	private final Set<Component> sentMessages;
+	private final Map<UUID, BossPatch> bossEventOwners = Maps.newConcurrentMap();
 	private final OverlayManager overlayManager;
 	
 	private AimHelperRenderer aimHelper;
@@ -173,7 +171,6 @@ public class RenderEngine {
 		this.entityRendererCache = Maps.newHashMap();
 		this.itemRendererMapByInstance = Maps.newHashMap();
 		this.itemRendererMapByClass = Maps.newHashMap();
-		this.sentMessages = Sets.newHashSet();
 		this.overlayManager = new OverlayManager();
 		
 		Map<ResourceLocation, Function<JsonElement, RenderItemBase>> builder = Maps.newHashMap();
@@ -288,7 +285,6 @@ public class RenderEngine {
 	}
 	
 	public void resetRenderers() {
-		this.sentMessages.clear();
 		this.entityRendererCache.clear();
 		
 		for (Map.Entry<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entry : this.entityRendererProvider.entrySet()) {
@@ -406,17 +402,6 @@ public class RenderEngine {
 	
 	public void setModelInitializerTimer(int tick) {
 		this.modelInitTimer = tick;
-	}
-	
-	public void addMessage(Component message) {
-		Minecraft.getInstance().gui.getChat().addMessage(message);
-	}
-	
-	public void addMessageIfAbsent(Component message) {
-		if (!this.sentMessages.contains(message)) {
-			this.sentMessages.add(message);
-			this.addMessage(message);
-		}
 	}
 	
 	private static final Vec3f AIMING_CORRECTION = new Vec3f(-1.5F, 0.0F, 1.25F);
@@ -589,15 +574,39 @@ public class RenderEngine {
 		this.bossEventOwners.remove(uuid);
 	}
 	
-	public void init() {
+	public void initHUD() {
 		this.battleModeUI.init();
 		this.versionNotifier.init();
 	}
 	
+	public void freeUnusedSources() {
+		this.bossEventOwners.entrySet().removeIf((entry) -> {
+			Entity entity = entry.getValue().cast().getOriginal();
+			return !entity.isAlive() || entity.isRemoved();
+		});
+		
+		if (!RenderSystem.isOnRenderThread()) {
+			RenderSystem.recordRenderCall(() -> {
+				EpicFightRenderTypes.freeUnusedWorldRenderTypes();
+			});
+		} else {
+			EpicFightRenderTypes.freeUnusedWorldRenderTypes();
+		}
+	}
+	
 	public void clear() {
 		this.zoomOut(0);
-		this.resetRenderers();
 		this.bossEventOwners.clear();
+		
+		if (!RenderSystem.isOnRenderThread()) {
+			RenderSystem.recordRenderCall(() -> {
+				this.resetRenderers();
+				EpicFightRenderTypes.clearWorldRenderTypes();
+			});
+		} else {
+			this.resetRenderers();
+			EpicFightRenderTypes.clearWorldRenderTypes();
+		}
 	}
 	
 	@Mod.EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
@@ -755,11 +764,11 @@ public class RenderEngine {
 			LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
 			
 			if (playerpatch != null) {
-				for (SkillContainer skillContainer : playerpatch.getSkillCapability().skillContainers) {
+				playerpatch.getSkillCapability().listSkillContainers().forEach(skillContainer -> {
 					if (skillContainer.getSkill() != null) {
 						skillContainer.getSkill().onScreen(playerpatch, window.getGuiScaledWidth(), window.getGuiScaledHeight());
 					}
-				}
+				});
 				
 				renderEngine.overlayManager.renderTick(window.getGuiScaledWidth(), window.getGuiScaledHeight());
 				
@@ -826,8 +835,10 @@ public class RenderEngine {
 		
 		@SubscribeEvent
 		public static void renderWorldLast(RenderLevelStageEvent event) {
-			if (ClientConfig.aimingPovCorrection && renderEngine.zoomCount > 0 && renderEngine.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
-				renderEngine.aimHelper.doRender(event.getPoseStack(), event.getPartialTick());
+			if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+				if (ClientConfig.aimingPovCorrection && renderEngine.zoomCount > 0 && renderEngine.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
+					renderEngine.aimHelper.doRender(event.getPoseStack(), event.getPartialTick());
+				}
 			}
 		}
 		
@@ -856,10 +867,7 @@ public class RenderEngine {
 		@SubscribeEvent
 		public static void clientTickEvent(TickEvent.ClientTickEvent event) {
 			if (event.phase == TickEvent.Phase.START) {
-				renderEngine.bossEventOwners.entrySet().removeIf((entry) -> {
-					Entity entity = entry.getValue().cast().getOriginal();
-					return !entity.isAlive() || entity.isRemoved();
-				});
+				renderEngine.freeUnusedSources();
 			}
 		}
 		

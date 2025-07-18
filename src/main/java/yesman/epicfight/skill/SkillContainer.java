@@ -2,24 +2,28 @@ package yesman.epicfight.skill;
 
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.network.client.CPExecuteSkill;
+import yesman.epicfight.network.client.CPSkillRequest;
+import yesman.epicfight.network.server.SPChangeSkill;
+import yesman.epicfight.network.server.SPSetRemotePlayerSkill;
 import yesman.epicfight.skill.Skill.ActivateType;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
+import yesman.epicfight.world.entity.eventlistener.SkillCastEvent;
 import yesman.epicfight.world.entity.eventlistener.SkillConsumeEvent;
-import yesman.epicfight.world.entity.eventlistener.SkillExecuteEvent;
 
 public class SkillContainer {
 	protected Skill containingSkill;
-	private PlayerPatch<?> executor;
 	protected int prevDuration;
 	protected int duration;
 	protected int maxDuration;
@@ -27,25 +31,19 @@ public class SkillContainer {
 	protected float prevResource;
 	protected float maxResource;
 	protected boolean isActivated;
-	protected int stack;
-	protected SkillSlot slot;
-	protected SkillDataManager skillDataManager;
 	protected boolean disabled;
+	protected int stack;
 	
-	protected Skill.Resource lastResource;
+	protected final SkillSlot slot;
+	protected final PlayerPatch<?> executor;
+	protected final SkillDataManager skillDataManager;
 	
 	public SkillContainer(PlayerPatch<?> executor, SkillSlot skillSlot) {
 		this.executor = executor;
 		this.slot = skillSlot;
-		this.skillDataManager = new SkillDataManager(skillSlot.universalOrdinal(), this);
+		this.skillDataManager = new SkillDataManager(this);
 	}
 	
-	/* Fix the mistype in the future */
-	public void setExecutor(PlayerPatch<?> executor) {
-		this.executor = executor;
-	}
-	
-	/* Fix the mistype in the future */
 	public PlayerPatch<?> getExecutor() {
 		return this.executor;
 	}
@@ -58,11 +56,18 @@ public class SkillContainer {
 		return (ServerPlayerPatch)this.executor;
 	}
 	
-	public boolean setSkill(Skill skill) {
+	public boolean setSkill(@Nullable Skill skill) {
 		return this.setSkill(skill, false);
 	}
 	
-	public boolean setSkill(Skill skill, boolean initialize) {
+	public boolean setSkill(@Nullable Skill skill, boolean initialize) {
+		/**
+		 * For remote players, call setSkillRemote instead
+		 */
+		if (this.executor.isLogicalClient() && !this.executor.getOriginal().isLocalPlayer()) {
+			return false;
+		}
+		
 		if (this.containingSkill == skill && !initialize) {
 			return false;
 		}
@@ -73,6 +78,12 @@ public class SkillContainer {
 		
 		if (this.containingSkill != null) {
 			this.containingSkill.onRemoved(this);
+			
+			if (this.executor.isLogicalClient()) {
+				this.containingSkill.onRemoveClient(this);
+			}
+			
+			this.executor.getSkillCapability().removeSkillFromContainer(this.containingSkill);
 		}
 		
 		this.containingSkill = skill;
@@ -90,10 +101,16 @@ public class SkillContainer {
 			
 			skill.onInitiate(this);
 			
+			if (this.executor.isLogicalClient()) {
+				skill.onInitiateClient(this);
+			}
+			
 			this.setMaxResource(skill.consumption);
 			this.setMaxDuration(skill.maxDuration);
+			this.executor.getSkillCapability().setSkillToContainer(skill, this);
 		}
 		
+		this.executor.clampMaxAttributes();
 		this.stack = 0;
 		
 		if (initialize) {
@@ -101,6 +118,51 @@ public class SkillContainer {
 		}
 		
 		return true;
+	}
+	
+	@OnlyIn(Dist.CLIENT)
+	public void setSkillRemote(@Nullable Skill skill) {
+		/**
+		 * For server players or a local player, call setSkill instead
+		 */
+		if (!this.executor.isLogicalClient() || this.executor.getOriginal().isLocalPlayer()) {
+			return;
+		}
+		
+		if (this.containingSkill == skill) {
+			return;
+		}
+		
+		if (skill != null && skill.category != this.slot.category()) {
+			return;
+		}
+		
+		if (this.containingSkill != null) {
+			this.containingSkill.onRemoveClient(this);
+			this.executor.getSkillCapability().removeSkillFromContainer(this.containingSkill);
+		}
+		
+		this.containingSkill = skill;
+		this.resetValues();
+		
+		// Remove all data keys
+		this.skillDataManager.clearData();
+		
+		if (skill != null) {
+			Set<SkillDataKey<?>> datakeys = SkillDataKey.getSkillDataKeyMap().get(skill.getClass());
+			
+			if (datakeys != null && !datakeys.isEmpty()) {
+				datakeys.stream().filter(SkillDataKey::syncronizeToTrackingPlayers).forEach(this.skillDataManager::registerData);
+			}
+			
+			skill.onInitiateClient(this);
+			this.executor.getSkillCapability().setSkillToContainer(skill, this);
+			
+			this.setMaxResource(skill.consumption);
+			this.setMaxDuration(skill.maxDuration);
+		}
+		
+		this.stack = 0;
 	}
 	
 	public boolean isDisabled() {
@@ -123,6 +185,10 @@ public class SkillContainer {
 		return this.containingSkill == null;
 	}
 	
+	public boolean hasSkill() {
+		return this.containingSkill != null;
+	}
+	
 	public void setResource(float value) {
 		if (this.containingSkill != null) {
 			this.containingSkill.setConsumption(this, value);
@@ -142,7 +208,7 @@ public class SkillContainer {
 				this.isActivated = true;
 			}
 			
-			this.duration = Math.min(this.maxDuration, Math.max(value, 0));
+			this.duration = Mth.clamp(value, 0, this.maxDuration);
 		} else {
 			this.duration = 0;
 		}
@@ -150,7 +216,7 @@ public class SkillContainer {
 	
 	public void setStack(int stack) {
 		if (this.containingSkill != null) {
-			this.stack = Math.min(this.containingSkill.maxStackSize, Math.max(stack, 0));
+			this.stack = Mth.clamp(stack, 0, this.containingSkill.maxStackSize);
 			
 			if (this.stack <= 0 && this.containingSkill.shouldDeactivateAutomatically(this.executor)) {
 				this.deactivate();
@@ -166,8 +232,8 @@ public class SkillContainer {
 	}
 	
 	@OnlyIn(Dist.CLIENT)
-	public SkillExecuteEvent sendExecuteRequest(LocalPlayerPatch executor, ControlEngine controlEngine) {
-		SkillExecuteEvent event = new SkillExecuteEvent(executor, this);
+	public SkillCastEvent sendCastRequest(LocalPlayerPatch executor, ControlEngine controlEngine) {
+		SkillCastEvent event = new SkillCastEvent(executor, this, this.containingSkill.gatherArguments(this, controlEngine));
 		
 		if (this.containingSkill == null) {
 			return event;
@@ -177,38 +243,32 @@ public class SkillContainer {
 		
 		if (this.containingSkill instanceof ChargeableSkill chargeableSkill && this.containingSkill.getActivateType() == Skill.ActivateType.CHARGING) {
 			if (executor.isChargingSkill(this.containingSkill)) {
-				packet = this.containingSkill.getExecutionPacket(this, this.containingSkill.gatherArguments(this, controlEngine));
+				packet = this.containingSkill.getExecutionPacket(this, event.getArguments());
 				executor.resetSkillCharging();
 			} else {
-				if (!this.canExecute(executor, event)) {
+				if (!this.canUse(executor, event)) {
 					this.containingSkill.validationFeedback(this);
 					return event;
 				}
 				
-				CPExecuteSkill exeSkillPacket = new CPExecuteSkill(this.getSlotId(), CPExecuteSkill.WorkType.CHARGING_START);
-				chargeableSkill.gatherChargingArguments(executor, controlEngine, exeSkillPacket.getBuffer());
-				packet = exeSkillPacket;
+				CPSkillRequest castpacket = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.CHARGING_START);
+				chargeableSkill.gatherChargingArguments(executor, controlEngine, castpacket.getBuffer());
+				packet = castpacket;
 			}
 		} else if (this.containingSkill instanceof HoldableSkill && this.containingSkill.getActivateType() == ActivateType.HELD) {
-			if (executor.isHoldingSkill(this.containingSkill)) {
-				packet = this.containingSkill.getExecutionPacket(this, this.containingSkill.gatherArguments(this, controlEngine));
-				executor.resetHolding();
-			} else {
-				if (!this.canExecute(executor, event)) {
-					this.containingSkill.validationFeedback(this);
-					return event;
-				}
-
-
-                packet = new CPExecuteSkill(this.getSlotId(), CPExecuteSkill.WorkType.HOLD_START);
-			}
-		} else {
-			if (!this.canExecute(executor, event)) {
+			if (!this.canUse(executor, event)) {
 				this.containingSkill.validationFeedback(this);
 				return event;
 			}
 			
-			packet = this.containingSkill.getExecutionPacket(this, this.containingSkill.gatherArguments(this, controlEngine));
+            packet = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.HOLD_START);
+		} else {
+			if (!this.canUse(executor, event)) {
+				this.containingSkill.validationFeedback(this);
+				return event;
+			}
+			
+			packet = this.containingSkill.getExecutionPacket(this, event.getArguments());
 		}
 		
 		if (packet != null) {
@@ -218,11 +278,17 @@ public class SkillContainer {
 		return event;
 	}
 	
-	public boolean requestExecute(ServerPlayerPatch executor, FriendlyByteBuf buf) {
-		SkillExecuteEvent event = new SkillExecuteEvent(executor, this);
+	@OnlyIn(Dist.CLIENT)
+	public void sendCancelRequest(LocalPlayerPatch executor, ControlEngine controlEngine) {
+		CPSkillRequest packet = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.CANCEL);
+		controlEngine.addPacketToSend(packet);
+	}
+	
+	public boolean requestCasting(ServerPlayerPatch executor, FriendlyByteBuf buf) {
+		SkillCastEvent event = new SkillCastEvent(executor, this, buf);
 		
-		if (this.canExecute(executor, event)) {
-			this.containingSkill.executeOnServer(this, buf);
+		if (this.canUse(executor, event)) {
+			this.containingSkill.executeOnServer(this, event.getArguments());
 			return true;
 		}
 		
@@ -240,13 +306,14 @@ public class SkillContainer {
 	
 	public boolean requestCharging(ServerPlayerPatch executor, FriendlyByteBuf buf) {
 		if (this.containingSkill instanceof ChargeableSkill chargeableSkill) {
-			SkillExecuteEvent event = new SkillExecuteEvent(executor, this);
+			SkillCastEvent event = new SkillCastEvent(executor, this, buf);
 			
-			if (this.canExecute(executor, event)) {
-				SkillConsumeEvent consumeEvent = new SkillConsumeEvent(executor, this.containingSkill, this.containingSkill.resource);
+			if (this.canUse(executor, event)) {
+				SkillConsumeEvent consumeEvent = new SkillConsumeEvent(executor, this.containingSkill, this.containingSkill.resource, buf);
 				executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, consumeEvent);
 				
 				if (!consumeEvent.isCanceled()) {
+					consumeEvent.getArguments().resetReaderIndex();
 					consumeEvent.getResourceType().consumer.consume(this, executor, consumeEvent.getAmount());
 				}
 				
@@ -261,27 +328,40 @@ public class SkillContainer {
 
 	public boolean requestHold(ServerPlayerPatch executor, FriendlyByteBuf buf) {
 		if (this.containingSkill instanceof HoldableSkill holdableSkill) {
-			SkillExecuteEvent event = new SkillExecuteEvent(executor, this);
-
-			if (this.canExecute(executor, event)) {
-				SkillConsumeEvent consumeEvent = new SkillConsumeEvent(executor, this.containingSkill, this.containingSkill.resource);
+			SkillCastEvent event = new SkillCastEvent(executor, this, buf);
+			
+			if (this.canUse(executor, event)) {
+				SkillConsumeEvent consumeEvent = new SkillConsumeEvent(executor, this.containingSkill, this.containingSkill.resource, buf);
 				executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, consumeEvent);
-
+				
 				if (!consumeEvent.isCanceled()) {
 					consumeEvent.getResourceType().consumer.consume(this, executor, consumeEvent.getAmount());
 				}
-
+				
 				executor.startSkillHolding(holdableSkill);
-
+				
 				return true;
 			}
 		}
-
+		
 		return false;
 	}
 	
 	public SkillDataManager getDataManager() {
 		return this.skillDataManager;
+	}
+	
+	public void transferDataTo(SkillContainer skillContainer) {
+		this.skillDataManager.transferDataTo(skillContainer.skillDataManager);
+		skillContainer.prevDuration = this.prevDuration;
+		skillContainer.duration = this.duration;
+		skillContainer.maxDuration = this.maxDuration;
+		skillContainer.resource = this.resource;
+		skillContainer.prevResource = this.prevResource;
+		skillContainer.maxResource = this.maxResource;
+		skillContainer.isActivated = this.isActivated;
+		skillContainer.disabled = this.disabled;
+		skillContainer.stack = this.stack;
 	}
 	
 	public float getResource() {
@@ -292,7 +372,7 @@ public class SkillContainer {
 		return this.duration;
 	}
 	
-	public boolean canExecute(PlayerPatch<?> executor, SkillExecuteEvent event) {
+	public boolean canUse(PlayerPatch<?> executor, SkillCastEvent event) {
 		if (this.containingSkill == null) {
 			return false;
 		} else {
@@ -303,17 +383,13 @@ public class SkillContainer {
 					return executor.getSkillChargingTicks() >= chargingSkill.getMinChargingTicks();
 				}
 			}
-
-			if (executor.isHoldingSkill(this.containingSkill) && this.containingSkill instanceof HoldableSkill) {
-				return true;
-			}
 			
 			event.setSkillExecutable(this.containingSkill.canExecute(this));
 			event.setStateExecutable(this.containingSkill.isExecutableState(executor));
-			executor.getEventListener().triggerEvents(EventType.SKILL_EXECUTE_EVENT, event);
+			executor.getEventListener().triggerEvents(EventType.SKILL_CAST_EVENT, event);
 			
 			if (!event.isCanceled() && event.isExecutable()) {
-				return (executor.getOriginal().isCreative() || this.containingSkill.resourcePredicate(executor)) || (this.isActivated() && this.containingSkill.activateType == ActivateType.DURATION);
+				return (executor.getOriginal().isCreative() || this.containingSkill.resourcePredicate(executor, event)) || (this.isActivated() && this.containingSkill.activateType == ActivateType.DURATION);
 			} else {
 				return false;
 			}
@@ -384,6 +460,14 @@ public class SkillContainer {
 
 	public float getDurationRatio(float partialTicks) {
 		return this.containingSkill != null && this.maxDuration > 0 ? (this.prevDuration + ((this.duration - this.prevDuration) * partialTicks)) / this.maxDuration : 0;
+	}
+	
+	public SPChangeSkill createSyncPacketToLocalPlayer() {
+		return new SPChangeSkill(this.getSlot(), this.executor.getOriginal().getId(), this.getSkill());
+	}
+	
+	public SPSetRemotePlayerSkill createSyncPacketToRemotePlayer() {
+		return new SPSetRemotePlayerSkill(this.executor.getOriginal().getId(), this.getSlot(), this.getSkill());
 	}
 	
 	@Override

@@ -20,10 +20,10 @@ public class AirAttack extends Skill {
 	}
 	
 	@Override
-	public boolean isExecutableState(PlayerPatch<?> executer) {
-		EntityState playerState = executer.getEntityState();
-		Player player = executer.getOriginal();
-		return !(player.isPassenger() || player.isSpectator() || executer.isInAir() || !playerState.canBasicAttack());
+	public boolean isExecutableState(PlayerPatch<?> executor) {
+		EntityState playerState = executor.getEntityState();
+		Player player = executor.getOriginal();
+		return !(player.isPassenger() || player.isSpectator() || executor.isInAir() || !playerState.canBasicAttack());
 	}
 	
 	@Override

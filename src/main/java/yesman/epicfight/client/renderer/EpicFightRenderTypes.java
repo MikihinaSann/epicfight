@@ -1,6 +1,8 @@
 package yesman.epicfight.client.renderer;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -9,9 +11,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
+import org.joml.Vector4f;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
@@ -28,6 +34,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterShadersEvent;
@@ -45,6 +53,209 @@ import yesman.epicfight.main.EpicFightMod;
 @OnlyIn(Dist.CLIENT)
 @Mod.EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
 public abstract class EpicFightRenderTypes extends RenderType {
+	private static final Map<String, Map<ResourceLocation, RenderType>> TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE = new HashMap<> ();
+	
+	private static final Function<RenderType, RenderType> TRIANGULATED_RENDER_TYPES = Util.memoize(renderType$1 -> {
+		if (renderType$1.mode() == VertexFormat.Mode.TRIANGLES) {
+			return renderType$1;
+		}
+		
+		if (renderType$1 instanceof CompositeRenderType compositeRenderType) {
+			if (TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.containsKey(renderType$1.name)) {
+				Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.get(renderType$1.name);
+				
+				if (compositeRenderType.state.textureState instanceof TextureStateShard texStateShard) {
+					ResourceLocation texLocation = texStateShard.texture.orElse(null);
+					
+					if (renderTypesByTexture.containsKey(texLocation)) {
+						return renderTypesByTexture.get(texLocation);
+					}
+				}
+			}
+			
+			return new CompositeRenderType(renderType$1.name, renderType$1.format, VertexFormat.Mode.TRIANGLES, renderType$1.bufferSize(), renderType$1.affectsCrumbling(), renderType$1.sortOnUpload, compositeRenderType.state);
+		} else {
+			return renderType$1;
+		}
+	});
+	
+	public static RenderType getTriangulated(RenderType renderType) {
+		return TRIANGULATED_RENDER_TYPES.apply(renderType);
+	}
+	
+	/**
+	 * Cache all Texture - RenderType entries to replace texture by MeshPart
+	 */
+	public static void addRenderType(String name, ResourceLocation textureLocation, RenderType renderType) {
+		Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.computeIfAbsent(name, (k) -> Maps.newHashMap());
+		renderTypesByTexture.put(textureLocation, renderType);
+	}
+	
+	// Custom shards
+	protected static final RenderStateShard.ShaderStateShard PARTICLE_SHADER = new RenderStateShard.ShaderStateShard(GameRenderer::getParticleShader);
+	
+	@OnlyIn(Dist.CLIENT)
+	public static class ShaderColorStateShard extends RenderStateShard {
+		private Vector4f color;
+		
+		public ShaderColorStateShard(Vector4f color) {
+			super(
+				"shader_color",
+				() -> {
+					RenderSystem.setShaderColor(color.x, color.y, color.z, color.w);
+				},
+				() -> {
+					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+				}
+			);
+			
+			this.color = color;
+		}
+		
+		public void setColor(float r, float g, float b, float a) {
+			this.color.set(r, g, b, a);
+		}
+	}
+	
+	@OnlyIn(Dist.CLIENT)
+	public static class MutableCompositeState extends CompositeState {
+		private ShaderColorStateShard shaderColorState = new ShaderColorStateShard(new Vector4f(1.0F));
+		
+		public MutableCompositeState(
+			EmptyTextureStateShard pTextureState, ShaderStateShard pShaderState,
+			TransparencyStateShard pTransparencyState, DepthTestStateShard pDepthState, CullStateShard pCullState,
+			LightmapStateShard pLightmapState, OverlayStateShard pOverlayState, LayeringStateShard pLayeringState,
+			OutputStateShard pOutputState, TexturingStateShard pTexturingState, WriteMaskStateShard pWriteMaskState,
+			LineStateShard pLineState, ColorLogicStateShard pColorLogicState, RenderType.OutlineProperty pOutlineProperty
+		) {
+			super(
+				pTextureState, pShaderState, pTransparencyState, pDepthState, pCullState, pLightmapState, pOverlayState,
+				pLayeringState, pOutputState, pTexturingState, pWriteMaskState, pLineState, pColorLogicState, pOutlineProperty
+			);
+			
+			List<RenderStateShard> list = new ArrayList<> (this.states);
+			list.add(this.shaderColorState);
+			this.states = ImmutableList.copyOf(list);
+		}
+		
+		public void setShaderColor(int r, int g, int b, int a) {
+			this.shaderColorState.setColor(r / 255.0F, g / 255.0F, b / 255.0F, a / 255.0F);
+		}
+		
+		public void setShaderColor(float r, float g, float b, float a) {
+			this.shaderColorState.setColor(r, g, b, a);
+		}
+		
+		public static EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder mutableStateBuilder() {
+	        return new EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder();
+	    }
+		
+		@OnlyIn(Dist.CLIENT)
+		public static class MutableCompositeStateBuilder {
+			private RenderStateShard.EmptyTextureStateShard textureState = RenderStateShard.NO_TEXTURE;
+			private RenderStateShard.ShaderStateShard shaderState = RenderStateShard.NO_SHADER;
+			private RenderStateShard.TransparencyStateShard transparencyState = RenderStateShard.NO_TRANSPARENCY;
+			private RenderStateShard.DepthTestStateShard depthTestState = RenderStateShard.LEQUAL_DEPTH_TEST;
+			private RenderStateShard.CullStateShard cullState = RenderStateShard.CULL;
+			private RenderStateShard.LightmapStateShard lightmapState = RenderStateShard.NO_LIGHTMAP;
+			private RenderStateShard.OverlayStateShard overlayState = RenderStateShard.NO_OVERLAY;
+			private RenderStateShard.LayeringStateShard layeringState = RenderStateShard.NO_LAYERING;
+			private RenderStateShard.OutputStateShard outputState = RenderStateShard.MAIN_TARGET;
+			private RenderStateShard.TexturingStateShard texturingState = RenderStateShard.DEFAULT_TEXTURING;
+			private RenderStateShard.WriteMaskStateShard writeMaskState = RenderStateShard.COLOR_DEPTH_WRITE;
+			private RenderStateShard.LineStateShard lineState = RenderStateShard.DEFAULT_LINE;
+			private RenderStateShard.ColorLogicStateShard colorLogicState = RenderStateShard.NO_COLOR_LOGIC;
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setTextureState(RenderStateShard.EmptyTextureStateShard pTextureState) {
+				this.textureState = pTextureState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setShaderState(RenderStateShard.ShaderStateShard pShaderState) {
+				this.shaderState = pShaderState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setTransparencyState(RenderStateShard.TransparencyStateShard pTransparencyState) {
+				this.transparencyState = pTransparencyState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setDepthTestState(RenderStateShard.DepthTestStateShard pDepthTestState) {
+				this.depthTestState = pDepthTestState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setCullState(RenderStateShard.CullStateShard pCullState) {
+				this.cullState = pCullState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setLightmapState(RenderStateShard.LightmapStateShard pLightmapState) {
+				this.lightmapState = pLightmapState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setOverlayState(RenderStateShard.OverlayStateShard pOverlayState) {
+				this.overlayState = pOverlayState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setLayeringState(RenderStateShard.LayeringStateShard pLayerState) {
+				this.layeringState = pLayerState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setOutputState(RenderStateShard.OutputStateShard pOutputState) {
+				this.outputState = pOutputState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setTexturingState(RenderStateShard.TexturingStateShard pTexturingState) {
+				this.texturingState = pTexturingState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setWriteMaskState(RenderStateShard.WriteMaskStateShard pWriteMaskState) {
+				this.writeMaskState = pWriteMaskState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setLineState(RenderStateShard.LineStateShard pLineState) {
+				this.lineState = pLineState;
+				return this;
+			}
+
+			public EpicFightRenderTypes.MutableCompositeState.MutableCompositeStateBuilder setColorLogicState(RenderStateShard.ColorLogicStateShard pColorLogicState) {
+				this.colorLogicState = pColorLogicState;
+				return this;
+			}
+			
+			public EpicFightRenderTypes.MutableCompositeState createCompositeState(boolean pOutline) {
+				return this.createCompositeState(pOutline ? RenderType.OutlineProperty.AFFECTS_OUTLINE : RenderType.OutlineProperty.NONE);
+			}
+			
+			public EpicFightRenderTypes.MutableCompositeState createCompositeState(RenderType.OutlineProperty pOutlineState) {
+				return new EpicFightRenderTypes.MutableCompositeState(
+					this.textureState,
+					this.shaderState,
+					this.transparencyState,
+					this.depthTestState,
+					this.cullState,
+					this.lightmapState,
+					this.overlayState,
+					this.layeringState,
+					this.outputState,
+					this.texturingState,
+					this.writeMaskState,
+					this.lineState,
+					this.colorLogicState,
+					pOutlineState
+				);
+			}
+		}
+	}
+	
 	private static final RenderType ENTITY_UI_COLORED = 
 		create(
 			  EpicFightMod.MODID + ":ui_color"
@@ -127,41 +338,136 @@ public abstract class EpicFightRenderTypes extends RenderType {
 			.createCompositeState(false)
 	);
 	
-	private static final Map<String, Map<ResourceLocation, RenderType>> TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE = Maps.newHashMap();
-	
-	private static final Function<RenderType, RenderType> TRIANGULATED_RENDER_TYPES = Util.memoize((renderType$1) -> {
-		if (renderType$1 instanceof CompositeRenderType compositeRenderType) {
-			if (TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.containsKey(renderType$1.name)) {
-				Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.get(renderType$1.name);
-				
-				if (compositeRenderType.state.textureState instanceof TextureStateShard texStateShard) {
-					ResourceLocation texLocation = texStateShard.texture.orElse(null);
-					
-					if (renderTypesByTexture.containsKey(texLocation)) {
-						return renderTypesByTexture.get(texLocation);
-					}
-				}
-			}
-			
-			return new CompositeRenderType(renderType$1.name, renderType$1.format, VertexFormat.Mode.TRIANGLES, renderType$1.bufferSize(), renderType$1.affectsCrumbling(), renderType$1.sortOnUpload, compositeRenderType.state);
-		} else {
-			return renderType$1;
+	private static final Function<ResourceLocation, RenderType> OVERLAY_MODEL = Util.memoize(texLocation -> {
+		return create(
+			EpicFightMod.MODID + ":overlay_model",
+			DefaultVertexFormat.NEW_ENTITY,
+			VertexFormat.Mode.TRIANGLES,
+			256,
+			false,
+			false,
+			RenderType.CompositeState.builder()
+				.setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(texLocation, false, false))
+				.setWriteMaskState(COLOR_WRITE)
+				.setCullState(NO_CULL)
+				.setDepthTestState(EQUAL_DEPTH_TEST)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setLightmapState(LIGHTMAP)
+				.createCompositeState(false)
+			);
 		}
+	);
+	
+	private static final RenderType ENTITY_AFTERIMAGE_WHITE = 
+		create(
+			EpicFightMod.MODID + ":entity_afterimage",
+			DefaultVertexFormat.PARTICLE,
+			VertexFormat.Mode.TRIANGLES,
+			256,
+			true,
+			true,
+			RenderType.CompositeState.builder()
+				.setShaderState(PARTICLE_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "textures/common/white.png"), false, false))
+				.setCullState(NO_CULL)
+				.setWriteMaskState(COLOR_WRITE)
+				.setDepthTestState(EQUAL_DEPTH_TEST)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setLightmapState(LIGHTMAP)
+				.createCompositeState(false)
+		);
+	
+	private static final RenderType ITEM_AFTERIMAGE_WHITE = 
+		create(
+			EpicFightMod.MODID + ":item_afterimage",
+			DefaultVertexFormat.PARTICLE,
+			VertexFormat.Mode.QUADS,
+			256,
+			true,
+			true,
+			RenderType.CompositeState.builder()
+				.setShaderState(PARTICLE_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "textures/common/white.png"), false, false))
+				.setCullState(NO_CULL)
+				.setWriteMaskState(COLOR_WRITE)
+				.setDepthTestState(EQUAL_DEPTH_TEST)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setLightmapState(LIGHTMAP)
+				.createCompositeState(false)
+		);
+	
+	private static final Function<ResourceLocation, RenderType> ENTITY_PARTICLE = Util.memoize(texLocation -> {
+		return create(
+			EpicFightMod.MODID + ":entity_particle",
+			DefaultVertexFormat.NEW_ENTITY,
+			VertexFormat.Mode.TRIANGLES,
+			256,
+			true,
+			true,
+			RenderType.CompositeState.builder()
+				.setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(texLocation, false, false))
+				.setWriteMaskState(COLOR_WRITE)
+				.setDepthTestState(EQUAL_DEPTH_TEST)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setCullState(NO_CULL)
+				.setLightmapState(LIGHTMAP)
+				.createCompositeState(false)
+		);
 	});
 	
-	public static RenderType getTriangulated(RenderType renderType) {
-		return TRIANGULATED_RENDER_TYPES.apply(renderType);
-	}
+	private static final RenderType ITEM_PARTICLE = 
+		create(
+			EpicFightMod.MODID + ":entity_particle",
+			DefaultVertexFormat.NEW_ENTITY,
+			VertexFormat.Mode.QUADS,
+			256,
+			true,
+			true,
+			RenderType.CompositeState.builder()
+				.setShaderState(RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
+				.setWriteMaskState(COLOR_WRITE)
+				.setDepthTestState(EQUAL_DEPTH_TEST)
+				.setTransparencyState(TRANSLUCENT_TRANSPARENCY)
+				.setCullState(NO_CULL)
+				.setLightmapState(LIGHTMAP)
+				.createCompositeState(false)
+		);
 	
-	/**
-	 * Cache all Texture - RenderType entries to replace texture by MeshPart
-	 */
-	public static void addRenderType(String name, ResourceLocation textureLocation, RenderType renderType) {
-		Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.computeIfAbsent(name, (k) -> Maps.newHashMap());
-		renderTypesByTexture.put(textureLocation, renderType);
-	}
+	private static final Function<ResourceLocation, RenderType> ENTITY_PARTICLE_STENCIL = Util.memoize(texLocation -> {
+		return create(
+			EpicFightMod.MODID + ":entity_particle_stencil",
+			DefaultVertexFormat.POSITION_TEX,
+			VertexFormat.Mode.TRIANGLES,
+			256,
+			false,
+			false,
+			RenderType.CompositeState.builder()
+				.setShaderState(POSITION_TEX_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(texLocation, false, false))
+				.setWriteMaskState(DEPTH_WRITE)
+				.createCompositeState(false)
+		);
+	});
 	
-	private static RenderType createTextureShardReplaced(ResourceLocation texToReplace, RenderType renderType) {
+	private static final RenderType ITEM_PARTICLE_STENCIL = 
+		create(
+			EpicFightMod.MODID + ":item_particle_stencil",
+			DefaultVertexFormat.POSITION_TEX,
+			VertexFormat.Mode.QUADS,
+			256,
+			false,
+			false,
+			RenderType.CompositeState.builder()
+				.setShaderState(POSITION_TEX_SHADER)
+				.setTextureState(new RenderStateShard.TextureStateShard(InventoryMenu.BLOCK_ATLAS, false, false))
+				.setWriteMaskState(DEPTH_WRITE)
+				.createCompositeState(false)
+		);
+	
+	private static RenderType replaceTextureShard(ResourceLocation texToReplace, RenderType renderType) {
 		if (renderType instanceof CompositeRenderType compositeRenderType && compositeRenderType.state.textureState instanceof TextureStateShard texStateShard) {
 			CompositeState textureReplacedState = new CompositeState(
 				  new RenderStateShard.TextureStateShard(texToReplace, texStateShard.blur, texStateShard.mipmap)
@@ -195,7 +501,7 @@ public abstract class EpicFightRenderTypes extends RenderType {
 			}
 		}
 		
-		RenderType textureReplacedRenderType = createTextureShardReplaced(texLocation, renderType);
+		RenderType textureReplacedRenderType = replaceTextureShard(texLocation, renderType);
 		
 		if (textureReplacedRenderType == null) {
 			return renderType;
@@ -227,6 +533,77 @@ public abstract class EpicFightRenderTypes extends RenderType {
 		return GUI_TRIANGLE;
 	}
 	
+	public static RenderType overlayModel(ResourceLocation textureLocation) {
+		return OVERLAY_MODEL.apply(textureLocation);
+	}
+	
+	public static RenderType entityAfterimageStencil(ResourceLocation textureLocation) {
+		return ENTITY_PARTICLE_STENCIL.apply(textureLocation);
+	}
+	
+	public static RenderType itemAfterimageStencil() {
+		return ITEM_PARTICLE_STENCIL;
+	}
+	
+	public static RenderType entityAfterimageTranslucent(ResourceLocation textureLocation) {
+		return ENTITY_PARTICLE.apply(textureLocation);
+	}
+	
+	public static RenderType itemAfterimageTranslucent() {
+		return ITEM_PARTICLE;
+	}
+	
+	public static RenderType entityAfterimageWhite() {
+		return ENTITY_AFTERIMAGE_WHITE;
+	}
+	
+	public static RenderType itemAfterimageWhite() {
+		return ITEM_AFTERIMAGE_WHITE;
+	}
+	
+	private static final Map<Entity, CompositeRenderType> WORLD_RENDERTYPES_COLORED_GLINT = new HashMap<> ();
+	
+	public static void freeUnusedWorldRenderTypes() {
+		WORLD_RENDERTYPES_COLORED_GLINT.entrySet().removeIf(entry -> entry.getKey().isRemoved());
+	}
+	
+	public static void clearWorldRenderTypes() {
+		WORLD_RENDERTYPES_COLORED_GLINT.clear();
+	}
+	
+	public static RenderType coloredGlintWorldRendertype(Entity owner, float r, float g, float b) {
+		CompositeRenderType glintRenderType = WORLD_RENDERTYPES_COLORED_GLINT.computeIfAbsent(
+			owner,
+			k -> create(
+				EpicFightMod.MODID + ":colored_glint",
+				DefaultVertexFormat.POSITION_TEX,
+				VertexFormat.Mode.TRIANGLES,
+				256,
+				false,
+				false,
+				EpicFightRenderTypes.MutableCompositeState.mutableStateBuilder()
+					.setShaderState(RENDERTYPE_ARMOR_ENTITY_GLINT_SHADER)
+					.setTextureState(new RenderStateShard.TextureStateShard(ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "textures/entity/overlay/glint_white.png"), true, false))
+					.setWriteMaskState(COLOR_WRITE)
+					.setCullState(NO_CULL)
+					.setDepthTestState(EQUAL_DEPTH_TEST)
+					.setTransparencyState(GLINT_TRANSPARENCY)
+					.setTexturingState(ENTITY_GLINT_TEXTURING)
+					.createCompositeState(false)
+			));
+		
+		((MutableCompositeState)glintRenderType.state).setShaderColor(r, g, b, 1.0F);
+		
+		return glintRenderType;
+	}
+	
+	public static RenderType coloredGlintWorldRendertype(Entity owner, int r, int g, int b) {
+		return coloredGlintWorldRendertype(owner, r / 255.0F, g / 255.0F, b / 255.0F);
+	}
+	
+	/*****************************************
+	 *         Animation shader part         *
+	 *****************************************/
 	private static Map<ResourceLocation, Resource> SHADER_LIBS;
 	private static final List<ShaderTransformer> ANIMATION_SHADERS_TRANSFORMERS = Lists.newArrayList();
 	private static final Map<String, AnimationShaderInstance> ANIMATION_SHADERS = Maps.newConcurrentMap();

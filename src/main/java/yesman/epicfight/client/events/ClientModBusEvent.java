@@ -18,12 +18,14 @@ import yesman.epicfight.api.client.physics.cloth.ClothSimulatable;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.particle.AirBurstParticle;
 import yesman.epicfight.client.particle.AnimationTrailParticle;
+import yesman.epicfight.client.particle.AshDirectionalParticle;
 import yesman.epicfight.client.particle.BladeRushParticle;
 import yesman.epicfight.client.particle.BloodParticle;
+import yesman.epicfight.client.particle.CatharsisParticle;
 import yesman.epicfight.client.particle.CutParticle;
 import yesman.epicfight.client.particle.DustParticle;
 import yesman.epicfight.client.particle.EnderParticle;
-import yesman.epicfight.client.particle.EntityAfterImageParticle;
+import yesman.epicfight.client.particle.EntityAfterimageParticle;
 import yesman.epicfight.client.particle.EviscerateParticle;
 import yesman.epicfight.client.particle.FeatherParticle;
 import yesman.epicfight.client.particle.ForceFieldEndParticle;
@@ -64,7 +66,8 @@ public class ClientModBusEvent {
     	event.registerSpriteSet(EpicFightParticles.BREATH_FLAME.get(), EnderParticle.BreathFlameProvider::new);
     	event.registerSpecial(EpicFightParticles.FORCE_FIELD.get(), new ForceFieldParticle.Provider());
     	event.registerSpecial(EpicFightParticles.FORCE_FIELD_END.get(), new ForceFieldEndParticle.Provider());
-    	event.registerSpecial(EpicFightParticles.ENTITY_AFTER_IMAGE.get(), new EntityAfterImageParticle.Provider());
+    	event.registerSpecial(EpicFightParticles.ADRENALINE_PLAYER_BEATING.get(), new EntityAfterimageParticle.AdrenalineParticleProvider());
+    	event.registerSpecial(EpicFightParticles.WHITE_AFTERIMAGE.get(), new EntityAfterimageParticle.WhiteAfterimageProvider());
     	event.registerSpecial(EpicFightParticles.LASER.get(), new LaserParticle.Provider());
     	event.registerSpecial(EpicFightParticles.NEUTRALIZE.get(), new DustParticle.ExpansiveMetaParticle.Provider());
     	event.registerSpecial(EpicFightParticles.BOSS_CASTING.get(), new DustParticle.ContractiveMetaParticle.Provider());
@@ -73,6 +76,8 @@ public class ClientModBusEvent {
     	event.registerSpecial(EpicFightParticles.PROJECTILE_TRAIL.get(), new ProjectileTrailParticle.Provider());
     	event.registerSpriteSet(EpicFightParticles.FEATHER.get(), FeatherParticle.Provider::new);
     	event.registerSpecial(EpicFightParticles.AIR_BURST.get(), new AirBurstParticle.Provider());
+    	event.registerSpriteSet(EpicFightParticles.ASH_DIRECTIONAL.get(), AshDirectionalParticle.Provider::new);
+    	event.registerSpriteSet(EpicFightParticles.CATHARSIS.get(), CatharsisParticle.Provider::new);
     }
 	
 	@SubscribeEvent

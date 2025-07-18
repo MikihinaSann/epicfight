@@ -66,6 +66,8 @@ import yesman.epicfight.data.loot.EpicFightLootTables;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.gameasset.EpicFightSounds;
+import yesman.epicfight.network.EntityPairingPacketType;
+import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightDataSerializers;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.particle.EpicFightParticles;
@@ -106,57 +108,39 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  ***************************************************************
  *  Major version changes
  *  ***************************************************************
- *  20.10.7 -> 20.11.2
+ *  20.12.1 Created
  *  
- *  Added item keyword & preferences
- *  Fixed the Guard penalty reset immediately when stop using guard
- *  Fixed the afterimage particle becoming invisible when a shader is applied
- *  Fixed the mobs' living animations being reset when rejoining the world
- *  Fixed the swirling arrow trail right before it hits
+ *  A version that first compatible with skill tree addon
  *  
- *  ***************************************************************
+ *  New skills
+ *  - Catharsis: Fills weapon charge when dodge in time
+ *  - Vengeance: Get damage bonus against your last attacker
+ *  - Adaptive skin: Get damage resistance against the damage types that a player has taken recently
+ *  - Bonebreaker: Get damage bonus against the enemy you attacked last
+ *  - Adrenaline: reset stamina regen counter when kill enemies
  *  
- *  20.11.2 -> 20.11.3
+ *  Skill sound & visual enhancements
+ *  - Roll
+ *  - Forbidden strength
+ *  - Hypervitality
+ *  - Berserker
+ *  - Stamina pillager
+ *  - Swordmaster
+ *  - Emergency escape
+ *  - Technician
  *  
- *  Fixed the game rules being reset when changing dimensions
- *  Fixed the shot animations playing randomly
- *  Fixed the pillager's body twisting while aiming
- *  Fixed the arrows ricochet due to the virtual entity created by the player's dodge skills
- *  Fixed the arrows not to ricochet while player's dodging
- *  Fixed the player still playing running animation when charging Demolition Leap with Longsword in hand
- *  Added a Kube JS event hook for registering skills
+ *  Emergency escape rework
+ *  - Cooldown decreased 15 -> 5
+ *  - Now players can cast dodge skills when being hit (Affected by cooldown)
  *  
- *  ***************************************************************
+ *  Endurance sscape rework
+ *  - Stun shield duration increased 3 -> 8
  *  
- *  20.11.3 -> 20.11.4
+ *  Eviscerate nerf
+ *  - Deal 50% > (10%|15%|20%|25%|30%) of target's lost health (based on an item tier)
  *  
- *  Fixed the Demolition Leap charging animation not playing
- *  Fixed the players to be able to break non-living entities like boats and item frames in Epic Fight mode
- *  Added a FPV angle limitation when climbing ladder
- *  
- *  ***************************************************************
- *  
- *  20.11.4 -> 20.11.5
- *  
- *  Fixed the players doing vanilla attacks against Ender dragon
- *  Fixed the Demolition Leap animation ends earlier with Tachi and Greatsword holding animations
- *  Fixed the Death Harvest not requiring XP level to change the skill
- *  Fixed the mount attack animations not playing
- *  
- *  ***************************************************************
- *  
- *  20.11.5 -> 20.11.6
- *  
- *  Fixed the tools to be registered as Mining preferred items
- *  Added filter function in Item preference screen
- *  
- *  ***************************************************************
- *  
- *  20.11.6 -> 20.11.7
- *  
- *  Fixed the Wither skull crash when hit terrain & entities
- *  Fixed the player's innate skill disappearing when changing dimensions
- *  Fixed the Ender dragon crash
+ *  Afterimage particle enhanced
+ *  - Now it shows held weapon, equipped armors, and cape
  *  
  *  ***************************************************************
  *  
@@ -187,36 +171,14 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  
  *  ***************************************************************
  *  
- *  20.11.9 -> 20.11.10
- *  
- *  Fixed "Player moved wrongly" log
- *  
- *  ***************************************************************
- *  
- *  20.11.10 -> 20.11.11
- *  
- *  Fixed the darkened trail effects when absorbing Experience orbs
- *  Interal API changes
- *  - The default Entity Y Rot Provider is now MOB_ATTACK_TARGET_LOOK
- *  - Added a pose modifier that rotates according to coord bone's rotation {@link yesman.epicfight.gameasset.Animations.ReusableSources#APPLY_COORD_ROTATION}
- *    This pose modifier should be used with {@link yesman.epicfight.gameasset.Animations.ReusableSources#SYNC_COORD_ROTATION} by on End Event
- *  
- *  ***************************************************************
- *  Minor version changes
- *  ***************************************************************
- *  
- *  ***************************************************************
- *  
  *  --- TO DO ---
  *  
  *  Update language files (always)
- *  Add an reach property to attack animation (idea)
  *  Add an alert function when an entity targeting the player tries grappling or execution attack
  *  Add UI for execution resistance
  *  Add functionality to blooming effect (resists wither effect)
  *  Add a screen for setting animation properties in datapack editor
  *  Enhance the stun system (maybe remove or barely leave knockback)
- *  Add resource hashing for animation file to prevent client modifying animation by resource pack
  *  
  *  @author yesman
  */
@@ -278,6 +240,7 @@ public class EpicFightMod {
     	Style.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, Styles.class);
     	WeaponCategory.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, WeaponCategories.class);
     	Faction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, Factions.class);
+    	EntityPairingPacketType.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EntityPairingPacketTypes.class);
     	
     	EpicFightMobEffects.EFFECTS.register(bus);
     	EpicFightPotions.POTIONS.register(bus);
@@ -352,10 +315,9 @@ public class EpicFightMod {
     	event.enqueueWork(Style.ENUM_MANAGER::loadEnum);
     	event.enqueueWork(WeaponCategory.ENUM_MANAGER::loadEnum);
     	event.enqueueWork(Faction.ENUM_MANAGER::loadEnum);
-    	
+    	event.enqueueWork(EntityPairingPacketType.ENUM_MANAGER::loadEnum);
     	event.enqueueWork(() -> {
     		AnimationManager.addNoWarningModId(EPICSKINS_MODID);
-    		
 			AnimationRegistryEvent animationregistryevent = new AnimationRegistryEvent();
     		ModLoader.get().postEvent(animationregistryevent);
     		animationregistryevent.getBuilders().stream().sorted((b1, b2) -> b1.namespace().compareTo(b2.namespace())).forEach((builder) -> builder.task().accept(builder));

@@ -23,6 +23,7 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import yesman.epicfight.api.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.api.utils.math.Vec2i;
+import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.HealthBar.HealthBarVisibility;
 import yesman.epicfight.client.gui.ScreenCalculations.AlignDirection;
 import yesman.epicfight.client.gui.ScreenCalculations.HorizontalBasis;
@@ -31,7 +32,6 @@ import yesman.epicfight.client.gui.screen.config.PreferredItemsScreen;
 import yesman.epicfight.client.gui.widgets.ColorSlider;
 import yesman.epicfight.main.AuthenticationHelper.AuthenticationProvider;
 import yesman.epicfight.main.EpicFightMod;
-import yesman.epicfight.main.EpicFightSharedConstants;
 
 @Mod.EventBusSubscriber(modid = EpicFightMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
@@ -196,8 +196,8 @@ public class ClientConfig {
     		}
 		}
 		
-		if (EpicFightServerConnectionHelper.supported() && EpicFightSharedConstants.AUTH_HELPER.valid()) {
-			EpicFightSharedConstants.AUTH_HELPER.initialize(ACCESS_TOKEN, REFRESH_TOKNE, PROVIDER);
+		if (EpicFightServerConnectionHelper.supported() && ClientEngine.getInstance().getAuthHelper().valid()) {
+			ClientEngine.getInstance().getAuthHelper().initialize(ACCESS_TOKEN, REFRESH_TOKNE, PROVIDER);
 		}
     }
 	

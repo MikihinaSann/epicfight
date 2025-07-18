@@ -39,7 +39,7 @@ public class BattojutsuPassive extends Skill {
 	public void onReset(SkillContainer container) {
 		if (!container.getExecutor().isLogicalClient()) {
 			if (container.getDataManager().getDataValue(SkillDataKeys.SHEATH.get())) {
-				container.getDataManager().setDataSync(SkillDataKeys.SHEATH.get(), false, container.getServerExecutor().getOriginal());
+				container.getDataManager().setDataSync(SkillDataKeys.SHEATH.get(), false);
 				container.getServerExecutor().modifyLivingMotionByCurrentItem(false);
 				container.getSkill().setConsumptionSynchronize(container, 0);
 			}
@@ -50,7 +50,7 @@ public class BattojutsuPassive extends Skill {
 	public void setConsumption(SkillContainer container, float value) {
 		if (!container.getExecutor().isLogicalClient()) {
 			if (container.getMaxResource() < value) {
-				container.getDataManager().setDataSync(SkillDataKeys.SHEATH.get(), true, container.getServerExecutor().getOriginal());
+				container.getDataManager().setDataSync(SkillDataKeys.SHEATH.get(), true);
 				container.getServerExecutor().modifyLivingMotionByCurrentItem(false);
 				container.getServerExecutor().playAnimationInClientSide(Animations.BIPED_UCHIGATANA_SCRAP, 0.0F);
 			}
@@ -60,7 +60,7 @@ public class BattojutsuPassive extends Skill {
 	}
 	
 	@Override
-	public boolean shouldDeactivateAutomatically(PlayerPatch<?> executer) {
+	public boolean shouldDeactivateAutomatically(PlayerPatch<?> executor) {
 		return true;
 	}
 	

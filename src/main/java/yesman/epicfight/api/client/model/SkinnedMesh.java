@@ -272,7 +272,7 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 	 * Draws the model to vanilla buffer
 	 */
 	@Override
-	public void drawPosed(PoseStack poseStack, VertexConsumer bufferbuilder, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, Armature armature, OpenMatrix4f[] poses) {
+	public void drawPosed(PoseStack poseStack, VertexConsumer bufferbuilder, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
 		Matrix4f matrix4f = poseStack.last().pose();
 		Matrix3f matrix3f = poseStack.last().normal();
 		
@@ -312,28 +312,33 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 	 * @param armature give this parameter as null if @param poses already bound origin translation
 	 * @param poses
 	 */
-	public void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, int packedLight, float r, float g, float b, float a, int overlay, Armature armature, OpenMatrix4f[] poses) {
-		if (ClientConfig.activateAnimationShader && armature.getJointNumber() <= ShaderParser.SHADER_ARRAY_LIMIT) {
+	public void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
+		this.draw(poseStack, bufferSources, renderType, Mesh.DrawingFunction.NEW_ENTITY, packedLight, r, g, b, a, overlay, armature, poses);
+	}
+	
+	@Override
+	public void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
+		if (ClientConfig.activateAnimationShader && poses.length <= ShaderParser.SHADER_ARRAY_LIMIT) {
 			renderType.setupRenderState();
 			AnimationShaderInstance animationShader = EpicFightRenderTypes.getAnimationShader(renderType);
-			this.drawWithShader(poseStack, animationShader, packedLight, 1.0F, 1.0F, 1.0F, 1.0F, overlay, armature, poses);
+			this.drawWithShader(poseStack, animationShader, packedLight, r, g, b, a, overlay, armature, poses);
 			renderType.clearRenderState();
 		} else {
-			this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), Mesh.DrawingFunction.NEW_ENTITY, packedLight, r, g, b, a, overlay, armature, poses);
+			this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
 		}
 	}
 	
 	/**
 	 * Draw the model with shader optimization by shader and vertex format
 	 */
-	public void drawWithShader(PoseStack poseStack, ShaderInstance shader, int packedLight, float r, float g, float b, float a, int overlay, Armature armature, OpenMatrix4f[] poses) {
+	public void drawWithShader(PoseStack poseStack, ShaderInstance shader, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
 		AnimationShaderInstance animationShader = EpicFightRenderTypes.getAnimationShader(shader);
-		this.drawWithShader(poseStack, animationShader, packedLight, 1.0F, 1.0F, 1.0F, 1.0F, OverlayTexture.NO_OVERLAY, armature, poses);
+		this.drawWithShader(poseStack, animationShader, packedLight, r, g, b, a, OverlayTexture.NO_OVERLAY, armature, poses);
 	}
 	
-	public void drawWithShader(PoseStack poseStack, AnimationShaderInstance animationShaderInstance, int packedLight, float r, float g, float b, float a, int overlay, Armature armature, OpenMatrix4f[] poses) {
+	public void drawWithShader(PoseStack poseStack, AnimationShaderInstance animationShaderInstance, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
 		if (this.arrayObjectId < 0) {
-			throw new IllegalStateException("Mesh destroyed");
+			return;
 		}
 		
 		if (animationShaderInstance == null) {
@@ -509,7 +514,7 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 			}
 		}
 		
-		public void drawWithShader(AnimationShaderInstance animationShaderInstance, float r, float g, float b, float a, Armature armature, OpenMatrix4f[] poses) {
+		public void drawWithShader(AnimationShaderInstance animationShaderInstance, float r, float g, float b, float a, @Nullable Armature armature, OpenMatrix4f[] poses) {
 			if (this.isHidden()) {
 				return;
 			}

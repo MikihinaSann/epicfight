@@ -11,7 +11,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.player.Player;
+import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
+import yesman.epicfight.api.animation.AnimationVariables.IndependentAnimationVariableKey;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
@@ -26,6 +28,9 @@ import yesman.epicfight.world.entity.eventlistener.SkillConsumeEvent;
 
 public class BasicAttack extends Skill {
 	private static final UUID EVENT_UUID = UUID.fromString("a42e0198-fdbc-11eb-9a03-0242ac130003");
+	
+	/** Decides if the animation used for combo attack **/
+	public static final IndependentAnimationVariableKey<Boolean> COMBO = AnimationVariables.independent(animator -> false, false);
 	
 	public static SkillBuilder<BasicAttack> createBasicAttackBuilder() {
 		return new SkillBuilder<BasicAttack>().setCategory(SkillCategories.BASIC_ATTACK).setActivateType(ActivateType.ONE_SHOT).setResource(Resource.NONE);
@@ -77,7 +82,7 @@ public class BasicAttack extends Skill {
 	@Override
 	public void executeOnServer(SkillContainer skillContainer, FriendlyByteBuf args) {
 		ServerPlayerPatch executor = skillContainer.getServerExecutor();
-		SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource);
+		SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
 		executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, event);
 		
 		if (!event.isCanceled()) {
@@ -125,6 +130,7 @@ public class BasicAttack extends Skill {
 		setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
 		
 		if (attackMotion != null) {
+			executor.getAnimator().getVariables().put(COMBO, attackMotion, true);
 			executor.playAnimationSynchronized(attackMotion, 0.0F);
 		}
 		

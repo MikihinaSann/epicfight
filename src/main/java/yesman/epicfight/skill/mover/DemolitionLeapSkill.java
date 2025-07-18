@@ -12,6 +12,7 @@ import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.utils.LevelUtil;
+import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
@@ -54,12 +55,9 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 			}
 		});
 
-		listener.addEventListener(EventType.HURT_EVENT_PRE, EVENT_UUID, (event) -> {
+		listener.addEventListener(EventType.TAKE_DAMAGE_EVENT_HURT, EVENT_UUID, (event) -> {
 			if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && container.getDataManager().getDataValue(SkillDataKeys.PROTECT_NEXT_FALL.get())) {
-				float damage = event.getAmount();
-				event.setAmount(damage * 0.5F);
-				event.setCanceled(true);
-				
+				event.attachValueModifier(ValueModifier.multiplier(0.5F));
 				container.getDataManager().setData(SkillDataKeys.PROTECT_NEXT_FALL.get(), false);
 			}
 		}, 1);
@@ -76,13 +74,13 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		super.onRemoved(container);
 		
 		container.getExecutor().getEventListener().removeListener(EventType.MOVEMENT_INPUT_EVENT, EVENT_UUID);
-		container.getExecutor().getEventListener().removeListener(EventType.HURT_EVENT_PRE, EVENT_UUID, 1);
+		container.getExecutor().getEventListener().removeListener(EventType.TAKE_DAMAGE_EVENT_HURT, EVENT_UUID, 1);
 		container.getExecutor().getEventListener().removeListener(EventType.FALL_EVENT, EVENT_UUID);
 	}
 	
 	@Override
-	public boolean isExecutableState(PlayerPatch<?> executer) {
-		return super.isExecutableState(executer) && executer.getOriginal().onGround();
+	public boolean isExecutableState(PlayerPatch<?> executor) {
+		return super.isExecutableState(executor) && executor.getOriginal().onGround();
 	}
 	
 	@Override
@@ -110,7 +108,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 	@Override
 	public void gatherChargingArguments(LocalPlayerPatch caster, ControlEngine controlEngine, FriendlyByteBuf buffer) {
 		// Set player charging skill cause it won't be fired on feedback packet cause it jumped
-		controlEngine.setChargingKey(SkillSlots.MOVER, this.getKeyMapping());
+		controlEngine.setHoldingKey(SkillSlots.MOVER, this.getKeyMapping());
 		caster.startSkillCharging(this);
 	}
 

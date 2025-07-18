@@ -19,9 +19,12 @@ import yesman.epicfight.api.animation.Keyframe;
 import yesman.epicfight.api.animation.SynchedAnimationVariableKeys;
 import yesman.epicfight.api.animation.TransformSheet;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
+import yesman.epicfight.api.animation.property.AnimationProperty.AttackAnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.DestLocationProvider;
 import yesman.epicfight.api.animation.property.AnimationProperty.YRotProvider;
 import yesman.epicfight.api.animation.types.ActionAnimation;
+import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.grappling.GrapplingAttackAnimation;
@@ -309,7 +312,29 @@ public class MoveCoordFunctions {
 			LivingEntity attackTarget = entitypatch.getTarget();
 			
 			// Calculate Entity-Entity collide radius
-			float entityRadius = (attackTarget != null) ? (attackTarget.getBbWidth() + entitypatch.getOriginal().getBbWidth()) * 0.7F : 0.0F;
+			float entityRadius = 0.0F;
+			
+			if (attackTarget != null) {
+				float reach = 0.0F;
+				
+				if (self.getRealAnimation().get() instanceof AttackAnimation attackAnimation) {
+					Optional<Float> reachOpt = attackAnimation.getProperty(AttackAnimationProperty.REACH);
+					
+					if (reachOpt.isPresent()) {
+						reach = reachOpt.get();
+					} else {
+						AnimationPlayer player = entitypatch.getAnimator().getPlayerFor(self.getAccessor());
+						
+						if (player != null) {
+							Phase phase = attackAnimation.getPhaseByTime(player.getElapsedTime());
+							reach = entitypatch.getReach(phase.hand);
+						}
+					}
+				}
+				
+				entityRadius = (attackTarget.getBbWidth() + entitypatch.getOriginal().getBbWidth()) * 0.7F + reach;
+			}
+			
 			float worldLength = Math.max((float)toDestWorld.length() - entityRadius, 0.0F);
 			float animLength = toDestAnim.length();
 			
@@ -363,7 +388,29 @@ public class MoveCoordFunctions {
 			LivingEntity attackTarget = entitypatch.getTarget();
 			
 			// Calculate Entity-Entity collide radius
-			float entityRadius = (attackTarget != null) ? (attackTarget.getBbWidth() + entitypatch.getOriginal().getBbWidth()) * 0.7F : 0.0F;
+			float entityRadius = 0.0F;
+			
+			if (attackTarget != null) {
+				float reach = 0.0F;
+				
+				if (self.getRealAnimation().get() instanceof AttackAnimation attackAnimation) {
+					Optional<Float> reachOpt = attackAnimation.getProperty(AttackAnimationProperty.REACH);
+					
+					if (reachOpt.isPresent()) {
+						reach = reachOpt.get();
+					} else {
+						AnimationPlayer player = entitypatch.getAnimator().getPlayerFor(self.getAccessor());
+						
+						if (player != null) {
+							Phase phase = attackAnimation.getPhaseByTime(player.getElapsedTime());
+							reach = entitypatch.getReach(phase.hand);
+						}
+					}
+				}
+				
+				entityRadius = (attackTarget.getBbWidth() + entitypatch.getOriginal().getBbWidth()) * 0.7F + reach;
+			}
+			
 			float worldLength = Math.max((float)toDestWorld.length() - entityRadius, 0.0F);
 			float animLength = toDestAnim.length();
 			float scale = Math.min(worldLength / animLength, 1.0F);

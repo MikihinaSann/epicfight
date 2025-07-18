@@ -2,6 +2,11 @@ package yesman.epicfight.world.capabilities.entitypatch.player;
 
 import java.util.*;
 
+import javax.annotation.Nullable;
+
+import org.jetbrains.annotations.ApiStatus;
+
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -30,13 +35,13 @@ import yesman.epicfight.api.forgeevent.ChangePlayerModeEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
+import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.EpicFightSkills;
 import yesman.epicfight.skill.modules.ChargeableSkill;
+import yesman.epicfight.skill.BasicAttack;
 import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillCategory;
 import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillDataKeys;
 import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.HoldableSkill;
@@ -50,8 +55,8 @@ import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.damagesource.EpicFightDamageSources;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.ai.attribute.EpicFightAttributes;
-import yesman.epicfight.world.entity.eventlistener.AttackSpeedModifyEvent;
 import yesman.epicfight.world.entity.eventlistener.FallEvent;
+import yesman.epicfight.world.entity.eventlistener.ModifyAttackSpeedEvent;
 import yesman.epicfight.world.entity.eventlistener.ModifyBaseDamageEvent;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
@@ -79,6 +84,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	protected float modelYRot;
 	protected boolean useModelYRot;
 	protected int tickSinceLastAction;
+	protected int staminaRegenAwaitTicks;
 	protected int lastChargingTick;
 	protected int chargingAmount;
 	protected ChargeableSkill chargingSkill;
@@ -102,13 +108,12 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		super.onJoinWorld(entity, event);
 		
 		CapabilitySkill skillCapability = this.getSkillCapability();
-		skillCapability.skillContainers[SkillSlots.BASIC_ATTACK.universalOrdinal()].setSkill(EpicFightSkills.BASIC_ATTACK);
-		skillCapability.skillContainers[SkillSlots.AIR_ATTACK.universalOrdinal()].setSkill(EpicFightSkills.AIR_ATTACK);
-		skillCapability.skillContainers[SkillSlots.KNOCKDOWN_WAKEUP.universalOrdinal()].setSkill(EpicFightSkills.KNOCKDOWN_WAKEUP);
+		skillCapability.getSkillContainerFor(SkillSlots.BASIC_ATTACK).setSkill(EpicFightSkills.BASIC_ATTACK);
+		skillCapability.getSkillContainerFor(SkillSlots.AIR_ATTACK).setSkill(EpicFightSkills.AIR_ATTACK);
+		skillCapability.getSkillContainerFor(SkillSlots.KNOCKDOWN_WAKEUP).setSkill(EpicFightSkills.KNOCKDOWN_WAKEUP);
 		
 		this.tickSinceLastAction = 0;
-		
-		this.eventListeners.addEventListener(EventType.ACTION_EVENT_SERVER, PLAYER_EVENT_UUID, (playerEvent) -> this.resetActionTick());
+		this.staminaRegenAwaitTicks = 30;
 	}
 	
 	@Override
@@ -143,28 +148,13 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		animator.addLivingAnimation(LivingMotions.SPECTATE, Animations.BIPED_SPYGLASS_USE);
 	}
 	
-	public void copySkillsFrom(PlayerPatch<?> old) {
-		CapabilitySkill oldSkill = old.getSkillCapability();
-		CapabilitySkill newSkill = this.getSkillCapability();
-		int i = 0;
+	public void copySkillsFrom(PlayerPatch<?> old, boolean isDeath) {
+		this.getSkillCapability().copyFrom(old.getSkillCapability());
 		
-		for (SkillContainer container : newSkill.skillContainers) {
-			container.setExecutor(this);
-			Skill oldone = oldSkill.skillContainers[i].getSkill();
-			
-			if (oldone != null && oldone.getCategory().shouldSynchronize()) {
-				container.setSkill(oldSkill.skillContainers[i].getSkill());
-			}
-			
-			i++;
-		}
-		
-		for (SkillCategory skillCategory : SkillCategory.ENUM_MANAGER.universalValues()) {
-			if (oldSkill.hasCategory(skillCategory)) {
-				for (Skill learnedSkill : oldSkill.getLearnedSkills(skillCategory)) {
-					newSkill.addLearnedSkill(learnedSkill);
-				}
-			}
+		if (!isDeath) {
+			old.getSkillCapability().listSkillContainers().forEach(skillContainer -> {
+				skillContainer.transferDataTo(this.getSkillCapability().getSkillContainerFor(skillContainer.getSlot()));
+			});
 		}
 	}
 	
@@ -202,14 +192,21 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			this.tickSinceLastAction++;
 		}
 		
+		if (!this.state.inaction()) {
+			if (this.staminaRegenAwaitTicks > 0) this.staminaRegenAwaitTicks--;
+		}
+		
 		float stamina = this.getStamina();
 		float maxStamina = this.getMaxStamina();
 		float staminaRegen = (float)this.original.getAttributeValue(EpicFightAttributes.STAMINA_REGEN.get());
-		int regenStandbyTime = 900 / (int)(30 * staminaRegen);
 		
-		if (stamina < maxStamina && this.tickSinceLastAction > regenStandbyTime) {
-			float staminaFactor = 1.0F + (float)Math.pow((stamina / (maxStamina - stamina * 0.5F)), 2);
-			this.setStamina(stamina + maxStamina * 0.01F * staminaFactor * staminaRegen);
+		if (staminaRegen > 0.0F) {
+			int regenWhenLessThan = 30 - (900 / (int)(30 * staminaRegen));
+			
+			if (stamina < maxStamina && this.staminaRegenAwaitTicks <= regenWhenLessThan) {
+				float staminaFactor = 1.0F + (float)Math.pow((stamina / (maxStamina - stamina * 0.5F)), 2);
+				this.setStamina(stamina + maxStamina * 0.01F * staminaFactor * staminaRegen);
+			}
 		}
 		
 		if (maxStamina < stamina) {
@@ -236,12 +233,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			}
 		}
 		
-		if (this.original.getVehicle() == null) {
-			for (SkillContainer container : this.getSkillCapability().skillContainers) {
-				if (container != null) {
-					container.update();
-				}
-			}
+		if (!this.isLogicalClient() || this.original.isLocalPlayer()) {
+			this.getSkillCapability().listSkillContainers().forEach(SkillContainer::update);
 		}
 		
 		this.modelYRotO = this.modelYRot;
@@ -309,7 +302,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public SkillContainer getSkill(int slotIndex) {
-		return this.getSkillCapability().skillContainers[slotIndex];
+		return this.getSkillCapability().getSkillContainerFor(slotIndex);
 	}
 	
 	public CapabilitySkill getSkillCapability() {
@@ -322,10 +315,10 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	@Override
 	public float getModifiedBaseDamage(float baseDamage) {
-		ModifyBaseDamageEvent<PlayerPatch<?>> event = new ModifyBaseDamageEvent<>(this, baseDamage);
+		ModifyBaseDamageEvent<PlayerPatch<?>> event = new ModifyBaseDamageEvent<> (this, baseDamage, ValueModifier.calculator());
 		this.getEventListener().triggerEvents(EventType.MODIFY_DAMAGE_EVENT, event);
 		
-		return event.getDamage();
+		return event.calculateModifiedDamage();
 	}
 	
 	public float getAttackSpeed(InteractionHand hand) {
@@ -342,7 +335,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public float getModifiedAttackSpeed(CapabilityItem itemCapability, float baseSpeed) {
-		AttackSpeedModifyEvent event = new AttackSpeedModifyEvent(this, itemCapability, baseSpeed);
+		ModifyAttackSpeedEvent event = new ModifyAttackSpeedEvent(this, itemCapability, baseSpeed);
 		this.eventListeners.triggerEvents(EventType.MODIFY_ATTACK_SPEED_EVENT, event);
 		float weight = this.getWeight();
 		
@@ -399,8 +392,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		Collection<AttributeModifier> mainHandAttributes = CapabilityItem.getAttributeModifiers(Attributes.ATTACK_DAMAGE, EquipmentSlot.MAINHAND, this.original.getMainHandItem(), this);
 		Collection<AttributeModifier> offHandAttributes = this.isOffhandItemValid() ? CapabilityItem.getAttributeModifiers(Attributes.ATTACK_DAMAGE, EquipmentSlot.MAINHAND, this.original.getOffhandItem(), this) : Set.of();
 		
-		// Prevents crit and sweeping edge effect
 		this.epicFightDamageSource = damageSource;
+		// Prevents crit and sweeping edge effect
 		this.original.attackStrengthTicker = Integer.MAX_VALUE;
 		this.original.fallDistance = 0.0F;
 		this.original.onGround = false;
@@ -416,14 +409,16 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	@Override
 	public EpicFightDamageSource getDamageSource(AnimationAccessor<? extends StaticAnimation> animation, InteractionHand hand) {
-		EpicFightDamageSources damageSources = EpicFightDamageSources.of(this.original.level());
-		EpicFightDamageSource damagesource = damageSources.playerAttack(this.original).setAnimation(animation);
-		damagesource.setImpact(this.getImpact(hand));
-		damagesource.setArmorNegation(this.getArmorNegation(hand));
-		damagesource.setHurtItem(this.getOriginal().getItemInHand(hand));
+		EpicFightDamageSource damagesource =
+			EpicFightDamageSources
+				.playerAttack(this.original)
+				.setAnimation(animation)
+				.setBaseArmorNegation(this.getArmorNegation(hand))
+				.setBaseImpact(this.getImpact(hand))
+				.setUsedItem(this.getOriginal().getItemInHand(hand));
 		
-		boolean comboCounted = animation.get().isBasicAttackAnimation() || this.getSkill(SkillSlots.BASIC_ATTACK).getDataManager().getDataValue(SkillDataKeys.COMBO_COUNTER.get()) > 0;
-		damagesource.setBasicAttack(comboCounted);
+		boolean isBasicAttack = animation.get().isBasicAttackAnimation() || this.getAnimator().getVariables().get(BasicAttack.COMBO, animation).orElse(false);
+		damagesource.setBasicAttack(isBasicAttack);
 		
 		return damagesource;
 	}
@@ -461,12 +456,42 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		}
 	}
 	
+	public void clampMaxAttributes() {
+		float currentHealth = this.original.getHealth();
+		float maxHealth = this.original.getMaxHealth();
+		
+		if (currentHealth > maxHealth) {
+			this.original.setHealth(maxHealth);
+		}
+		
+		float currentStamina = this.getStamina();
+		float maxStamina = this.getMaxStamina();
+		
+		if (currentStamina > maxStamina) {
+			this.setStamina(maxStamina);
+		}
+	}
+	
+	/**
+	 * Consume resource by default amount
+	 */
 	public boolean consumeForSkill(Skill skill, Skill.Resource consumeResource) {
 		return this.consumeForSkill(skill, consumeResource, skill.getDefaultConsumptionAmount(this));
 	}
 	
+	/**
+	 * Consume resource with custom amount
+	 */
 	public boolean consumeForSkill(Skill skill, Skill.Resource consumeResource, float amount) {
-		return this.consumeForSkill(skill, consumeResource, amount, false);
+		return this.consumeForSkill(skill, consumeResource, amount, false, null);
+	}
+	
+	/**
+	 * Consume resource with arguments when requested by a client
+	 */
+	@ApiStatus.Internal
+	public boolean consumeForSkill(Skill skill, Skill.Resource consumeResource, @Nullable FriendlyByteBuf args) {
+		return this.consumeForSkill(skill, consumeResource, skill.getDefaultConsumptionAmount(this), false, args);
 	}
 	
 	/**
@@ -474,9 +499,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	 * Server : Checks and consumes the resource if it meets the condition
 	 * @param amount how much resource should it consume
 	 * @return check result
-	 * Use this 
 	 */
-	public boolean consumeForSkill(Skill skill, Skill.Resource consumeResource, float amount, boolean activateConsumeForce) {
+	public boolean consumeForSkill(Skill skill, Skill.Resource consumeResource, float amount, boolean activateConsumeForce, @Nullable FriendlyByteBuf args) {
 		Optional<SkillContainer> oContainer = this.getSkillContainerFor(skill);
 		
 		if (oContainer.isEmpty()) {
@@ -484,7 +508,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		}
 		
 		SkillContainer skillContainer = oContainer.get();
-		SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(this, skill, consumeResource, amount);
+		SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(this, skill, consumeResource, amount, args);
 		this.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, skillConsumeEvent);
 		
 		if (skillConsumeEvent.isCanceled()) {
@@ -492,6 +516,10 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		}
 		
 		float modifiedAmount = skillConsumeEvent.getAmount();
+		
+		if (args != null) {
+			args.resetReaderIndex();
+		}
 		
 		if (skillConsumeEvent.getResourceType().predicate.canExecute(skillContainer, this, modifiedAmount)) {
 			if (!this.isLogicalClient()) {
@@ -510,10 +538,19 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	public void resetActionTick() {
 		this.tickSinceLastAction = 0;
+		this.staminaRegenAwaitTicks = 30;
 	}
 	
 	public int getTickSinceLastAction() {
 		return this.tickSinceLastAction;
+	}
+	
+	public void setStaminaRegenAwaitTicks(int tick) {
+		this.staminaRegenAwaitTicks = tick;
+	}
+	
+	public int getStaminaRegenAwaitTicks() {
+		return this.staminaRegenAwaitTicks;
 	}
 	
 	public boolean startSkillCharging(ChargeableSkill chargingSkill) {
@@ -541,7 +578,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			return true;
 		}
 	}
-
+	
 	public void resetSkillCharging() {
 		if (this.chargingSkill != null) {
 			this.chargingAmount = 0;
@@ -549,28 +586,26 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			this.chargingSkill = null;
 		}
 	}
-
-
-
+	
 	public void resetHolding() {
 		if (this.holdableSkill != null) {
+			this.holdableSkill.onStopHolding(this.getSkill(this.holdableSkill.asSkill()));
 			this.holdableSkill = null;
 		}
 	}
 
-	public boolean isChargingSkill() {
+	public boolean isChargingAny() {
 		return this.chargingSkill != null;
 	}
 
-	public boolean isHoldingSkill() {
+	public boolean isHoldingAny() {
 		return this.holdableSkill != null;
 	}
 
 	public boolean isHoldingSkill(Skill holdingSkill) {
 		return this.holdableSkill == holdingSkill;
 	}
-
-
+	
 	public boolean isChargingSkill(Skill chargingSkill) {
 		return this.chargingSkill == chargingSkill;
 	}
@@ -580,7 +615,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public void setChargingAmount(int amount) {
-		if (this.isChargingSkill()) {
+		if (this.isChargingAny()) {
 			this.chargingAmount = Math.min(amount, this.getChargingSkill().getMaxChargingTicks());
 		} else {
 			this.chargingAmount = 0;
@@ -592,11 +627,11 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public float getSkillChargingTicks(float partialTicks) {
-		return this.isChargingSkill() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTicks : 0;
+		return this.isChargingAny() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTicks : 0;
 	}
 	
 	public int getSkillChargingTicks() {
-		return this.isChargingSkill() ? Math.min(this.original.tickCount - this.getLastChargingTick(), this.chargingSkill.getMaxChargingTicks()) : 0;
+		return this.isChargingAny() ? Math.min(this.original.tickCount - this.getLastChargingTick(), this.chargingSkill.getMaxChargingTicks()) : 0;
 	}
 	
 	public int getAccumulatedChargeAmount() {

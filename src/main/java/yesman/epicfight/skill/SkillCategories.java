@@ -1,10 +1,5 @@
 package yesman.epicfight.skill;
 
-import com.google.common.collect.Lists;
-import net.minecraft.resources.ResourceLocation;
-
-import java.util.List;
-
 public enum SkillCategories implements SkillCategory {
 	BASIC_ATTACK(false, false, false),
 	AIR_ATTACK(false, false, false),
@@ -28,19 +23,22 @@ public enum SkillCategories implements SkillCategory {
 		this.modifiable = modifiable;
 		this.id = SkillCategory.ENUM_MANAGER.assign(this);
 	}
-
+	
+	@Override
 	public boolean shouldSave() {
 		return this.shouldSave;
 	}
 	
+	@Override
 	public boolean shouldSynchronize() {
 		return this.shouldSyncronize;
 	}
 	
+	@Override
 	public boolean learnable() {
 		return this.modifiable;
 	}
-
+	
 	@Override
 	public int universalOrdinal() {
 		return this.id;
