@@ -8,7 +8,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -29,7 +28,6 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 import yesman.epicfight.world.entity.eventlistener.HurtEvent;
-import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 
 public class ParryingSkill extends GuardSkill {
 	private int PARRY_WINDOW;
@@ -49,24 +47,22 @@ public class ParryingSkill extends GuardSkill {
 	public ParryingSkill(GuardSkill.Builder builder) {
 		super(builder);
 	}
-	
+
+	@Override
+	public void startHolding(SkillContainer container)
+	{
+		super.startHolding(container);
+		if (container.getExecutor().isLogicalClient())
+			return;
+        int lastActive = container.getDataManager().getDataValue(SkillDataKeys.LAST_ACTIVE.get());
+		if (container.getServerExecutor().getOriginal().tickCount - lastActive > PARRY_WINDOW * 2) {
+			container.getDataManager().setDataSync(SkillDataKeys.LAST_ACTIVE.get(), container.getServerExecutor().getOriginal().tickCount, container.getServerExecutor().getOriginal());
+		}
+	}
+
 	@Override
 	public void onInitiate(SkillContainer container) {
 		super.onInitiate(container);
-		
-		container.getExecutor().getEventListener().addEventListener(EventType.SERVER_ITEM_USE_EVENT, EVENT_UUID, (event) -> {
-			CapabilityItem itemCapability = event.getPlayerPatch().getHoldingItemCapability(InteractionHand.MAIN_HAND);
-			
-			if (this.isHoldingWeaponAvailable(event.getPlayerPatch(), itemCapability, BlockType.GUARD) && this.isExecutableState(event.getPlayerPatch())) {
-				event.getPlayerPatch().getOriginal().startUsingItem(InteractionHand.MAIN_HAND);
-			}
-			
-			int lastActive = container.getDataManager().getDataValue(SkillDataKeys.LAST_ACTIVE.get());
-			
-			if (event.getPlayerPatch().getOriginal().tickCount - lastActive > PARRY_WINDOW * 2) {
-				container.getDataManager().setData(SkillDataKeys.LAST_ACTIVE.get(), event.getPlayerPatch().getOriginal().tickCount);
-			}
-		});
 	}
 	
 	@Override
@@ -75,11 +71,11 @@ public class ParryingSkill extends GuardSkill {
 			DamageSource damageSource = event.getDamageSource();
 			
 			if (this.isBlockableSource(damageSource, true)) {
-				ServerPlayer playerentity = event.getPlayerPatch().getOriginal();
-				boolean successParrying = playerentity.tickCount - container.getDataManager().getDataValue(SkillDataKeys.LAST_ACTIVE.get()) < PARRY_WINDOW;
+				ServerPlayer serverPlayer = event.getPlayerPatch().getOriginal();
+				boolean successParrying = serverPlayer.tickCount - container.getDataManager().getDataValue(SkillDataKeys.LAST_ACTIVE.get()) < PARRY_WINDOW;
 				float penalty = container.getDataManager().getDataValue(SkillDataKeys.PENALTY.get());
 				event.getPlayerPatch().playSound(EpicFightSounds.CLASH.get(), -0.05F, 0.1F);
-				EpicFightParticles.HIT_BLUNT.get().spawnParticleWithArgument(((ServerLevel)playerentity.level()), HitParticleType.FRONT_OF_EYES, HitParticleType.ZERO, playerentity, damageSource.getDirectEntity());
+				EpicFightParticles.HIT_BLUNT.get().spawnParticleWithArgument(((ServerLevel)serverPlayer.level()), HitParticleType.FRONT_OF_EYES, HitParticleType.ZERO, serverPlayer, damageSource.getDirectEntity());
 				
 				if (successParrying) {
 					event.setParried(true);
@@ -90,14 +86,15 @@ public class ParryingSkill extends GuardSkill {
 					container.getDataManager().setData(SkillDataKeys.LAST_ACTIVE.get(), 0);
 				} else {
 					penalty += this.getPenalizer(itemCapability);
-					container.getDataManager().setDataSync(SkillDataKeys.PENALTY.get(), penalty, playerentity);
+					container.getDataManager().setDataSync(SkillDataKeys.PENALTY.get(), penalty, serverPlayer);
 				}
 				
 				if (damageSource.getDirectEntity() instanceof LivingEntity livingentity) {
 					knockback += EnchantmentHelper.getKnockbackBonus(livingentity) * 0.1F;
 				}
-				
-				event.getPlayerPatch().knockBackEntity(damageSource.getDirectEntity().position(), knockback);
+
+                assert damageSource.getDirectEntity() != null;
+                event.getPlayerPatch().knockBackEntity(damageSource.getDirectEntity().position(), knockback);
 				float consumeAmount = penalty * impact;
 				boolean canAfford = event.getPlayerPatch().consumeForSkill(this, Skill.Resource.STAMINA, consumeAmount);
 				

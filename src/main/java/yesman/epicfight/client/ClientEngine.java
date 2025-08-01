@@ -25,6 +25,11 @@ public class ClientEngine {
 	public Minecraft minecraft;
 	public RenderEngine renderEngine;
 	public ControlEngine controlEngine;
+	/**
+	 * Kept until 20.12
+	 */
+	@Deprecated(forRemoval = true)
+	public ControlEngine controllEngine;
 	private boolean vanillaModelDebuggingMode = false;
 	
 	public ClientEngine() {
@@ -32,6 +37,7 @@ public class ClientEngine {
 		this.minecraft = Minecraft.getInstance();
 		this.renderEngine = new RenderEngine();
 		this.controlEngine = new ControlEngine();
+		this.controllEngine = controlEngine;
 	}
 	
 	public boolean switchVanillaModelDebuggingMode() {
