@@ -20,7 +20,6 @@ public enum SkillCategories implements SkillCategory {
 	boolean shouldSave;
 	boolean shouldSyncronize;
 	boolean modifiable;
-	ResourceLocation registryId;
 	int id;
 	
 	SkillCategories(boolean shouldSave, boolean shouldSyncronizedAllPlayers, boolean modifiable) {
@@ -28,12 +27,6 @@ public enum SkillCategories implements SkillCategory {
 		this.shouldSyncronize = shouldSyncronizedAllPlayers;
 		this.modifiable = modifiable;
 		this.id = SkillCategory.ENUM_MANAGER.assign(this);
-	}
-
-	@Override
-	public List<SkillCategory> getEnums()
-	{
-		return List.of(BASIC_ATTACK, AIR_ATTACK, DODGE, PASSIVE, WEAPON_INNATE, WEAPON_INNATE, GUARD, KNOCKDOWN_WAKEUP, MOVER);
 	}
 
 	public boolean shouldSave() {

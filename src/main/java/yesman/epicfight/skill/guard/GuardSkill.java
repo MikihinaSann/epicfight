@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -62,7 +63,7 @@ public class GuardSkill extends Skill implements HoldableSkill
     @Override
 	public void holdTick(SkillContainer container) {}
 
-    @Override
+	@Override
 	public KeyMapping getKeyMapping()
 	{
 		return EpicFightKeyMappings.GUARD;
