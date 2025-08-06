@@ -135,7 +135,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		});
 		
 		container.getExecutor().getEventListener().addEventListener(EventType.MOVEMENT_INPUT_EVENT, EVENT_UUID, (event) -> {
-			if (container.isActivated() && event.getPlayerPatch().getHoldableSkill() == this && this.isHoldingWeaponAvailable(event.getPlayerPatch(), container.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND), BlockType.GUARD)) {
+			if (container.isActivated() && event.getPlayerPatch().getHoldingSkill() == this) {
 				event.getPlayerPatch().getOriginal().setSprinting(false);
 				event.getPlayerPatch().getOriginal().sprintTriggerTime = -1;
 				
@@ -148,7 +148,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		container.getExecutor().getEventListener().addEventListener(EventType.TAKE_DAMAGE_EVENT_ATTACK, EVENT_UUID, (event) -> {
 			CapabilityItem itemCapability = event.getPlayerPatch().getHoldingItemCapability(InteractionHand.MAIN_HAND);
 			
-			if (container.isActivated() && event.getPlayerPatch().getHoldableSkill() == this && this.isHoldingWeaponAvailable(event.getPlayerPatch(), itemCapability, BlockType.GUARD) && this.isExecutableState(event.getPlayerPatch())) {
+			if (container.isActivated() && event.getPlayerPatch().getHoldingSkill() == this) {
 				DamageSource damageSource = event.getDamageSource();
 				boolean isFront = false;
 				Vec3 sourceLocation = damageSource.getSourcePosition();
@@ -301,6 +301,11 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		return EpicFightKeyMappings.GUARD;
 	}
 	
+    @Override
+    public boolean canExecute(SkillContainer container) {
+		return this.checkExecuteCondition(container) && this.isHoldingWeaponAvailable(container.getExecutor(), container.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND), BlockType.GUARD);
+	}
+    
 	protected float getPenalizer(CapabilityItem itemCapability) {
 		return this.penalizer;
 	}

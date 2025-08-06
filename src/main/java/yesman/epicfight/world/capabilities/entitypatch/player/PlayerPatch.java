@@ -568,7 +568,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 
 	public boolean startSkillHolding(HoldableSkill holdableSkill) {
 		Optional<SkillContainer> containerOptional = this.getSkillContainerFor(holdableSkill.asSkill());
-
+		
 		if (containerOptional.isEmpty()) {
 			return false;
 		} else {
@@ -642,9 +642,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		return this.chargingSkill;
 	}
 
-	public HoldableSkill getHoldableSkill()
-	{
-		return holdableSkill;
+	public HoldableSkill getHoldingSkill() {
+		return this.holdableSkill;
 	}
 
 	public boolean isInAir() {

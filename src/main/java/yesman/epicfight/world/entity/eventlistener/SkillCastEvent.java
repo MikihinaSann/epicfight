@@ -49,7 +49,7 @@ public class SkillCastEvent extends AbstractPlayerEvent<PlayerPatch<?>> {
 		return this.skillExecutable && this.stateExecutable;
 	}
 	
-	public boolean shouldReserverKey() {
+	public boolean shouldReserveKey() {
 		return !this.isExecutable() && !this.isCanceled();
 	}
 }

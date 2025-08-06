@@ -233,7 +233,7 @@ public class SkillContainer {
 	
 	@OnlyIn(Dist.CLIENT)
 	public SkillCastEvent sendCastRequest(LocalPlayerPatch executor, ControlEngine controlEngine) {
-		SkillCastEvent event = new SkillCastEvent(executor, this, this.containingSkill.gatherArguments(this, controlEngine));
+		SkillCastEvent event = new SkillCastEvent(executor, this, this.containingSkill == null ? null : this.containingSkill.gatherArguments(this, controlEngine));
 		
 		if (this.containingSkill == null) {
 			return event;
