@@ -136,14 +136,11 @@ public class ControlEngine {
 					
 					if (shouldPlayAttackAnimation) {
 						 if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
-
-								if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && minecraft.level != null) {
-									BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
-									BlockState bs = this.minecraft.level.getBlockState(bp);
-									
-									shouldPlayAttackAnimation = !this.player.getMainHandItem().getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || !this.player.getMainHandItem().isCorrectToolForDrops(bs);
-								}
-
+							if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && minecraft.level != null) {
+								BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+								BlockState bs = this.minecraft.level.getBlockState(bp);
+								shouldPlayAttackAnimation = !this.player.getMainHandItem().getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || !this.player.getMainHandItem().isCorrectToolForDrops(bs);
+							}
 						} else {
 
                             shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
@@ -195,7 +192,7 @@ public class ControlEngine {
 					SkillSlot skillCategory = (this.playerPatch.getEntityState().knockDown()) ? SkillSlots.KNOCKDOWN_WAKEUP : SkillSlots.DODGE;
 					SkillContainer skill = this.playerPatch.getSkill(skillCategory);
 					
-					if (!skill.isEmpty() && skill.sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+					if (!skill.isEmpty() && skill.sendCastRequest(this.playerPatch, this).shouldReserveKey()) {
 						this.reserveKey(SkillSlots.DODGE, EpicFightKeyMappings.DODGE);
 					}
 				}
@@ -204,8 +201,19 @@ public class ControlEngine {
 		
 		while (isKeyPressed(EpicFightKeyMappings.GUARD, true)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.GUARD) {
-				if (!(EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey()) && this.playerPatch.isHoldingAny())) {
-					if (this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+				if (!this.playerPatch.isHoldingAny()) {
+					// Support for traditional guard keybind
+					if (EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
+						// Check if the item has any use effect and if true, player won't guard
+						if (this.player.getMainHandItem().use(this.player.level(), this.player, InteractionHand.MAIN_HAND).getResult().consumesAction()) {
+							this.player.stopUsingItem();
+							break;
+						}
+					}
+
+					SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
+
+					if (skillCastEvent.shouldReserveKey()) {
 						if (!this.player.isSpectator()) {
 							this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
 						}
@@ -219,7 +227,7 @@ public class ControlEngine {
 		while (isKeyPressed(EpicFightKeyMappings.WEAPON_INNATE_SKILL, true)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.WEAPON_INNATE_SKILL) {
 				if (!EpicFightKeyMappings.ATTACK.getKey().equals(EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey())) {
-					if (this.playerPatch.getSkill(SkillSlots.WEAPON_INNATE).sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+					if (this.playerPatch.getSkill(SkillSlots.WEAPON_INNATE).sendCastRequest(this.playerPatch, this).shouldReserveKey()) {
 						if (!this.player.isSpectator()) {
 							this.reserveKey(SkillSlots.WEAPON_INNATE, EpicFightKeyMappings.WEAPON_INNATE_SKILL);
 						}
@@ -285,7 +293,7 @@ public class ControlEngine {
 			} else {
 				if (EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey().equals(EpicFightKeyMappings.ATTACK.getKey())) {
 					if (this.weaponInnatePressCounter > ClientConfig.longPressCounter) {
-						if (this.playerPatch.getSkill(SkillSlots.WEAPON_INNATE).sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+						if (this.playerPatch.getSkill(SkillSlots.WEAPON_INNATE).sendCastRequest(this.playerPatch, this).shouldReserveKey()) {
 							if (!this.player.isSpectator()) {
 								this.reserveKey(SkillSlots.WEAPON_INNATE, EpicFightKeyMappings.WEAPON_INNATE_SKILL);
 							}
@@ -326,7 +334,7 @@ public class ControlEngine {
 				SkillSlot skillSlot = (this.playerPatch.getEntityState().knockDown()) ? SkillSlots.KNOCKDOWN_WAKEUP : SkillSlots.DODGE;
 				SkillContainer skill = this.playerPatch.getSkill(skillSlot);
 				
-				if (skill.sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+				if (skill.sendCastRequest(this.playerPatch, this).shouldReserveKey()) {
 					this.reserveKey(skillSlot, this.options.keyShift);
 				}
 				

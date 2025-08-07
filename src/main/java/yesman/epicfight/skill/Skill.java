@@ -114,14 +114,13 @@ public abstract class Skill {
 	 * Check the resource & other restrictions to execute the skill
 	 */
 	public boolean canExecute(SkillContainer container) {
-		return checkExecuteCondition(container);
+		return this.checkExecuteCondition(container);
 	}
 	
 	/**
 	 * This makes the skill icon white in Gui if it returns false
 	 */
 	public boolean checkExecuteCondition(SkillContainer container) {
-
 		return true;
 	}
 	
@@ -307,7 +306,7 @@ public abstract class Skill {
 			}
 		}
 
-		if (this.activateType == ActivateType.HELD && container.getExecutor().getHoldableSkill() == this) {
+		if (this.activateType == ActivateType.HELD && container.getExecutor().getHoldingSkill() == this) {
 			HoldableSkill holdableSkill = (HoldableSkill)this;
 			holdableSkill.holdTick(container);
 

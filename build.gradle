@@ -111,7 +111,6 @@ mixin {
 
 dependencies {
 	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-	
 
 	// Required dependencies to build the project
 	// compile against the JEI API but do not include it at runtime
@@ -147,7 +146,7 @@ dependencies {
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${rhino_version}")
     implementation fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
 
-	implementation fg.deobf("curse.maven:curios-309927:6216710") // samurai-dynasty dependency
+	compileOnly fg.deobf("curse.maven:curios-309927:6216710") // samurai-dynasty dependency
 	compileOnly fg.deobf("curse.maven:samurai-dynasty-848381:5672395")
 
 
