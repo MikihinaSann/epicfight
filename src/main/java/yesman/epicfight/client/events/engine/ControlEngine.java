@@ -201,9 +201,12 @@ public class ControlEngine {
 		while (isKeyPressed(EpicFightKeyMappings.GUARD, true)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.GUARD) {
 				if (!this.playerPatch.isHoldingAny()) {
+					// Support for traditional guard keybind
 					if (EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
+						// Check if the item has any use effect and if true, player won't guard
 						if (this.player.getMainHandItem().use(this.player.level(), this.player, InteractionHand.MAIN_HAND).getResult().consumesAction()) {
-							continue;
+							this.player.stopUsingItem();
+							break;
 						}
 					}
 					

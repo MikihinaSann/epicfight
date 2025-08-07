@@ -143,33 +143,9 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  - Now it shows held weapon, equipped armors, and cape
  *  
  *  ***************************************************************
+ *  20.12.2
  *  
- *  20.11.7 -> 20.11.8
- *  
- *  Fixed the Endurance having no cooldown
- *  Fixed the player head jittering when locking on { Credit - Exopandora(the dev of Shoulder surfing mod) }
- *  Fixed the camera snap when locking on target is dead
- *  Interal API changes
- *  - Fixed the random crash caused by OpenMatrix4f
- *  - Experimental fix for ConcurrentModificationException when a player logs out
- *  - Enhanced the armature pathing algorithm so that it can accomodates over 10 sub joints
- *  
- *  ***************************************************************
- *  
- *  20.11.8 -> 20.11.9
- *  
- *  Forge version changed 47.4.0 > 47.4.3
- *  Fixed the Ender dragon crash when absorbing crystal
- *  Fixed the mob's living motions for Weapon categories are not applied
- *  Fixed the Giant Whirldwind animation speed not varying based on charging amount for other players
- *  Fixed the animation list not appearing in Combat Behaviors and Weapon Combo screen in datapack editor
- *  Fixed the parsing error for combat behavior conditions
- *  Increased the update rate of entity's position when playing movement animations
- *  
- *  Interal API changes
- *  - Splitted HUD components into multiple Forge overlays, making them hideable by event hooks
- *  
- *  ***************************************************************
+ *  Fixed a bug that players can't eat or drink any food items
  *  
  *  --- TO DO ---
  *  
