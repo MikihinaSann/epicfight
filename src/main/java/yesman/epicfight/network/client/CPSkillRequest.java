@@ -66,7 +66,6 @@ public class CPSkillRequest {
 				switch (msg.workType) {
 					case CAST -> skillContainer.requestCasting(playerpatch, msg.getBuffer());
 					case CANCEL -> skillContainer.requestCancel(playerpatch, msg.getBuffer());
-					case CHARGING_START -> skillContainer.requestCharging(playerpatch, msg.getBuffer());
 					case HOLD_START -> skillContainer.requestHold(playerpatch, msg.getBuffer());
 				}
 			});
@@ -76,6 +75,6 @@ public class CPSkillRequest {
 	}
 	
 	public enum WorkType {
-		CAST, CANCEL, CHARGING_START, HOLD_START
+		CAST, CANCEL, HOLD_START
 	}
 }

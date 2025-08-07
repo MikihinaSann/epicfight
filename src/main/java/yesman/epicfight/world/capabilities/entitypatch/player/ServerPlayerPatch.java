@@ -33,7 +33,6 @@ import yesman.epicfight.network.server.SPModifyPlayerData;
 import yesman.epicfight.network.server.SPSkillExecutionFeedback;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlots;
-import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
@@ -112,13 +111,13 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	
 	@Override
 	public void updateHeldItem(CapabilityItem fromCap, CapabilityItem toCap, ItemStack from, ItemStack to, InteractionHand hand) {
-		if (this.isChargingAny()) {
-			this.getSkillContainerFor(this.chargingSkill.asSkill()).ifPresent((container) -> {
+		if (this.isHoldingAny()) {
+			this.getSkillContainerFor(this.holdableSkill.asSkill()).ifPresent((container) -> {
 				container.getSkill().cancelOnServer(container, null);
 				EpicFightNetworkManager.sendToPlayer(SPSkillExecutionFeedback.expired(container.getSlotId()), this.original);
 			});
 			
-			this.resetSkillCharging();
+			this.resetHolding();
 		}
 
 		if (this.isHoldingAny()) {
@@ -299,16 +298,6 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		this.getEventListener().triggerEvents(EventType.SET_TARGET_EVENT, setTargetEvent);
 
 		this.attackTarget = setTargetEvent.getTarget();
-	}
-	
-	@Override
-	public boolean startSkillCharging(ChargeableSkill chargingSkill) {
-		if (super.startSkillCharging(chargingSkill)) {
-			EpicFightNetworkManager.sendToPlayer(SPSkillExecutionFeedback.startCharging(this.getSkillContainerFor(chargingSkill.asSkill()).get().getSlotId()), this.getOriginal());
-			return true;
-		}
-		
-		return false;
 	}
 
 	@Override

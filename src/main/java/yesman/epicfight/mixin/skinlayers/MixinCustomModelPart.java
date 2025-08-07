@@ -7,21 +7,21 @@ import dev.tr7zw.skinlayers.versionless.render.CustomModelPart;
 
 @Mixin(value = CustomModelPart.class)
 public interface MixinCustomModelPart {
-	@Accessor
+	@Accessor(remap = false)
 	public float getX();
-	
-	@Accessor
+
+	@Accessor(remap = false)
 	public float getY();
-	
-	@Accessor
+
+	@Accessor(remap = false)
 	public float getZ();
-	
-	@Accessor
+
+	@Accessor(remap = false)
 	public float getXRot();
-	
-	@Accessor
+
+	@Accessor(remap = false)
 	public float getYRot();
-	
-	@Accessor
+
+	@Accessor(remap = false)
 	public float getZRot();
 }

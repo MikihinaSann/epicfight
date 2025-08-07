@@ -150,10 +150,14 @@ public abstract class Skill {
 		SPSkillExecutionFeedback feedbackPacket = SPSkillExecutionFeedback.executed(container.getSlotId());
 		ServerPlayerPatch executor = container.getServerExecutor();
 		
-		if (executor.isChargingAny() && this instanceof ChargeableSkill chargingSkill) {
+		if (executor.isHoldingAny()) {
+			if (executor.getHoldableSkill() instanceof ChargeableSkill)
+			{
+				feedbackPacket.getBuffer().writeInt(executor.getAccumulatedChargeAmount());
+			}
+			executor.getHoldableSkill().onStopHolding(container, feedbackPacket);
 			feedbackPacket.getBuffer().writeInt(executor.getAccumulatedChargeAmount());
-			chargingSkill.castSkill(executor, container, executor.getAccumulatedChargeAmount(), feedbackPacket, false);
-			executor.resetSkillCharging();
+			executor.resetHolding();
 			EpicFightNetworkManager.sendToPlayer(feedbackPacket, executor.getOriginal());
 		} else {
 			container.activate();
@@ -295,7 +299,7 @@ public abstract class Skill {
 			}
 			
 			if (isEnd) {
-				if (!container.getExecutor().isLogicalClient() && this.activateType != ActivateType.CHARGING) {
+				if (!container.getExecutor().isLogicalClient() && this.activateType != ActivateType.HELD) {
 					this.cancelOnServer(container, null);
 				}
 				
@@ -309,21 +313,12 @@ public abstract class Skill {
 
 			if (!container.getExecutor().isLogicalClient()) {
 				container.getExecutor().resetActionTick();
-			}
-		}
-		
-		if (this.activateType == Skill.ActivateType.CHARGING && container.getExecutor().getChargingSkill() == this) {
-			ChargeableSkill chargingSkill = (ChargeableSkill)this;
-			chargingSkill.chargingTick(container.getExecutor());
-			
-			if (!container.getExecutor().isLogicalClient()) {
-				container.getExecutor().resetActionTick();
-				
-				if (container.getExecutor().getSkillChargingTicks(1.0F) > chargingSkill.getAllowedMaxChargingTicks()) {
+
+				if (this instanceof ChargeableSkill chargingSkill && container.getExecutor().getSkillChargingTicks(1.0F) > chargingSkill.getAllowedMaxChargingTicks()) {
 					SPSkillExecutionFeedback feedbackPacket = SPSkillExecutionFeedback.executed(container.getSlotId());
 					feedbackPacket.getBuffer().writeInt(container.getExecutor().getAccumulatedChargeAmount());
-					chargingSkill.castSkill(container.getServerExecutor(), container, container.getExecutor().getAccumulatedChargeAmount(), feedbackPacket, true);
-					container.getExecutor().resetSkillCharging();
+					chargingSkill.onStopHolding(container, feedbackPacket);
+					container.getExecutor().resetHolding();
 					EpicFightNetworkManager.sendToPlayer(feedbackPacket, container.getServerExecutor().getOriginal());
 				}
 			}
@@ -511,7 +506,7 @@ public abstract class Skill {
 	}
 	
 	public enum ActivateType {
-		ONE_SHOT, DURATION, DURATION_INFINITE, TOGGLE, CHARGING, HELD
+		ONE_SHOT, DURATION, DURATION_INFINITE, TOGGLE, HELD
 	}
 	
 	public enum Resource {

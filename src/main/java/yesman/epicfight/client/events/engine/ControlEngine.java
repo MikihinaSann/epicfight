@@ -68,7 +68,7 @@ public class ControlEngine {
 	private boolean holdingFinished;
 	private int reserveCounter;
 	private KeyMapping reservedKey;
-	private SkillSlot reservedOrChargingSkillSlot;
+	private SkillSlot reservedOrHoldingSkillSlot;
 	private KeyMapping currentHoldingKey;
 	public Options options;
 	
@@ -195,7 +195,7 @@ public class ControlEngine {
 					SkillSlot skillCategory = (this.playerPatch.getEntityState().knockDown()) ? SkillSlots.KNOCKDOWN_WAKEUP : SkillSlots.DODGE;
 					SkillContainer skill = this.playerPatch.getSkill(skillCategory);
 					
-					if (skill.sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
+					if (!skill.isEmpty() && skill.sendCastRequest(this.playerPatch, this).shouldReserverKey()) {
 						this.reserveKey(SkillSlots.DODGE, EpicFightKeyMappings.DODGE);
 					}
 				}
@@ -231,7 +231,7 @@ public class ControlEngine {
 		}
 		
 		while (isKeyPressed(EpicFightKeyMappings.MOVER_SKILL, true)) {
-			if (this.playerPatch.isEpicFightMode() && !this.playerPatch.isChargingAny()) {
+			if (this.playerPatch.isEpicFightMode() && !this.playerPatch.isHoldingAny()) {
 				if (EpicFightKeyMappings.MOVER_SKILL.getKey().getValue() == this.options.keyJump.getKey().getValue()) {
 					SkillContainer skillContainer = this.playerPatch.getSkill(SkillSlots.MOVER);
 					
@@ -343,7 +343,7 @@ public class ControlEngine {
 		}
 		
 		if (this.currentHoldingKey != null) {
-			SkillContainer container = this.playerPatch.getSkill(this.reservedOrChargingSkillSlot);
+			SkillContainer container = this.playerPatch.getSkill(this.reservedOrHoldingSkillSlot);
 			
 			if (!container.isEmpty()) {
 				if (container.getSkill() instanceof ChargeableSkill chargingSkill) {
@@ -379,7 +379,7 @@ public class ControlEngine {
 		
 		if (this.reservedKey != null) {
 			if (this.reserveCounter > 0) {
-				SkillContainer skill = this.playerPatch.getSkill(this.reservedOrChargingSkillSlot);
+				SkillContainer skill = this.playerPatch.getSkill(this.reservedOrHoldingSkillSlot);
 				this.reserveCounter--;
 				
 				if (skill.getSkill() != null) {
@@ -446,14 +446,14 @@ public class ControlEngine {
 	
 	private void reserveKey(SkillSlot slot, KeyMapping keyMapping) {
 		this.reservedKey = keyMapping;
-		this.reservedOrChargingSkillSlot = slot;
+		this.reservedOrHoldingSkillSlot = slot;
 		this.reserveCounter = 8;
 	}
 	
 	private void releaseAllServedKeys() {
 		this.holdingFinished = true;
 		this.currentHoldingKey = null;
-		this.reservedOrChargingSkillSlot = null;
+		this.reservedOrHoldingSkillSlot = null;
 		this.reserveCounter = -1;
 		this.reservedKey = null;
 	}
@@ -461,7 +461,7 @@ public class ControlEngine {
 	public void setHoldingKey(SkillSlot chargingSkillSlot, KeyMapping keyMapping) {
 		this.holdingFinished = false;
 		this.currentHoldingKey = keyMapping;
-		this.reservedOrChargingSkillSlot = chargingSkillSlot;
+		this.reservedOrHoldingSkillSlot = chargingSkillSlot;
 		this.reserveCounter = -1;
 		this.reservedKey = null;
 	}

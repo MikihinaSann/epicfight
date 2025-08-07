@@ -112,7 +112,7 @@ mixin {
 dependencies {
 	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 	
-	/**
+
 	// Required dependencies to build the project
 	// compile against the JEI API but do not include it at runtime
   	compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
@@ -139,32 +139,22 @@ dependencies {
     compileOnly fg.deobf("curse.maven:playeranimator-658587:4587214")
     
     // The mods had to use local repository
-    compileOnly fg.deobf("local:skinlayers3d:1.8.2")
-    compileOnly fg.deobf("local:firstperson:2.4.3")
+    compileOnly fg.deobf("libs:skinlayers3d:1.8.2")
+    compileOnly fg.deobf("libs:firstperson:2.4.3")
 
     // KubeJS compatibility
     implementation fg.deobf("dev.latvian.mods:kubejs-forge:${kubejs_version}")
     implementation fg.deobf("dev.latvian.mods:rhino-forge:${rhino_version}")
     implementation fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
-    **/
-    /**
-     * The mods we had worked on for resourcepack or datapack.
-     **/
-    /**
-	compileOnly fg.deobf("curse.maven:curios-309927:6216710") // samurai-dynasty dependency
+
+	implementation fg.deobf("curse.maven:curios-309927:6216710") // samurai-dynasty dependency
 	compileOnly fg.deobf("curse.maven:samurai-dynasty-848381:5672395")
-    **/
-    
-    /**
-     * Curios compatibility with Relics.
-     **/
-     /**
-    implementation fg.deobf("curse.maven:curios-309927:6418456")
+
+
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
     implementation fg.deobf("curse.maven:octo-lib-916747:5644693")
-    implementation fg.deobf("local:relics:0.8.0.9")
-    **/
-    
+    implementation fg.deobf("libs:relics:0.8.0.9")
+
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

@@ -87,7 +87,6 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	protected int staminaRegenAwaitTicks;
 	protected int lastChargingTick;
 	protected int chargingAmount;
-	protected ChargeableSkill chargingSkill;
 	protected HoldableSkill holdableSkill;
 	
 	// Manage the previous position here because playerpatch#tick called before entity#travel method.
@@ -426,7 +425,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	@Override
 	public void cancelItemUse() {
 		super.cancelItemUse();
-		this.resetSkillCharging();
+		this.resetHolding();
 	}
 	
 	public float getMaxStamina() {
@@ -552,19 +551,6 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public int getStaminaRegenAwaitTicks() {
 		return this.staminaRegenAwaitTicks;
 	}
-	
-	public boolean startSkillCharging(ChargeableSkill chargingSkill) {
-		Optional<SkillContainer> containerOptional = this.getSkillContainerFor(chargingSkill.asSkill());
-		
-		if (containerOptional.isEmpty()) {
-			return false;
-		} else {
-			chargingSkill.startCharging(this);
-			this.lastChargingTick = this.original.tickCount;
-			this.chargingSkill = chargingSkill;
-			return true;
-		}
-	}
 
 	public boolean startSkillHolding(HoldableSkill holdableSkill) {
 		Optional<SkillContainer> containerOptional = this.getSkillContainerFor(holdableSkill.asSkill());
@@ -579,23 +565,16 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		}
 	}
 	
-	public void resetSkillCharging() {
-		if (this.chargingSkill != null) {
-			this.chargingAmount = 0;
-			this.chargingSkill.resetCharging(this);
-			this.chargingSkill = null;
-		}
-	}
-	
 	public void resetHolding() {
 		if (this.holdableSkill != null) {
-			this.holdableSkill.onStopHolding(this.getSkill(this.holdableSkill.asSkill()));
+			if (holdableSkill instanceof ChargeableSkill)
+			{
+				this.chargingAmount = 0;
+			}
+			this.holdableSkill.resetHolding(this.getSkill(holdableSkill.asSkill()));
 			this.holdableSkill = null;
-		}
-	}
 
-	public boolean isChargingAny() {
-		return this.chargingSkill != null;
+		}
 	}
 
 	public boolean isHoldingAny() {
@@ -605,18 +584,15 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public boolean isHoldingSkill(Skill holdingSkill) {
 		return this.holdableSkill == holdingSkill;
 	}
-	
-	public boolean isChargingSkill(Skill chargingSkill) {
-		return this.chargingSkill == chargingSkill;
-	}
+
 	
 	public int getLastChargingTick() {
 		return this.lastChargingTick;
 	}
 	
 	public void setChargingAmount(int amount) {
-		if (this.isChargingAny()) {
-			this.chargingAmount = Math.min(amount, this.getChargingSkill().getMaxChargingTicks());
+		if (this.isHoldingAny() && this.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+			this.chargingAmount = Math.min(amount, chargeableSkill.getMaxChargingTicks());
 		} else {
 			this.chargingAmount = 0;
 		}
@@ -627,19 +603,15 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public float getSkillChargingTicks(float partialTicks) {
-		return this.isChargingAny() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTicks : 0;
+		return this.isHoldingAny() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTicks : 0;
 	}
 	
 	public int getSkillChargingTicks() {
-		return this.isChargingAny() ? Math.min(this.original.tickCount - this.getLastChargingTick(), this.chargingSkill.getMaxChargingTicks()) : 0;
+		return this.isHoldingAny() && this.holdableSkill instanceof ChargeableSkill chargingSkill ? Math.min(this.original.tickCount - this.getLastChargingTick(), chargingSkill.getMaxChargingTicks()) : 0;
 	}
 	
 	public int getAccumulatedChargeAmount() {
-		return this.getChargingSkill() != null ? this.getChargingSkill().getChargingAmount(this) : 0;
-	}
-
-	public ChargeableSkill getChargingSkill() {
-		return this.chargingSkill;
+		return this.getHoldableSkill() instanceof ChargeableSkill ? getChargingAmount() : 0;
 	}
 
 	public HoldableSkill getHoldableSkill()

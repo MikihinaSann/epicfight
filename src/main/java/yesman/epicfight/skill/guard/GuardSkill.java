@@ -295,8 +295,17 @@ public class GuardSkill extends Skill implements HoldableSkill {
 			container.getDataManager().setDataSync(SkillDataKeys.PENALTY_RESTORE_COUNTER.get(), container.getServerExecutor().getOriginal().tickCount);
 		}
 	}
-	
-    @Override
+
+	@Override
+	public void resetHolding(SkillContainer container) {}
+
+	@Override
+	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer)
+	{
+
+	}
+
+	@Override
 	public KeyMapping getKeyMapping() {
 		return EpicFightKeyMappings.GUARD;
 	}
@@ -378,7 +387,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	
 	@Override
 	public boolean isExecutableState(PlayerPatch<?> executor) {
-		return executor.isEpicFightMode() && !(executor.isInAir() || executor.getEntityState().hurt()) && executor.getEntityState().canUseSkill() && !executor.isChargingAny();
+		return executor.isEpicFightMode() && !(executor.isInAir() || executor.getEntityState().hurt()) && executor.getEntityState().canUseSkill() && !executor.isHoldingAny();
 	}
 	
 	protected boolean isBlockableSource(DamageSource damageSource, boolean advanced) {

@@ -50,7 +50,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		PlayerEventListener listener = container.getExecutor().getEventListener();
 		
 		listener.addEventListener(EventType.MOVEMENT_INPUT_EVENT, EVENT_UUID, (event) -> {
-			if (event.getPlayerPatch().isChargingSkill(this)) {
+			if (event.getPlayerPatch().isHoldingSkill(this)) {
 				event.getMovementInput().jumping = false;
 			}
 		});
@@ -86,7 +86,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 	@Override
 	public void cancelOnClient(SkillContainer container, FriendlyByteBuf args) {
 		super.cancelOnClient(container, args);
-		container.getExecutor().resetSkillCharging();
+		container.getExecutor().resetHolding();
 		container.getExecutor().playAnimationSynchronized(Animations.BIPED_IDLE, 0.0F);
 	}
 	
@@ -102,47 +102,47 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		jumpDirection.rotate(xRot, Vec3f.X_AXIS);
 		jumpDirection.rotate(-container.getExecutor().getCameraYRot(), Vec3f.Y_AXIS);
 		container.getExecutor().getOriginal().setDeltaMovement(jumpDirection.toDoubleVector());
-		container.getExecutor().resetSkillCharging();
+		container.getExecutor().resetHolding();
 	}
 	
 	@Override
-	public void gatherChargingArguments(LocalPlayerPatch caster, ControlEngine controlEngine, FriendlyByteBuf buffer) {
-		// Set player charging skill cause it won't be fired on feedback packet cause it jumped
+	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer) {
 		controlEngine.setHoldingKey(SkillSlots.MOVER, this.getKeyMapping());
-		caster.startSkillCharging(this);
+		container.getExecutor().startSkillHolding(this);
 	}
 
 	@Override
-	public void startCharging(PlayerPatch<?> caster) {
-		if (!caster.isLogicalClient()) {
-			caster.playAnimationSynchronized(this.chargingAnimation, 0.0F);
+	public void startHolding(SkillContainer caster) {
+		if (!caster.getExecutor().isLogicalClient()) {
+			caster.getExecutor().playAnimationSynchronized(this.chargingAnimation, 0.0F);
 		}
 	}
 
 	@Override
-	public void resetCharging(PlayerPatch<?> caster) {
-	}
-
-	@Override
-	public void castSkill(ServerPlayerPatch caster, SkillContainer skillContainer, int chargingTicks, SPSkillExecutionFeedback feedbackPacket, boolean onMaxTick) {
-		if (onMaxTick) {
-			feedbackPacket.setFeedbackType(SPSkillExecutionFeedback.FeedbackType.EXPIRED);
-		} else {
-			caster.playSound(EpicFightSounds.ROCKET_JUMP.get(), 1.0F, 0.0F, 0.0F);
-			caster.playSound(EpicFightSounds.ENTITY_MOVE.get(), 1.0F, 0.0F, 0.0F);
-
-			int accumulatedTicks = caster.getChargingAmount();
-			
-			LevelUtil.circleSlamFracture(null, caster.getOriginal().level(), caster.getOriginal().position().subtract(0, 1, 0), accumulatedTicks * 0.05D, true, false, false);
-			Vec3 entityEyepos = caster.getOriginal().getEyePosition();
-			EpicFightParticles.AIR_BURST.get().spawnParticleWithArgument(caster.getOriginal().serverLevel(), entityEyepos.x, entityEyepos.y, entityEyepos.z, 0.0D, 0.0D, 2 + 0.05D * chargingTicks);
-
-			caster.playAnimationSynchronized(this.shootAnimation, 0.0F);
-			feedbackPacket.getBuffer().writeInt(accumulatedTicks);
-			skillContainer.getDataManager().setData(SkillDataKeys.PROTECT_NEXT_FALL.get(), true);
+	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback)
+	{
+		if (container.getExecutor().getSkillChargingTicks(1.0F) > this.getAllowedMaxChargingTicks())
+		{
+			feedback.setFeedbackType(SPSkillExecutionFeedback.FeedbackType.EXPIRED);
 		}
+		else
+		{
+			container.getServerExecutor().playSound(EpicFightSounds.ROCKET_JUMP.get(), 1.0F, 0.0F, 0.0F);
+			container.getServerExecutor().playSound(EpicFightSounds.ENTITY_MOVE.get(), 1.0F, 0.0F, 0.0F);
+
+			int accumulatedTicks = container.getExecutor().getChargingAmount();
+
+			LevelUtil.circleSlamFracture(null, container.getServerExecutor().getOriginal().level(), container.getServerExecutor().getOriginal().position().subtract(0, 1, 0), accumulatedTicks * 0.05D, true, false, false);
+			Vec3 entityEyepos = container.getServerExecutor().getOriginal().getEyePosition();
+			EpicFightParticles.AIR_BURST.get().spawnParticleWithArgument(container.getServerExecutor().getOriginal().serverLevel(), entityEyepos.x, entityEyepos.y, entityEyepos.z, 0.0D, 0.0D, 2 + 0.05D * container.getServerExecutor().getAccumulatedChargeAmount());
+
+			container.getServerExecutor().playAnimationSynchronized(this.shootAnimation, 0.0F);
+			feedback.getBuffer().writeInt(accumulatedTicks);
+			container.getDataManager().setData(SkillDataKeys.PROTECT_NEXT_FALL.get(), true);
+		}
+		ChargeableSkill.super.onStopHolding(container, feedback);
 	}
-	
+
 	@Override
 	public int getAllowedMaxChargingTicks() {
 		return 80;
@@ -164,12 +164,12 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 	}
 
 	@Override
-	public void chargingTick(PlayerPatch<?> caster) {
-		int chargingTicks = caster.getSkillChargingTicks();
+	public void holdTick(SkillContainer container) {
+		int chargingTicks = container.getExecutor().getSkillChargingTicks();
 		
-		if (chargingTicks % 5 == 0 && caster.getAccumulatedChargeAmount() < this.getMaxChargingTicks()) {
-			if (caster.consumeForSkill(this, Skill.Resource.STAMINA, this.consumption)) {
-				caster.setChargingAmount(caster.getChargingAmount() + 5);
+		if (chargingTicks % 5 == 0 && container.getExecutor().getAccumulatedChargeAmount() < this.getMaxChargingTicks()) {
+			if (container.getExecutor().consumeForSkill(this, Skill.Resource.STAMINA, this.consumption)) {
+				container.getExecutor().setChargingAmount(container.getExecutor().getChargingAmount() + 5);
 			}
 		}
 	}

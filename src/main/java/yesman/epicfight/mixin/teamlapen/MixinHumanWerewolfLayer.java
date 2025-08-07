@@ -12,8 +12,9 @@ import net.minecraft.world.entity.LivingEntity;
 
 @Mixin(value = HumanWerewolfLayer.class)
 public interface MixinHumanWerewolfLayer<T extends LivingEntity, A extends HumanoidModel<T>> {
-	@Accessor
-    public List<ResourceLocation> getTextures();
-	@Accessor
+	@Accessor(remap = false)
+	public List<ResourceLocation> getTextures();
+
+	@Accessor(remap = false)
 	public A getModel();
 }

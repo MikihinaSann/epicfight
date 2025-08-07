@@ -55,6 +55,7 @@ import yesman.epicfight.network.client.CPModifyEntityModelYRot;
 import yesman.epicfight.network.client.CPSetPlayerTarget;
 import yesman.epicfight.network.client.CPSetStamina;
 import yesman.epicfight.network.common.AnimatorControlPacket;
+import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
@@ -106,8 +107,8 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void tick(LivingEvent.LivingTickEvent event) {
 		this.staminaO = this.getStamina();
 		
-		if (this.isChargingAny()) {
-			this.prevChargingAmount = this.getChargingSkill().getChargingAmount(this);
+		if (this.isHoldingAny() && this.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+			this.prevChargingAmount = this.getChargingAmount();
 		} else {
 			this.prevChargingAmount = 0;
 		}
