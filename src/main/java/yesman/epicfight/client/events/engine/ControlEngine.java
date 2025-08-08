@@ -135,14 +135,16 @@ public class ControlEngine {
 					}
 					
 					if (shouldPlayAttackAnimation) {
-						 if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
+						if (this.playerPatch.isTargetLockedOn()) {
+							shouldPlayAttackAnimation = true;
+						} else if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
 							if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && minecraft.level != null) {
-								BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+								BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
 								BlockState bs = this.minecraft.level.getBlockState(bp);
 								shouldPlayAttackAnimation = !this.player.getMainHandItem().getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || !this.player.getMainHandItem().isCorrectToolForDrops(bs);
 							}
 						} else {
-                            shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
+							shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
 						}
 					}
 					
