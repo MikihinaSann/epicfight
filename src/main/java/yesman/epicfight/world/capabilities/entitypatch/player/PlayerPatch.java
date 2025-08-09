@@ -427,6 +427,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public void cancelItemUse() {
 		super.cancelItemUse();
 		this.resetSkillCharging();
+		this.resetHolding();
 	}
 	
 	public float getMaxStamina() {

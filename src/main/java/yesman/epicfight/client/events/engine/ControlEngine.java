@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -200,26 +201,29 @@ public class ControlEngine {
 			}
 		}
 		
-		while (isKeyPressed(EpicFightKeyMappings.GUARD, true)) {
+		if (isKeyDown(EpicFightKeyMappings.GUARD)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.GUARD) {
 				if (!this.playerPatch.isHoldingAny()) {
+					boolean hasUseAction = false;
+					
 					// Support for traditional guard keybind
 					if (EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
 						// Check if the item has any use effect and if true, player won't guard
-						if (this.player.getMainHandItem().use(this.player.level(), this.player, InteractionHand.MAIN_HAND).getResult().consumesAction()) {
-							this.player.stopUsingItem();
-							break;
+						if (this.player.getMainHandItem().getUseAnimation() != UseAnim.NONE) {
+							hasUseAction = true;
 						}
 					}
 					
-					SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
-					
-					if (skillCastEvent.shouldReserveKey()) {
-						if (!this.player.isSpectator()) {
-							this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
+					if (!hasUseAction) {
+						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
+						
+						if (skillCastEvent.shouldReserveKey()) {
+							if (!this.player.isSpectator()) {
+								this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
+							}
+						} else {
+							this.lockHotkeys();
 						}
-					} else {
-						this.lockHotkeys();
 					}
 				}
 			}

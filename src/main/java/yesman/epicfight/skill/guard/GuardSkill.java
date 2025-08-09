@@ -276,8 +276,9 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	
 	@OnlyIn(Dist.CLIENT)
 	public void cancelOnClient(SkillContainer container, FriendlyByteBuf args) {
-		super.cancelOnClient(container, args);
 		container.deactivate();
+		
+		super.cancelOnClient(container, args);
 	}
 	
 	@Override
@@ -294,6 +295,11 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		if (!container.getExecutor().isLogicalClient() && container.isActivated()) {
 			container.getDataManager().setDataSync(SkillDataKeys.PENALTY_RESTORE_COUNTER.get(), container.getServerExecutor().getOriginal().tickCount);
 		}
+	}
+	
+	@Override
+	public void onStopHolding(SkillContainer container) {
+		container.deactivate();
 	}
 	
     @Override

@@ -145,8 +145,9 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  ***************************************************************
  *  20.12.2
  *  
- *  Fixed a bug that players can't eat or drink any food items (#2048)
+ *  Fixed the bug that players can't eat or drink any food items (#2048)
  *  Fixed the crash when hit by arrows from other mods (#2047)
+ *  Fixed the bug that players can't disarm guard after attacking while guarding
  *  
  *  --- TO DO ---
  *  
