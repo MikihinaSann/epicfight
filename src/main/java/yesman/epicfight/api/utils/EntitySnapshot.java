@@ -148,19 +148,23 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	
 	public void renderItems(PoseStack poseStack, MultiBufferSource buffers, RenderType rendertype, Mesh.DrawingFunction drawingFunction, int packedLight, float alpha) {
 		for (Pair<InteractionHand, ItemStack> items : this.handItems) {
-			poseStack.pushPose();
-			BakedModel bakedmodel = Minecraft.getInstance().getItemRenderer().getModel(items.getSecond(), this.entitypatch.getOriginal().level(), this.entitypatch.getOriginal(), this.entitypatch.getOriginal().getId() + ItemDisplayContext.THIRD_PERSON_RIGHT_HAND.ordinal());
+			ItemStack itemstack = items.getSecond();
 			
-			if (!bakedmodel.isCustomRenderer()) {
-				MathUtils.mulStack(poseStack, ClientEngine.getInstance().renderEngine.getItemRenderer(items.getSecond()).getCorrectionMatrix(this.entitypatch, items.getFirst(), this.poseMatrices));
-				bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(poseStack, bakedmodel, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, items.getFirst() == InteractionHand.OFF_HAND);
-				poseStack.translate(-0.5F, -0.5F, -0.5F);
+			if (ClientEngine.getInstance().renderEngine.getItemRenderer(itemstack).appearedInAfterimage()) {
+				poseStack.pushPose();
+				BakedModel bakedmodel = Minecraft.getInstance().getItemRenderer().getModel(itemstack, this.entitypatch.getOriginal().level(), this.entitypatch.getOriginal(), this.entitypatch.getOriginal().getId() + ItemDisplayContext.THIRD_PERSON_RIGHT_HAND.ordinal());
 				
-				for (var model : bakedmodel.getRenderPasses(items.getSecond(), true)) {
-					renderModelLists(model, items.getSecond(), packedLight, OverlayTexture.NO_OVERLAY, alpha, poseStack, buffers.getBuffer(rendertype), drawingFunction);
+				if (!bakedmodel.isCustomRenderer()) {
+					MathUtils.mulStack(poseStack, ClientEngine.getInstance().renderEngine.getItemRenderer(itemstack).getCorrectionMatrix(this.entitypatch, items.getFirst(), this.poseMatrices));
+					bakedmodel = net.minecraftforge.client.ForgeHooksClient.handleCameraTransforms(poseStack, bakedmodel, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, items.getFirst() == InteractionHand.OFF_HAND);
+					poseStack.translate(-0.5F, -0.5F, -0.5F);
+					
+					for (var model : bakedmodel.getRenderPasses(itemstack, true)) {
+						renderModelLists(model, itemstack, packedLight, OverlayTexture.NO_OVERLAY, alpha, poseStack, buffers.getBuffer(rendertype), drawingFunction);
+					}
 				}
+				poseStack.popPose();
 			}
-			poseStack.popPose();
 		}
 	}
 	

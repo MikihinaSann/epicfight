@@ -149,6 +149,11 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the crash when hit by arrows from other mods (#2047)
  *  Fixed the bug that players can't disarm guard after attacking while guarding
  *  
+ *  ***************************************************************
+ *  20.12.3
+ *  
+ *  Fixed the Vex crashing game when attack target is dead before attacking
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)

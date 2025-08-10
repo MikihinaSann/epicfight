@@ -121,7 +121,7 @@ public class PhantomAscentSkill extends Skill {
 		
 		listener.addEventListener(EventType.TAKE_DAMAGE_EVENT_HURT, EVENT_UUID, (event) -> {
 			if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && container.getDataManager().getDataValue(SkillDataKeys.PROTECT_NEXT_FALL.get())) { // This is not synced
-				float damage = event.getBaseDamage();
+				float damage = event.getDamage();
 				
 				if (damage < 2.5F) {
 					event.attachValueModifier(ValueModifier.setter(0.0F));
