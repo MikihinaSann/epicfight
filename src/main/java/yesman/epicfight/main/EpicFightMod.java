@@ -152,7 +152,8 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  ***************************************************************
  *  20.12.3
  *  
- *  Fixed the Vex crashing game when attack target is dead before attacking
+ *  Fixed the Vex crashing game when the target is dead before attacking
+ *  Fixed the crash when Wither afterimage is created
  *  
  *  --- TO DO ---
  *  

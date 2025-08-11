@@ -45,6 +45,7 @@ import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.renderer.patched.entity.PatchedEntityRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRenderer;
 import yesman.epicfight.client.renderer.patched.layer.PatchedCapeLayer;
 import yesman.epicfight.client.renderer.patched.layer.WearableItemLayer;
@@ -83,7 +84,7 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public EntitySnapshot(T entitypatch) {
 		LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>> vanillarenderer = (LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>)Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entitypatch.getOriginal());
-		PatchedLivingEntityRenderer patchedrenderer = (PatchedLivingEntityRenderer)ClientEngine.getInstance().renderEngine.getEntityRenderer(entitypatch.getOriginal());
+		PatchedEntityRenderer patchedrenderer = (PatchedEntityRenderer)ClientEngine.getInstance().renderEngine.getEntityRenderer(entitypatch.getOriginal());
 		AssetAccessor<SkinnedMesh> assetAccessor = patchedrenderer.getMeshProvider(entitypatch);
 		this.entityFigure = new RenderableFigure(assetAccessor.get(), vanillarenderer.getTextureLocation(entitypatch.getOriginal()));
 		
