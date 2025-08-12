@@ -30,8 +30,6 @@ public class LaserParticle extends CustomModelParticle<ClassicMesh> {
 		super(level, x, y, z, 0, 0, 0, Meshes.LASER);
 		this.lifetime = 5;
 		
-		System.out.println( toX +" "+ toY +" "+ toZ );
-		
 		Vec3 direction = new Vec3(toX - x, toY - y, toZ - z);
 		Vec3 start = new Vec3(x, y, z);
 		Vec3 destination = start.add(direction.normalize().scale(200.0D));

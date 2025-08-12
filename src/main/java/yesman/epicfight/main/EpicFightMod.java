@@ -156,7 +156,7 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the laser particle transform issue
  *  Fixed the crash when Wither afterimage is created
  *  Fixed the Wither swirl animation when Wither armor is activated
- *  Fixed the crash when trail particle is loaded in datapack editor
+ *  Fixed the crash when trail particle is loaded in datapack editor (#2053)
  *  
  *  --- TO DO ---
  *  
