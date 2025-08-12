@@ -153,7 +153,10 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  20.12.3
  *  
  *  Fixed the Vex crashing game when the target is dead before attacking
+ *  Fixed the laser particle transform issue
  *  Fixed the crash when Wither afterimage is created
+ *  Fixed the Wither swirl animation when Wither armor is activated
+ *  Fixed the crash when trail particle is loaded in datapack editor
  *  
  *  --- TO DO ---
  *  

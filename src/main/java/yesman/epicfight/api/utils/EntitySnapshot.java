@@ -3,6 +3,7 @@ package yesman.epicfight.api.utils;
 import java.util.List;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 
 import com.google.common.collect.ImmutableList;
@@ -50,6 +51,7 @@ import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRender
 import yesman.epicfight.client.renderer.patched.layer.PatchedCapeLayer;
 import yesman.epicfight.client.renderer.patched.layer.WearableItemLayer;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClientPlayerPatch;
+import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 @OnlyIn(Dist.CLIENT)
@@ -85,8 +87,19 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	public EntitySnapshot(T entitypatch) {
 		LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>> vanillarenderer = (LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>)Minecraft.getInstance().getEntityRenderDispatcher().getRenderer(entitypatch.getOriginal());
 		PatchedEntityRenderer patchedrenderer = (PatchedEntityRenderer)ClientEngine.getInstance().renderEngine.getEntityRenderer(entitypatch.getOriginal());
-		AssetAccessor<SkinnedMesh> assetAccessor = patchedrenderer.getMeshProvider(entitypatch);
-		this.entityFigure = new RenderableFigure(assetAccessor.get(), vanillarenderer.getTextureLocation(entitypatch.getOriginal()));
+		AssetAccessor<SkinnedMesh> meshAccessor = patchedrenderer.getMeshProvider(entitypatch);
+		
+		ResourceLocation textureLocation = vanillarenderer.getTextureLocation(entitypatch.getOriginal());
+		
+		if (textureLocation == null) {
+			EpicFightMod.logAndStacktraceIfDevSide(Logger::warn, "No texture for " + entitypatch.getOriginal(), NullPointerException::new, "No texture is provided by vanilla renderer " + vanillarenderer.getClass().getSimpleName());
+		}
+		
+		if (meshAccessor == null || meshAccessor.isEmpty()) {
+			EpicFightMod.logAndStacktraceIfDevSide(Logger::warn, "No mesh for " + entitypatch.getOriginal(), NullPointerException::new, "No mesh is provided by patched renderer " + patchedrenderer.getClass().getSimpleName());
+		}
+		
+		this.entityFigure = new RenderableFigure(meshAccessor.get(), textureLocation);
 		
 		Pose pose = entitypatch.getAnimator().getPose(1.0F);
 		patchedrenderer.setJointTransforms(entitypatch, entitypatch.getArmature(), pose, 1.0F);
@@ -128,6 +141,10 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	}
 	
 	public void render(PoseStack poseStack, MultiBufferSource buffers, RenderType rendertype, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a) {
+		if (this.entityFigure.mesh == null || this.entityFigure.texture == null) {
+			return;
+		}
+		
 		this.entityFigure.mesh.initialize();
 		this.entityFigure.mesh.draw(poseStack, buffers, rendertype, drawingFunction, packedLight, r, g, b, a, OverlayTexture.NO_OVERLAY, this.entitypatch.getArmature(), this.poseMatrices);
 		
@@ -138,6 +155,10 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	}
 	
 	public void renderTextured(PoseStack poseStack, MultiBufferSource buffers, Function<ResourceLocation, RenderType> rendertypeFunction, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a) {
+		if (this.entityFigure.mesh == null || this.entityFigure.texture == null) {
+			return;
+		}
+		
 		this.entityFigure.mesh.initialize();
 		this.entityFigure.mesh.draw(poseStack, buffers, rendertypeFunction.apply(this.entityFigure.texture), drawingFunction, packedLight, r, g, b, a, OverlayTexture.NO_OVERLAY, this.entitypatch.getArmature(), this.poseMatrices);
 		
