@@ -472,6 +472,7 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 			out_uv0.close();
 			out_entity_id.close();
 			midUVBO.close();
+			hiddenFlagsBO.close();
 		}
 
 		parts.values().forEach(part -> RenderSystem.glDeleteBuffers(part.indexBufferId));
