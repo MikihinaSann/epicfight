@@ -316,7 +316,15 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 		double d0 = target.getX() - this.original.getX();
         double d1 = target.getZ() - this.original.getZ();
         float degree = 180.0F - (float)Math.toDegrees(Mth.atan2(d0, d1));
-    	this.rotateTo(degree, limit, partialSync);
+    	super.rotateTo(degree, limit, partialSync);
+	}
+	
+	@Override
+	public float getYRotDeltaTo(Entity target) {
+		double d0 = target.getX() - this.original.getX();
+        double d1 = target.getZ() - this.original.getZ();
+        float degree = 180.0F - (float)Math.toDegrees(Mth.atan2(d0, d1));
+		return Mth.clamp(Mth.wrapDegrees(degree - Mth.wrapDegrees(this.getOriginal().getYRot())), -this.getYRotLimit(), this.getYRotLimit());
 	}
 	
 	@Override
@@ -411,8 +419,8 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public OpenMatrix4f getModelMatrix(float partialTicks) {
-		return MathUtils.getModelMatrixIntegral(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, this.original.yRotO, this.original.getYRot(), partialTicks, -1.0F, 1.0F, -1.0F);
+	public OpenMatrix4f getModelMatrix(float partialTick) {
+		return MathUtils.getModelMatrixIntegral(0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, 0.0F, this.original.yRotO, this.original.getYRot(), partialTick, -1.0F, 1.0F, -1.0F);
 	}
 	
 	@Override

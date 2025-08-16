@@ -73,7 +73,7 @@ public class ServerAnimator extends Animator {
 	@Override
 	public boolean stopPlaying(AssetAccessor<? extends StaticAnimation> targetAnimation) {
 		if (this.animationPlayer.getRealAnimation() == targetAnimation) {
-			this.animationPlayer.terminate();
+			this.animationPlayer.terminate(this.entitypatch);
 			return true;
 		}
 		

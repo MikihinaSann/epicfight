@@ -95,7 +95,7 @@ public class ClientAnimator extends Animator {
 				layer.animationPlayer.getAnimation().get().end(this.entitypatch, nextAnimation, false);
 			}
 			
-			layer.animationPlayer.terminate();
+			layer.animationPlayer.terminate(this.entitypatch);
 		}
 		
 		layer.nextAnimation = nextAnimation;
@@ -107,7 +107,7 @@ public class ClientAnimator extends Animator {
 		Layer layer = targetAnimation.get().getLayerType() == Layer.LayerType.BASE_LAYER ? this.baseLayer : this.baseLayer.compositeLayers.get(targetAnimation.get().getPriority());
 		
 		if (layer.animationPlayer.getRealAnimation() == targetAnimation) {
-			layer.animationPlayer.terminate();
+			layer.animationPlayer.terminate(this.entitypatch);
 			return true;
 		}
 		

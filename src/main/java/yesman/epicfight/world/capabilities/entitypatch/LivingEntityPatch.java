@@ -588,6 +588,15 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
     	this.rotateTo(yaw, limit, syncPrevRot);
 	}
 	
+	public float getYRotDeltaTo(Entity target) {
+		Vec3 playerPosition = this.getOriginal().position();
+		Vec3 targetPosition = target.position();
+		float yRotToTarget = (float)MathUtils.getYRotOfVector(targetPosition.subtract(playerPosition));
+		float yRotCurrent = Mth.wrapDegrees(this.getOriginal().getYRot());
+		
+		return Mth.clamp(Mth.wrapDegrees(yRotToTarget - yRotCurrent), -this.getYRotLimit(), this.getYRotLimit());
+	}
+	
 	public LivingEntity getTarget() {
 		return this.original.getLastHurtMob();
 	}

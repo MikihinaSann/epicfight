@@ -158,6 +158,13 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the Wither swirl animation when Wither armor is activated
  *  Fixed the crash when trail particle is loaded in datapack editor (#2053)
  *  
+ *  ***************************************************************
+ *  20.12.4
+ *  
+ *  Fixed the players can't attack after charging the Greatsword innate skill (#2060)
+ *  Fixed the Ender dragon turns back when attacking (#2054)
+ *  Fixed the afterimage particle doesn't reflect entity's scale
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)

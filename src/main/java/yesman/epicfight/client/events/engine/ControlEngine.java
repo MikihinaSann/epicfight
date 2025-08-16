@@ -158,8 +158,9 @@ public class ControlEngine {
 				if (shouldPlayAttackAnimation) {
 					if (!EpicFightKeyMappings.ATTACK.getKey().equals(EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey())) {
 						SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 						
-						if (this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this).isExecutable()) {
+						if (skillCastEvent.isExecutable()) {
 							this.player.resetAttackStrengthTicker();
 							this.attackLightPressToggle = false;
 							this.releaseAllServedKeys();
@@ -317,8 +318,9 @@ public class ControlEngine {
 		
 		if (this.attackLightPressToggle) {
 			SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+			SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 			
-			if (this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this).isExecutable()) {
+			if (skillCastEvent.isExecutable()) {
 				this.player.resetAttackStrengthTicker();
 				this.releaseAllServedKeys();
 			} else {

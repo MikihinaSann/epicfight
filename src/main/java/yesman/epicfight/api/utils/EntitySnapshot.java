@@ -77,6 +77,7 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	protected final T entitypatch;
 	protected final RenderableFigure entityFigure;
 	protected final OpenMatrix4f[] poseMatrices;
+	protected final OpenMatrix4f modelMatrix;
 	protected final Vec3 position;
 	protected final List<RenderableFigure> armorMeshes;
 	protected final List<Pair<InteractionHand, ItemStack>> handItems;
@@ -104,6 +105,7 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 		Pose pose = entitypatch.getAnimator().getPose(1.0F);
 		patchedrenderer.setJointTransforms(entitypatch, entitypatch.getArmature(), pose, 1.0F);
 		this.poseMatrices = entitypatch.getArmature().getPoseAsTransformMatrix(pose, false);
+		this.modelMatrix = entitypatch.getModelMatrix(1.0F);
 		
 		ImmutableList.Builder<RenderableFigure> builder = ImmutableList.builder();
 		
@@ -192,6 +194,10 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	
 	public OpenMatrix4f[] poseMatrices() {
 		return this.poseMatrices;
+	}
+	
+	public OpenMatrix4f getModelMatrix() {
+		return this.modelMatrix;
 	}
 	
 	public float getYRot() {

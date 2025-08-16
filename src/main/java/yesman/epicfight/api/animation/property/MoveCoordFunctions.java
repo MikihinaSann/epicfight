@@ -203,13 +203,10 @@ public class MoveCoordFunctions {
 				LivingEntity target = entitypatch.getTarget();
 				
 				if (target != null) {
-					Vec3 playerPosition = entitypatch.getOriginal().position();
-					Vec3 targetPosition = target.position();
-					float yRotToTarget = (float)MathUtils.getYRotOfVector(targetPosition.subtract(playerPosition));
-					float yRotCurrent = Mth.wrapDegrees(entitypatch.getOriginal().getYRot());
-					float clampedYRot = Mth.clamp(Mth.wrapDegrees(yRotToTarget - yRotCurrent), -entitypatch.getYRotLimit(), entitypatch.getYRotLimit());
+					float currentYRot = Mth.wrapDegrees(entitypatch.getOriginal().getYRot());
+					float clampedYRot = entitypatch.getYRotDeltaTo(target);
 					
-			        return yRotCurrent + clampedYRot;
+			        return currentYRot + clampedYRot;
 				}
 			}
 		}
