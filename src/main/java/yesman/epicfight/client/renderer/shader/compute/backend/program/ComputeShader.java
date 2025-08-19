@@ -1,4 +1,4 @@
-package yesman.epicfight.client.renderer.shader.compute_boost.backend.program;
+package yesman.epicfight.client.renderer.shader.compute.backend.program;
 
 import static org.lwjgl.opengl.GL46.*;
 

@@ -496,6 +496,6 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
             }
 		}
 		
-		return this.original.getDragonFight().dragonEvent;
+		return this.original.getDragonFight() == null ? null : this.original.getDragonFight().dragonEvent;
 	}
 }

@@ -1,0 +1,72 @@
+package yesman.epicfight.client.renderer.shader.compute.loader;
+
+import java.util.function.Function;
+
+import org.lwjgl.opengl.GL33C;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.event.RegisterShadersEvent;
+import yesman.epicfight.api.client.model.SkinnedMesh;
+import yesman.epicfight.client.renderer.shader.compute.ComputeShaderSetup;
+import yesman.epicfight.client.renderer.shader.compute.VanillaComputeShaderSetup;
+import yesman.epicfight.client.renderer.shader.compute.backend.program.BarrierFlags;
+import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeProgram;
+import yesman.epicfight.client.renderer.shader.compute.iris.IrisComputeShaderSetup;
+import yesman.epicfight.main.EpicFightMod;
+
+@OnlyIn(Dist.CLIENT)
+public class ComputeShaderProvider {
+    public static ComputeProgram meshCompute;
+    public static ComputeProgram meshComputeIris;
+    
+    private static boolean supportComputeShader = false;
+    private static boolean irisLoaded = false;
+    private static Function<SkinnedMesh, ComputeShaderSetup> computeShaderProvider = VanillaComputeShaderSetup::new;
+    
+    public static void initIris() {
+    	irisLoaded = true;
+    	computeShaderProvider = IrisComputeShaderSetup::new;
+    }
+    
+    public static boolean supportComputeShader() {
+    	return supportComputeShader;
+    }
+    
+    public static boolean irisLoaded() {
+        return irisLoaded;
+    }
+    
+    public static void register(RegisterShadersEvent event){
+        String glVersion = GL33C.glGetString(GL33C.GL_VERSION);
+        int major = GL33C.glGetInteger(GL33C.GL_MAJOR_VERSION);
+        int minor = GL33C.glGetInteger(GL33C.GL_MINOR_VERSION);
+
+        supportComputeShader = (major > 4) || (major == 4 && minor >= 3);
+        
+        EpicFightMod.LOGGER.warn("[Computer Shader] OpenGL Version: " + glVersion);
+        EpicFightMod.LOGGER.warn("[Computer Shader] Compute Shader Acceleration: " + (supportComputeShader ? "Supported" : "Unsupported"));
+        
+        if (!supportComputeShader) return;
+        
+        clear();
+        
+		meshCompute = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE);
+		meshComputeIris = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/iris_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE);
+    }
+    
+    public static void clear() {
+        if (meshCompute != null) {
+        	meshCompute.delete();
+        }
+        
+        if (meshComputeIris != null) {
+        	meshComputeIris.delete();
+        }
+    }
+    
+    public static ComputeShaderSetup getComputeShaderSetup(SkinnedMesh mesh) {
+    	return computeShaderProvider.apply(mesh);
+    }
+}

@@ -632,16 +632,16 @@ public class RenderEngine {
 						localPlayerPatch.setModelYRotInGui(livingentity.getYRot());
 						event.getPoseStack().translate(0, 0.1D, 0);
 						
-						boolean usingShader = ClientConfig.activateAnimationShader;
+						boolean usingShader = ClientConfig.activateComputeShader;
 						
 						if (usingShader) {
-							ClientConfig.activateAnimationShader = false;
+							ClientConfig.activateComputeShader = false;
 						}
 						
 						renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
 						
 						if (usingShader) {
-							ClientConfig.activateAnimationShader = true;
+							ClientConfig.activateComputeShader = true;
 						}
 						
 						event.setCanceled(true);
