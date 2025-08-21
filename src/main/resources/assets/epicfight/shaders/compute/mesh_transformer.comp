@@ -3,8 +3,8 @@
 layout(local_size_x = 128) in;
 
 struct VertexData {
-    float px,py,pz,nx,ny,nz;
-    int jts,jte;
+    float px, py, pz, nx, ny, nz;
+    int jts, jte;
 };
 
 // Dynamic Input Buffer
@@ -32,7 +32,7 @@ layout(std430, binding = 4) writeonly buffer OutputPositionBuffer {
 };
 
 layout(std430, binding = 5) writeonly buffer OutputNormalBuffer {
-    uint out_normal[];
+    float out_normal[];
 };
 
 layout(std430, binding = 6) writeonly buffer OutputColorBuffer {
@@ -57,7 +57,7 @@ void main() {
     if (idx >= vertices.length()) return; // check.
 
     vec4 pos = vec4(vertices[idx].px, vertices[idx].py, vertices[idx].pz, 1.0);
-    vec4 norm = vec4(normalize(vec3(vertices[idx].nx, vertices[idx].ny, vertices[idx].nz)), 0.0);
+    vec4 norm = vec4(normalize(vec3(vertices[idx].nx, vertices[idx].ny, vertices[idx].nz)), 1.0);
 
     vec4 finalPos = vec4(0);
     vec4 finalNormal = vec4(0);
@@ -75,7 +75,10 @@ void main() {
     out_pos[idx * 3 + 1] = finalPos.y;
     out_pos[idx * 3 + 2] = finalPos.z;
 	
-    out_normal[idx] = packSnorm4x8(vec4(normalize(finalNormal.xyz), 0.0));
+    //out_normal[idx] = packSnorm4x8(vec4(normalize(finalNormal.xyz), 0.0));
+	out_normal[idx * 3] = finalNormal.x;
+	out_normal[idx * 3 + 1] = finalNormal.y;
+	out_normal[idx * 3 + 2] = finalNormal.z;
 	
     out_color[idx] = colorIn;
     out_uv1[idx] = uv1In;

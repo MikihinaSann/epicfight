@@ -11,13 +11,11 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 
 @OnlyIn(Dist.CLIENT)
 public class OutputSSBO implements Closeable {
-    public final short srcSize;
     public final int glSSBO;
     
     private int lastBinding = -1;
     
     public OutputSSBO(short srcSize, int len, DynamicSSBO.DataMode mode) {
-        this.srcSize = srcSize;
         this.glSSBO = GL15C.glGenBuffers();
         
         GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, this.glSSBO);

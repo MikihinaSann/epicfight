@@ -72,7 +72,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		List<Float> weightList = new ArrayList<> ();
 		
 		vertexBuilderMap.forEach((vb, idx) -> {
-			int start_pos = jointList.size();
+			int startPos = jointList.size();
 			
 			for (int i = 0; i < skinnedMesh.affectingJointCounts()[vb.position]; i++) {
 				int jointIndex = skinnedMesh.affectingJointIndices()[vb.position][i];
@@ -90,8 +90,8 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 				skinnedMesh.normals()[vb.normal * 3],
 				skinnedMesh.normals()[vb.normal * 3 + 1],
 				skinnedMesh.normals()[vb.normal * 3 + 2],
-				start_pos,
-				start_pos + skinnedMesh.affectingJointCounts()[vb.position]
+				startPos,
+				startPos + skinnedMesh.affectingJointCounts()[vb.position]
 			);
 		});
 		
@@ -103,7 +103,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		this.weightBO = new StaticSSBO<> (weightList, 1, (v, b) -> b.put(v));
 		
 		this.outPos = new OutputSSBO((short)3, vertexObjs.length, DynamicSSBO.DataMode.STREAM);
-		this.outNormal = new OutputSSBO((short)1, vertexObjs.length, DynamicSSBO.DataMode.STREAM);
+		this.outNormal = new OutputSSBO((short)3, vertexObjs.length, DynamicSSBO.DataMode.STREAM);
 		this.outColor = new OutputSSBO((short)4, vertexObjs.length, DynamicSSBO.DataMode.STREAM);
 		this.outUv1 = new OutputSSBO((short)1, vertexObjs.length, DynamicSSBO.DataMode.STREAM);
 		this.outUv2 = new OutputSSBO((short)1, vertexObjs.length, DynamicSSBO.DataMode.STREAM);

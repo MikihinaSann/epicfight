@@ -91,12 +91,14 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 		
 		this.maxJointCount = maxJointId;
 		
-		if (RenderSystem.isOnRenderThread()) {
-			this.computerShaderSetup = ComputeShaderProvider.getComputeShaderSetup(this);
-		} else {
-			RenderSystem.recordRenderCall(() -> {
+		if (ComputeShaderProvider.supportComputeShader()) {
+			if (RenderSystem.isOnRenderThread()) {
 				this.computerShaderSetup = ComputeShaderProvider.getComputeShaderSetup(this);
-			});
+			} else {
+				RenderSystem.recordRenderCall(() -> {
+					this.computerShaderSetup = ComputeShaderProvider.getComputeShaderSetup(this);
+				});
+			}
 		}
 	}
 	
@@ -242,8 +244,8 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 
 	@Override
 	public void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
-		if (ClientConfig.activateComputeShader && ComputeShaderProvider.supportComputeShader() && this.computerShaderSetup != null) {
-			this.computerShaderSetup.drawWithShader(this, poseStack, renderType, packedLight, r, g, b, a, overlay, armature, poses);
+		if (ClientConfig.activateComputeShader && this.computerShaderSetup != null) {
+			this.computerShaderSetup.drawWithShader(this, poseStack, EpicFightRenderTypes.getTriangulated(renderType), packedLight, r, g, b, a, overlay, armature, poses);
 		} else {
 			this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
 		}
