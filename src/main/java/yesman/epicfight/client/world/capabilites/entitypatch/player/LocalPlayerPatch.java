@@ -107,7 +107,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void tick(LivingEvent.LivingTickEvent event) {
 		this.staminaO = this.getStamina();
 		
-		if (this.isHoldingAny() && this.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+		if (this.isHoldingAny() && this.getHoldingSkill() instanceof ChargeableSkill) {
 			this.prevChargingAmount = this.getChargingAmount();
 		} else {
 			this.prevChargingAmount = 0;

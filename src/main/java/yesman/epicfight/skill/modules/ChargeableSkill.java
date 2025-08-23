@@ -1,13 +1,12 @@
 package yesman.epicfight.skill.modules;
 
-import yesman.epicfight.network.server.SPSkillExecutionFeedback;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 /**
  * This interface extends the holdable skill to add some little neat stuff
  */
-public interface ChargeableSkill extends HoldableSkill{
+public interface ChargeableSkill extends HoldableSkill {
 	/**
 	 * Max charging ticks players can persist
 	 * @return Class: {@link Integer} - how many ticks can the charge last.
@@ -25,23 +24,14 @@ public interface ChargeableSkill extends HoldableSkill{
 	 * @return Class: {@link Integer} - how little can a skill be charged.
 	 */
 	int getMinChargingTicks();
-
-
+	
 	@Override
 	default void resetHolding(SkillContainer container) {
 		container.getExecutor().setChargingAmount(0);
 	}
-
+	
 	@Override
-	default void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback)
-	{
-		resetHolding(container);
-		HoldableSkill.super.onStopHolding(container, feedback);
-	}
-
-	@Override
-	default void holdTick(SkillContainer container)
-	{
+	default void holdTick(SkillContainer container) {
 		HoldableSkill.super.holdTick(container);
 		container.getExecutor().setChargingAmount(container.getExecutor().getChargingAmount() + 1);
 	}

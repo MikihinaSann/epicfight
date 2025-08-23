@@ -17,19 +17,17 @@ import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.EpicFightSounds;
 import yesman.epicfight.network.server.SPSkillExecutionFeedback;
 import yesman.epicfight.particle.EpicFightParticles;
-import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillDataKeys;
 import yesman.epicfight.skill.SkillSlots;
+import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
-import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 
@@ -119,14 +117,10 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 	}
 
 	@Override
-	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback)
-	{
-		if (container.getExecutor().getSkillChargingTicks(1.0F) > this.getAllowedMaxChargingTicks())
-		{
+	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback) {
+		if (container.getExecutor().getSkillChargingTicks(1.0F) > this.getAllowedMaxChargingTicks()) {
 			feedback.setFeedbackType(SPSkillExecutionFeedback.FeedbackType.EXPIRED);
-		}
-		else
-		{
+		} else {
 			container.getServerExecutor().playSound(EpicFightSounds.ROCKET_JUMP.get(), 1.0F, 0.0F, 0.0F);
 			container.getServerExecutor().playSound(EpicFightSounds.ENTITY_MOVE.get(), 1.0F, 0.0F, 0.0F);
 
@@ -140,7 +134,6 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 			feedback.getBuffer().writeInt(accumulatedTicks);
 			container.getDataManager().setData(SkillDataKeys.PROTECT_NEXT_FALL.get(), true);
 		}
-		ChargeableSkill.super.onStopHolding(container, feedback);
 	}
 
 	@Override

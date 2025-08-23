@@ -114,7 +114,6 @@ mixin {
 
 dependencies {
 	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-
 	// Required dependencies to build the project
 	// compile against the JEI API but do not include it at runtime
   	compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
@@ -156,7 +155,6 @@ dependencies {
     implementation fg.deobf("curse.maven:architectury-api-419699:5137938")
     implementation fg.deobf("curse.maven:octo-lib-916747:5644693")
     implementation fg.deobf("libs:relics:0.8.0.9")
-
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

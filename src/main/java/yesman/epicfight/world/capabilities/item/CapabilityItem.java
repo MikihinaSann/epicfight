@@ -238,7 +238,7 @@ public class CapabilityItem {
 			
 			toLocal.and(new SPChangeSkill(SkillSlots.WEAPON_INNATE, playerpatch.getOriginal().getId(), weaponInnateSkill));
 		} else {
-			toLocal.and(SPSetSkillContainerValue.enable(SkillSlots.WEAPON_INNATE, false, playerpatch.getOriginal().getId()));
+			toLocal.and(SPSetSkillContainerValue.enable(SkillSlots.WEAPON_INNATE, true, playerpatch.getOriginal().getId()));
 		}
 		
 		weaponInnateSkillContainer.setDisabled(weaponInnateSkill == null);

@@ -2497,7 +2497,7 @@ public class Animations {
 		};
 		
 		public static final AnimationEvent.E0 PLAY_STEPPING_SOUND = (entitypatch, animation, params) -> {
-			BlockState state = entitypatch.getOriginal().level().getBlockState(entitypatch.getOriginal().blockPosition().below());
+			BlockState state = entitypatch.getOriginal().level().getBlockState(entitypatch.getOriginal().getOnPos());
 			entitypatch.playSound(state.getSoundType().getHitSound(), 0, 0);
 		};
 		

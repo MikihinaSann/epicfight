@@ -150,11 +150,14 @@ public abstract class Skill {
 		ServerPlayerPatch executor = container.getServerExecutor();
 		
 		if (executor.isHoldingAny()) {
-			if (executor.getHoldableSkill() instanceof ChargeableSkill)
-			{
+			if (executor.getHoldingSkill() instanceof ChargeableSkill) {
 				feedbackPacket.getBuffer().writeInt(executor.getAccumulatedChargeAmount());
 			}
-			executor.getHoldableSkill().onStopHolding(container, feedbackPacket);
+			
+			if (executor.getHoldingSkill() == this) {
+				executor.getHoldingSkill().onStopHolding(container, feedbackPacket);
+			}
+			
 			feedbackPacket.getBuffer().writeInt(executor.getAccumulatedChargeAmount());
 			executor.resetHolding();
 			EpicFightNetworkManager.sendToPlayer(feedbackPacket, executor.getOriginal());

@@ -157,7 +157,8 @@ public class ControlEngine {
 				
 				if (shouldPlayAttackAnimation) {
 					if (!EpicFightKeyMappings.ATTACK.getKey().equals(EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey())) {
-						SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+						SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
+						SkillSlot slot = (airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
 						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 						
 						if (skillCastEvent.isExecutable()) {
@@ -317,7 +318,8 @@ public class ControlEngine {
 		}
 		
 		if (this.attackLightPressToggle) {
-			SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+			SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
+			SkillSlot slot = (airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
 			SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 			
 			if (skillCastEvent.isExecutable()) {
@@ -361,30 +363,28 @@ public class ControlEngine {
 			SkillContainer container = this.playerPatch.getSkill(this.reservedOrHoldingSkillSlot);
 			
 			if (!container.isEmpty()) {
-				if (container.getSkill() instanceof ChargeableSkill chargingSkill) {
+				if (container.getSkill() instanceof HoldableSkill) {
 					if (!isKeyDown(this.currentHoldingKey)) {
 						this.holdingFinished = true;
 					}
 					
-					if (this.holdingFinished) {
-						if (this.playerPatch.getSkillChargingTicks() > chargingSkill.getMinChargingTicks()) {
-							container.sendCastRequest(this.playerPatch, this);
+					if (container.getSkill() instanceof ChargeableSkill chargingSkill) {
+						if (this.holdingFinished) {
+							if (this.playerPatch.getSkillChargingTicks() > chargingSkill.getMinChargingTicks()) {
+								container.sendCastRequest(this.playerPatch, this);
+								this.releaseAllServedKeys();
+							}
+						} else if (this.playerPatch.getSkillChargingTicks() >= chargingSkill.getAllowedMaxChargingTicks()) {
 							this.releaseAllServedKeys();
 						}
-					} else if (this.playerPatch.getSkillChargingTicks() >= chargingSkill.getAllowedMaxChargingTicks()) {
-						this.releaseAllServedKeys();
-					}
-				} else if (container.getSkill() instanceof HoldableSkill) {
-					if (!isKeyDown(this.currentHoldingKey)) {
-						this.holdingFinished = true;
-					}
-					
-					if (this.holdingFinished) {
-						// Note: Holdable skills are canceled in client first
-						this.playerPatch.resetHolding();
-						container.getSkill().cancelOnClient(container, container.getSkill().gatherArguments(container, this));
-						container.sendCancelRequest(this.playerPatch, this);
-						this.releaseAllServedKeys();
+					} else {
+						if (this.holdingFinished) {
+							// Note: Holdable skills are canceled in client first
+							this.playerPatch.resetHolding();
+							container.getSkill().cancelOnClient(container, container.getSkill().gatherArguments(container, this));
+							container.sendCancelRequest(this.playerPatch, this);
+							this.releaseAllServedKeys();
+						}
 					}
 				} else {
 					this.releaseAllServedKeys();

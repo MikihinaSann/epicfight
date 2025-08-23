@@ -39,6 +39,7 @@ import yesman.epicfight.gameasset.EpicFightSkills;
 import yesman.epicfight.gameasset.EpicFightSounds;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPSetSkillContainerValue;
+import yesman.epicfight.network.server.SPSkillExecutionFeedback;
 import yesman.epicfight.particle.EpicFightParticles;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.skill.Skill;
@@ -302,11 +303,10 @@ public class GuardSkill extends Skill implements HoldableSkill {
 
 	@Override
 	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer) {
-
 	}
 
 	@Override
-	public void onStopHolding(SkillContainer container) {
+	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback) {
 		container.deactivate();
 	}
 	
@@ -324,7 +324,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		return this.penalizer;
 	}
 	
-	protected Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> getGuradMotionMap(BlockType blockType) {
+	protected Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> getGuardMotionMap(BlockType blockType) {
 		switch (blockType) {
 		case GUARD_BREAK:
 			return this.guardBreakMotions;
@@ -344,7 +344,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 			return true;
 		}
 		
-		Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardMotions = this.getGuradMotionMap(blockType);
+		Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardMotions = this.getGuardMotionMap(blockType);
 		
 		if (!guardMotions.containsKey(itemCapability.getWeaponCategory())) {
 			return false;
@@ -359,8 +359,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	 * Not safe from null pointer exception
 	 * Must call isAvailableState first to check if it's safe
 	 * 
-	 * @param metadata 0: guard breaks, 1: normal guards, 2: reinforced guards
-	 * @return StaticAnimation
+	 * @return AnimationAccessor
 	 */
 	@SuppressWarnings("unchecked")
 	@Nullable
@@ -371,7 +370,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 			return animation;
 		}
 		
-		return (AnimationAccessor<? extends StaticAnimation>)this.getGuradMotionMap(blockType).getOrDefault(itemCapability.getWeaponCategory(), (a, b) -> null).apply(itemCapability, playerpatch);
+		return (AnimationAccessor<? extends StaticAnimation>)this.getGuardMotionMap(blockType).getOrDefault(itemCapability.getWeaponCategory(), (a, b) -> null).apply(itemCapability, playerpatch);
 	}
 	
 	@Override

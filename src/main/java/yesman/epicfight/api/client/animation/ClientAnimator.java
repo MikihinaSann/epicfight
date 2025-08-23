@@ -9,6 +9,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jetbrains.annotations.ApiStatus;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -40,6 +42,7 @@ import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.utils.datastruct.TypeFlexibleHashMap;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.network.common.AnimatorControlPacket;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 @OnlyIn(Dist.CLIENT)
@@ -75,6 +78,14 @@ public class ClientAnimator extends Animator {
 	@Override
 	public void playAnimation(AssetAccessor<? extends StaticAnimation> nextAnimation, float transitionTimeModifier) {
 		Layer layer = nextAnimation.get().getLayerType() == Layer.LayerType.BASE_LAYER ? this.baseLayer : this.baseLayer.compositeLayers.get(nextAnimation.get().getPriority());
+		layer.paused = false;
+		layer.playAnimation(nextAnimation, this.entitypatch, transitionTimeModifier);
+	}
+	
+	/** Play an animation with specifying layer and priority **/
+	@ApiStatus.Internal
+	public void playAnimationAt(AssetAccessor<? extends StaticAnimation> nextAnimation, float transitionTimeModifier, AnimatorControlPacket.Layer layerType, AnimatorControlPacket.Priority priority) {
+		Layer layer = layerType == AnimatorControlPacket.Layer.BASE_LAYER ? this.baseLayer : this.baseLayer.compositeLayers.get(AnimatorControlPacket.getPriority(priority));
 		layer.paused = false;
 		layer.playAnimation(nextAnimation, this.entitypatch, transitionTimeModifier);
 	}

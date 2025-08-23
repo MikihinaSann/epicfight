@@ -166,6 +166,15 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the Ender dragon turns back when attacking (#2054)
  *  Fixed the afterimage particle doesn't reflect entity's scale
  *  
+ *  ***************************************************************
+ *  20.12.5
+ *  
+ *  Fixed the weapon innate skill icon not being white when it's unavailable
+ *  Fixed the leg animation being reset when stiffComboAttack is false
+ *  Removed the Animation shader option. Instead Compute shader has been implemented, which boosts frame rate and expand compatibility with shaderpacks for Iris
+ *  Internal changes
+ *  - ChareableSkill now inherits HoldableSkill. Since their work quite similar all if-else branch for ChareableSkill and HoldableSkill are merged.
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)

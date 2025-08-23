@@ -204,6 +204,7 @@ public abstract class WeaponInnateSkill extends Skill {
 		boolean creative = container.getExecutor().getOriginal().isCreative();
 		boolean fullstack = creative || container.isFull();
 		boolean canUse = !container.isDisabled() && container.getSkill().checkExecuteCondition(container);
+		
 		float cooldownRatio = (fullstack || container.isActivated()) ? 1.0F : container.getResource(partialTick);
 		int vertexNum = 0;
 		float iconSize = 32.0F;

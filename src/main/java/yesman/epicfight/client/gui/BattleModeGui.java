@@ -144,7 +144,7 @@ public class BattleModeGui {
 			return;
 		}
 		
-		if (playerpatch.isHoldingAny() && playerpatch.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+		if (playerpatch.isHoldingAny() && playerpatch.getHoldingSkill() instanceof ChargeableSkill chargeableSkill) {
 			int chargeAmount = playerpatch.getChargingAmount();
 			int prevChargingAmount = playerpatch.getPrevChargingAmount();
 			float ratio = Math.min((prevChargingAmount + (chargeAmount - prevChargingAmount) * partialTick) / chargeableSkill.getMaxChargingTicks(), 1.0F);

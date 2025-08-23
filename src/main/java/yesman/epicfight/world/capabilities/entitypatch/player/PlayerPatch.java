@@ -87,7 +87,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	protected int staminaRegenAwaitTicks;
 	protected int lastChargingTick;
 	protected int chargingAmount;
-	protected HoldableSkill holdableSkill;
+	protected HoldableSkill holdingSkill;
 	
 	// Manage the previous position here because playerpatch#tick called before entity#travel method.
 	protected double xo;
@@ -425,7 +425,6 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	@Override
 	public void cancelItemUse() {
 		super.cancelItemUse();
-		this.resetSkillCharging();
 		this.resetHolding();
 	}
 	
@@ -561,38 +560,36 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		} else {
 			holdableSkill.startHolding(containerOptional.get());
 			this.lastChargingTick = this.original.tickCount;
-			this.holdableSkill = holdableSkill;
+			this.holdingSkill = holdableSkill;
 			return true;
 		}
 	}
 	
 	public void resetHolding() {
-		if (this.holdableSkill != null) {
-			if (holdableSkill instanceof ChargeableSkill)
-			{
+		if (this.holdingSkill != null) {
+			if (holdingSkill instanceof ChargeableSkill) {
 				this.chargingAmount = 0;
 			}
-			this.holdableSkill.resetHolding(this.getSkill(holdableSkill.asSkill()));
-			this.holdableSkill = null;
-
+			
+			this.holdingSkill.resetHolding(this.getSkill(this.holdingSkill.asSkill()));
+			this.holdingSkill = null;
 		}
 	}
 
 	public boolean isHoldingAny() {
-		return this.holdableSkill != null;
+		return this.holdingSkill != null;
 	}
 
 	public boolean isHoldingSkill(Skill holdingSkill) {
-		return this.holdableSkill == holdingSkill;
+		return this.holdingSkill == holdingSkill;
 	}
-
 	
 	public int getLastChargingTick() {
 		return this.lastChargingTick;
 	}
 	
 	public void setChargingAmount(int amount) {
-		if (this.isHoldingAny() && this.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+		if (this.isHoldingAny() && this.getHoldingSkill() instanceof ChargeableSkill chargeableSkill) {
 			this.chargingAmount = Math.min(amount, chargeableSkill.getMaxChargingTicks());
 		} else {
 			this.chargingAmount = 0;
@@ -608,15 +605,15 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public int getSkillChargingTicks() {
-		return this.isHoldingAny() && this.holdableSkill instanceof ChargeableSkill chargingSkill ? Math.min(this.original.tickCount - this.getLastChargingTick(), chargingSkill.getMaxChargingTicks()) : 0;
+		return this.isHoldingAny() && this.holdingSkill instanceof ChargeableSkill chargingSkill ? Math.min(this.original.tickCount - this.getLastChargingTick(), chargingSkill.getMaxChargingTicks()) : 0;
 	}
 	
 	public int getAccumulatedChargeAmount() {
-		return this.getHoldableSkill() instanceof ChargeableSkill ? getChargingAmount() : 0;
+		return this.getHoldingSkill() instanceof ChargeableSkill ? getChargingAmount() : 0;
 	}
 
 	public HoldableSkill getHoldingSkill() {
-		return this.holdableSkill;
+		return this.holdingSkill;
 	}
 
 	public boolean isInAir() {

@@ -11,13 +11,16 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.player.Player;
-import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
+import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.AnimationVariables.IndependentAnimationVariableKey;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.network.EpicFightNetworkManager;
+import yesman.epicfight.network.common.AnimatorControlPacket;
+import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
@@ -25,6 +28,7 @@ import yesman.epicfight.world.entity.eventlistener.BasicAttackEvent;
 import yesman.epicfight.world.entity.eventlistener.ComboCounterHandleEvent;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 import yesman.epicfight.world.entity.eventlistener.SkillConsumeEvent;
+import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 public class BasicAttack extends Skill {
 	private static final UUID EVENT_UUID = UUID.fromString("a42e0198-fdbc-11eb-9a03-0242ac130003");
@@ -131,7 +135,18 @@ public class BasicAttack extends Skill {
 		
 		if (attackMotion != null) {
 			executor.getAnimator().getVariables().put(COMBO, attackMotion, true);
-			executor.playAnimationSynchronized(attackMotion, 0.0F);
+			executor.getAnimator().playAnimation(attackMotion, 0.0F);
+			
+			boolean stiffAttack = EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(executor.getOriginal().level());
+			SPAnimatorControl animatorControlPacket;
+			
+			if (stiffAttack) {
+				animatorControlPacket = new SPAnimatorControl(AnimatorControlPacket.Action.PLAY, attackMotion, 0.0F, skillContainer.getExecutor());
+			} else {
+				animatorControlPacket = new SPAnimatorControl(AnimatorControlPacket.Action.PLAY_CLIENT, attackMotion, 0.0F, skillContainer.getExecutor(), AnimatorControlPacket.Layer.COMPOSITE_LAYER, AnimatorControlPacket.Priority.HIGHEST);
+			}
+			
+			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntityWithSelf(animatorControlPacket, player);
 		}
 		
 		executor.updateEntityState();

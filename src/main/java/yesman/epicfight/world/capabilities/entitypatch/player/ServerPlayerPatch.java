@@ -112,7 +112,7 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	@Override
 	public void updateHeldItem(CapabilityItem fromCap, CapabilityItem toCap, ItemStack from, ItemStack to, InteractionHand hand) {
 		if (this.isHoldingAny()) {
-			this.getSkillContainerFor(this.holdableSkill.asSkill()).ifPresent((container) -> {
+			this.getSkillContainerFor(this.holdingSkill.asSkill()).ifPresent((container) -> {
 				container.getSkill().cancelOnServer(container, null);
 				EpicFightNetworkManager.sendToPlayer(SPSkillExecutionFeedback.expired(container.getSlotId()), this.original);
 			});

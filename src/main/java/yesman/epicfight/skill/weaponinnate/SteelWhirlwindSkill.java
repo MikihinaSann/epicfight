@@ -6,7 +6,6 @@ import java.util.UUID;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -17,14 +16,12 @@ import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.server.SPSkillExecutionFeedback;
-import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
-import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
@@ -113,18 +110,14 @@ public class SteelWhirlwindSkill extends WeaponInnateSkill implements Chargeable
 	}
 
 	@Override
-	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback)
-	{
-		feedback.setFeedbackType(SPSkillExecutionFeedback.FeedbackType.EXECUTED);
-		ChargeableSkill.super.onStopHolding(container, feedback);
+	public void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback) {
 		container.getExecutor().getAnimator().getVariables().put(SynchedAnimationVariableKeys.CHARGING_TICKS.get(), this.attackAnimation, container.getExecutor().getAccumulatedChargeAmount());
 		container.getExecutor().playAnimationSynchronized(this.attackAnimation, 0.0F);
 		this.cancelOnServer(container, null);
 	}
 
 	@Override
-	public void holdTick(SkillContainer container)
-	{
+	public void holdTick(SkillContainer container) {
 		ChargeableSkill.super.holdTick(container);
 	}
 
