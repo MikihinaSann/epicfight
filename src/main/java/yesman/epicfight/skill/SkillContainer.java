@@ -238,30 +238,27 @@ public class SkillContainer {
 		if (this.containingSkill == null) {
 			return event;
 		}
+
+		Object packet;
 		
-		Object packet = null;
-		
-		if (this.containingSkill instanceof ChargeableSkill chargeableSkill && this.containingSkill.getActivateType() == Skill.ActivateType.CHARGING) {
-			if (executor.isChargingSkill(this.containingSkill)) {
+		if (this.containingSkill instanceof HoldableSkill holdableSkill && this.containingSkill.getActivateType() == ActivateType.HELD)
+		{
+			if (executor.isHoldingSkill(this.containingSkill)) {
 				packet = this.containingSkill.getExecutionPacket(this, event.getArguments());
-				executor.resetSkillCharging();
-			} else {
+				executor.resetHolding();
+			}
+			else
+			{
 				if (!this.canUse(executor, event)) {
 					this.containingSkill.validationFeedback(this);
 					return event;
 				}
-				
-				CPSkillRequest castpacket = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.CHARGING_START);
-				chargeableSkill.gatherChargingArguments(executor, controlEngine, castpacket.getBuffer());
-				packet = castpacket;
+
+				CPSkillRequest buffer = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.HOLD_START);
+				holdableSkill.gatherHoldArguments(this, controlEngine, buffer.getBuffer());
+				packet = buffer;
 			}
-		} else if (this.containingSkill instanceof HoldableSkill && this.containingSkill.getActivateType() == ActivateType.HELD) {
-			if (!this.canUse(executor, event)) {
-				this.containingSkill.validationFeedback(this);
-				return event;
-			}
-			
-            packet = new CPSkillRequest(this.getSlot(), CPSkillRequest.WorkType.HOLD_START);
+
 		} else {
 			if (!this.canUse(executor, event)) {
 				this.containingSkill.validationFeedback(this);
@@ -303,28 +300,6 @@ public class SkillContainer {
 		
 		return false;
 	}
-	
-	public boolean requestCharging(ServerPlayerPatch executor, FriendlyByteBuf buf) {
-		if (this.containingSkill instanceof ChargeableSkill chargeableSkill) {
-			SkillCastEvent event = new SkillCastEvent(executor, this, buf);
-			
-			if (this.canUse(executor, event)) {
-				SkillConsumeEvent consumeEvent = new SkillConsumeEvent(executor, this.containingSkill, this.containingSkill.resource, buf);
-				executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, consumeEvent);
-				
-				if (!consumeEvent.isCanceled()) {
-					consumeEvent.getArguments().resetReaderIndex();
-					consumeEvent.getResourceType().consumer.consume(this, executor, consumeEvent.getAmount());
-				}
-				
-				executor.startSkillCharging(chargeableSkill);
-				
-				return true;
-			}
-		}
-		
-		return false;
-	}
 
 	public boolean requestHold(ServerPlayerPatch executor, FriendlyByteBuf buf) {
 		if (this.containingSkill instanceof HoldableSkill holdableSkill) {
@@ -335,6 +310,7 @@ public class SkillContainer {
 				executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, consumeEvent);
 				
 				if (!consumeEvent.isCanceled()) {
+					consumeEvent.getArguments().resetReaderIndex();
 					consumeEvent.getResourceType().consumer.consume(this, executor, consumeEvent.getAmount());
 				}
 				
@@ -376,7 +352,7 @@ public class SkillContainer {
 		if (this.containingSkill == null) {
 			return false;
 		} else {
-			if (executor.isChargingSkill(this.containingSkill) && this.containingSkill instanceof ChargeableSkill chargingSkill) {
+			if (executor.isHoldingSkill(this.containingSkill) && this.containingSkill instanceof ChargeableSkill chargingSkill) {
 				if (executor.isLogicalClient()) {
 					return true;
 				} else {

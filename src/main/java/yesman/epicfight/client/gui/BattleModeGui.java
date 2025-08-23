@@ -26,6 +26,7 @@ import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.skill.SkillSlots;
+import yesman.epicfight.skill.modules.ChargeableSkill;
 
 @OnlyIn(Dist.CLIENT)
 public class BattleModeGui {
@@ -143,10 +144,10 @@ public class BattleModeGui {
 			return;
 		}
 		
-		if (playerpatch.isChargingAny()) {
-			int chargeAmount = playerpatch.getChargingSkill().getChargingAmount(playerpatch);
+		if (playerpatch.isHoldingAny() && playerpatch.getHoldableSkill() instanceof ChargeableSkill chargeableSkill) {
+			int chargeAmount = playerpatch.getChargingAmount();
 			int prevChargingAmount = playerpatch.getPrevChargingAmount();
-			float ratio = Math.min((prevChargingAmount + (chargeAmount - prevChargingAmount) * partialTick) / playerpatch.getChargingSkill().getMaxChargingTicks(), 1.0F);
+			float ratio = Math.min((prevChargingAmount + (chargeAmount - prevChargingAmount) * partialTick) / chargeableSkill.getMaxChargingTicks(), 1.0F);
 			Vec2i pos = ClientConfig.getChargingBarPosition(screenWidth, screenHeight);
 
 			guiGraphics.pose().pushPose();
@@ -155,7 +156,7 @@ public class BattleModeGui {
 			guiGraphics.blit(EntityUI.BATTLE_ICON, pos.x, pos.y, 1, 71, 238, 13, 255, 255);
 			guiGraphics.blit(EntityUI.BATTLE_ICON, pos.x, pos.y, 1, 57, (int)(238 * ratio), 13, 255, 255);
 
-			ResourceLocation rl = ResourceLocation.parse(playerpatch.getChargingSkill().toString());
+			ResourceLocation rl = ResourceLocation.parse(chargeableSkill.toString());
 			String skillName = Component.translatable(String.format("skill.%s.%s", rl.getNamespace(), rl.getPath())).getString();
 			
 			int stringWidth = this.minecraft.font.width(skillName);

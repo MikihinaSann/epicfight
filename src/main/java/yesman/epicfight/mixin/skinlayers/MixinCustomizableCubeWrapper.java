@@ -15,7 +15,7 @@ public abstract class MixinCustomizableCubeWrapper extends CustomizableCube {
 	
 	@Mixin(value = CustomizableCube.class, remap = false)
 	public interface SkinLayer3DMixinCustomModelCube {
-		@Accessor("polygons")
+		@Accessor(value = "polygons", remap = false)
 		CustomizableCube.Polygon[] getPolygons();
 	}
 }

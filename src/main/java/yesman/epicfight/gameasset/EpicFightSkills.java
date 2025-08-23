@@ -115,7 +115,7 @@ public class EpicFightSkills {
 		METEOR_STRIKE = modRegistry.build("meteor_slam", MeteorSlamSkill::new, MeteorSlamSkill.createMeteorSlamBuilder());
 		REVELATION = modRegistry.build("revelation", RevelationSkill::new, RevelationSkill.createRevelationSkillBuilder());
 		
-		DEMOLITION_LEAP = modRegistry.build("demolition_leap", DemolitionLeapSkill::new, Skill.createMoverBuilder().setActivateType(ActivateType.CHARGING));
+		DEMOLITION_LEAP = modRegistry.build("demolition_leap", DemolitionLeapSkill::new, Skill.createMoverBuilder().setActivateType(ActivateType.HELD));
 		PHANTOM_ASCENT = modRegistry.build("phantom_ascent", PhantomAscentSkill::new, Skill.createMoverBuilder().setResource(Resource.COOLDOWN));
 		
 		WeaponInnateSkill sweepingEdge = modRegistry.build("sweeping_edge", SimpleWeaponInnateSkill::new, SimpleWeaponInnateSkill.createSimpleWeaponInnateBuilder().setAnimations(Animations.SWEEPING_EDGE));
@@ -181,7 +181,7 @@ public class EpicFightSkills {
 					.addProperty(AttackPhaseProperty.SOURCE_TAG, Set.of(EpicFightDamageTypeTags.WEAPON_INNATE));
 		HEARTPIERCER = heartpiercer;
 		
-		WeaponInnateSkill steelWhirlwind = modRegistry.build("steel_whirlwind", SteelWhirlwindSkill::new, WeaponInnateSkill.createWeaponInnateBuilder().setActivateType(ActivateType.CHARGING));
+		WeaponInnateSkill steelWhirlwind = modRegistry.build("steel_whirlwind", SteelWhirlwindSkill::new, WeaponInnateSkill.createWeaponInnateBuilder().setActivateType(ActivateType.HELD));
 		steelWhirlwind.newProperty()
 					  .addProperty(AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(1.4F))
 					  .addProperty(AttackPhaseProperty.EXTRA_DAMAGE, Set.of(ExtraDamageInstance.SWEEPING_EDGE_ENCHANTMENT.create()))

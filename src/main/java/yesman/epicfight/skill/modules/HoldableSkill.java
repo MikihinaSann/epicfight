@@ -1,8 +1,12 @@
 package yesman.epicfight.skill.modules;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import yesman.epicfight.client.events.engine.ControlEngine;
+import yesman.epicfight.network.EpicFightNetworkManager;
+import yesman.epicfight.network.server.SPSkillExecutionFeedback;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillContainer;
 
@@ -27,7 +31,14 @@ public interface HoldableSkill
      * A method that is called on the server-side to perform stuff on the player when they stop holding the key that is being held.
      * @param container Class: {@link SkillContainer} - The SkillContainer that holds the skill, used often to do stuff on the executor, note this is server-sided.
      */
-    default void onStopHolding(SkillContainer container) {}
+    default void onStopHolding(SkillContainer container, SPSkillExecutionFeedback feedback) {
+        EpicFightNetworkManager.sendToPlayer(feedback, container.getServerExecutor().getOriginal());
+    }
+
+    default void resetHolding(SkillContainer container){}
+
+    @OnlyIn(Dist.CLIENT)
+    default void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer){}
     
     /**
      * Gives the normal skill object of this {@link HoldableSkill} object.

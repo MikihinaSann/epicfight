@@ -10,8 +10,8 @@ import net.minecraft.client.player.AbstractClientPlayer;
 
 @Mixin(value = SkinUtil.class, remap = false)
 public interface MixinSkinUtil {
-	@Invoker("getSkinTexture")
-	public static NativeImage invokeGetSkinTexture(AbstractClientPlayer player) {
+	@Invoker(value = "getSkinTexture", remap = false)
+    static NativeImage invokeGetSkinTexture(AbstractClientPlayer player) {
 		throw new AssertionError();
 	}
 }

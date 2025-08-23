@@ -7,7 +7,6 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.modules.HoldableSkill;
 
@@ -26,10 +25,6 @@ public class SPSkillExecutionFeedback {
 	
 	public static SPSkillExecutionFeedback expired(int slotIndex) {
 		return new SPSkillExecutionFeedback(slotIndex, FeedbackType.EXPIRED);
-	}
-	
-	public static SPSkillExecutionFeedback startCharging(int slotIndex) {
-		return new SPSkillExecutionFeedback(slotIndex, FeedbackType.CHARGING_BEGIN);
 	}
 
 	public static SPSkillExecutionFeedback held(int slotIndex) {
@@ -79,14 +74,6 @@ public class SPSkillExecutionFeedback {
 						SkillContainer skillContainer = playerpatch.getSkill(msg.skillSlot);
 						skillContainer.getSkill().executeOnClient(skillContainer, msg.getBuffer());
 					}
-					case CHARGING_BEGIN -> {
-						SkillContainer skillContainer = playerpatch.getSkill(msg.skillSlot);
-
-						if (skillContainer.getSkill() instanceof ChargeableSkill chargeableSkill) {
-							playerpatch.startSkillCharging(chargeableSkill);
-							ClientEngine.getInstance().controlEngine.setHoldingKey(skillContainer.getSlot(), chargeableSkill.getKeyMapping());
-						}
-					}
 					case HOLDING_START -> {
 						SkillContainer container = playerpatch.getSkill(msg.skillSlot);
 						
@@ -106,6 +93,6 @@ public class SPSkillExecutionFeedback {
 	}
 	
 	public enum FeedbackType {
-		EXECUTED, CHARGING_BEGIN, HOLDING_START, EXPIRED
+		EXECUTED, HOLDING_START, EXPIRED
 	}
 }
