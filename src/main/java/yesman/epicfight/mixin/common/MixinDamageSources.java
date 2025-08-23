@@ -45,33 +45,42 @@ public class MixinDamageSources {
 	@Inject(at = @At(value = "HEAD"), method = "arrow(Lnet/minecraft/world/entity/projectile/AbstractArrow;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;", cancellable = true)
 	public void epicfight$arrow(AbstractArrow arrow, Entity shooter, CallbackInfoReturnable<DamageSource> callback) {
 		ProjectilePatch<?> projectilePatch = EpicFightCapabilities.getEntityPatch(arrow, ProjectilePatch.class);
-		EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
 		
-		if (projectilePatch != null && epicfightDamagesource != null) {
-			callback.setReturnValue(epicfightDamagesource);
-			callback.cancel();
+		if (projectilePatch != null) {
+			EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
+			
+			if (epicfightDamagesource != null) {
+				callback.setReturnValue(epicfightDamagesource);
+				callback.cancel();
+			}
 		}
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "witherSkull(Lnet/minecraft/world/entity/projectile/WitherSkull;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;", cancellable = true)
 	public void epicfight$witherSkull(WitherSkull witherSkull, Entity shooter, CallbackInfoReturnable<DamageSource> callback) {
 		ProjectilePatch<?> projectilePatch = EpicFightCapabilities.getEntityPatch(witherSkull, ProjectilePatch.class);
-		EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
 		
-		if (projectilePatch != null && epicfightDamagesource != null) {
-			callback.setReturnValue(epicfightDamagesource);
-			callback.cancel();
+		if (projectilePatch != null) {
+			EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
+			
+			if (epicfightDamagesource != null) {
+				callback.setReturnValue(epicfightDamagesource);
+				callback.cancel();
+			}
 		}
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "trident(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;)Lnet/minecraft/world/damagesource/DamageSource;", cancellable = true)
 	public void epicfight$trident(Entity trident, @Nullable Entity thrower, CallbackInfoReturnable<DamageSource> callback) {
 		ProjectilePatch<?> projectilePatch = EpicFightCapabilities.getEntityPatch(trident, ProjectilePatch.class);
-		EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
 		
-		if (projectilePatch != null && epicfightDamagesource != null) {
-			callback.setReturnValue(epicfightDamagesource);
-			callback.cancel();
+		if (projectilePatch != null) {
+			EpicFightDamageSource epicfightDamagesource = projectilePatch.createEpicFightDamageSource();
+			
+			if (epicfightDamagesource != null) {
+				callback.setReturnValue(epicfightDamagesource);
+				callback.cancel();
+			}
 		}
 	}
 }

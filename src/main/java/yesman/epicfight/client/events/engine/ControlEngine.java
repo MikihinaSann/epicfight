@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -135,15 +136,16 @@ public class ControlEngine {
 					}
 					
 					if (shouldPlayAttackAnimation) {
-						 if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
+						if (this.playerPatch.isTargetLockedOn()) {
+							shouldPlayAttackAnimation = true;
+						} else if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
 							if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && minecraft.level != null) {
-								BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+								BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
 								BlockState bs = this.minecraft.level.getBlockState(bp);
 								shouldPlayAttackAnimation = !this.player.getMainHandItem().getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || !this.player.getMainHandItem().isCorrectToolForDrops(bs);
 							}
 						} else {
-
-                            shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
+							shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
 						}
 					}
 					
@@ -156,8 +158,9 @@ public class ControlEngine {
 				if (shouldPlayAttackAnimation) {
 					if (!EpicFightKeyMappings.ATTACK.getKey().equals(EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey())) {
 						SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 						
-						if (this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this).isExecutable()) {
+						if (skillCastEvent.isExecutable()) {
 							this.player.resetAttackStrengthTicker();
 							this.attackLightPressToggle = false;
 							this.releaseAllServedKeys();
@@ -199,26 +202,29 @@ public class ControlEngine {
 			}
 		}
 		
-		while (isKeyPressed(EpicFightKeyMappings.GUARD, true)) {
+		if (isKeyDown(EpicFightKeyMappings.GUARD)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.GUARD) {
 				if (!this.playerPatch.isHoldingAny()) {
+					boolean hasUseAction = false;
+					
 					// Support for traditional guard keybind
 					if (EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
 						// Check if the item has any use effect and if true, player won't guard
-						if (this.player.getMainHandItem().use(this.player.level(), this.player, InteractionHand.MAIN_HAND).getResult().consumesAction()) {
-							this.player.stopUsingItem();
-							break;
+						if (this.player.getMainHandItem().getUseAnimation() != UseAnim.NONE) {
+							hasUseAction = true;
 						}
 					}
-
-					SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
-
-					if (skillCastEvent.shouldReserveKey()) {
-						if (!this.player.isSpectator()) {
-							this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
+					
+					if (!hasUseAction) {
+						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
+						
+						if (skillCastEvent.shouldReserveKey()) {
+							if (!this.player.isSpectator()) {
+								this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
+							}
+						} else {
+							this.lockHotkeys();
 						}
-					} else {
-						this.lockHotkeys();
 					}
 				}
 			}
@@ -312,8 +318,9 @@ public class ControlEngine {
 		
 		if (this.attackLightPressToggle) {
 			SkillSlot slot = (!this.player.onGround() && !this.player.isInWater() && this.player.getDeltaMovement().y > 0.03D) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+			SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 			
-			if (this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this).isExecutable()) {
+			if (skillCastEvent.isExecutable()) {
 				this.player.resetAttackStrengthTicker();
 				this.releaseAllServedKeys();
 			} else {
@@ -458,7 +465,7 @@ public class ControlEngine {
 		this.reserveCounter = 8;
 	}
 	
-	private void releaseAllServedKeys() {
+	public void releaseAllServedKeys() {
 		this.holdingFinished = true;
 		this.currentHoldingKey = null;
 		this.reservedOrHoldingSkillSlot = null;

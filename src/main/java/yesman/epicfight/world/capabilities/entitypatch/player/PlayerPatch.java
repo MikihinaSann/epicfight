@@ -425,6 +425,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	@Override
 	public void cancelItemUse() {
 		super.cancelItemUse();
+		this.resetSkillCharging();
 		this.resetHolding();
 	}
 	

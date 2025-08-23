@@ -1,68 +1,55 @@
 package yesman.epicfight.client.renderer;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import org.joml.Vector4f;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexFormatElement;
-import com.mojang.datafixers.util.Pair;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.ShaderInstance;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.event.RegisterShadersEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import yesman.epicfight.api.exception.ShaderParsingException;
-import yesman.epicfight.client.renderer.EpicFightVertexFormat.AnimationVertexFormat;
-import yesman.epicfight.client.renderer.shader.AnimationShaderInstance;
-import yesman.epicfight.client.renderer.shader.ShaderParser;
-import yesman.epicfight.client.renderer.shader.VanillaAnimationShader;
-import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.main.EpicFightMod;
 
 @OnlyIn(Dist.CLIENT)
-@Mod.EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT, bus = EventBusSubscriber.Bus.MOD)
-public abstract class EpicFightRenderTypes extends RenderType {
-	private static final Map<String, Map<ResourceLocation, RenderType>> TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE = new HashMap<> ();
-	
-	private static final Function<RenderType, RenderType> TRIANGULATED_RENDER_TYPES = Util.memoize(renderType$1 -> {
-		if (renderType$1.mode() == VertexFormat.Mode.TRIANGLES) {
-			return renderType$1;
+public final class EpicFightRenderTypes extends RenderType {
+	public static RenderType makeTriangulated(RenderType renderType) {
+		if (renderType.mode() == VertexFormat.Mode.TRIANGLES) {
+			return renderType;
 		}
 		
-		if (renderType$1 instanceof CompositeRenderType compositeRenderType) {
-			if (TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.containsKey(renderType$1.name)) {
-				Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.get(renderType$1.name);
+		if (renderType instanceof CompositeRenderType compositeRenderType) {
+			return new CompositeRenderType(renderType.name, renderType.format, VertexFormat.Mode.TRIANGLES, renderType.bufferSize(), renderType.affectsCrumbling(), renderType.sortOnUpload, compositeRenderType.state);
+		} else {
+			return renderType;
+		}
+	}
+	
+	private static final Map<String, Map<ResourceLocation, RenderType>> TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE = new HashMap<> ();
+	
+	private static final Function<RenderType, RenderType> TRIANGULATED_RENDER_TYPES = Util.memoize(renderType -> {
+		if (renderType.mode() == VertexFormat.Mode.TRIANGLES) {
+			return renderType;
+		}
+		
+		if (renderType instanceof CompositeRenderType compositeRenderType) {
+			if (TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.containsKey(renderType.name)) {
+				Map<ResourceLocation, RenderType> renderTypesByTexture = TRIANGLED_RENDERTYPES_BY_NAME_TEXTURE.get(renderType.name);
 				
 				if (compositeRenderType.state.textureState instanceof TextureStateShard texStateShard) {
 					ResourceLocation texLocation = texStateShard.texture.orElse(null);
@@ -73,9 +60,17 @@ public abstract class EpicFightRenderTypes extends RenderType {
 				}
 			}
 			
-			return new CompositeRenderType(renderType$1.name, renderType$1.format, VertexFormat.Mode.TRIANGLES, renderType$1.bufferSize(), renderType$1.affectsCrumbling(), renderType$1.sortOnUpload, compositeRenderType.state);
+			return new CompositeRenderType(
+				renderType.name,
+				renderType.format,
+				VertexFormat.Mode.TRIANGLES,
+				renderType.bufferSize(),
+				renderType.affectsCrumbling(),
+				renderType.sortOnUpload,
+				compositeRenderType.state
+			);
 		} else {
-			return renderType$1;
+			return renderType;
 		}
 	});
 	
@@ -599,212 +594,6 @@ public abstract class EpicFightRenderTypes extends RenderType {
 	
 	public static RenderType coloredGlintWorldRendertype(Entity owner, int r, int g, int b) {
 		return coloredGlintWorldRendertype(owner, r / 255.0F, g / 255.0F, b / 255.0F);
-	}
-	
-	/*****************************************
-	 *         Animation shader part         *
-	 *****************************************/
-	private static Map<ResourceLocation, Resource> SHADER_LIBS;
-	private static final List<ShaderTransformer> ANIMATION_SHADERS_TRANSFORMERS = Lists.newArrayList();
-	private static final Map<String, AnimationShaderInstance> ANIMATION_SHADERS = Maps.newConcurrentMap();
-	private static final Function<VertexFormat, VertexFormat> ANIMATION_VERTEX_FORMATS = Util.memoize((vertexFormat) -> {
-		if (vertexFormat instanceof AnimationVertexFormat) {
-			return vertexFormat;
-		}
-		
-		ImmutableMap.Builder<String, VertexFormatElement> vertexFormatElements = ImmutableMap.builder();
-		
-		vertexFormat.getElementMapping().entrySet().stream().filter((entry) -> EpicFightVertexFormat.keep(entry.getValue()))
-															.map((entry) -> Pair.of(entry.getKey(), EpicFightVertexFormat.convert(entry.getValue())))
-															.forEach((pair) -> vertexFormatElements.put(pair.getFirst(), pair.getSecond()));
-		
-		vertexFormatElements.put("Joints", EpicFightVertexFormat.ELEMENT_JOINTS);
-		vertexFormatElements.put("Weights", EpicFightVertexFormat.ELEMENT_WEIGHTS);
-		
-		VertexFormat animationVertexFormat = new AnimationVertexFormat(vertexFormatElements.build());
-		
-		return animationVertexFormat;
-	});
-	
-	public static AnimationShaderInstance getAnimationShader(ShaderInstance shaderInstance) {
-		if (shaderInstance instanceof AnimationShaderInstance animationShaderInstance) {
-			return animationShaderInstance;
-		}
-		
-		try {
-			if (!ANIMATION_SHADERS.containsKey(shaderInstance.getName())) {
-				AnimationShaderInstance animationShaderInstance = null;
-				
-				for (ShaderTransformer shaderTransformer : ANIMATION_SHADERS_TRANSFORMERS) {
-					if (shaderTransformer.predicate().test(shaderInstance)) {
-						animationShaderInstance = shaderTransformer.transformer().apply(shaderInstance);
-						break;
-					}
-				}
-				
-				if (animationShaderInstance == null) {
-					animationShaderInstance = ShaderTransformer.VANILLA_TRANSFORMER.transformer.apply(shaderInstance);
-				}
-				
-				if (animationShaderInstance != null) {
-					ANIMATION_SHADERS.put(shaderInstance.getName(), animationShaderInstance);
-				}
-			}
-		} catch (RuntimeException e) {
-			e.printStackTrace();
-			EpicFightMod.LOGGER.warn("Failed to create shader with " + e.getMessage() + ". Automatically switches animation shader mode off.");
-			Minecraft.getInstance().levelRenderer.allChanged();
-			Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("epicfight.messages.shader_transform_fail", shaderInstance.getName()).withStyle(ChatFormatting.RED));
-			
-			ClientConfig.animationShaderLockedByException = true;
-			ClientConfig.activateAnimationShader = false;
-			ClientConfig.saveChanges();
-		}
-		
-		return ANIMATION_SHADERS.get(shaderInstance.getName());
-	}
-	
-	public static AnimationShaderInstance getAnimationShader(RenderType renderType) {
-		if (renderType instanceof CompositeRenderType compositeRenderType) {
-			Optional<Supplier<ShaderInstance>> shaderInstanceOptional = compositeRenderType.state.shaderState.shader;
-			
-			if (shaderInstanceOptional.isPresent()) {
-				return getAnimationShader(shaderInstanceOptional.get().get());
-			}
-		}
-		
-		return null;
-	}
-	
-	public static VertexFormat getAnimationVertexFormat(VertexFormat vertexFormat) {
-		if (vertexFormat instanceof AnimationVertexFormat) {
-			return vertexFormat;
-		}
-		
-		return ANIMATION_VERTEX_FORMATS.apply(vertexFormat);
-	}
-	
-	public static void registerShaderTransformer(Predicate<ShaderInstance> predicate, Function<ShaderInstance, AnimationShaderInstance> transformer) {
-		ANIMATION_SHADERS_TRANSFORMERS.add(new ShaderTransformer(predicate, transformer));
-	}
-	
-	@SubscribeEvent
-	public static void registerShadersEvent(RegisterShadersEvent event) throws IOException {
-		ANIMATION_SHADERS.clear();
-		
-		Map<ResourceLocation, Resource> shaderLibs = ((ResourceManager)((GameRenderer.ResourceCache) event.getResourceProvider()).original()).listResources("shaders/include", (rl) -> {
-			String s = rl.getPath();
-			return s.endsWith(".glsl");
-		});
-		
-		SHADER_LIBS = ImmutableMap.copyOf(shaderLibs); 
-		ClientConfig.animationShaderLockedByException = false;
-	}
-	
-	public static void clearAnimationShaderInstance(String shaderName) {
-		if (!ANIMATION_SHADERS.containsKey(shaderName)) {
-			return;
-		}
-		
-		AnimationShaderInstance animationShaderInstance = ANIMATION_SHADERS.get(shaderName);
-		animationShaderInstance._clear();
-		animationShaderInstance._close();
-		ANIMATION_SHADERS.remove(shaderName);
-	}
-	
-	@OnlyIn(Dist.CLIENT)
-	private record ShaderTransformer(Predicate<ShaderInstance> predicate, Function<ShaderInstance, AnimationShaderInstance> transformer) {
-		public static final ShaderTransformer VANILLA_TRANSFORMER = new ShaderTransformer((shaderInstance) -> true, (shaderInstance) -> {
-			ShaderParser shaderParser = null;
-			
-			try {
-				ResourceManager resourceManager = Minecraft.getInstance().getResourceManager();
-				ResourceLocation shaderLocation = ResourceLocation.parse(shaderInstance.getName());
-				shaderParser = new ShaderParser(resourceManager, shaderInstance.getName());
-				boolean hasNormalAttribute = shaderParser.hasAttribute("Normal");
-				boolean isEyesShader = "rendertype_eyes".equals(shaderLocation.getPath());
-				
-				if (shaderParser.hasAttribute("Color")) {
-					shaderParser.addUniform("Color", ShaderParser.GLSLType.VEC4, "in .* Color;", ShaderParser.InsertPosition.FOLLOWING, Integer.MAX_VALUE, ShaderParser.ExceptionHandler.THROW, new Double[] {1.0D, 1.0D, 1.0D, 1.0D});
-				}
-				
-				if (shaderParser.hasAttribute("UV1") && !isEyesShader) {
-					shaderParser.addUniform("UV1", ShaderParser.GLSLType.IVEC2, "in .* UV1;", ShaderParser.InsertPosition.FOLLOWING, Integer.MAX_VALUE, ShaderParser.ExceptionHandler.THROW, new Integer[] {0, 0});
-				}
-				
-				if (shaderParser.hasAttribute("UV2") && !isEyesShader) {
-					shaderParser.addUniform("UV2", ShaderParser.GLSLType.IVEC2, "in .* UV2;", ShaderParser.InsertPosition.FOLLOWING, Integer.MAX_VALUE, ShaderParser.ExceptionHandler.THROW, new Integer[] {0, 0});
-				}
-				
-				shaderParser.remove("Color", ShaderParser.Usage.ATTRIBUTE, ShaderParser.ExceptionHandler.IGNORE);
-				shaderParser.remove("UV1", ShaderParser.Usage.ATTRIBUTE, ShaderParser.ExceptionHandler.IGNORE);
-				shaderParser.remove("UV2", ShaderParser.Usage.ATTRIBUTE, ShaderParser.ExceptionHandler.IGNORE);
-				shaderParser.addAttribute("Joints", ShaderParser.ExceptionHandler.THROW, ShaderParser.GLSLType.IVEC3);
-				shaderParser.addAttribute("Weights", ShaderParser.ExceptionHandler.THROW, ShaderParser.GLSLType.VEC3);
-				
-				if (hasNormalAttribute && !isEyesShader) {
-					shaderParser.addUniform("Normal_Mv_Matrix", ShaderParser.GLSLType.MATRIX3F, ShaderParser.ExceptionHandler.THROW, null);
-				}
-				
-				shaderParser.addUniformArray("Poses", ShaderParser.GLSLType.MATRIX4F, ShaderParser.ExceptionHandler.THROW, null, ShaderParser.SHADER_ARRAY_LIMIT);
-				shaderParser.replaceScript("Position", "Position_a", -1, ShaderParser.ExceptionHandler.THROW, "gl_Position", "in vec3 Position;");
-				
-				if (hasNormalAttribute && !isEyesShader) {
-					shaderParser.replaceScript("Normal", "Normal_a", -1, ShaderParser.ExceptionHandler.THROW, "uniform mat3 Normal_Mv_Matrix;", "in vec3 Normal;");
-				}
-				
-				shaderParser.insertToScript("in vec3 Position;", "\nvec3 Position_a = vec3(0.0);", 0, ShaderParser.InsertPosition.FOLLOWING, ShaderParser.ExceptionHandler.THROW);
-				
-				if (hasNormalAttribute && !isEyesShader) {
-					shaderParser.insertToScript("in vec3 Normal;", "\nvec3 Normal_a = vec3(0.0);", 0, ShaderParser.InsertPosition.FOLLOWING, ShaderParser.ExceptionHandler.THROW);
-				}
-				
-				shaderParser.insertToScript("void main\\(\\) \\{",
-										    "void setAnimationPosition() {\n"
-										  + "    for(int i=0;i<3;i++)\n"
-										  + "    {\n"
-										  + "        mat4 jointTransform = Poses[Joints[i]];\n"
-										  + "        vec4 posePosition = jointTransform * vec4(Position, 1.0);\n"
-										  + "        Position_a += vec3(posePosition.xyz) * Weights[i];\n"
-										  + "    }\n"
-										  + "}\n"
-										  + "\n", 0, ShaderParser.InsertPosition.PRECEDING, ShaderParser.ExceptionHandler.THROW);
-				
-				if (hasNormalAttribute && !isEyesShader) {
-					shaderParser.insertToScript("void main\\(\\) \\{",
-											    "void setAnimationNormal() {\n"
-											  + "    \n"
-											  + "    for(int i=0;i<3;i++)\n"
-											  + "    {\n"
-											  + "        mat4 jointTransform = Poses[Joints[i]];\n"
-											  + "        vec4 poseNormal = jointTransform * vec4(Normal, 1.0);\n"
-											  + "        Normal_a += vec3(poseNormal.xyz) * Weights[i];\n"
-											  + "    }\n"
-											  + "    \n"
-											  + "    Normal_a = Normal_Mv_Matrix * Normal_a;\n"
-											  + "}\n", 0, ShaderParser.InsertPosition.PRECEDING, ShaderParser.ExceptionHandler.THROW);
-					
-					shaderParser.insertToScript("void main\\(\\) \\{", "\n    setAnimationNormal();", 0, ShaderParser.InsertPosition.FOLLOWING, ShaderParser.ExceptionHandler.THROW);
-				}
-				
-				shaderParser.insertToScript("void main\\(\\) \\{", "\n    setAnimationPosition();", 0, ShaderParser.InsertPosition.FOLLOWING, ShaderParser.ExceptionHandler.THROW);
-				
-				Map<ResourceLocation, Resource> cache = Maps.newHashMap();
-				cache.putAll(SHADER_LIBS);
-				shaderParser.addToResourceCache(cache);
-				GameRenderer.ResourceCache resourceProvider = new GameRenderer.ResourceCache(resourceManager, cache);
-				
-				return new VanillaAnimationShader(resourceProvider, ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, shaderLocation.getPath()), EpicFightRenderTypes.getAnimationVertexFormat(shaderInstance.getVertexFormat()));
-			} catch (IOException | ShaderParsingException e) {
-				e.printStackTrace();
-				
-				if (shaderParser != null) {
-					EpicFightMod.LOGGER.warn("Shader Script\n " + shaderParser.getOriginalScript());
-				}
-				
-				throw new RuntimeException("Can't create animation shader", e);
-			}
-		});
 	}
 	
 	//Util class

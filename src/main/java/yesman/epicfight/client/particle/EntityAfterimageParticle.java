@@ -26,6 +26,7 @@ import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.model.Mesh;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.utils.EntitySnapshot;
+import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.QuaternionUtils;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -81,26 +82,35 @@ public class EntityAfterimageParticle extends CustomModelParticle<SkinnedMesh> {
 	}
 	
 	@Override
-	protected void setupPoseStack(PoseStack poseStack, Camera camera, float partialTicks) {
+	protected void setupPoseStack(PoseStack poseStack, Camera camera, float partialTick) {
 		poseStack.pushPose();
 		poseStack.mulPoseMatrix(RenderSystem.getModelViewStack().last().pose());
 		RenderSystem.getModelViewStack().pushPose();
 		RenderSystem.getModelViewStack().setIdentity();
 		RenderSystem.applyModelViewMatrix();
 		Vec3 cameraPosition = camera.getPosition();
-		float x = (float) (Mth.lerp(partialTicks, this.xo, this.x) - cameraPosition.x());
-		float y = (float) (Mth.lerp(partialTicks, this.yo, this.y) - cameraPosition.y());
-		float z = (float) (Mth.lerp(partialTicks, this.zo, this.z) - cameraPosition.z());
+		float x = (float) (Mth.lerp(partialTick, this.xo, this.x) - cameraPosition.x());
+		float y = (float) (Mth.lerp(partialTick, this.yo, this.y) - cameraPosition.y());
+		float z = (float) (Mth.lerp(partialTick, this.zo, this.z) - cameraPosition.z());
 		poseStack.translate(x, y, z);
 		Quaternionf rotation = new Quaternionf(0.0F, 0.0F, 0.0F, 1.0F);
-		float roll = Mth.rotLerp(partialTicks, this.oRoll, this.roll);
-		float pitch = Mth.rotLerp(partialTicks, this.pitchO, this.pitch);
-		float yaw = Mth.rotLerp(partialTicks, this.yawO, this.yaw);
-		rotation.mul((Quaternionfc) QuaternionUtils.YP.rotationDegrees(180.0F - yaw));
+		/**
+		 * rotate the particle by entity's model matrix
+		 * uncomment and revert to this code when problem occurs with model matrix
+		 */
+		/**
+		float roll = Mth.rotLerp(partialTick, this.oRoll, this.roll);
+		float pitch = Mth.rotLerp(partialTick, this.pitchO, this.pitch);
+		float yaw = Mth.rotLerp(partialTick, this.yawO, this.yaw);
+		rotation.mul((Quaternionfc)QuaternionUtils.YP.rotationDegrees(180.0F - this.yaw));
 		rotation.mul((Quaternionfc) QuaternionUtils.XP.rotationDegrees(pitch));
 		rotation.mul((Quaternionfc) QuaternionUtils.ZP.rotationDegrees(roll));
+		**/
+		rotation.mul((Quaternionfc)QuaternionUtils.YP.rotationDegrees(180.0F));
 		poseStack.mulPose(rotation);
-		float scale = Mth.lerp(partialTicks, this.scaleO, this.scale);
+		poseStack.mulPoseMatrix(OpenMatrix4f.exportToMojangMatrix(this.entitySnapshot.getModelMatrix()));
+		
+		float scale = Mth.lerp(partialTick, this.scaleO, this.scale);
 		poseStack.translate(0.0F, this.entitySnapshot.getHeightHalf(), 0.0F);
 		poseStack.scale(scale, scale, scale);
 		poseStack.translate(0.0F, -this.entitySnapshot.getHeightHalf(), 0.0F);

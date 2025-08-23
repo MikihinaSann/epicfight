@@ -253,7 +253,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	public void dealEvent(PlayerPatch<?> playerpatch, TakeDamageEvent.Attack event, boolean advanced) {
 		event.setCanceled(true);
 		event.setResult(AttackResult.ResultType.BLOCKED);
-		playerpatch.countHurtTime(event.getBaseDamage());
+		playerpatch.countHurtTime(event.getDamage());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getDamageSource().getEntity(), LivingEntityPatch.class)
 			.ifPresent(attackerpatch -> attackerpatch.setLastAttackEntity(playerpatch.getOriginal()));
@@ -276,8 +276,9 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	
 	@OnlyIn(Dist.CLIENT)
 	public void cancelOnClient(SkillContainer container, FriendlyByteBuf args) {
-		super.cancelOnClient(container, args);
 		container.deactivate();
+		
+		super.cancelOnClient(container, args);
 	}
 	
 	@Override
@@ -300,12 +301,16 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	public void resetHolding(SkillContainer container) {}
 
 	@Override
-	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer)
-	{
+	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, FriendlyByteBuf buffer) {
 
 	}
 
 	@Override
+	public void onStopHolding(SkillContainer container) {
+		container.deactivate();
+	}
+	
+  @Override
 	public KeyMapping getKeyMapping() {
 		return EpicFightKeyMappings.GUARD;
 	}

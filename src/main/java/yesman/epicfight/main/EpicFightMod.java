@@ -46,6 +46,7 @@ import yesman.epicfight.api.data.reloader.SkillManager;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
 import yesman.epicfight.client.renderer.patched.item.EpicFightItemProperties;
+import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
 import yesman.epicfight.compat.AzureLibArmorCompat;
 import yesman.epicfight.compat.AzureLibCompat;
 import yesman.epicfight.compat.CuriosCompat;
@@ -145,7 +146,25 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  ***************************************************************
  *  20.12.2
  *  
- *  Fixed a bug that players can't eat or drink any food items
+ *  Fixed the bug that players can't eat or drink any food items (#2048)
+ *  Fixed the crash when hit by arrows from other mods (#2047)
+ *  Fixed the bug that players can't disarm guard after attacking while guarding
+ *  
+ *  ***************************************************************
+ *  20.12.3
+ *  
+ *  Fixed the Vex crashing game when the target is dead before attacking
+ *  Fixed the laser particle transform issue
+ *  Fixed the crash when Wither afterimage is created
+ *  Fixed the Wither swirl animation when Wither armor is activated
+ *  Fixed the crash when trail particle is loaded in datapack editor (#2053)
+ *  
+ *  ***************************************************************
+ *  20.12.4
+ *  
+ *  Fixed the players can't attack after charging the Greatsword innate skill (#2060)
+ *  Fixed the Ender dragon turns back when attacking (#2054)
+ *  Fixed the afterimage particle doesn't reflect entity's scale
  *  
  *  --- TO DO ---
  *  
@@ -194,7 +213,7 @@ public class EpicFightMod {
     	
     	context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
     	context.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory(IngameConfigurationScreen::new));
-		context.registerExtensionPoint(EpicFightExtensions.class, () -> new EpicFightExtensions(EpicFightCreativeTabs.ITEMS.get()));
+		context.registerExtensionPoint(EpicFightExtensions.class, () -> new EpicFightExtensions(EpicFightCreativeTabs.ITEMS));
     	
 		final IEventBus bus = context.getModEventBus();
 		
@@ -206,6 +225,10 @@ public class EpicFightMod {
     	bus.addListener(SkillManager::registerSkills);
     	bus.addListener(EpicFightCapabilities::registerCapabilities);
     	bus.addListener(EpicFightEntities::onSpawnPlacementRegister);
+    	
+    	if (EpicFightSharedConstants.isPhysicalClient()) {
+			bus.addListener(ComputeShaderProvider::register);
+		}
     	
     	MinecraftForge.EVENT_BUS.addListener(this::command);
         MinecraftForge.EVENT_BUS.addListener(this::addReloadListnerEvent);
@@ -379,7 +402,7 @@ public class EpicFightMod {
 		 */
 		SkillManager.getNamespaces().forEach((modid) -> {
 			ModList.get().getModContainerById(modid).flatMap((mc) -> mc.getCustomExtension(EpicFightExtensions.class)).ifPresentOrElse((extension) -> {
-				if (extension.skillBookCreativeTab() == event.getTab()) {
+				if (extension.skillBookCreativeTab().get() == event.getTab()) {
 					SkillManager.getSkillNames((skill) -> skill.getCategory().learnable() && skill.getCreativeTab() == null && skill.getRegistryName().getNamespace() == modid).forEach((rl) -> {
 						ItemStack stack = new ItemStack(EpicFightItems.SKILLBOOK.get());
 						SkillBookItem.setContainingSkill(rl.toString(), stack);
