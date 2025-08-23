@@ -48,7 +48,7 @@ public class SPAnimatorControl extends AnimatorControlPacket {
 	
 	public <T extends SPAnimatorControl> void onArrive() {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(Minecraft.getInstance().level.getEntity(this.entityId), LivingEntityPatch.class).ifPresent(entitypatch -> {
-			if (this.layer != Layer.ANIMATION && this.priority != Priority.ANIMATION) {
+			if (this.action == Action.PLAY_CLIENT && this.layer != Layer.ANIMATION && this.priority != Priority.ANIMATION) {
 				entitypatch.getClientAnimator().playAnimationAt(AnimationManager.byId(this.animationId), this.transitionTimeModifier, this.layer, this.priority);
 			} else {
 				this.process(entitypatch);
