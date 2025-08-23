@@ -213,7 +213,7 @@ public class EpicFightMod {
     	
     	context.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
     	context.registerExtensionPoint(ConfigScreenHandler.ConfigScreenFactory.class, () -> new ConfigScreenHandler.ConfigScreenFactory(IngameConfigurationScreen::new));
-		context.registerExtensionPoint(EpicFightExtensions.class, () -> new EpicFightExtensions(EpicFightCreativeTabs.ITEMS.get()));
+		context.registerExtensionPoint(EpicFightExtensions.class, () -> new EpicFightExtensions(EpicFightCreativeTabs.ITEMS));
     	
 		final IEventBus bus = context.getModEventBus();
 		
@@ -402,7 +402,7 @@ public class EpicFightMod {
 		 */
 		SkillManager.getNamespaces().forEach((modid) -> {
 			ModList.get().getModContainerById(modid).flatMap((mc) -> mc.getCustomExtension(EpicFightExtensions.class)).ifPresentOrElse((extension) -> {
-				if (extension.skillBookCreativeTab() == event.getTab()) {
+				if (extension.skillBookCreativeTab().get() == event.getTab()) {
 					SkillManager.getSkillNames((skill) -> skill.getCategory().learnable() && skill.getCreativeTab() == null && skill.getRegistryName().getNamespace() == modid).forEach((rl) -> {
 						ItemStack stack = new ItemStack(EpicFightItems.SKILLBOOK.get());
 						SkillBookItem.setContainingSkill(rl.toString(), stack);
