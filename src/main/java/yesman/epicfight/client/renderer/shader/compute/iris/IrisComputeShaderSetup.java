@@ -203,7 +203,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 	}
 	
 	@Override
-	public void applyComputeShader(OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount) {
+	public void applyComputeShader(PoseStack poseStack, OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount) {
 		// shader setup
 		ComputeProgram shader = ComputeShaderProvider.meshComputeIris;
 		shader.useProgram();
@@ -302,7 +302,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		ComputeShaderSetup.setShaderDefaultUniforms(shader, mode, poseStack.last().pose(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
 		shader.apply();
 
-		this.applyComputeShader(null, r, g, b, a, overlay, packedLight, poses.length);
+		this.applyComputeShader(poseStack, null, r, g, b, a, overlay, packedLight, poses.length);
 		
 		// draw call
 		GL46.glUseProgram(RenderSystem.getShader().getId());

@@ -10,7 +10,6 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.lwjgl.opengl.GL15C;
-import org.lwjgl.opengl.GL46;
 import org.lwjgl.opengl.GL46C;
 
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -18,6 +17,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormatElement;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderType;
@@ -117,19 +117,19 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		var elems = vertexFormat.getElements();
         
 		for (int i = 0; i < elems.size(); ++i) {
-			var elem = elems.get(i);
+			VertexFormatElement elem = elems.get(i);
 			
 			if (elem == DefaultVertexFormat.ELEMENT_POSITION) {
 				ComputeShaderSetup.bindAttrPointer(buffers[0], 3, i, GL15C.GL_FLOAT);
 			} else if (elem == DefaultVertexFormat.ELEMENT_UV) {
 				ComputeShaderSetup.bindAttrPointer(buffers[3], 2, i, GL15C.GL_FLOAT);
 			} else if (elem == DefaultVertexFormat.ELEMENT_COLOR) {
-				GL46C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, buffers[2]);
+				GlStateManager._glBindBuffer(GL15C.GL_ARRAY_BUFFER, buffers[2]);
 				GL46C.glVertexAttribPointer(i, 4, GL15C.GL_FLOAT, true, 0, 0);
 				GL46C.glEnableVertexAttribArray(i);
 			} else if (elem == DefaultVertexFormat.ELEMENT_NORMAL) {
-				GL46C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, buffers[1]);
-				GL46C.glVertexAttribPointer(i, 3, GL15C.GL_BYTE, true, 4, 0);
+				GlStateManager._glBindBuffer(GL15C.GL_ARRAY_BUFFER, buffers[1]);
+				GL46C.glVertexAttribPointer(i, 3, GL15C.GL_FLOAT, true, 0, 0);
 				GL46C.glEnableVertexAttribArray(i);
 			} else if (elem == DefaultVertexFormat.ELEMENT_UV1) {
 				ComputeShaderSetup.bindIntAttrPointer(buffers[4], 2, i, GL15C.GL_UNSIGNED_SHORT, 0);
@@ -138,11 +138,11 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 			}
 		}
 		
-		GL15C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, 0);
+		GlStateManager._glBindBuffer(GL15C.GL_ARRAY_BUFFER, 0);
 	}
 	
 	@Override
-	public void applyComputeShader(OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount) {
+	public void applyComputeShader(PoseStack poseStack, OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount) {
 		// compute shader setup
 		ComputeProgram shader = ComputeShaderProvider.meshCompute;
 		shader.useProgram();
@@ -150,6 +150,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		shader.getUniform("uv1In").uploadUnsignedInt(overlay);
 		shader.getUniform("uv2In").uploadUnsignedInt(light);
 		shader.getUniform("partTransform").uploadMatrix4f(OpenMatrix4f.exportToMojangMatrix(partTransform));
+		shader.getUniform("normalTransform").uploadMatrix3f(poseStack.last().normal());
 		
 		ComputeShaderSetup.POSE_BO.bindBufferBase(0);
 		
@@ -223,12 +224,12 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 			// computeVertex
 			if (transform == null) transform = OpenMatrix4f.IDENTITY;
 			
-			this.applyComputeShader(transform, r, g, b, a, overlay, packedLight, poses.length);
+			this.applyComputeShader(poseStack, transform, r, g, b, a, overlay, packedLight, poses.length);
 			
 			// draw call
-			GL46.glUseProgram(RenderSystem.getShader().getId());
-			GL46.glBindBuffer(GLConstants.GL_ELEMENT_ARRAY_BUFFER, part.getPartVBO().vboId());
-			GL46.glDrawElements(VertexFormat.Mode.TRIANGLES.asGLMode, part.getVertices().size(), VertexFormat.IndexType.INT.asGLType, 0);
+			GL46C.glUseProgram(RenderSystem.getShader().getId());
+			GL46C.glBindBuffer(GLConstants.GL_ELEMENT_ARRAY_BUFFER, part.getPartVBO().vboId());
+			GL46C.glDrawElements(VertexFormat.Mode.TRIANGLES.asGLMode, part.getVertices().size(), VertexFormat.IndexType.INT.asGLType, 0);
 		}
 		
 		// state restore

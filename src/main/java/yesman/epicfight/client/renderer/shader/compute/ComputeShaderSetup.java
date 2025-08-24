@@ -110,7 +110,7 @@ public interface ComputeShaderSetup {
     
 	void bindBufferFormat(VertexFormat vertexFormat, int... buffers);
 	
-	void applyComputeShader(OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount);
+	void applyComputeShader(PoseStack poseStack, OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount);
 	
 	void drawWithShader(SkinnedMesh skinnedMesh, PoseStack poseStack, RenderType renderType, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses);
 	
