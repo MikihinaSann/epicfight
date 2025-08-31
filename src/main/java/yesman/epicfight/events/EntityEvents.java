@@ -207,7 +207,7 @@ public class EntityEvents {
 					}
 				}
 				
-				EntityStunEvent entityStunEvent = new EntityStunEvent(event.getSource(), hitentitypatch, stunType);
+				EntityStunEvent entityStunEvent = new EntityStunEvent(epicfightDamageSource, hitentitypatch, stunType);
 				
 				if (MinecraftForge.EVENT_BUS.post(entityStunEvent)) {
 					return;
