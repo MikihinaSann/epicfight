@@ -20,6 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.ItemAttributeModifierEvent;
 import net.minecraftforge.event.entity.EntityEvent;
@@ -46,6 +47,7 @@ import net.minecraftforge.fml.common.Mod;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.forgeevent.EntityStunEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.gameasset.Animations;
@@ -250,19 +252,23 @@ public class EntityEvents {
 					break;
 				}
 				
-				Vec3 sourcePosition = epicfightDamageSource.getInitialPosition();
-				hitentitypatch.setStunReductionOnHit(stunType);
-				boolean stunApplied = hitentitypatch.applyStun(stunType, stunTime);
+				EntityStunEvent entityStunEvent = new EntityStunEvent(event.getSource(), hitentitypatch);
 				
-				if (sourcePosition != null) {
-					if (!(hitEntity instanceof Player) && stunApplied) {
-						hitEntity.lookAt(EntityAnchorArgument.Anchor.FEET, sourcePosition);
-					}
+				if (!MinecraftForge.EVENT_BUS.post(entityStunEvent)) {
+					Vec3 sourcePosition = epicfightDamageSource.getInitialPosition();
+					hitentitypatch.setStunReductionOnHit(stunType);
+					boolean stunApplied = hitentitypatch.applyStun(stunType, stunTime);
 					
-					if (knockBackAmount > 0.0F) {
-						knockBackAmount *= 40.0F / hitentitypatch.getWeight();
+					if (sourcePosition != null) {
+						if (!(hitEntity instanceof Player) && stunApplied) {
+							hitEntity.lookAt(EntityAnchorArgument.Anchor.FEET, sourcePosition);
+						}
 						
-						hitentitypatch.knockBackEntity(sourcePosition, knockBackAmount);
+						if (knockBackAmount > 0.0F) {
+							knockBackAmount *= 40.0F / hitentitypatch.getWeight();
+							
+							hitentitypatch.knockBackEntity(sourcePosition, knockBackAmount);
+						}
 					}
 				}
 			});
