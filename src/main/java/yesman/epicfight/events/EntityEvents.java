@@ -207,6 +207,12 @@ public class EntityEvents {
 					}
 				}
 				
+				EntityStunEvent entityStunEvent = new EntityStunEvent(event.getSource(), hitentitypatch, stunType);
+				
+				if (MinecraftForge.EVENT_BUS.post(entityStunEvent)) {
+					return;
+				}
+				
 				hitentitypatch.setStunShield(stunShield - impact);
 				
 				switch (stunType) {
@@ -252,23 +258,19 @@ public class EntityEvents {
 					break;
 				}
 				
-				EntityStunEvent entityStunEvent = new EntityStunEvent(event.getSource(), hitentitypatch);
+				Vec3 sourcePosition = epicfightDamageSource.getInitialPosition();
+				hitentitypatch.setStunReductionOnHit(stunType);
+				boolean stunApplied = hitentitypatch.applyStun(stunType, stunTime);
 				
-				if (!MinecraftForge.EVENT_BUS.post(entityStunEvent)) {
-					Vec3 sourcePosition = epicfightDamageSource.getInitialPosition();
-					hitentitypatch.setStunReductionOnHit(stunType);
-					boolean stunApplied = hitentitypatch.applyStun(stunType, stunTime);
+				if (sourcePosition != null) {
+					if (!(hitEntity instanceof Player) && stunApplied) {
+						hitEntity.lookAt(EntityAnchorArgument.Anchor.FEET, sourcePosition);
+					}
 					
-					if (sourcePosition != null) {
-						if (!(hitEntity instanceof Player) && stunApplied) {
-							hitEntity.lookAt(EntityAnchorArgument.Anchor.FEET, sourcePosition);
-						}
+					if (knockBackAmount > 0.0F) {
+						knockBackAmount *= 40.0F / hitentitypatch.getWeight();
 						
-						if (knockBackAmount > 0.0F) {
-							knockBackAmount *= 40.0F / hitentitypatch.getWeight();
-							
-							hitentitypatch.knockBackEntity(sourcePosition, knockBackAmount);
-						}
+						hitentitypatch.knockBackEntity(sourcePosition, knockBackAmount);
 					}
 				}
 			});
