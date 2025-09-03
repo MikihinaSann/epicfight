@@ -216,7 +216,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		// draw call
 		for (SkinnedMeshPart part : skinnedMesh.getAllParts()) {
 			if (part.isHidden()) {
-				return;
+				continue;
 			}
 			
 			OpenMatrix4f transform = part.getVanillaPartTransform();
