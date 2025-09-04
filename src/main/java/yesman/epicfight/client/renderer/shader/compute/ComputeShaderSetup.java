@@ -1,6 +1,8 @@
 package yesman.epicfight.client.renderer.shader.compute;
 
 import java.nio.FloatBuffer;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -18,17 +20,29 @@ import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.api.client.model.SkinnedMesh;
+import yesman.epicfight.api.client.model.VertexBuilder;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
-import yesman.epicfight.client.renderer.shader.compute.backend.buffers.DynamicSSBO;
+import yesman.epicfight.client.renderer.shader.compute.backend.buffers.IArrayBufferProxy;
+//import yesman.epicfight.client.renderer.shader.compute.backend.buffers.MappedSSBO;
+import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
 import yesman.epicfight.main.EpicFightSharedConstants;
 
 @OnlyIn(Dist.CLIENT)
 public interface ComputeShaderSetup {
+    static final int WORK_GROUP_SIZE = 128;
+
 	static final OpenMatrix4f[] TOTAL_POSES = OpenMatrix4f.allocateMatrixArray(EpicFightSharedConstants.MAX_JOINTS);
 	static final OpenMatrix4f[] TOTAL_NORMALS = OpenMatrix4f.allocateMatrixArray(EpicFightSharedConstants.MAX_JOINTS);
-	static final DynamicSSBO<OpenMatrix4f> POSE_BO = new DynamicSSBO<> (TOTAL_POSES, (short) 16, DynamicSSBO.DataMode.DYNAMIC, OpenMatrix4f::store);
-	
+
+
+    static final IArrayBufferProxy POSE_BO = ComputeShaderProvider.createDynamicBuffer
+            (TOTAL_POSES, 16, OpenMatrix4f::store);
+
+/*
+	static final DynamicSSBO<OpenMatrix4f> POSE_BO = new DynamicSSBO<>
+            (TOTAL_POSES, (short) 16, DynamicSSBO.DataMode.DYNAMIC, OpenMatrix4f::store);*/
+
 	static void setShaderDefaultUniforms(ShaderInstance shader, VertexFormat.Mode mode, Matrix4f frustumMatrix, Matrix4f projectionMatrix, Window window) {
         for (int i = 0; i < 12; i++) {
             int j = RenderSystem.getShaderTexture(i);
@@ -150,4 +164,47 @@ public interface ComputeShaderSetup {
 			floatBuffer.put(Float.intBitsToFloat(this.jte));
 		}
 	}
+
+    @OnlyIn(Dist.CLIENT)
+    public record ElemInfo(int poolId, int partId) implements ComputeShaderSetup.BufferUploadable {
+        @Override
+        public void store(FloatBuffer buffer) {
+            buffer.put(Float.intBitsToFloat(this.poolId));
+            buffer.put(Float.intBitsToFloat(this.partId));
+        }
+    }
+
+    @OnlyIn(Dist.CLIENT)
+    public static class PartBuffer implements MeshPartBuffer {
+        private final int partIdx;
+
+        public PartBuffer(List<VertexBuilder> vertexBuilders, Map<VertexBuilder, Integer> vertexBuilderMap, float[] uvs, List<Float> uvList, List<ElemInfo> elements, int partIdx) {
+            this.partIdx = partIdx;
+
+            for (VertexBuilder vb : vertexBuilders) {
+                if (!vertexBuilderMap.containsKey(vb)) {
+                    int next = vertexBuilderMap.size();
+                    vertexBuilderMap.put(vb, next);
+
+                    uvList.add(uvs[vb.uv * 2]);
+                    uvList.add(uvs[vb.uv * 2 + 1]);
+                }
+
+                int vertexPoolIndex = vertexBuilderMap.get(vb);
+
+                elements.add(new ElemInfo(vertexPoolIndex, partIdx));
+            }
+        }
+
+        @Override
+        public int vboId() {
+            return -1;
+        }
+
+        @Override
+        public int partIdx() {
+            return this.partIdx;
+        }
+    }
+
 }

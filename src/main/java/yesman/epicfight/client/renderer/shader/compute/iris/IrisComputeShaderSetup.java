@@ -1,6 +1,5 @@
 package yesman.epicfight.client.renderer.shader.compute.iris;
 
-import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -38,15 +37,16 @@ import yesman.epicfight.api.utils.GLConstants;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.renderer.shader.compute.ComputeShaderSetup;
 import yesman.epicfight.client.renderer.shader.compute.backend.buffers.DynamicSSBO;
+import yesman.epicfight.client.renderer.shader.compute.backend.buffers.IArrayBufferProxy;
 import yesman.epicfight.client.renderer.shader.compute.backend.buffers.OutputSSBO;
 import yesman.epicfight.client.renderer.shader.compute.backend.buffers.StaticSSBO;
 import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeProgram;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
+import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.main.EpicFightSharedConstants;
 
 @OnlyIn(Dist.CLIENT)
 public class IrisComputeShaderSetup implements ComputeShaderSetup {
-	private static final int WORK_GROUP_SIZE = 128;
-	
 	private final StaticSSBO<Float> uvsBO;
 	private final StaticSSBO<VertexObj> vObjBO;
 	private final StaticSSBO<Integer> jointBO;
@@ -63,7 +63,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 	private final OutputSSBO outEntityId;
 	private final OutputSSBO outTangent;
 	
-	private final DynamicSSBO<Integer> hiddenFlagsBO;
+	private final IArrayBufferProxy hiddenFlagsBO;
 	private final Integer[] hiddenFlags;
 	
 	private final int arrayObjectId;
@@ -80,12 +80,12 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		
 		List<Float> uvList = Lists.newArrayList();
 		this.hiddenFlags = new Integer[(skinnedMesh.getAllParts().size() + 31) / 32];
-		this.hiddenFlagsBO = new DynamicSSBO<>(this.hiddenFlags, (short) 1, DynamicSSBO.DataMode.DYNAMIC, (v, b) -> b.put(Float.intBitsToFloat(v)));
+		this.hiddenFlagsBO = ComputeShaderProvider.createDynamicBuffer(this.hiddenFlags, 1, (v, b) -> b.put(Float.intBitsToFloat(v)));
 		
 		MutableInt partIdx = new MutableInt(0);
 		
 		skinnedMesh.getAllParts().forEach(skinnedMeshPart -> {
-			skinnedMeshPart.initVBO(new IrisPartBuffer(skinnedMeshPart.getVertices(), vertexBuilderMap, skinnedMesh.uvs(), uvList, elements, partIdx.intValue()));
+			skinnedMeshPart.initVBO(new PartBuffer(skinnedMeshPart.getVertices(), vertexBuilderMap, skinnedMesh.uvs(), uvList, elements, partIdx.intValue()));
 			partIdx.add(1);
 		});
 		
@@ -122,7 +122,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		this.vcount = elements.size();
 		
 		for (int i = 0; i < elements.size(); i++) {
-			int vertPoolIdx = elements.get(i).poolId;
+			int vertPoolIdx = elements.get(i).poolId();
 			float u = uvList.get(vertPoolIdx * 2);
 			float v = uvList.get(vertPoolIdx * 2 + 1);
 			int faceIdx = i / 3;
@@ -213,7 +213,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		shader.getUniform("part_offset").uploadUnsignedInt(jointCount);
 		shader.getUniform("entity_id_0").uploadUnsignedInt(((this.getEntity() << 16) & 0xFFFF0000) | (this.getBlock() & 0xFFFF));
 		shader.getUniform("entity_id_1").uploadUnsignedInt(this.getItem() << 16);
-		
+
 		ComputeShaderSetup.POSE_BO.bindBufferBase(0);
 		
 		this.elementsBO.bindBufferBase(1);
@@ -297,7 +297,10 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		ShaderInstance shader = RenderSystem.getShader();
 		var format = shader.getVertexFormat();
 
-		this.bindBufferFormat(format, this.outPos.glSSBO, this.outNormal.glSSBO, this.outColor.glSSBO, this.outUv0.glSSBO, this.outUv1.glSSBO, this.outUv2.glSSBO, this.outEntityId.glSSBO, this.midUVBO.glSSBO, this.outTangent.glSSBO);
+		this.bindBufferFormat(format,
+				this.outPos.glSSBO, this.outNormal.glSSBO, this.outColor.glSSBO,
+				this.outUv0.glSSBO, this.outUv1.glSSBO, this.outUv2.glSSBO,
+				this.outEntityId.glSSBO, this.midUVBO.glSSBO, this.outTangent.glSSBO);
 		
 		ComputeShaderSetup.setShaderDefaultUniforms(shader, mode, poseStack.last().pose(), RenderSystem.getProjectionMatrix(), Minecraft.getInstance().getWindow());
 		shader.apply();
@@ -361,46 +364,4 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
     public short getItem() {
         return (short) CapturedRenderingState.INSTANCE.getCurrentRenderedItem();
     }
-	
-	@OnlyIn(Dist.CLIENT)
-	public record ElemInfo(int poolId, int partId) implements ComputeShaderSetup.BufferUploadable {
-		@Override
-		public void store(FloatBuffer buffer) {
-			buffer.put(Float.intBitsToFloat(this.poolId));
-			buffer.put(Float.intBitsToFloat(this.partId));
-		}
-	}
-	
-	@OnlyIn(Dist.CLIENT)
-	public static class IrisPartBuffer implements MeshPartBuffer {
-		private final int partIdx;
-		
-		public IrisPartBuffer(List<VertexBuilder> vertexBuilders, Map<VertexBuilder, Integer> vertexBuilderMap, float[] uvs, List<Float> uvList, List<ElemInfo> elements, int partIdx) {
-			this.partIdx = partIdx;
-			
-			for (VertexBuilder vb : vertexBuilders) {
-				if (!vertexBuilderMap.containsKey(vb)) {
-					int next = vertexBuilderMap.size();
-					vertexBuilderMap.put(vb, next);
-
-					uvList.add(uvs[vb.uv * 2]);
-					uvList.add(uvs[vb.uv * 2 + 1]);
-				}
-				
-				int vertexPoolIndex = vertexBuilderMap.get(vb);
-				
-				elements.add(new ElemInfo(vertexPoolIndex, partIdx));
-			}
-		}
-		
-		@Override
-		public int vboId() {
-			return -1;
-		}
-		
-		@Override
-		public int partIdx() {
-			return this.partIdx;
-		}
-	}
 }

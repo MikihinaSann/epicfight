@@ -1,5 +1,7 @@
 package yesman.epicfight.client.renderer.shader.compute.loader;
 
+import java.nio.FloatBuffer;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.lwjgl.opengl.GL33C;
@@ -9,8 +11,12 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.RegisterShadersEvent;
 import yesman.epicfight.api.client.model.SkinnedMesh;
+//import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.renderer.shader.compute.ComputeShaderSetup;
 import yesman.epicfight.client.renderer.shader.compute.VanillaComputeShaderSetup;
+import yesman.epicfight.client.renderer.shader.compute.backend.buffers.DynamicSSBO;
+import yesman.epicfight.client.renderer.shader.compute.backend.buffers.IArrayBufferProxy;
+//import yesman.epicfight.client.renderer.shader.compute.backend.buffers.MappedSSBO;
 import yesman.epicfight.client.renderer.shader.compute.backend.program.BarrierFlags;
 import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeProgram;
 import yesman.epicfight.client.renderer.shader.compute.iris.IrisComputeShaderSetup;
@@ -18,7 +24,7 @@ import yesman.epicfight.main.EpicFightMod;
 
 @OnlyIn(Dist.CLIENT)
 public class ComputeShaderProvider {
-    public static ComputeProgram meshCompute;
+    public static ComputeProgram meshComputeVanilla;
     public static ComputeProgram meshComputeIris;
     
     private static boolean supportComputeShader = false;
@@ -45,20 +51,20 @@ public class ComputeShaderProvider {
 
         supportComputeShader = (major > 4) || (major == 4 && minor >= 3);
         
-        EpicFightMod.LOGGER.warn("[Computer Shader] OpenGL Version: " + glVersion);
-        EpicFightMod.LOGGER.warn("[Computer Shader] Compute Shader Acceleration: " + (supportComputeShader ? "Supported" : "Unsupported"));
+        EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] OpenGL Version: " + glVersion);
+        EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] Compute Shader: " + (supportComputeShader ? "Supported" : "Unsupported"));
         
         if (!supportComputeShader) return;
         
         clear();
         
-		meshCompute = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE);
-		meshComputeIris = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/iris_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE);
+		meshComputeVanilla = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/vanilla_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE, BarrierFlags.VERTEX_ATTRIB_ARRAY);
+		meshComputeIris = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/iris_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE, BarrierFlags.VERTEX_ATTRIB_ARRAY);
     }
     
     public static void clear() {
-        if (meshCompute != null) {
-        	meshCompute.delete();
+        if (meshComputeVanilla != null) {
+        	meshComputeVanilla.delete();
         }
         
         if (meshComputeIris != null) {
@@ -68,5 +74,9 @@ public class ComputeShaderProvider {
     
     public static ComputeShaderSetup getComputeShaderSetup(SkinnedMesh mesh) {
     	return computeShaderProvider.apply(mesh);
+    }
+
+    public static <T> IArrayBufferProxy createDynamicBuffer(T[] src, int srcSize, BiConsumer<T, FloatBuffer> uploader){
+        return new DynamicSSBO<>(src, (short) srcSize, DynamicSSBO.DataMode.DYNAMIC, uploader);
     }
 }
