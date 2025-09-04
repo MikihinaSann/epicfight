@@ -2,6 +2,7 @@ package yesman.epicfight.gameasset;
 
 import java.util.Set;
 
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
@@ -252,7 +253,7 @@ public class EpicFightSkills {
 					.addProperty(AttackPhaseProperty.EXTRA_DAMAGE, Set.of(ExtraDamageInstance.SWEEPING_EDGE_ENCHANTMENT.create()))
 					.addProperty(AttackPhaseProperty.SOURCE_TAG, Set.of(EpicFightDamageTypeTags.WEAPON_INNATE))
 					.newProperty()
-					.addProperty(AttackPhaseProperty.SOURCE_TAG, Set.of(EpicFightDamageTypeTags.EXECUTION, EpicFightDamageTypeTags.WEAPON_INNATE))
+					.addProperty(AttackPhaseProperty.SOURCE_TAG, Set.of(EpicFightDamageTypeTags.EXECUTION, EpicFightDamageTypeTags.WEAPON_INNATE, DamageTypeTags.BYPASSES_ARMOR))
 					.addProperty(AttackPhaseProperty.STUN_TYPE, StunType.NONE)
 					.addProperty(AttackPhaseProperty.HIT_SOUND, EpicFightSounds.BLADE_RUSH_FINISHER.get());
 		BLADE_RUSH = bladeRush;

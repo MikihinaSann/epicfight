@@ -23,7 +23,6 @@ import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 
 public class GuillotineAxeSkill extends SimpleWeaponInnateSkill {
@@ -50,7 +49,7 @@ public class GuillotineAxeSkill extends SimpleWeaponInnateSkill {
 				
 				if (health < executionHealth) {
 					if (event.getDamageSource() != null) {
-						event.getDamageSource().addRuntimeTag(EpicFightDamageTypeTags.EXECUTION);
+						event.getDamageSource().setExecute();
 					}
 				}
 			}

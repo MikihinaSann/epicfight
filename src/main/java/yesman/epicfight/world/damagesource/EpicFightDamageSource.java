@@ -7,6 +7,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.core.Holder;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
@@ -154,6 +155,13 @@ public class EpicFightDamageSource extends DamageSource {
 
 	public EpicFightDamageSource addRuntimeTag(TagKey<DamageType> type) {
 		this.runtimeTags.add(type);
+		return this;
+	}
+	
+	public EpicFightDamageSource setExecute() {
+		this.runtimeTags.add(EpicFightDamageTypeTags.EXECUTION);
+		this.runtimeTags.add(DamageTypeTags.BYPASSES_ARMOR);
+		
 		return this;
 	}
 }

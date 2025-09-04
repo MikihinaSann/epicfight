@@ -179,7 +179,9 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  20.12.6
  *  
  *  Fixed the afterimage having a wrong main hand item transform when holding any offhand item
- *  
+ *  Fixed the player's equipping armors are all broken when hurt by the Axe's innate skill (#2068)
+ *  Internal changes
+ *  - Compute shader optimization: Made it use Persistent buffer (by jvn, #2070)
  *  
  *  ***************************************************************
  *  
