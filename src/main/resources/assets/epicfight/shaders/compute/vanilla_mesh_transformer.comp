@@ -73,7 +73,8 @@ layout(std430, binding = 14) readonly buffer PartHiddenFlagBuffer {
 layout(location=0) uniform vec4 colorIn;
 layout(location=1) uniform uint uv1In;
 layout(location=2) uniform uint uv2In;
-layout(location=5) uniform uint part_offset;
+layout(location=3) uniform uint part_offset;
+layout(location=4) uniform mat3 normal_pose;
 
 vec4 getPosInPool(int pool_index){
     return vec4(vertices[pool_index].px, vertices[pool_index].py, vertices[pool_index].pz, 1.0);
@@ -130,10 +131,10 @@ VertInfo getFinalVertInfo(ElemInfo elem){
     mat4 partTransform = poses[part_offset + elem.part_idx];
     vec4 pos = getPosInPool(elem.pool_idx);
     vec4 norm = getNormInPool(elem.pool_idx);
-
+	
     vec4 fpos = vec4(0);
     vec4 fnorm = vec4(0);
-
+	
     for (int i = vertices[elem.pool_idx].jts; i < vertices[elem.pool_idx].jte; ++i) {
         if (weights[i] > 0.0) {
             mat4 boneMat = poses[joints[i]] * partTransform;
@@ -141,37 +142,19 @@ VertInfo getFinalVertInfo(ElemInfo elem){
             fnorm += (boneMat * norm) * weights[i];
         }
     }
-
+	
     VertInfo result;
     result.pos = fpos.xyz;
-    result.nor = normalize(fnorm.xyz);
+    result.nor = normalize(normal_pose * fnorm.xyz);
     result.uv = vec2(uvs[elem.pool_idx*2], uvs[elem.pool_idx*2+1]);
     return result;
 }
 
 void main() {
-    /**
-    uint face_start = gl_GlobalInvocationID.x * 3;
-    if(face_start >= elements.length()) return; // check
-
-    if(isPartHidden(elements[face_start])){
-        storeElemEmpty(face_start);
-        storeElemEmpty(face_start+1);
-        storeElemEmpty(face_start+2);
-        return;
-    }
-
-    VertInfo v1 = getFinalVertInfo(elements[face_start]);
-    VertInfo v2 = getFinalVertInfo(elements[face_start+1]);
-    VertInfo v3 = getFinalVertInfo(elements[face_start+2]);
-
-    storeElem(face_start, v1);
-    storeElem(face_start+1, v2);
-    storeElem(face_start+2, v3);
-*/
-
     uint vertex_id = gl_GlobalInvocationID.x;
+    
     if(vertex_id >= elements.length()) return;
+    
     if(isPartHidden(elements[vertex_id])){
         storeElemEmpty(vertex_id);
         return;

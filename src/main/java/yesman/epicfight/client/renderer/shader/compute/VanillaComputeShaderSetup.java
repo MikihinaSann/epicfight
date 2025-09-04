@@ -1,13 +1,20 @@
 package yesman.epicfight.client.renderer.shader.compute;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import com.google.common.collect.Lists;
 import org.apache.commons.lang3.mutable.MutableInt;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL11C;
+import org.lwjgl.opengl.GL15C;
+import org.lwjgl.opengl.GL20C;
+import org.lwjgl.opengl.GL46;
 
+import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -32,8 +39,6 @@ import yesman.epicfight.client.renderer.shader.compute.backend.buffers.OutputSSB
 import yesman.epicfight.client.renderer.shader.compute.backend.buffers.StaticSSBO;
 import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeProgram;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
-import yesman.epicfight.main.EpicFightMod;
-import yesman.epicfight.main.EpicFightSharedConstants;
 
 @OnlyIn(Dist.CLIENT)
 public class VanillaComputeShaderSetup implements ComputeShaderSetup {
@@ -123,10 +128,6 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		GlStateManager._glBindBuffer(GLConstants.GL_ARRAY_BUFFER, currentBoundVbo);
 	}
 
-	/*
-				this.outPos.glSSBO, this.outNormal.glSSBO, this.outColor.glSSBO,
-				this.outUv0.glSSBO, this.outUv1.glSSBO, this.outUv2.glSSBO);
-	 */
 	@Override
 	public void bindBufferFormat(VertexFormat vertexFormat, int... buffers) {
 		var elems = vertexFormat.getElements();
@@ -164,7 +165,8 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 		shader.getUniform("uv1In").uploadUnsignedInt(overlay);
 		shader.getUniform("uv2In").uploadUnsignedInt(light);
 		shader.getUniform("part_offset").uploadUnsignedInt(jointCount);
-
+		shader.getUniform("normal_pose").uploadMatrix3f(poseStack.last().normal());
+		
 		ComputeShaderSetup.POSE_BO.bindBufferBase(0);
 
 		this.elementsBO.bindBufferBase(1);

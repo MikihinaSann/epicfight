@@ -28,7 +28,6 @@ public class ComputeShaderProvider {
     public static ComputeProgram meshComputeIris;
     
     private static boolean supportComputeShader = false;
-    private static boolean supportPersistentBuffer = false;
     private static boolean irisLoaded = false;
     private static Function<SkinnedMesh, ComputeShaderSetup> computeShaderProvider = VanillaComputeShaderSetup::new;
     
@@ -51,14 +50,10 @@ public class ComputeShaderProvider {
         int minor = GL33C.glGetInteger(GL33C.GL_MINOR_VERSION);
 
         supportComputeShader = (major > 4) || (major == 4 && minor >= 3);
-        supportPersistentBuffer = (major > 4) || (major == 4 && minor >= 5);
         
         EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] OpenGL Version: " + glVersion);
         EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] Compute Shader: " + (supportComputeShader ? "Supported" : "Unsupported"));
-       /* if(supportComputeShader) EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] Persistent Buffer: " +
-                (supportPersistentBuffer ? "Supported" : "Unsupported"));*/
-
-
+        
         if (!supportComputeShader) return;
         
         clear();
