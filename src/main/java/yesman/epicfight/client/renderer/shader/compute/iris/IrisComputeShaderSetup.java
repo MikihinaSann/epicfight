@@ -42,8 +42,6 @@ import yesman.epicfight.client.renderer.shader.compute.backend.buffers.OutputSSB
 import yesman.epicfight.client.renderer.shader.compute.backend.buffers.StaticSSBO;
 import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeProgram;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
-import yesman.epicfight.main.EpicFightMod;
-import yesman.epicfight.main.EpicFightSharedConstants;
 
 @OnlyIn(Dist.CLIENT)
 public class IrisComputeShaderSetup implements ComputeShaderSetup {
@@ -213,7 +211,8 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		shader.getUniform("part_offset").uploadUnsignedInt(jointCount);
 		shader.getUniform("entity_id_0").uploadUnsignedInt(((this.getEntity() << 16) & 0xFFFF0000) | (this.getBlock() & 0xFFFF));
 		shader.getUniform("entity_id_1").uploadUnsignedInt(this.getItem() << 16);
-
+		shader.getUniform("normalTransform").uploadMatrix3f(poseStack.last().normal());
+		
 		ComputeShaderSetup.POSE_BO.bindBufferBase(0);
 		
 		this.elementsBO.bindBufferBase(1);
