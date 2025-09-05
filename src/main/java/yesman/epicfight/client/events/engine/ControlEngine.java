@@ -30,6 +30,7 @@ import net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import yesman.epicfight.api.animation.types.EntityState;
@@ -60,6 +61,7 @@ public class ControlEngine {
 	private int weaponInnatePressCounter = 0;
 	private int sneakPressCounter = 0;
 	private int moverPressCounter = 0;
+	private int tickSinceLastJump = 0;
 	private int lastHotbarLockedTime;
 	private boolean weaponInnatePressToggle = false;
 	private boolean sneakPressToggle = false;
@@ -158,7 +160,7 @@ public class ControlEngine {
 				if (shouldPlayAttackAnimation) {
 					if (!EpicFightKeyMappings.ATTACK.getKey().equals(EpicFightKeyMappings.WEAPON_INNATE_SKILL.getKey())) {
 						SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
-						SkillSlot slot = (airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+						SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
 						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 						
 						if (skillCastEvent.isExecutable()) {
@@ -319,7 +321,7 @@ public class ControlEngine {
 		
 		if (this.attackLightPressToggle) {
 			SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
-			SkillSlot slot = (airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+			SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
 			SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 			
 			if (skillCastEvent.isExecutable()) {
@@ -457,6 +459,8 @@ public class ControlEngine {
 		if (this.player.isAlive()) {
 			this.playerPatch.getEventListener().triggerEvents(EventType.MOVEMENT_INPUT_EVENT, new MovementInputEvent(this.playerPatch, input));
 		}
+		
+		if (this.tickSinceLastJump > 0) this.tickSinceLastJump--;
 	}
 	
 	private void reserveKey(SkillSlot slot, KeyMapping keyMapping) {
@@ -552,6 +556,13 @@ public class ControlEngine {
 	@Mod.EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
 	public static class Events {
 		static ControlEngine controlEngine;
+		
+		@SubscribeEvent
+		public static void livingJumpEvent(LivingJumpEvent event) {
+			if (event.getEntity() == controlEngine.player) {
+				controlEngine.tickSinceLastJump = 5;
+			}
+		}
 		
 		@SubscribeEvent
 		public static void mouseScrollEvent(InputEvent.MouseScrollingEvent event) {

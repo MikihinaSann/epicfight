@@ -21,7 +21,7 @@ public class AirAttack extends Skill {
 	
 	@Override
 	public boolean canExecute(SkillContainer container) {
-		return (!container.getExecutor().getOriginal().onGround() && !container.getExecutor().getOriginal().isInWater() && container.getExecutor().getOriginal().getDeltaMovement().y > 0.03D);
+		return !container.getExecutor().getOriginal().onGround() && !container.getExecutor().getOriginal().isInWater();
 	}
 	
 	@Override

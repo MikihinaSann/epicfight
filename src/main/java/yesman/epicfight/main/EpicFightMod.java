@@ -182,6 +182,7 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the player's equipping armors are all broken when hurt by the Axe's innate skill (#2068)
  *  Internal changes
  *  - Compute shader optimization: Made it use Persistent buffer (by jvn, #2070)
+ *  - Added a variable tickSinceLastJump in ControlEngine to enhance air slash check
  *  
  *  ***************************************************************
  *  
