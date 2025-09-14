@@ -185,6 +185,23 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  - Added a variable tickSinceLastJump in ControlEngine to enhance air slash check
  *  
  *  ***************************************************************
+ *  20.12.7
+ *  
+ *  -Player's following action UI-
+ *  Added adaptive crosshair for mining and combat
+ *  Added a block overlay to indicate your next mining action
+ *  Added a reset button on Ingame UI Setup screen
+ *  Added config options for enable/disable both block and entity target
+ *  
+ *  -Graphic fixes-
+ *  Fixed the entity outline rendering abnormally
+ *  Fixed so that compute shader can render entity outline
+ *  Fixed the incorrect normal tweak of compute shader for Iris shaderpacks
+ *  Fixed Phantom ascent crash (#2084)
+ *  
+ *  -Internal changes-
+ *  Added a method that developers can determine a skill book item texture
+ *  {@link SkillCategory#bookIcon}
  *  
  *  --- TO DO ---
  *  
@@ -202,6 +219,10 @@ public class EpicFightMod {
 	public static final String MODID = "epicfight";
 	public static final String EPICSKINS_MODID = "epicskins";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
+	
+	public static String prefix(String s) {
+		return String.format("%s:%s", MODID, s);
+	}
 	
 	public static void logAndStacktraceIfDevSide(BiConsumer<Logger, String> logFunction, String message, Function<String, Throwable> exceptionProvider) {
 		logAndStacktraceIfDevSide(logFunction, message, exceptionProvider, message);

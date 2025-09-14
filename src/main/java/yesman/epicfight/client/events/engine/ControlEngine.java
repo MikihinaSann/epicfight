@@ -16,19 +16,15 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered;
 import net.minecraftforge.client.event.MovementInputUpdateEvent;
-import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -126,31 +122,9 @@ public class ControlEngine {
 		
 		while (isKeyPressed(EpicFightKeyMappings.ATTACK, true)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.ATTACK) {
-				boolean shouldPlayAttackAnimation = true;
+				boolean shouldPlayAttackAnimation = this.playerPatch.canPlayAttackAnimation();
 				
-				if (this.options.keyAttack.getKey() == EpicFightKeyMappings.ATTACK.getKey() && minecraft.hitResult != null) {
-					if (this.minecraft.hitResult.getType() == HitResult.Type.ENTITY) {
-						Entity hitEntity = ((EntityHitResult)this.minecraft.hitResult).getEntity();
-						
-						if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof PartEntity)) {
-							shouldPlayAttackAnimation = false;
-						}
-					}
-					
-					if (shouldPlayAttackAnimation) {
-						if (this.playerPatch.isTargetLockedOn()) {
-							shouldPlayAttackAnimation = true;
-						} else if (ClientConfig.combatPreferredItems.contains(this.player.getMainHandItem().getItem())) {
-							if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && minecraft.level != null) {
-								BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
-								BlockState bs = this.minecraft.level.getBlockState(bp);
-								shouldPlayAttackAnimation = !this.player.getMainHandItem().getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || !this.player.getMainHandItem().isCorrectToolForDrops(bs);
-							}
-						} else {
-							shouldPlayAttackAnimation = this.minecraft.hitResult.getType() != HitResult.Type.BLOCK;
-						}
-					}
-					
+				if (this.options.keyAttack.getKey() == EpicFightKeyMappings.ATTACK.getKey() && this.minecraft.hitResult != null) {
 					// Disable vanilla attack key
 					if (shouldPlayAttackAnimation) {
 						makeUnpressed(this.options.keyAttack);
