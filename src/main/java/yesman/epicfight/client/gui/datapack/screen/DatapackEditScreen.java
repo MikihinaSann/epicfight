@@ -2472,7 +2472,7 @@ public class DatapackEditScreen extends Screen {
 																						livingMotionTag.remove(ParseUtil.nullParam(event.prevValue));
 																						livingMotionTag.putString(ParseUtil.nullOrToString(event.postValue, (livingmotion) -> livingmotion.name().toLowerCase(Locale.ROOT)), "");
 																					}).editable(true).width(100))
-																	.addColumn(Grid.popup("animation", PopupBox.AnimationPopupBox::new).filter((animation) -> !(animation instanceof MainFrameAnimation) || animation instanceof LongHitAnimation)
+																	.addColumn(Grid.popup("animation", PopupBox.AnimationPopupBox::new).filter((accessor) -> !(accessor.checkType(MainFrameAnimation.class)) || accessor.checkType(LongHitAnimation.class))
 																					.editWidgetCreated((popupBox) -> popupBox.setModel(this.armaturePopupBox._getValue(), this.meshPopupBox._getValue()))
 																					.valueChanged((event) -> {
 																						CompoundTag livingMotionTag = ParseUtil.getOrSupply(this.packList.get(this.packListGrid.getRowposition()).getValue(), "default_livingmotions", CompoundTag::new);
