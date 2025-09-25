@@ -203,6 +203,13 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Added a method that developers can determine a skill book item texture
  *  {@link SkillCategory#bookIcon}
  *  
+ *  ***************************************************************
+ *  20.12.8
+ *  
+ *  Fixed the animations not showing up in the list in the datapack editor
+ *  Fixed the crash when ground slam particle generated
+ *  Optimized animation keyframe to accelerate the fps, especially when rendering a model with massive joints
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)

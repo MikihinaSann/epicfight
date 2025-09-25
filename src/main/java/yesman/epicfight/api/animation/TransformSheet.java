@@ -77,6 +77,16 @@ public class TransformSheet {
 		return this;
 	}
 	
+	public TransformSheet createInterpolated(float[] timestamp) {
+		TransformSheet interpolationCreated = new TransformSheet(timestamp.length);
+		
+		for (int i = 0; i < timestamp.length; i++) {
+			interpolationCreated.keyframes[i] = new Keyframe(timestamp[i], this.getInterpolatedTransform(timestamp[i]));
+		}
+		
+		return interpolationCreated;
+	}
+	
 	/**
 	 * Transform each joint
 	 */
@@ -115,13 +125,15 @@ public class TransformSheet {
 	}
 	
 	public JointTransform getInterpolatedTransform(float currentTime) {
-		InterpolationInfo interpolInfo = this.getInterpolationInfo(currentTime);
-		
-		if (interpolInfo == InterpolationInfo.INVALID) {
+		return this.getInterpolatedTransform(this.getInterpolationInfo(currentTime));
+	}
+	
+	public JointTransform getInterpolatedTransform(InterpolationInfo interpolationInfo) {
+		if (interpolationInfo == InterpolationInfo.INVALID) {
 			return JointTransform.empty();
 		}
 		
-		JointTransform trasnform = JointTransform.interpolate(this.keyframes[interpolInfo.prev].transform(), this.keyframes[interpolInfo.next].transform(), interpolInfo.delta);
+		JointTransform trasnform = JointTransform.interpolate(this.keyframes[interpolationInfo.prev].transform(), this.keyframes[interpolationInfo.next].transform(), interpolationInfo.delta);
 		return trasnform;
 	}
 	
@@ -270,7 +282,7 @@ public class TransformSheet {
 		return result;
 	}
 	
-	private InterpolationInfo getInterpolationInfo(float currentTime) {
+	public InterpolationInfo getInterpolationInfo(float currentTime) {
 		if (this.keyframes.length == 0) {
 			return InterpolationInfo.INVALID;
 		}
@@ -330,7 +342,7 @@ public class TransformSheet {
 		return sb.toString();
 	}
 	
-	private static record InterpolationInfo(int prev, int next, float delta) {
-		private static final InterpolationInfo INVALID = new InterpolationInfo(-1, -1, -1.0F);
+	public static record InterpolationInfo(int prev, int next, float delta) {
+		public static final InterpolationInfo INVALID = new InterpolationInfo(-1, -1, -1.0F);
 	}
 }

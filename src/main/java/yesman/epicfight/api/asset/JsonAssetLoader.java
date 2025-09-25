@@ -597,6 +597,8 @@ public class JsonAssetLoader {
 			root = false;
 		}
 		
+		clip.bakeKeyframes();
+		
 		return clip;
 	}
 	
@@ -636,6 +638,8 @@ public class JsonAssetLoader {
 			root = false;
 		}
 		
+		clip.bakeKeyframes();
+		
 		return clip;
 	}
 	
@@ -672,6 +676,8 @@ public class JsonAssetLoader {
 			
 			root = false;
 		}
+		
+		clip.bakeKeyframes();
 		
 		return clip;
 	}

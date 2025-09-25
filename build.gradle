@@ -156,9 +156,6 @@ dependencies {
     compileOnly fg.deobf("dev.architectury:architectury-forge:${architectury_version}")
     **/
     
-    compileOnly fg.deobf("curse.maven:embeddium-908741:5556138")
-    compileOnly fg.deobf("curse.maven:oculus-581495:5299671")
-    
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 

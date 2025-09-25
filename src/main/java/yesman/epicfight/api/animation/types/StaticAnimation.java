@@ -193,7 +193,7 @@ public class StaticAnimation extends DynamicAnimation implements InverseKinemati
 		nextStartTime += totalTime - linkTime;
 		
 		dest.setNextStartTime(nextStartTime);
-		dest.getTransfroms().clear();
+		dest.getAnimationClip().reset();
 		dest.setTotalTime(totalTime);
 		dest.setConnectedAnimations(fromAnimation, this.getAccessor());
 		
