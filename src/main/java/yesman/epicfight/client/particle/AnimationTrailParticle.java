@@ -185,9 +185,11 @@ public class AnimationTrailParticle extends AbstractTrailParticle<LivingEntityPa
 		}
 		
 		TrailInfo trailInfo = this.trailInfo;
-		Pose prevPose = this.lastPose;
+		Pose prevPose = this.owner.getAnimator().getPose(0.0F);//this.lastPose;
 		Pose currentPose = this.owner.getAnimator().getPose(1.0F);
-		Pose middlePose = Pose.interpolatePose(prevPose, currentPose, 0.5F);
+		Pose middlePose = this.owner.getAnimator().getPose(0.5F);//Pose.interpolatePose(prevPose, currentPose, 0.5F);
+		
+		System.out.println("wt");
 		
 		Vec3 posOld = this.lastPos;
 		Vec3 posCur = this.owner.getOriginal().getPosition(1.0F);
