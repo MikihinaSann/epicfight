@@ -16,11 +16,10 @@ public class AnimationClip {
 	protected Map<String, TransformSheet> jointTransforms = new HashMap<> ();
 	protected float clipTime;
 	protected float bakedTimes[];
-	protected boolean baked;
 	
 	public void addJointTransform(String jointName, TransformSheet sheet) {
 		this.jointTransforms.put(jointName, sheet);
-		this.baked = false;
+		this.bakedTimes = null;
 	}
 	
 	public boolean hasJointTransform(String jointName) {
@@ -51,7 +50,6 @@ public class AnimationClip {
 		
 		this.jointTransforms = bakedJointTransforms;
 		this.bakedTimes = bakedTimestamps;
-		this.baked = true;
 	}
 	
 	/**
@@ -62,7 +60,6 @@ public class AnimationClip {
 		
 		if (transformSheet != null) {
 			this.bakedTimes = new float[transformSheet.getKeyframes().length];
-			this.baked = true;
 			
 			for (int i = 0; i < transformSheet.getKeyframes().length; i++) {
 				this.bakedTimes[i] = transformSheet.getKeyframes()[i].time();
@@ -77,9 +74,7 @@ public class AnimationClip {
 	public final Pose getPoseInTime(float time) {
 		Pose pose = new Pose();
 		
-		if (this.baked) {
-			if (this.bakedTimes.length == 0) return pose;
-			
+		if (this.bakedTimes != null && this.bakedTimes.length > 0) {
 			// Binary search
 			int begin = 0, end = this.bakedTimes.length - 1;
 			
@@ -125,7 +120,7 @@ public class AnimationClip {
 	
 	public void reset() {
 		this.jointTransforms.clear();
-		this.baked = false;
+		this.bakedTimes = null;
 	}
 	
 	public void setClipTime(float clipTime) {

@@ -58,6 +58,8 @@ import yesman.epicfight.network.client.CPSetPlayerTarget;
 import yesman.epicfight.network.client.CPSetStamina;
 import yesman.epicfight.network.common.AnimatorControlPacket;
 import yesman.epicfight.skill.modules.ChargeableSkill;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
@@ -680,9 +682,13 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		}
 		
 		if (entity == this.rayTarget) {
+			if (!EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).map(entitypatch -> entitypatch.isOutlineVisible(this)).orElse(false)) {
+				return false;
+			}
+			
 			if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
 				if (this.minecraft.hitResult.getType() == HitResult.Type.BLOCK && this.minecraft.level != null) {
-					BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
+					BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
 					BlockState bs = this.minecraft.level.getBlockState(bp);
 					return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
 				}
