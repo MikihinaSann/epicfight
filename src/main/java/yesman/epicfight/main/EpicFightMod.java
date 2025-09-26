@@ -206,9 +206,12 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  ***************************************************************
  *  20.12.8
  *  
- *  Fixed the animations not showing up in the list in the datapack editor
+ *  The default value of canSwitchPlayerMode gamerule changed from false to true
+ *  Fixed the Trident innate skill icon with channel enchantment is broken
+ *  Fixed the animation entries not showing up in the list in the datapack editor
  *  Fixed the crash when ground slam particle generated
- *  Optimized animation keyframe to accelerate the fps, especially when rendering a model with massive joints
+ *  Fixed the trail particle being dark when afterimage particle is in the screen
+ *  Optimized animation keyframes to accelerate the fps, especially when rendering a model with massive joints
  *  
  *  --- TO DO ---
  *  

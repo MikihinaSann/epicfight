@@ -78,6 +78,8 @@ public class AnimationClip {
 		Pose pose = new Pose();
 		
 		if (this.baked) {
+			if (this.bakedTimes.length == 0) return pose;
+			
 			// Binary search
 			int begin = 0, end = this.bakedTimes.length - 1;
 			

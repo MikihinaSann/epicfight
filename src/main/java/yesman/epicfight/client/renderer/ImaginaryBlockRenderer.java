@@ -16,7 +16,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
@@ -33,11 +32,10 @@ import net.minecraftforge.client.model.data.ModelData;
 @OnlyIn(Dist.CLIENT)
 public class ImaginaryBlockRenderer {
 	private static final Direction[] DIRECTIONS = Direction.values();
-	private final BlockRenderDispatcher blockRenderDispatcher = Minecraft.getInstance().getBlockRenderer();
 	
 	public void render(Camera camera, PoseStack poseStack, MultiBufferSource buffers, Level level, BlockPos bp, float r, float g, float b, float a) {
 		BlockState bs = level.getBlockState(bp);
-		BakedModel model = this.blockRenderDispatcher.getBlockModel(bs);
+		BakedModel model = Minecraft.getInstance().getBlockRenderer().getBlockModel(bs);
 		RandomSource randomsource = RandomSource.create();
 		long seed = bs.getSeed(bp);
 		randomsource.setSeed(seed);
