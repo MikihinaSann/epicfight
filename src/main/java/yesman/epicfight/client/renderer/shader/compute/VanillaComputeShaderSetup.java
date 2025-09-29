@@ -255,7 +255,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 			this.outUv1.glSSBO, this.outUv2.glSSBO
 		);
 
-		ComputeShaderSetup.setShaderDefaultUniforms(shader, mode, Minecraft.getInstance().getWindow());
+		ComputeShaderSetup.setShaderDefaultUniforms(RenderSystem.getModelViewMatrix(), shader, mode, Minecraft.getInstance().getWindow());
 		shader.apply();
 		
 		this.applyComputeShader(poseStack, null, r, g, b, a, overlay, packedLight, poses.length);
@@ -282,7 +282,7 @@ public class VanillaComputeShaderSetup implements ComputeShaderSetup {
 					this.outUv1.glSSBO, this.outUv2.glSSBO
 				);
 				
-				ComputeShaderSetup.setShaderDefaultUniforms(outlineshader, outlinemode, Minecraft.getInstance().getWindow());
+				ComputeShaderSetup.setShaderDefaultUniforms(RenderSystem.getModelViewMatrix(), outlineshader, outlinemode, Minecraft.getInstance().getWindow());
 				outlineshader.apply();
 				
 				this.applyComputeShader(poseStack, null, outlineBufferSource.teamR / 255.0F, outlineBufferSource.teamG / 255.0F, outlineBufferSource.teamB / 255.0F, outlineBufferSource.teamA / 255.0F, overlay, packedLight, poses.length);

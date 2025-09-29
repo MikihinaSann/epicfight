@@ -44,8 +44,8 @@ public class ComputeShaderProvider {
         return irisLoaded;
     }
     
-    public static void register(RegisterShadersEvent event){
-        String glVersion = GL33C.glGetString(GL33C.GL_VERSION);
+    public static void checkIfSupports() {
+    	String glVersion = GL33C.glGetString(GL33C.GL_VERSION);
         int major = GL33C.glGetInteger(GL33C.GL_MAJOR_VERSION);
         int minor = GL33C.glGetInteger(GL33C.GL_MINOR_VERSION);
 
@@ -53,13 +53,15 @@ public class ComputeShaderProvider {
         
         EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] OpenGL Version: " + glVersion);
         EpicFightMod.LOGGER.warn("[Computer Shader Acceleration] Compute Shader: " + (supportComputeShader ? "Supported" : "Unsupported"));
-        
+    }
+    
+    public static void epicfight$registerComputeShaders(RegisterShadersEvent event) {
         if (!supportComputeShader) return;
         
         clear();
         
 		meshComputeVanilla = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/vanilla_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE, BarrierFlags.VERTEX_ATTRIB_ARRAY);
-		meshComputeIris = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/iris_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE, BarrierFlags.VERTEX_ATTRIB_ARRAY);
+		if (irisLoaded) meshComputeIris = ComputeShaderLoader.LoadComputeShaderProgram(event.getResourceProvider(), ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "shaders/compute/iris_mesh_transformer.comp"), BarrierFlags.SHADER_STORAGE, BarrierFlags.VERTEX_ATTRIB_ARRAY);
     }
     
     public static void clear() {

@@ -96,7 +96,7 @@ vec4 getPosInPool(int pool_index){
 }
 
 vec4 getNormInPool(int pool_index){
-    return vec4(normalize(vec3(vertices[pool_index].nx, vertices[pool_index].ny, vertices[pool_index].nz)), 1.0);
+    return vec4(normalize(vec3(vertices[pool_index].nx, vertices[pool_index].ny, vertices[pool_index].nz)), 0.0);
 }
 
 struct VertInfo{
@@ -104,12 +104,12 @@ struct VertInfo{
     vec2 uv;
 };
 
-void storeElem(uint elem_idx, VertInfo vertInfo, uint tangent) {
+void storeElem(uint elem_idx, VertInfo vertInfo, uint tangent){
     out_pos[elem_idx * 3] = vertInfo.pos.x;
     out_pos[elem_idx * 3 + 1] = vertInfo.pos.y;
     out_pos[elem_idx * 3 + 2] = vertInfo.pos.z;
 
-    out_normal[elem_idx] = packSnorm4x8(vec4(normalize(vertInfo.nor), 1.0));
+    out_normal[elem_idx] = packSnorm4x8(vec4(normalize(vertInfo.nor), 0.0));
 
     out_color[elem_idx] = colorIn;
 
@@ -169,7 +169,7 @@ VertInfo getFinalVertInfo(ElemInfo elem){
             fnorm += (boneMat * norm) * weights[i];
         }
     }
-	
+
     VertInfo result;
     result.pos = (model_view_matrix * fpos).xyz;
     result.nor = normalize(normal_matrix * fnorm.xyz);

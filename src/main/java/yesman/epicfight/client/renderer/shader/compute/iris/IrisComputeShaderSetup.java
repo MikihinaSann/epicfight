@@ -9,6 +9,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11C;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL20C;
@@ -21,6 +23,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormatElement;
 
+import net.irisshaders.iris.Iris;
 import net.irisshaders.iris.uniforms.CapturedRenderingState;
 import net.irisshaders.iris.vertices.IrisVertexFormats;
 import net.minecraft.client.Minecraft;
@@ -201,6 +204,9 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		GL15C.glBindBuffer(GL15C.GL_ARRAY_BUFFER, 0);
 	}
 	
+	private static final Matrix4f IDENTITY4X4 = new Matrix4f();
+	private static final Matrix3f IDENTITY3X3 = new Matrix3f();
+	
 	@Override
 	public void applyComputeShader(PoseStack poseStack, OpenMatrix4f partTransform, float r, float g, float b, float a, int overlay, int light, int jointCount) {
 		// shader setup
@@ -212,8 +218,14 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 		shader.getUniform("part_offset").uploadUnsignedInt(jointCount);
 		shader.getUniform("entity_id_0").uploadUnsignedInt(((this.getEntity() << 16) & 0xFFFF0000) | (this.getBlock() & 0xFFFF));
 		shader.getUniform("entity_id_1").uploadUnsignedInt(this.getItem() << 16);
-		shader.getUniform("model_view_matrix").uploadMatrix4f(poseStack.last().pose());
-		shader.getUniform("normal_matrix").uploadMatrix3f(poseStack.last().normal());
+		
+		if (!Iris.getIrisConfig().areShadersEnabled()) {
+			shader.getUniform("model_view_matrix").uploadMatrix4f(poseStack.last().pose());
+			shader.getUniform("normal_matrix").uploadMatrix3f(poseStack.last().normal());
+		} else {
+			shader.getUniform("model_view_matrix").uploadMatrix4f(IDENTITY4X4);
+			shader.getUniform("normal_matrix").uploadMatrix3f(IDENTITY3X3);
+		}
 		
 		ComputeShaderSetup.POSE_BO.bindBufferBase(0);
 		
@@ -305,7 +317,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 			this.outEntityId.glSSBO, this.midUVBO.glSSBO, this.outTangent.glSSBO
 		);
 		
-		ComputeShaderSetup.setShaderDefaultUniforms(shader, mode, Minecraft.getInstance().getWindow());
+		ComputeShaderSetup.setShaderDefaultUniforms(Iris.getIrisConfig().areShadersEnabled() ? poseStack.last().pose() : RenderSystem.getModelViewMatrix(), shader, mode, Minecraft.getInstance().getWindow());
 		shader.apply();
 		
 		this.applyComputeShader(poseStack, null, r, g, b, a, overlay, packedLight, poses.length);
@@ -333,7 +345,7 @@ public class IrisComputeShaderSetup implements ComputeShaderSetup {
 					this.outEntityId.glSSBO, this.midUVBO.glSSBO, this.outTangent.glSSBO
 				);
 				
-				ComputeShaderSetup.setShaderDefaultUniforms(outlineshader, outlinemode, Minecraft.getInstance().getWindow());
+				ComputeShaderSetup.setShaderDefaultUniforms(Iris.getIrisConfig().areShadersEnabled() ? poseStack.last().pose() : RenderSystem.getModelViewMatrix(), outlineshader, outlinemode, Minecraft.getInstance().getWindow());
 				outlineshader.apply();
 				this.applyComputeShader(poseStack, null, outlineBufferSource.teamR / 255.0F, outlineBufferSource.teamG / 255.0F, outlineBufferSource.teamB / 255.0F, outlineBufferSource.teamA / 255.0F, overlay, packedLight, poses.length);
 				

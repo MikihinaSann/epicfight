@@ -119,10 +119,6 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 			
 			this.resetHolding();
 		}
-
-		if (this.isHoldingAny()) {
-			this.resetHolding();
-		}
 		
 		CapabilityItem mainHandCap = (hand == InteractionHand.MAIN_HAND) ? toCap : this.getHoldingItemCapability(InteractionHand.MAIN_HAND);
 		mainHandCap.changeWeaponInnateSkill(this, (hand == InteractionHand.MAIN_HAND) ? to : this.original.getMainHandItem());

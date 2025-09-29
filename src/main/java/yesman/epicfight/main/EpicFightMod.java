@@ -213,6 +213,11 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the trail particle being dark when afterimage particle is in the screen
  *  Optimized animation keyframes to accelerate the fps, especially when rendering a model with massive joints
  *  
+ *  ***************************************************************
+ *  20.12.9
+ *  
+ *  Fixed the normal shading issue both vanilla render pipeline and compute shader
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)
@@ -278,7 +283,7 @@ public class EpicFightMod {
     	bus.addListener(EpicFightEntities::onSpawnPlacementRegister);
     	
     	if (EpicFightSharedConstants.isPhysicalClient()) {
-			bus.addListener(ComputeShaderProvider::register);
+			bus.addListener(ComputeShaderProvider::epicfight$registerComputeShaders);
 		}
     	
     	MinecraftForge.EVENT_BUS.addListener(this::command);
@@ -424,6 +429,7 @@ public class EpicFightMod {
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
+        	event.enqueueWork(ComputeShaderProvider::checkIfSupports);
     		event.enqueueWork(EntityPatchProvider::registerEntityPatchesClient);
     		event.enqueueWork(SkillBookScreen::registerIconItems);
     		event.enqueueWork(EpicFightItemProperties::registerItemProperties);

@@ -6,6 +6,7 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL15C;
 import org.lwjgl.opengl.GL46C;
 
@@ -36,14 +37,14 @@ public interface ComputeShaderSetup {
 	static final OpenMatrix4f[] TOTAL_NORMALS = OpenMatrix4f.allocateMatrixArray(EpicFightSharedConstants.MAX_JOINTS);
     static final IArrayBufferProxy POSE_BO = ComputeShaderProvider.createDynamicBuffer(TOTAL_POSES, 16, OpenMatrix4f::store);
 
-	static void setShaderDefaultUniforms(ShaderInstance shader, VertexFormat.Mode mode, Window window) {
+	static void setShaderDefaultUniforms(Matrix4f frustumMatrix, ShaderInstance shader, VertexFormat.Mode mode, Window window) {
         for (int i = 0; i < 12; i++) {
             int j = RenderSystem.getShaderTexture(i);
             shader.setSampler("Sampler" + i, j);
         }
 
         if (shader.MODEL_VIEW_MATRIX != null) {
-            shader.MODEL_VIEW_MATRIX.set(RenderSystem.getModelViewMatrix());
+            shader.MODEL_VIEW_MATRIX.set(frustumMatrix);
         }
 
         if (shader.PROJECTION_MATRIX != null) {
