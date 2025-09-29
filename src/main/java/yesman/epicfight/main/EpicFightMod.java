@@ -217,6 +217,7 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  20.12.9
  *  
  *  Fixed the normal shading issue both vanilla render pipeline and compute shader
+ *  Added {@link InnateSkillChangeEvent.class} event that is fired after weapon innate skill is changed
  *  
  *  --- TO DO ---
  *  
