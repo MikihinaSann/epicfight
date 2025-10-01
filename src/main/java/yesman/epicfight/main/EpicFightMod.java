@@ -219,6 +219,16 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the normal shading issue both vanilla render pipeline and compute shader
  *  Added {@link InnateSkillChangeEvent.class} event that is fired after weapon innate skill is changed
  *  
+ *  ***************************************************************
+ *  20.12.10
+ *  
+ *  Fixed the player not rendering in the inventory screen when shader is activated
+ *  Fixed the crash when guarding (#2102)
+ *  Fixed the crash when loading caused by insufficient shader buffers (#2101)
+ *  Fixed the items are slightly darker than vanilla render results
+ *  Fixed the stun animation list not showing on datapack editor (#2106)
+ *  Now the shield blocking has higher priority than guard skills (#2104)
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)

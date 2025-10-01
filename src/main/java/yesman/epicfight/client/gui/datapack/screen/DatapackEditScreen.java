@@ -2517,7 +2517,7 @@ public class DatapackEditScreen extends Screen {
 																						attributesTag.putString(ParseUtil.nullOrToString(event.postValue, (stunType) -> stunType.name().toLowerCase(Locale.ROOT)), "");
 																					}).editable(true).width(100))
 																	.addColumn(Grid.popup("animation", PopupBox.AnimationPopupBox::new)
-																					.filter((animation) -> animation instanceof HitAnimation || animation instanceof LongHitAnimation)
+																					.filter(animation -> animation.checkType(HitAnimation.class) || animation.checkType(LongHitAnimation.class))
 																					.editWidgetCreated((popupBox) -> popupBox.setModel(this.armaturePopupBox._getValue(), this.meshPopupBox._getValue()))
 																					.valueChanged((event) -> {
 																						CompoundTag stunTypeTag = ParseUtil.getOrSupply(this.packList.get(this.packListGrid.getRowposition()).getValue(), "stun_animations", CompoundTag::new);

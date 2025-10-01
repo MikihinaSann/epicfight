@@ -187,7 +187,7 @@ public class ControlEngine {
 					// Support for traditional guard keybind
 					if (EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
 						// Check if the item has any use effect and if true, player won't guard
-						if (this.player.getMainHandItem().getUseAnimation() != UseAnim.NONE) {
+						if (this.player.getMainHandItem().getUseAnimation() != UseAnim.NONE || this.player.getOffhandItem().getUseAnimation() != UseAnim.NONE) {
 							hasUseAction = true;
 						}
 					}

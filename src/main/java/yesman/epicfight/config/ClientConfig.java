@@ -2,7 +2,6 @@ package yesman.epicfight.config;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
@@ -140,9 +139,6 @@ public class ClientConfig {
 	public static int chargingBarY;
 	public static HorizontalBasis chargingBarBaseX;
 	public static VerticalBasis chargingBarBaseY;
-	
-	// Disable when Iris installed
-	public static Supplier<Boolean> computeNormalInShader = () -> false;
 	
 	@SubscribeEvent
     static void onLoad(final ModConfigEvent event) {

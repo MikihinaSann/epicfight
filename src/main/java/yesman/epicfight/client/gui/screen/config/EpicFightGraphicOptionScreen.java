@@ -132,17 +132,17 @@ public class EpicFightGraphicOptionScreen extends EpicFightOptionSubScreen {
 			button.setMessage(Component.translatable("gui." + modid + ".first_person_model." + (ClientConfig.enableAnimatedFirstPersonModel ? "on" : "off")));
 		}).pos(this.width / 2 - 165, this.height / 4 + buttonHeight).size(160, 20).tooltip(Tooltip.create(Component.translatable("gui." + modid + ".first_person_model.tooltip"))).build();
 		
-		Button useAnimationShaderButton = Button.builder(Component.translatable("gui." + modid + ".use_compute_shader." + (ClientConfig.activateComputeShader ? "on" : "off")), (button) -> {
+		Button useComputeShaderButton = Button.builder(Component.translatable("gui." + modid + ".use_compute_shader." + (ClientConfig.activateComputeShader ? "on" : "off")), (button) -> {
 			ClientConfig.activateComputeShader = !ClientConfig.activateComputeShader;
 			button.setMessage(Component.translatable("gui." + modid + ".use_compute_shader." + (ClientConfig.activateComputeShader ? "on" : "off")));
 		}).pos(this.width / 2 + 5, this.height / 4 + buttonHeight).size(160, 20).tooltip(Tooltip.create(Component.translatable("gui." + modid + ".use_compute_shader.tooltip"))).build();
 		
 		if (!ComputeShaderProvider.supportComputeShader()) {
-			useAnimationShaderButton.active = false;
-			useAnimationShaderButton.setTooltip(Tooltip.create(Component.translatable("gui." + EpicFightMod.MODID + ".use_compute_shader.locked.tooltip")));
+			useComputeShaderButton.active = false;
+			useComputeShaderButton.setTooltip(Tooltip.create(Component.translatable("gui." + EpicFightMod.MODID + ".use_compute_shader.locked.tooltip")));
 		}
 		
-		this.optionsList.addSmall(firstPersonModelButton, useAnimationShaderButton);
+		this.optionsList.addSmall(firstPersonModelButton, useComputeShaderButton);
 		
 		buttonHeight += 24;
 		

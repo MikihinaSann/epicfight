@@ -629,13 +629,19 @@ public class RenderEngine {
 				LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
 				float originalYRot = 0.0F;
 				
-				//Draw the player in inventory
+				// Draw the player in inventory
 				if ((event.getPartialTick() == 0.0F || event.getPartialTick() == 1.0F) && entitypatch instanceof LocalPlayerPatch localplayerpatch) {
 					if (entitypatch.overrideRender()) {
 						originalYRot = localplayerpatch.getModelYRot();
 						localplayerpatch.setModelYRotInGui(livingentity.getYRot());
 						event.getPoseStack().translate(0, 0.1D, 0);
+						boolean compusteShaderSetting = ClientConfig.activateComputeShader;
+						
+						// Disable compute shader
+						ClientConfig.activateComputeShader = false;
 						renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
+						ClientConfig.activateComputeShader = compusteShaderSetting;
+						
 						event.setCanceled(true);
 						localplayerpatch.disableModelYRotInGui(originalYRot);
 					}
