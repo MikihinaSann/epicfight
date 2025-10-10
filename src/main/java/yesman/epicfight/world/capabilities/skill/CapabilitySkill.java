@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
+
 import org.jetbrains.annotations.ApiStatus;
 
 import com.google.common.collect.HashMultimap;
@@ -65,6 +67,26 @@ public class CapabilitySkill {
 		return this.learnedSkills.containsKey(skillCategory);
 	}
 	
+	public boolean hasEmptyContainer(SkillCategory skillCategory) {
+		for (SkillContainer container : this.containersByCategory.get(skillCategory)) {
+			if (container.isEmpty()) return true; 
+		}
+		
+		return false;
+	}
+	
+	/**
+	 * @return null if there is not empty container
+	 */
+	@Nullable
+	public SkillContainer getFirstEmptyContainer(SkillCategory skillCategory) {
+		for (SkillContainer container : this.containersByCategory.get(skillCategory)) {
+			if (container.isEmpty()) return container; 
+		}
+		
+		return null;
+	}
+	
 	public boolean isEquipping(Skill skill) {
 		return this.containersBySkill.containsKey(skill);
 	}
@@ -107,10 +129,11 @@ public class CapabilitySkill {
 		return this.learnedSkills.values().stream();
 	}
 	
-	public void clearContainersAndLearnedSkills() {
+	public void clearContainersAndLearnedSkills(boolean isLocalOrServerPlayer) {
 		for (SkillContainer container : this.skillContainers) {
 			if (container.getSlot().category().learnable()) {
-				container.setSkill(null);
+				if (isLocalOrServerPlayer) container.setSkill(null);
+				else container.setSkillRemote(null);
 			}
 		}
 		

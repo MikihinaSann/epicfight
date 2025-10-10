@@ -16,7 +16,7 @@ import yesman.epicfight.client.renderer.shader.compute.backend.program.ComputeSh
 
 @OnlyIn(Dist.CLIENT)
 public final class ComputeShaderLoader {
-	public static ComputeProgram LoadComputeShaderProgram(ResourceProvider resourceManager, ResourceLocation resourceLocation, BarrierFlags... barrierFlags) throws IllegalStateException {
+	public static ComputeProgram loadComputeShaderProgram(ResourceProvider resourceManager, ResourceLocation resourceLocation, BarrierFlags... barrierFlags) throws IllegalStateException {
 		Optional<Resource> resource = resourceManager.getResource(resourceLocation);
 		
 		if (resource.isEmpty()) {

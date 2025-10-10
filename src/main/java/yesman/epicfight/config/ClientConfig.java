@@ -38,11 +38,12 @@ import yesman.epicfight.main.EpicFightMod;
 public class ClientConfig {
 	private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
 	
-	public static final IntValue LONG_PRESS_COUNTER = BUILDER.defineInRange("ingame.long_press_count", 2, 1, 10);
+	// Graphic Configurations
+	public static final BooleanValue SHOW_TARGET_INDICATOR = BUILDER.define("ingame.show_target_indicator", () -> true);
+	public static final EnumValue<HealthBarVisibility> HEALTH_BAR_VISIBILITY = BUILDER.defineEnum("ingame.health_bar_show_option", HealthBarVisibility.HURT);
 	public static final IntValue MAX_STUCK_PROJECTILES = BUILDER.defineInRange("ingame.max_hit_projectiles", 30, 0, 30);
 	public static final DoubleValue AIM_HELPER_COLOR = BUILDER.defineInRange("ingame.laser_pointer_color", 0.328125D, 0.0D, 1.0D);
 	public static final BooleanValue ENABLE_AIM_HELPER = BUILDER.define("ingame.enable_laser_pointer", () -> true);
-	public static final BooleanValue AUTO_SWITCH_CAMERA = BUILDER.define("ingame.camera_auto_switch", () -> false);
 	public static final BooleanValue BLOOD_EFFECTS = BUILDER.define("ingame.blood_effects", () -> true);
 	public static final BooleanValue AIMING_POV_CORRECTION = BUILDER.define("ingame.aiming_correction", () -> true);
 	public static final BooleanValue SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP = BUILDER.define("ingame.show_epicfight_attributes", () -> true);
@@ -53,6 +54,10 @@ public class ClientConfig {
 	public static final BooleanValue ENABLE_POV_ACTION = BUILDER.define("ingame.enable_pov_action", () -> true);
 	public static final BooleanValue ENABLE_COSMETICS = BUILDER.define("ingame.enable_cosmetics", () -> true);
 	
+	// Control Configurations
+	public static final IntValue LONG_PRESS_COUNTER = BUILDER.defineInRange("ingame.long_press_count", 2, 1, 10);
+	public static final BooleanValue AUTO_SWITCH_CAMERA = BUILDER.define("ingame.camera_auto_switch", () -> false);
+	public static final BooleanValue RESOLVE_KEY_CONFLICTS = BUILDER.define("ingame.resolve_key_conflicts", () -> true);
 	public static final ConfigValue<List<? extends String>> BATTLE_MODE_SWITCHING_ITEMS = BUILDER.defineList("ingame.combat_preferred_items", Lists.newArrayList(), (element) -> {
 		if (element instanceof String str) {
 			return str.contains(":");
@@ -60,7 +65,6 @@ public class ClientConfig {
 		
 		return false;
 	});
-	
 	public static final ConfigValue<List<? extends String>> MINING_MODE_SWITCHING_ITEMS = BUILDER.defineList("ingame.mining_preferred_items", Lists.newArrayList(), (element) -> {
 		if (element instanceof String str) {
 			return str.contains(":");
@@ -69,10 +73,7 @@ public class ClientConfig {
 		return false;
 	});
 	
-	// UI configurations
-	public static final BooleanValue SHOW_TARGET_INDICATOR = BUILDER.define("ingame.show_target_indicator", () -> true);
-	public static final EnumValue<HealthBarVisibility> HEALTH_BAR_VISIBILITY = BUILDER.defineEnum("ingame.health_bar_show_option", HealthBarVisibility.HURT);
-	
+	// UI Configurations
 	public static final ConfigValue<Integer> STAMINA_BAR_X = BUILDER.define("ingame.ui.stamina_bar_x", 120);
 	public static final ConfigValue<Integer> STAMINA_BAR_Y = BUILDER.define("ingame.ui.stamina_bar_y", 10);
 	public static final EnumValue<HorizontalBasis> STAMINA_BAR_BASE_X = BUILDER.defineEnum("ingame.ui.stamina_bar_x_base", HorizontalBasis.RIGHT);
@@ -94,19 +95,19 @@ public class ClientConfig {
 	public static final EnumValue<HorizontalBasis> CHARGING_BAR_BASE_X = BUILDER.defineEnum("ingame.ui.charging_bar_x_base", HorizontalBasis.CENTER);
 	public static final EnumValue<VerticalBasis> CHARGING_BAR_BASE_Y = BUILDER.defineEnum("ingame.ui.charging_bar_y_base", VerticalBasis.CENTER);
 	
+	// Epic Skins Tokens
 	public static final ForgeConfigSpec.ConfigValue<String> ACCESS_TOKEN = BUILDER.comment("Login information for epic fight patron server. Do not change these values manually").define("access_token", "");
 	public static final ForgeConfigSpec.ConfigValue<String> REFRESH_TOKNE = BUILDER.define("refresh_token", "");
-	
 	public static final ForgeConfigSpec.EnumValue<AuthenticationProvider> PROVIDER = BUILDER.defineEnum("provider", AuthenticationProvider.NULL);
 	
+	// Config Spec
 	public static final ForgeConfigSpec SPEC = BUILDER.build();
 	
-	public static int longPressCounter;
+	// Graphic Config Values
 	public static int maxStuckProjectiles;
 	public static double aimHelperColor;
 	public static int aimHelperPackedColor = 0xFFFFFFFF;
 	public static boolean enableAimHelper;
-	public static boolean authSwitchCamera;
 	public static boolean bloodEffects;
 	public static boolean aimingPovCorrection;
 	public static boolean showEpicFightAttributesInTooltip;
@@ -116,10 +117,15 @@ public class ClientConfig {
 	public static boolean enableTargetEntityGuide;
 	public static boolean enablePovAction;
 	public static boolean enableCosmetics;
+	
+	// Control Config Values
+	public static int longPressCounter;
+	public static boolean authSwitchCamera;
+	public static boolean resolveKeyConflicts;
 	public static Set<Item> combatPreferredItems;
 	public static Set<Item> miningPreferredItems;
 	
-	// UI configurations
+	// UI Config value
 	public static boolean showTargetIndicator;
 	public static HealthBarVisibility healthBarVisibility;
 	public static int staminaBarX;
@@ -146,12 +152,10 @@ public class ClientConfig {
 			return;
 		}
 		
-		longPressCounter = LONG_PRESS_COUNTER.get();
 		maxStuckProjectiles = MAX_STUCK_PROJECTILES.get();
 		aimHelperColor = AIM_HELPER_COLOR.get();
 		aimHelperPackedColor = ColorSlider.rgbColor(aimHelperColor);
 		enableAimHelper = ENABLE_AIM_HELPER.get();
-		authSwitchCamera = AUTO_SWITCH_CAMERA.get();
 		bloodEffects = BLOOD_EFFECTS.get();
 		aimingPovCorrection = AIMING_POV_CORRECTION.get();
 		showEpicFightAttributesInTooltip = SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get();
@@ -162,6 +166,9 @@ public class ClientConfig {
 		enablePovAction = ENABLE_POV_ACTION.get();
 		enableCosmetics = ENABLE_COSMETICS.get();
 		
+		longPressCounter = LONG_PRESS_COUNTER.get();
+		authSwitchCamera = AUTO_SWITCH_CAMERA.get();
+		resolveKeyConflicts = RESOLVE_KEY_CONFLICTS.get();
 		combatPreferredItems = BATTLE_MODE_SWITCHING_ITEMS.get().stream()
 				.map(itemName -> ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(itemName)))
 				.collect(Collectors.toSet());
@@ -207,14 +214,9 @@ public class ClientConfig {
     }
 	
 	public static void saveChanges() {
-		if (longPressCounter != LONG_PRESS_COUNTER.get()) LONG_PRESS_COUNTER.set(longPressCounter);
 		if (maxStuckProjectiles != MAX_STUCK_PROJECTILES.get()) MAX_STUCK_PROJECTILES.set(maxStuckProjectiles);
-		if (aimHelperColor != AIM_HELPER_COLOR.get()) {
-			AIM_HELPER_COLOR.set(aimHelperColor);
-			aimHelperPackedColor = ColorSlider.rgbColor(aimHelperColor);
-		}
+		if (aimHelperColor != AIM_HELPER_COLOR.get()) { AIM_HELPER_COLOR.set(aimHelperColor); aimHelperPackedColor = ColorSlider.rgbColor(aimHelperColor); }
 		if (enableAimHelper != ENABLE_AIM_HELPER.get()) ENABLE_AIM_HELPER.set(enableAimHelper);
-		if (authSwitchCamera != AUTO_SWITCH_CAMERA.get()) AUTO_SWITCH_CAMERA.set(authSwitchCamera);
 		if (bloodEffects != BLOOD_EFFECTS.get()) BLOOD_EFFECTS.set(bloodEffects);
 		if (aimingPovCorrection != AIMING_POV_CORRECTION.get()) AIMING_POV_CORRECTION.set(aimingPovCorrection);
 		if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get()) SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip);
@@ -225,13 +227,15 @@ public class ClientConfig {
 		if (enablePovAction != ENABLE_POV_ACTION.get()) ENABLE_POV_ACTION.set(enablePovAction);
 		if (enableCosmetics != ENABLE_COSMETICS.get()) ENABLE_COSMETICS.set(enableCosmetics);
 		
+		if (longPressCounter != LONG_PRESS_COUNTER.get()) LONG_PRESS_COUNTER.set(longPressCounter);
+		if (authSwitchCamera != AUTO_SWITCH_CAMERA.get()) AUTO_SWITCH_CAMERA.set(authSwitchCamera);
+		if (resolveKeyConflicts != RESOLVE_KEY_CONFLICTS.get()) RESOLVE_KEY_CONFLICTS.set(resolveKeyConflicts);
 		if (!combatPreferredItems.equals(BATTLE_MODE_SWITCHING_ITEMS.get().stream()
 				.map(itemName -> ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(itemName)))
 				.collect(Collectors.toSet()))
 		) {
 			BATTLE_MODE_SWITCHING_ITEMS.set(combatPreferredItems.stream().map((item) -> ForgeRegistries.ITEMS.getKey(item).toString()).collect(Collectors.toList()));
 		}
-		
 		if (!miningPreferredItems.equals(MINING_MODE_SWITCHING_ITEMS.get().stream()
 				.map(itemName -> ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(itemName)))
 				.collect(Collectors.toSet()))

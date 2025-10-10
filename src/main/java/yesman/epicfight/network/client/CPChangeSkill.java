@@ -50,7 +50,7 @@ public class CPChangeSkill {
 	public static void handle(CPChangeSkill msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
 			EpicFightCapabilities.getUnparameterizedEntityPatch(ctx.get().getSender(), ServerPlayerPatch.class).ifPresent(playerpatch -> {
-				playerpatch.getSkill(msg.skillSlot).setSkill(msg.skill);
+				boolean skillEquipped = playerpatch.getSkill(msg.skillSlot).setSkill(msg.skill);
 				
 				if (msg.skill != null) {
 					if (msg.skill.getCategory().learnable()) {
@@ -59,14 +59,12 @@ public class CPChangeSkill {
 					
 					if (msg.consumeXp) {
 						playerpatch.getOriginal().giveExperienceLevels(-msg.skill.getRequiredXp());
-					} else {
-						if (!playerpatch.getOriginal().isCreative()) {
-							playerpatch.getOriginal().getInventory().removeItem(playerpatch.getOriginal().getInventory().getItem(msg.itemSlotIndex));
-						}
+					} else if (msg.itemSlotIndex >= 0) {
+						if (!playerpatch.getOriginal().isCreative()) playerpatch.getOriginal().getInventory().removeItem(playerpatch.getOriginal().getInventory().getItem(msg.itemSlotIndex));
 					}
 				}
 				
-				EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(new SPSetRemotePlayerSkill(playerpatch.getOriginal().getId(), msg.skillSlot, msg.skill), playerpatch.getOriginal());
+				if (skillEquipped) EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(new SPSetRemotePlayerSkill(playerpatch.getOriginal().getId(), msg.skillSlot, msg.skill), playerpatch.getOriginal());
 			});
 		});
 		ctx.get().setPacketHandled(true);

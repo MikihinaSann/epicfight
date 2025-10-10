@@ -540,6 +540,13 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 		this.original.getEntityData().set(STUN_SHIELD, value);
 	}
 	
+	/**
+	 * Unlike to {@link LivingEntityPatch#setStunShield}, 
+	 */
+	public void deflateStunShield(float amount) {
+		
+	}
+	
 	public float getMaxStunShield() {
 		return this.original.getEntityData().get(MAX_STUN_SHIELD).floatValue();
 	}

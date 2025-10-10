@@ -229,6 +229,14 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Fixed the stun animation list not showing on datapack editor (#2106)
  *  Now the shield blocking has higher priority than guard skills (#2104)
  *  
+ *  ***************************************************************
+ *  20.12.11
+ *  
+ *  Added a new config option that decides player's next behavior for conflicting keybinds #2107
+ *  Optimized Compute shader so that it supports old graphic cards
+ *  Changed 3D Skin Layers dependency 1.9.0 -> 1.9.1 (Warn: Older versions will crash)
+ *  Fixed the skill overlay (e.g. Berserker's red stain) still remaining after removing the skill in multiplay
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)
