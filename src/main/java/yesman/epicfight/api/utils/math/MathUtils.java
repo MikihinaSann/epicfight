@@ -18,6 +18,10 @@ import org.joml.Vector4i;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public class MathUtils {
@@ -250,20 +254,20 @@ public class MathUtils {
 		return min;
 	}
 	
-	@Deprecated(forRemoval = true)
+	@Deprecated(forRemoval = true, since = "1.21.1")
 	public static void translateStack(PoseStack poseStack, OpenMatrix4f mat) {
 		poseStack.translate(mat.m30, mat.m31, mat.m32);
 	}
 	
 	private static final OpenMatrix4f OPEN_MATRIX_BUFFER = new OpenMatrix4f();
 	
-	@Deprecated(forRemoval = true)
+	@Deprecated(forRemoval = true, since = "1.21.1")
 	public static void rotateStack(PoseStack poseStack, OpenMatrix4f mat) {
 		OpenMatrix4f.transpose(mat, OPEN_MATRIX_BUFFER);
 		poseStack.mulPose(getQuaternionFromMatrix(OPEN_MATRIX_BUFFER));
 	}
 	
-	@Deprecated(forRemoval = true)
+	@Deprecated(forRemoval = true, since = "1.21.1")
 	public static void scaleStack(PoseStack poseStack, OpenMatrix4f mat) {
 		OpenMatrix4f.transpose(mat, OPEN_MATRIX_BUFFER);
 		Vector3f vector = getScaleVectorFromMatrix(OPEN_MATRIX_BUFFER);
@@ -477,6 +481,23 @@ public class MathUtils {
 		return candidates[getLeastAngleVectorIdx(src, candidates)];
 	}
 	
+	public static boolean canBeSeen(Entity target, Entity watcher, double maxDistance) {
+		if (target.level() != watcher.level()) {
+			return false;
+		}
+		
+		double sqr = maxDistance * maxDistance;
+		Level level = target.level();
+		Vec3 vec1 = watcher.getEyePosition();
+		Vec3 vec2 = target.position().add(0.0D, target.getBbHeight() * 0.15D, 0.0D);
+		Vec3 vec3 = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
+		Vec3 vec4 = target.position().add(0.0D, target.getBbHeight() * 0.95D, 0.0D);
+		
+		return vec1.distanceToSqr(vec2) < sqr && level.clip(new ClipContext(vec1, vec2, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, watcher)).getType() == HitResult.Type.MISS ||
+				vec1.distanceToSqr(vec3) < sqr && level.clip(new ClipContext(vec1, vec3, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, watcher)).getType() == HitResult.Type.MISS ||
+				vec1.distanceToSqr(vec4) < sqr && level.clip(new ClipContext(vec1, vec4, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, watcher)).getType() == HitResult.Type.MISS;
+	}
+	
 	public static int packColor(int r, int g, int b, int a) {
 		int ir = r << 16;
 		int ig = g << 8;
@@ -497,7 +518,7 @@ public class MathUtils {
 		result.z = b;
 		result.w = a;
 	}
-
+	
 	public static byte normalIntValue(float pNum) {
 		return (byte)((int)(Mth.clamp(pNum, -1.0F, 1.0F) * 127.0F) & 255);
 	}

@@ -41,6 +41,7 @@ import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.HitEntityList;
+import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.particle.HitParticleType;
@@ -235,7 +236,7 @@ public class AttackAnimation extends ActionAnimation {
 				
 				if (trueEntity != null && trueEntity.isAlive() && !entitypatch.getCurrentlyAttackTriedEntities().contains(trueEntity) && !entitypatch.isTargetInvulnerable(target)) {
 					if (target instanceof LivingEntity || target instanceof PartEntity) {
-						if (entity.hasLineOfSight(target)) {
+						if (MathUtils.canBeSeen(target, entity, target.distanceTo(entity) + Math.max(target.getBbWidth(), target.getBbHeight()))) {
 							EpicFightDamageSource damagesource = this.getEpicFightDamageSource(entitypatch, target, phase);
 							int prevInvulTime = target.invulnerableTime;
 							target.invulnerableTime = 0;

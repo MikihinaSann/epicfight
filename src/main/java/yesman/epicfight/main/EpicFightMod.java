@@ -237,6 +237,11 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  Changed 3D Skin Layers dependency 1.9.0 -> 1.9.1 (Warn: Older versions will crash)
  *  Fixed the skill overlay (e.g. Berserker's red stain) still remaining after removing the skill in multiplay
  *  
+ *  ***************************************************************
+ *  20.12.12
+ *  
+ *  Enhanced the sight checking to allow hitting mobs where only the legs are visible #2086
+ *  
  *  --- TO DO ---
  *  
  *  Update language files (always)
