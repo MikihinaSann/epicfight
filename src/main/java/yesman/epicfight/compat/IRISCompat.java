@@ -3,6 +3,9 @@ package yesman.epicfight.compat;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
+import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.renderer.SodiumFakeBlockRenderer;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
 
 public class IRISCompat implements ICompatModule {
@@ -17,7 +20,10 @@ public class IRISCompat implements ICompatModule {
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
-		ComputeShaderProvider.initIris();
+		eventBus.<FMLClientSetupEvent>addListener(event -> {
+			ComputeShaderProvider.initIris();
+			event.enqueueWork(() -> ClientEngine.getInstance().renderEngine.reloadFakeBlockRenderer(new SodiumFakeBlockRenderer()));
+		});
 	}
 	
 	@OnlyIn(Dist.CLIENT)

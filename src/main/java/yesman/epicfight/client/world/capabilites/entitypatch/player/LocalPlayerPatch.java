@@ -364,7 +364,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	@Override
 	public boolean shouldBlockMoving() {
-		return ControlEngine.isKeyDown(this.minecraft.options.keyDown);
+		return ControlEngine.isKeyDown(this.minecraft.options.keyDown) || ControlEngine.isKeyDown(this.minecraft.options.keyShift);
 	}
 	
 	@Override
@@ -519,8 +519,10 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			ViewLimit viewLimit = this.getPovSettings().viewLimit();
 			
 			if (viewLimit != null) {
-				float yRotDest = this.original.getYRot() + (float)yRot * 0.15F;
-				float yRotClamped = Mth.clamp(yRotDest, this.getYRot() + viewLimit.yRotMin(), this.getYRot() + viewLimit.yRotMax());
+				float yCamera = Mth.wrapDegrees(this.original.getYRot());
+				float yBody = MathUtils.findNearestRotation(yCamera, this.getYRot());
+				float yRotDest = yCamera + (float)yRot * 0.15F;
+				float yRotClamped = Mth.clamp(yRotDest, yBody + viewLimit.yRotMin(), yBody + viewLimit.yRotMax());
 				
 				if (yRotDest != yRotClamped) {
 					return 0.0D;

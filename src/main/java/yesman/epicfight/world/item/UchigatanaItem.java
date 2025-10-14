@@ -25,6 +25,6 @@ public class UchigatanaItem extends WeaponItem {
 	@Override
 	public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
 		tooltip.add(Component.literal(""));
-		tooltip.add(Component.translatable("item." + EpicFightMod.MODID + ".uchigatana.tooltip"));
+		tooltip.add(Component.translatable(EpicFightMod.format("item.%s.uchigatana.tooltip")));
 	}
 }

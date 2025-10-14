@@ -2,6 +2,7 @@ package yesman.epicfight.client.events.engine;
 
 import java.util.Set;
 
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.lwjgl.glfw.GLFW;
 
 import com.google.common.collect.Sets;
@@ -16,9 +17,11 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -43,6 +46,7 @@ import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.entity.eventlistener.MovementInputEvent;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 import yesman.epicfight.world.entity.eventlistener.SkillCastEvent;
@@ -181,27 +185,23 @@ public class ControlEngine {
 		
 		if (isKeyDown(EpicFightKeyMappings.GUARD)) {
 			if (this.playerPatch.isEpicFightMode() && this.currentHoldingKey != EpicFightKeyMappings.GUARD) {
-				if (!this.playerPatch.isHoldingAny()) {
-					boolean hasUseAction = false;
+				boolean shouldCancelGuard = false;
+				
+				if (this.playerPatch.isHoldingAny()) {
+					shouldCancelGuard = true;
+				} else if (this.player.getMainHandItem().getUseAnimation() == UseAnim.BLOCK || this.player.getOffhandItem().getUseAnimation() == UseAnim.BLOCK) {
+					shouldCancelGuard = true;
+				}
+				
+				if (!shouldCancelGuard) {
+					SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
 					
-					// Support for traditional guard keybind
-					if (ClientConfig.resolveKeyConflicts && EpicFightKeyMappings.GUARD.getKey().equals(this.options.keyUse.getKey())) {
-						// Check if the item has any use effect and if true, player won't guard
-						if (this.player.getMainHandItem().getUseAnimation() != UseAnim.NONE || this.player.getOffhandItem().getUseAnimation() != UseAnim.NONE) {
-							hasUseAction = true;
+					if (skillCastEvent.shouldReserveKey()) {
+						if (!this.player.isSpectator()) {
+							this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
 						}
-					}
-					
-					if (!hasUseAction) {
-						SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
-						
-						if (skillCastEvent.shouldReserveKey()) {
-							if (!this.player.isSpectator()) {
-								this.reserveKey(SkillSlots.GUARD, EpicFightKeyMappings.GUARD);
-							}
-						} else {
-							this.lockHotkeys();
-						}
+					} else {
+						this.lockHotkeys();
 					}
 				}
 			}
@@ -585,9 +585,55 @@ public class ControlEngine {
 				BlockPos bp = ((BlockHitResult) controlEngine.minecraft.hitResult).getBlockPos();
 				BlockState bs = controlEngine.minecraft.level.getBlockState(bp);
 				
+				// Cancel digging when the player swings combat preferred items
 				if (!controlEngine.player.getMainHandItem().getItem().canAttackBlock(bs, controlEngine.player.level(), bp, controlEngine.player) || controlEngine.player.getMainHandItem().getDestroySpeed(bs) <= 1.0F) {
 					event.setSwingHand(false);
 					event.setCanceled(true);
+				}
+			}
+			
+			if (
+				event.getKeyMapping() == controlEngine.minecraft.options.keyUse &&
+				event.getKeyMapping().getKey().equals(EpicFightKeyMappings.GUARD.getKey())
+			) {
+				MutableBoolean canGuard = new MutableBoolean();
+				
+				EpicFightCapabilities.getUnparameterizedEntityPatch(controlEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+					SkillContainer skillcontainer = playerpatch.getSkill(SkillSlots.GUARD);
+					
+					if (skillcontainer.getSkill() != null && skillcontainer.getSkill().canExecute(skillcontainer)) {
+						canGuard.setValue(true);
+					}
+				});
+				
+				if (controlEngine.minecraft.hitResult.getType() == HitResult.Type.MISS) {
+					if (canGuard.booleanValue() && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
+						event.setSwingHand(false);
+						event.setCanceled(true);
+					}
+				} else {
+					if (canGuard.booleanValue()) {
+						InteractionResult interactionResult = switch (controlEngine.minecraft.hitResult.getType()) {
+							case ENTITY -> {
+								yield ((EntityHitResult)controlEngine.minecraft.hitResult).getEntity().interact(controlEngine.minecraft.player, event.getHand());
+							}
+							case BLOCK -> {
+								BlockHitResult blockHitResult = ((BlockHitResult)controlEngine.minecraft.hitResult);
+								BlockPos blockpos = blockHitResult.getBlockPos();
+								BlockState blockstate = controlEngine.minecraft.level.getBlockState(blockpos);
+								yield blockstate.use(controlEngine.minecraft.player.level(), controlEngine.minecraft.player, event.getHand(), blockHitResult);
+							}
+							default -> throw new IllegalArgumentException();
+						};
+						
+						if (interactionResult.consumesAction() && ClientConfig.keyConflictResolveScope.cancelInteraction()) {
+							event.setSwingHand(false);
+							event.setCanceled(true);
+						} else if (!interactionResult.consumesAction() && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
+							event.setSwingHand(false);
+							event.setCanceled(true);
+						}
+					}
 				}
 			}
 		}

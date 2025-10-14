@@ -158,6 +158,27 @@ public class MathUtils {
 		return Mth.lerp(progression, from, to);
 	}
 	
+	public static float findNearestRotation(float src, float rotation) {
+		float diff = Math.abs(src - rotation);
+		float idealRotation = rotation;
+		int sign = Mth.sign(src - rotation);
+		
+		if (sign == 0) {
+			return rotation;
+		}
+		
+		while (true) {
+			float next = idealRotation + sign * 360.0F;
+			
+			if (Math.abs(src - next) > diff) {
+				return idealRotation;
+			}
+			
+			idealRotation = next;
+			diff = Math.abs(src - next);
+		}
+	}
+	
 	public static Vec3 getNearestVector(Vec3 from, Vec3... vectors) {
 		double minLength = 1000000.0D;
 		int index = 0;
@@ -489,9 +510,11 @@ public class MathUtils {
 		double sqr = maxDistance * maxDistance;
 		Level level = target.level();
 		Vec3 vec1 = watcher.getEyePosition();
-		Vec3 vec2 = target.position().add(0.0D, target.getBbHeight() * 0.15D, 0.0D);
-		Vec3 vec3 = target.position().add(0.0D, target.getBbHeight() * 0.5D, 0.0D);
-		Vec3 vec4 = target.position().add(0.0D, target.getBbHeight() * 0.95D, 0.0D);
+		
+		double height = target.getBoundingBox().maxY - target.getBoundingBox().minY;
+		Vec3 vec2 = target.position().add(0.0D, height * 0.15D, 0.0D);
+		Vec3 vec3 = target.position().add(0.0D, height * 0.5D, 0.0D);
+		Vec3 vec4 = target.position().add(0.0D, height * 0.95D, 0.0D);
 		
 		return vec1.distanceToSqr(vec2) < sqr && level.clip(new ClipContext(vec1, vec2, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, watcher)).getType() == HitResult.Type.MISS ||
 				vec1.distanceToSqr(vec3) < sqr && level.clip(new ClipContext(vec1, vec3, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, watcher)).getType() == HitResult.Type.MISS ||

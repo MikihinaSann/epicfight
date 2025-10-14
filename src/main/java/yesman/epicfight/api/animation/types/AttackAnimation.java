@@ -22,6 +22,8 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.entity.PartEntity;
@@ -236,7 +238,9 @@ public class AttackAnimation extends ActionAnimation {
 				
 				if (trueEntity != null && trueEntity.isAlive() && !entitypatch.getCurrentlyAttackTriedEntities().contains(trueEntity) && !entitypatch.isTargetInvulnerable(target)) {
 					if (target instanceof LivingEntity || target instanceof PartEntity) {
-						if (MathUtils.canBeSeen(target, entity, target.distanceTo(entity) + Math.max(target.getBbWidth(), target.getBbHeight()))) {
+						AABB aabb = target.getBoundingBox();
+						
+						if (MathUtils.canBeSeen(target, entity, target.distanceTo(entity) + aabb.getCenter().distanceTo(new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ)))) {
 							EpicFightDamageSource damagesource = this.getEpicFightDamageSource(entitypatch, target, phase);
 							int prevInvulTime = target.invulnerableTime;
 							target.invulnerableTime = 0;

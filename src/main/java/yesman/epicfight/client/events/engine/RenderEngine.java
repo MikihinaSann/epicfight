@@ -54,6 +54,7 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -77,6 +78,7 @@ import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.
 import yesman.epicfight.api.client.forgeevent.PatchedRenderersEvent;
 import yesman.epicfight.api.client.forgeevent.RenderEnderDragonEvent;
 import yesman.epicfight.api.client.model.Meshes;
+import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.ClientEngine;
@@ -89,8 +91,9 @@ import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.mesh.HumanoidMesh;
 import yesman.epicfight.client.renderer.AimHelperRenderer;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
+import yesman.epicfight.client.renderer.FakeBlockRenderer;
 import yesman.epicfight.client.renderer.FirstPersonRenderer;
-import yesman.epicfight.client.renderer.ImaginaryBlockRenderer;
+import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCreeperRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCustomEntityRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCustomHumanoidEntityRenderer;
@@ -145,14 +148,14 @@ public class RenderEngine {
 	public final VersionNotifier versionNotifier;
 	public final Minecraft minecraft;
 	
-	private final Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers;
+	private Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers;
 	private final BiMap<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entityRendererProvider;
 	private final Map<EntityType<?>, PatchedEntityRenderer> entityRendererCache;
 	private final Map<Item, RenderItemBase> itemRendererMapByInstance;
 	private final Map<Class<?>, RenderItemBase> itemRendererMapByClass;
 	private final Map<UUID, BossPatch> bossEventOwners = Maps.newConcurrentMap();
 	private final OverlayManager overlayManager;
-	private final ImaginaryBlockRenderer imaginaryBlockRenderer;
+	private FakeBlockRenderer fakeBlockRenderer;
 	
 	private AimHelperRenderer aimHelper;
 	private FirstPersonRenderer firstPersonRenderer;
@@ -175,8 +178,10 @@ public class RenderEngine {
 		this.itemRendererMapByInstance = Maps.newHashMap();
 		this.itemRendererMapByClass = Maps.newHashMap();
 		this.overlayManager = new OverlayManager();
-		this.imaginaryBlockRenderer = new ImaginaryBlockRenderer();
-		
+		this.fakeBlockRenderer = new VanillaFakeBlockRenderer();
+	}
+	
+	public void initialize() {
 		Map<ResourceLocation, Function<JsonElement, RenderItemBase>> builder = Maps.newHashMap();
 		
 		builder.put(ResourceLocation.withDefaultNamespace("base"), RenderItemBase::new);
@@ -189,6 +194,10 @@ public class RenderEngine {
 		ModLoader.get().postEvent(new PatchedRenderersEvent.RegisterItemRenderer(builder));
 		
 		this.itemRenderers = ImmutableMap.copyOf(builder);
+	}
+	
+	public void reloadFakeBlockRenderer(FakeBlockRenderer fakeBlockRenderer) {
+		this.fakeBlockRenderer = fakeBlockRenderer;
 	}
 	
 	public void reloadEntityRenderers(EntityRendererProvider.Context context) {
@@ -511,7 +520,8 @@ public class RenderEngine {
 					
 					if (viewLimit != null) {
 						float clampedXRot = Mth.clamp(event.getPitch(), viewLimit.xRotMin(), viewLimit.xRotMax());
-						float clampedYRot = Mth.clamp(event.getYaw(), localPlayerPatch.getYRot() + viewLimit.yRotMin(), localPlayerPatch.getYRot() + viewLimit.yRotMax());
+						float bodyY = MathUtils.findNearestRotation(event.getYaw(), localPlayerPatch.getYRot());
+						float clampedYRot = Mth.clamp(event.getYaw(), bodyY + viewLimit.yRotMin(), bodyY + viewLimit.yRotMax());
 						
 						if (Float.compare(clampedXRot, event.getPitch()) != 0 || Float.compare(clampedYRot, event.getYaw()) != 0) {
 							localPlayerPatch.fixFpvRotation(clampedXRot, localPlayerPatch.getYRot());
@@ -832,7 +842,15 @@ public class RenderEngine {
 		
 		@SubscribeEvent
 		public static void renderWorldLast(RenderLevelStageEvent event) {
-			if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
+			if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
+				if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && renderEngine.minecraft.hitResult.getType() == HitResult.Type.BLOCK) {
+					EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+						if (!playerpatch.canPlayAttackAnimation()) {
+							renderEngine.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), renderEngine.minecraft.renderBuffers().bufferSource(), renderEngine.minecraft.level, ((BlockHitResult)renderEngine.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
+						}
+					});
+				}
+			} else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
 				if (ClientConfig.aimingPovCorrection && renderEngine.zoomCount > 0 && renderEngine.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
 					renderEngine.aimHelper.doRender(event.getPoseStack(), event.getPartialTick());
 				}
@@ -854,15 +872,9 @@ public class RenderEngine {
 		
 		@SubscribeEvent
 		public static void renderBlockHighlight(RenderHighlightEvent.Block event) {
-			if (!ClientConfig.enableMineBlockGuide) {
-				return;
-			}
-			
 			EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 				if (playerpatch.canPlayAttackAnimation()) {
 					event.setCanceled(true);
-				} else {
-					renderEngine.imaginaryBlockRenderer.render(event.getCamera(), event.getPoseStack(), event.getMultiBufferSource(), renderEngine.minecraft.level, event.getTarget().getBlockPos(), 1.0F, 0, 0, 0.5F);					
 				}
 			});
 		}
