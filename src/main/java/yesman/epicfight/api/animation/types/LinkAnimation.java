@@ -86,7 +86,7 @@ public class LinkAnimation extends DynamicAnimation implements AnimationAccessor
 	
 	@Override
 	public Pose getPoseByTime(LivingEntityPatch<?> entitypatch, float time, float partialTicks) {
-		Pose nextStartingPose = this.toAnimation.get().getPoseByTime(entitypatch, this.nextStartTime, 1.0F);
+		Pose nextStartingPose = this.toAnimation.get().getPoseByTime(entitypatch, this.nextStartTime, partialTicks);
 		
 		/**
 		 * Update dest pose

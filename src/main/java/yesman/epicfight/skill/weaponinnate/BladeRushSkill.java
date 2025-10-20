@@ -24,6 +24,7 @@ import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Animations;
+import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillCategories;
@@ -152,7 +153,7 @@ public class BladeRushSkill extends WeaponInnateSkill {
 	
 	@Override
 	public boolean checkExecuteCondition(SkillContainer container) {
-		return container.getExecutor().getTarget() != null && container.getExecutor().getTarget().isAlive();
+		return container.getExecutor().getTarget() != null && container.getExecutor().getTarget().isAlive() && container.getExecutor().getOriginal().distanceToSqr(container.getExecutor().getTarget()) < 100.0D;
 	}
 	
 	@OnlyIn(Dist.CLIENT)
@@ -166,7 +167,11 @@ public class BladeRushSkill extends WeaponInnateSkill {
 		Skill skill = container.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND).getInnateSkill(container.getExecutor(), container.getExecutor().getOriginal().getItemInHand(InteractionHand.MAIN_HAND));
 		
 		if (this.equals(skill) && !this.checkExecuteCondition(container)) {
-			Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("gui.epicfight.warn.no_target"), false);
+			if (container.getExecutor().getTarget() == null || !container.getExecutor().getTarget().isAlive()) {
+				Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.no_target")), false);
+			} else {
+				Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.target_too_far")), false);
+			}
 		}
 	}
 }

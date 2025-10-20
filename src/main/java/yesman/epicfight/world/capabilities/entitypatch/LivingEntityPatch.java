@@ -237,13 +237,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	public void poseTick(DynamicAnimation animation, Pose pose, float elapsedTime, float partialTick) {
 		if (pose.hasTransform("Head") && this.armature.hasJoint("Head")) {
 			if (animation.doesHeadRotFollowEntityHead()) {
-				float headRotO = this.original.yBodyRotO - this.original.yHeadRotO;
-				float headRot = this.original.yBodyRot - this.original.yHeadRot;
-				float partialHeadRot = MathUtils.lerpBetween(headRotO, headRot, partialTick);
+				float headRelativeRot = Mth.rotLerp(partialTick, Mth.wrapDegrees(this.original.yBodyRotO - this.original.yHeadRotO), Mth.wrapDegrees(this.original.yBodyRot - this.original.yHeadRot));
 				OpenMatrix4f toOriginalRotation = new OpenMatrix4f(this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head"))).removeScale().removeTranslation().invert();
 				Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
 				Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
-				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(partialHeadRot, yAxis).rotateDeg(-this.original.getXRot(), xAxis);
+				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(headRelativeRot, yAxis).rotateDeg(-Mth.rotLerp(partialTick, this.original.xRotO, this.original.getXRot()), xAxis);
 				pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
 			}
 		}

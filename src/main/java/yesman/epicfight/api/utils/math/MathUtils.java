@@ -307,12 +307,12 @@ public class MathUtils {
 	
 	public static double getAngleBetween(Vec3f a, Vec3f b) {
 		double cos = (a.x * b.x + a.y * b.y + a.z * b.z);
-		return Math.acos(cos);
+		return Math.toDegrees(Math.acos(cos));
 	}
 	
 	public static double getAngleBetween(Vec3 a, Vec3 b) {
 		double cos = (a.x * b.x + a.y * b.y + a.z * b.z);
-		return Math.acos(cos);
+		return Math.toDegrees(Math.safeAcos(cos));
 	}
 	
 	public static float getAngleBetween(Quaternionf a, Quaternionf b) {

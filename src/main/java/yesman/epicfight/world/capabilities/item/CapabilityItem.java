@@ -266,8 +266,6 @@ public class CapabilityItem {
 		toRemote.send((first, others) -> {
 			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(first, (ServerPlayer)playerpatch.getOriginal(), others);
 		});
-		
-		
 	}
 	
 	public SoundEvent getSmashingSound() {

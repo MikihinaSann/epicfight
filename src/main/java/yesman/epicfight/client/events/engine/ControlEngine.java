@@ -159,7 +159,7 @@ public class ControlEngine {
         InputManager.triggerOnPress(EpicFightInputActions.MOBILITY, true, this::maybePerformMoverSkill);
         
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
-		
+
         InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this.playerPatch::toggleLockOn);
         
         if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
@@ -293,6 +293,24 @@ public class ControlEngine {
 			disableHotbarSlotPresses();
 			consumeDropKeyClicks();
 		}
+
+        if (this.minecraft.level != null && ClientEngine.getInstance().renderEngine.isTPSMode() && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LEFT)) {
+                ClientConfig.cameraHorizontalLocation = Math.min(10, ClientConfig.cameraHorizontalLocation + 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RIGHT)) {
+                ClientConfig.cameraHorizontalLocation = Math.max(-10, ClientConfig.cameraHorizontalLocation - 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_UP)) {
+                ClientConfig.cameraVerticalLocation = Math.min(5, ClientConfig.cameraVerticalLocation + 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_DOWN)) {
+                ClientConfig.cameraVerticalLocation = Math.max(-2, ClientConfig.cameraVerticalLocation - 1);
+            }
+        }
 	}
 
     private void openSkillEditor() {

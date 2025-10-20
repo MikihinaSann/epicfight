@@ -283,7 +283,6 @@ public class AbstractClientPlayerPatch<T extends AbstractClientPlayer> extends P
 	public boolean overrideRender() {
 		RenderEpicFightPlayerEvent renderepicfightplayerevent = new RenderEpicFightPlayerEvent(this, !ClientConfig.enableOriginalModel || this.isEpicFightMode());
 		MinecraftForge.EVENT_BUS.post(renderepicfightplayerevent);
-		
 		return renderepicfightplayerevent.getShouldRender();
 	}
 	
@@ -296,17 +295,12 @@ public class AbstractClientPlayerPatch<T extends AbstractClientPlayer> extends P
 	public void poseTick(DynamicAnimation animation, Pose pose, float elapsedTime, float partialTick) {
 		if (pose.hasTransform("Head") && this.armature.hasJoint("Head")) {
 			if (animation.doesHeadRotFollowEntityHead()) {
-				float headRotO = this.modelYRotO - this.original.yHeadRotO;
-				float headRot = this.modelYRot - this.original.yHeadRot;
-				float partialHeadRot = Mth.wrapDegrees(MathUtils.lerpBetween(headRotO, headRot, partialTick));
-				float xRot = -this.original.getXRot();
-				partialHeadRot = Mth.clamp(partialHeadRot, -90.0F, 90.0F);
-				
-				OpenMatrix4f toOriginalRotation = this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head")).removeScale().removeTranslation().invert();
+				float headRelativeRot = Mth.rotLerp(partialTick, Mth.wrapDegrees(this.modelYRotO - this.original.yHeadRotO), Mth.wrapDegrees(this.modelYRot - this.original.yHeadRot));
+				OpenMatrix4f headTransform = this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head"));
+				OpenMatrix4f toOriginalRotation = headTransform.removeScale().removeTranslation().invert();
 				Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
 				Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
-				
-				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(partialHeadRot, yAxis).rotateDeg(xRot, xAxis);
+				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(headRelativeRot, yAxis).rotateDeg(-Mth.rotLerp(partialTick, this.original.xRotO, this.original.getXRot()), xAxis);
 				pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
 			}
 		}

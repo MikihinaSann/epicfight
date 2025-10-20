@@ -97,6 +97,14 @@ public class EpicFightKeyMappings {
             EpicFightMod.format("key.%s.combat")
         );
 	
+	public static final KeyMapping SHIFT_TARGET =
+		new KeyMapping(
+			EpicFightMod.format("key.%s.shift_target"),
+			InputConstants.Type.MOUSE,
+			InputConstants.MOUSE_BUTTON_RIGHT,
+			EpicFightMod.format("key.%s.combat")
+		);
+	
 	// Systemical key mappings especially for debugging
 	public static final KeyMapping SWITCH_VANILLA_MODEL_DEBUGGING =
         new KeyMapping(
@@ -118,6 +126,7 @@ public class EpicFightKeyMappings {
 		event.register(MOVER_SKILL);
 		event.register(SKILL_EDIT);
 		event.register(LOCK_ON);
+		event.register(SHIFT_TARGET);
 		event.register(OPEN_CONFIG_SCREEN);
 		event.register(SWITCH_VANILLA_MODEL_DEBUGGING);
 	}

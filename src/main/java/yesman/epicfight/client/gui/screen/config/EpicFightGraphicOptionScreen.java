@@ -13,7 +13,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
+import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.gui.datapack.screen.MessageScreen;
 import yesman.epicfight.client.gui.widgets.ColorSlider;
 import yesman.epicfight.client.gui.widgets.EpicFightOptionList;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
@@ -64,31 +66,23 @@ public class EpicFightGraphicOptionScreen extends EpicFightOptionSubScreen {
 		this.optionsList.addSmall(showTargetIndicatorButton, healthBarVisibilityOptionButton);
 		buttonHeight += 24;
 		
-		Button aimingCorrectionButton =
-			Button.builder(Component.translatable(EpicFightMod.format("gui.%s.aiming_correction." + (ClientConfig.aimingPovCorrection ? "on" : "off"))),
-				button -> {
-					ClientConfig.aimingPovCorrection = !ClientConfig.aimingPovCorrection;
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.aiming_correction." + (ClientConfig.aimingPovCorrection ? "on" : "off"))));
-				}
-			)
-			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
-			.size(160, 20)
-			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.aiming_correction.tooltip"))))
-			.build();
+		Button cameraSetupButton = Button.builder(Component.translatable(EpicFightMod.format("gui.%s.tps_setup")), (button) -> {
+			if (Minecraft.getInstance().level == null || Minecraft.getInstance().player == null) {
+				Minecraft.getInstance().setScreen(new MessageScreen<> ("Warning", "You can open camera setup screen only after entering the world", this, (button2) -> Minecraft.getInstance().setScreen(this), 300, 70).autoCalculateHeight());
+			} else {
+				Minecraft.getInstance().setScreen(new TPSSettingScreen(this));
+			}
+		}).pos(this.width / 2 + 5, this.height / 4 - 8).size(160, 20).tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.tps_setup.tooltip")))).build();
 		
-		Button enableAimHelperButton =
-			Button.builder(Component.translatable(EpicFightMod.format("gui.%s.aim_helper." + (ClientConfig.enableAimHelper ? "on" : "off"))),
-				button -> {
-					ClientConfig.enableAimHelper = !ClientConfig.enableAimHelper;
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.aim_helper." + (ClientConfig.enableAimHelper ? "on" : "off"))));
-				}
-			)
-			.pos(this.width / 2 + 5, this.height / 4 - 8)
-			.size(160, 20)
-			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.aim_helper.tooltip"))))
-			.build();
+		Button cameraTypeButton = Button.builder(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.cameraMode.name()))), (button) -> {
+			ClientConfig.cameraMode = ClientConfig.cameraMode.nextEnum();
+			button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.cameraMode.name()))));
+			cameraSetupButton.active = ClientConfig.cameraMode.hasTPSTransition();
+		}).pos(this.width / 2 - 165, this.height / 4 + buttonHeight).size(160, 20).tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective.tooltip")))).build();
 		
-		this.optionsList.addSmall(aimingCorrectionButton, enableAimHelperButton);
+		cameraSetupButton.active = ClientConfig.cameraMode.hasTPSTransition();
+		this.optionsList.addSmall(cameraTypeButton, cameraSetupButton);
+		
 		buttonHeight += 24;
 		
 		Button bloodEffectsButton =
@@ -270,10 +264,10 @@ public class EpicFightGraphicOptionScreen extends EpicFightOptionSubScreen {
 				this.height / 4 + buttonHeight,
 				300,
 				20,
-				Component.translatable(EpicFightMod.format("gui.%s.aim_helper_color")),
+				Component.translatable(EpicFightMod.format("gui.%s.target_outline_color")),
 				ColorSlider.Style.CLASSIC,
-				ClientConfig.aimHelperColor,
-				(position, color) -> ClientConfig.aimHelperColor = position
+				ClientConfig.targetOutlineColor,
+				(position, color) -> ClientConfig.targetOutlineColor = position
 			)
 		);
 		

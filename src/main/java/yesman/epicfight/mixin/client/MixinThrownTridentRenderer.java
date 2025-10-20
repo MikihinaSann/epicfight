@@ -39,7 +39,7 @@ public abstract class MixinThrownTridentRenderer extends EntityRenderer<ThrownTr
 				Vec3 toOwnerHorizontalNorm = owner.position().subtract(tridentEntity.position()).subtract(0, toOwner.y, 0).normalize();
 				Vec3 toOwnerNorm = toOwner.normalize();
 				Vec3 rotAxis = toOwnerHorizontalNorm.cross(toOwnerNorm).normalize();
-				float deg = (float) (MathUtils.getAngleBetween(toOwnerNorm, toOwnerHorizontalNorm) * (180D / Math.PI));
+				float deg = (float)MathUtils.getAngleBetween(toOwnerNorm, toOwnerHorizontalNorm);
 				
 				poseStack.mulPose(QuaternionUtils.rotationDegrees(new Vector3f((float)rotAxis.x, (float)rotAxis.y, (float)rotAxis.z), deg));
 				poseStack.mulPose(QuaternionUtils.XP.rotationDegrees(90.0F));

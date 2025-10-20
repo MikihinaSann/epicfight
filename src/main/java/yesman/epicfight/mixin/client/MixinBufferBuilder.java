@@ -35,7 +35,7 @@ public abstract class MixinBufferBuilder {
 	@Shadow private boolean indexOnly;
 
 	@Shadow
-	private void putSortedQuadIndices(VertexFormat.IndexType indexType) {}
+	protected abstract void putSortedQuadIndices(VertexFormat.IndexType indexType);
 
 	@Inject(at = @At(value = "HEAD"), method = "setQuadSorting")
 	public void epicfight_setQuadSortOrigin(VertexSorting sorting, CallbackInfo ci) {

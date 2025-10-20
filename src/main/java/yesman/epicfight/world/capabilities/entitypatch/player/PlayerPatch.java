@@ -274,13 +274,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		this.yo = this.original.getY();
 		this.zo = this.original.getZ();
 	}
-
-	@Override
-	protected void clientTick(LivingEvent.LivingTickEvent event)
-	{
-		super.clientTick(event);
-	}
-
+	
 	/**
 	 * Use {@link PlayerPatch#getSkillContainerFor} instead to check null
 	 **/

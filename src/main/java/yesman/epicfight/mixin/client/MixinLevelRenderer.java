@@ -27,6 +27,7 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 @Mixin(value = LevelRenderer.class)
@@ -69,7 +70,11 @@ public class MixinLevelRenderer {
 		int local18
 	) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (playerpatch.shouldHighlightTarget(local14)) this.renderBuffers.outlineBufferSource().setColor(255, 40, 40, 255);
+			int color = ClientConfig.packedTargetOutlineColor;
+			int r = color >> 16 & 255;
+			int g = color >> 8 & 255;
+			int b = color & 255;
+			if (playerpatch.shouldHighlightTarget(local14)) this.renderBuffers.outlineBufferSource().setColor(r, g, b, 255);
 		});
 	}
 }
