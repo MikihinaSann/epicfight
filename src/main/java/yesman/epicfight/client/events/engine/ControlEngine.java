@@ -33,6 +33,7 @@ import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import yesman.epicfight.api.animation.types.EntityState;
+import yesman.epicfight.api.utils.FakeLevel;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
@@ -47,6 +48,7 @@ import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.entity.eventlistener.MovementInputEvent;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
 import yesman.epicfight.world.entity.eventlistener.SkillCastEvent;
@@ -576,6 +578,10 @@ public class ControlEngine {
 				return;
 			}
 			
+			if (controlEngine.minecraft.hitResult == null) {
+				return;
+			}
+			
 			if (
 				event.getKeyMapping() == controlEngine.minecraft.options.keyAttack &&
 				EpicFightKeyMappings.ATTACK.getKey() == controlEngine.minecraft.options.keyAttack.getKey() &&
@@ -596,42 +602,52 @@ public class ControlEngine {
 				event.getKeyMapping() == controlEngine.minecraft.options.keyUse &&
 				event.getKeyMapping().getKey().equals(EpicFightKeyMappings.GUARD.getKey())
 			) {
-				MutableBoolean canGuard = new MutableBoolean();
+				MutableBoolean canGuard = new MutableBoolean(false);
+				MutableBoolean vanillaMode = new MutableBoolean(false);
 				
 				EpicFightCapabilities.getUnparameterizedEntityPatch(controlEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 					SkillContainer skillcontainer = playerpatch.getSkill(SkillSlots.GUARD);
+					
+					if (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.VANILLA) {
+						vanillaMode.setTrue();
+					}
 					
 					if (skillcontainer.getSkill() != null && skillcontainer.getSkill().canExecute(skillcontainer)) {
 						canGuard.setValue(true);
 					}
 				});
 				
-				if (controlEngine.minecraft.hitResult.getType() == HitResult.Type.MISS) {
-					if (canGuard.booleanValue() && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
-						event.setSwingHand(false);
-						event.setCanceled(true);
-					}
-				} else {
-					if (canGuard.booleanValue()) {
-						InteractionResult interactionResult = switch (controlEngine.minecraft.hitResult.getType()) {
-							case ENTITY -> {
-								yield ((EntityHitResult)controlEngine.minecraft.hitResult).getEntity().interact(controlEngine.minecraft.player, event.getHand());
-							}
-							case BLOCK -> {
-								BlockHitResult blockHitResult = ((BlockHitResult)controlEngine.minecraft.hitResult);
-								BlockPos blockpos = blockHitResult.getBlockPos();
-								BlockState blockstate = controlEngine.minecraft.level.getBlockState(blockpos);
-								yield blockstate.use(controlEngine.minecraft.player.level(), controlEngine.minecraft.player, event.getHand(), blockHitResult);
-							}
-							default -> throw new IllegalArgumentException();
-						};
-						
-						if (interactionResult.consumesAction() && ClientConfig.keyConflictResolveScope.cancelInteraction()) {
+				if (!vanillaMode.getValue()) {
+					if (controlEngine.minecraft.hitResult.getType() == HitResult.Type.MISS) {
+						if (canGuard.booleanValue() && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
 							event.setSwingHand(false);
 							event.setCanceled(true);
-						} else if (!interactionResult.consumesAction() && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
-							event.setSwingHand(false);
-							event.setCanceled(true);
+						}
+					} else {
+						if (canGuard.booleanValue()) {
+							InteractionResult interactionResult = switch (controlEngine.minecraft.hitResult.getType()) {
+								case ENTITY -> {
+									yield ((EntityHitResult)controlEngine.minecraft.hitResult).getEntity().interact(controlEngine.minecraft.player, event.getHand());
+								}
+								case BLOCK -> {
+									BlockHitResult blockHitResult = ((BlockHitResult)controlEngine.minecraft.hitResult);
+									BlockPos blockpos = blockHitResult.getBlockPos();
+									BlockState blockstate = controlEngine.minecraft.level.getBlockState(blockpos);
+									FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(controlEngine.minecraft.level.registryAccess());
+									FakeLevel.FakeClientPlayer fakePlayerForSimulation = FakeLevel.getFakePlayer(controlEngine.minecraft.player.getGameProfile());
+									
+									yield blockstate.use(fakeLevelForSimulation, fakePlayerForSimulation, event.getHand(), blockHitResult);
+								}
+								default -> throw new IllegalArgumentException();
+							};
+							
+							if (interactionResult != InteractionResult.PASS && ClientConfig.keyConflictResolveScope.cancelInteraction()) {
+								event.setSwingHand(false);
+								event.setCanceled(true);
+							} else if (interactionResult == InteractionResult.PASS && ClientConfig.keyConflictResolveScope.cancelItemUse()) {
+								event.setSwingHand(false);
+								event.setCanceled(true);
+							}
 						}
 					}
 				}
