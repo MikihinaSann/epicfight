@@ -163,8 +163,10 @@ public class ControlEngine {
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
 		
         InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, () -> this.playerPatch.toggleLockOn());
-		
-		consumeSwapOffhandClick();
+
+        if (shouldDisableSwapHandItems()) {
+            consumeSwapOffhandKeyClicks();
+        }
 		
 		// Pause here if player is not in battle mode
 		if (!this.playerPatch.isEpicFightMode() || Minecraft.getInstance().isPaused()) {
@@ -291,12 +293,9 @@ public class ControlEngine {
 			}
 		}
 
-		if (!this.playerPatch.getEntityState().canSwitchHoldingItem() || this.hotbarLocked) {
-			consumeHotbarSlotClicks();
-
-            // TODO: (INPUT_SYSTEM_REFACTOR) This only works for key inputs (the usage of keyDrop).
-            //  Explore a universal solution that also supports controllers and other input systems.
-			while (this.options.keyDrop.consumeClick());
+		if (isSwitchOrDropBlocked()) {
+			consumeHotbarSlotKeyClicks();
+			consumeDropKeyClicks();
 		}
 	}
 
@@ -321,11 +320,17 @@ public class ControlEngine {
         if (!this.playerPatch.isEpicFightMode() || isCurrentHoldingAction(EpicFightInputActions.ATTACK)) {
             return;
         }
+        final EpicFightInputActions vanillaAttack = EpicFightInputActions.VANILLA_ATTACK_DESTROY;
+        final EpicFightInputActions epicFightAttack = EpicFightInputActions.ATTACK;
+
         boolean shouldPlayAttackAnimation = this.playerPatch.canPlayAttackAnimation();
-        consumeAttackKeyClick(shouldPlayAttackAnimation);
+        if (vanillaAttack.keyMapping().getKey() == epicFightAttack.keyMapping().getKey() &&
+                Minecraft.getInstance().hitResult != null && shouldPlayAttackAnimation) {
+            consumeVanillaAttackKeyClicks();
+        }
 
         if (shouldPlayAttackAnimation) {
-            if (!InputManager.isBoundToSamePhysicalInput(EpicFightInputActions.ATTACK, EpicFightInputActions.WEAPON_INNATE_SKILL)) {
+            if (!InputManager.isBoundToSamePhysicalInput(epicFightAttack, EpicFightInputActions.WEAPON_INNATE_SKILL)) {
                 SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
                 SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
                 SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
@@ -336,7 +341,7 @@ public class ControlEngine {
                     this.releaseAllServedKeys();
                 } else {
                     if (!this.player.isSpectator() && slot == SkillSlots.BASIC_ATTACK) {
-                        this.reserveKey(slot, EpicFightInputActions.ATTACK);
+                        this.reserveKey(slot, epicFightAttack);
                     }
                 }
 
@@ -603,7 +608,7 @@ public class ControlEngine {
      * </pre>
      * <b>NOTE:</b> You may still want to call this method to reset the internal {@link KeyMapping#clickCount} state,
      * as a safety guard to prevent potential issues with other mods.
-     * Refer to {@link ControlEngine#consumeAttackKeyClick} and {@link ControlEngine#shouldDisableVanillaAttack} as an example.
+     * Refer to {@link ControlEngine#consumeVanillaAttackKeyClicks} and {@link ControlEngine#shouldDisableVanillaAttack} as an example.
      *
      * @see ControlEngine#shouldDisableVanillaAttack
      * @see ControlEngine#shouldDisableSwapHandItems
@@ -667,7 +672,7 @@ public class ControlEngine {
      * canceling the call when the player is in Epic Fight mode.
      * This also means, the player must be always in vanilla mode to perform vanilla attacks, which is as intended.
      *
-     * @see ControlEngine#consumeAttackKeyClick
+     * @see ControlEngine#consumeVanillaAttackKeyClicks
      */
     @SuppressWarnings("JavadocReference")
     @ApiStatus.Internal
@@ -697,7 +702,7 @@ public class ControlEngine {
      * The problem is now solved by injecting into {@link ClientPacketListener#send} and
      * canceling the call when the player is in action and trying to swap offhand items.
      *
-     * @see ControlEngine#consumeSwapOffhandClick
+     * @see ControlEngine#consumeSwapOffhandKeyClicks
      */
     @SuppressWarnings("JavadocReference")
     @ApiStatus.Internal
@@ -720,39 +725,31 @@ public class ControlEngine {
      * to prevent potential conflicts with other mods. It acts as a safety measure;
      * removing it should no longer cause issues.
      * <p>
-     * This method does not rely on {@link InputManager#isBoundToSamePhysicalInput} because it operates solely on
-     * the vanilla {@link KeyMapping} behavior and mechanics, and is intentionally not compatible with controllers.
+     * This method does not rely on {@link InputManager} because it operates solely on
+     * the vanilla {@link KeyMapping} behavior.
      * @see ControlEngine#shouldDisableVanillaAttack
      */
     @SuppressWarnings("JavadocReference")
-    private static void consumeAttackKeyClick(boolean shouldPlayAttackAnimation) {
-        final KeyMapping vanillaAttack = EpicFightInputActions.VANILLA_ATTACK_DESTROY.keyMapping();
-        final KeyMapping epicFightAttack = EpicFightInputActions.ATTACK.keyMapping();
-        if (vanillaAttack.getKey() == epicFightAttack.getKey() && Minecraft.getInstance().hitResult != null) {
-            if (shouldPlayAttackAnimation) {
-                makeUnpressed(vanillaAttack);
-            }
-        }
+    private static void consumeVanillaAttackKeyClicks() {
+        makeUnpressed(EpicFightInputActions.VANILLA_ATTACK_DESTROY.keyMapping());
     }
 
     /**
      * Previously used to temporarily disable the vanilla swap-offhand key while the player
      * was performing an action or attacking, but this is now handled by
-     * {@link yesman.epicfight.mixin.client.MixinClientPacketListener#onSendPacket}.
+     * {@link yesman.epicfight.mixin.client.MixinClientPacketListener#onBeforeSendPacket}.
      * <p>
      * This method now only decrements the internal counter of the vanilla {@link KeyMapping#clickCount}
      * to prevent potential conflicts with other mods. It serves as a safety measure;
      * removing it should no longer cause any issues.
      * <p>
-     * This method does not rely on {@link InputManager#isBoundToSamePhysicalInput} because it operates solely on
-     * the vanilla {@link KeyMapping} behavior and mechanics, and is intentionally not compatible with controllers.
+     * This method does not rely on {@link InputManager} because it operates solely on
+     * the vanilla {@link KeyMapping} behavior.
      * @see ControlEngine#shouldDisableSwapHandItems
      */
     @SuppressWarnings("JavadocReference")
-    private static void consumeSwapOffhandClick() {
-        if (shouldDisableSwapHandItems()) {
-            makeUnpressed(EpicFightInputActions.SWAP_OFF_HAND.keyMapping());
-        }
+    private static void consumeSwapOffhandKeyClicks() {
+        makeUnpressed(EpicFightInputActions.SWAP_OFF_HAND.keyMapping());
     }
 
     /**
@@ -765,12 +762,27 @@ public class ControlEngine {
      *
      * @see ControlEngine#isHotbarCyclingDisabled
      */
-    private static void consumeHotbarSlotClicks() {
+    private static void consumeHotbarSlotKeyClicks() {
         final KeyMapping[] hotbarSlots = Minecraft.getInstance().options.keyHotbarSlots;
         for (int i = 0; i < 9; ++i) {
             final KeyMapping hotbarSlot = hotbarSlots[i];
             makeUnpressed(hotbarSlot);
         }
+    }
+
+    /**
+     * Previously used to temporarily disable the vanilla item drop key while the player
+     * was performing an action or attacking, but this is now handled by
+     * {@link yesman.epicfight.mixin.client.MixinLocalPlayer#onDrop}.
+     * <p>
+     * This method now only decrements the internal counter of the vanilla {@link KeyMapping#clickCount}
+     * to prevent potential conflicts with other mods. It serves as a safety measure;
+     * removing it should no longer cause any issues.
+     * <p>
+     */
+    @SuppressWarnings("JavadocReference")
+    private static void consumeDropKeyClicks() {
+        makeUnpressed(EpicFightInputActions.DROP.keyMapping());
     }
 
     /**
@@ -849,6 +861,15 @@ public class ControlEngine {
         final Minecraft minecraft = Minecraft.getInstance();
         final LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
         return minecraft.player != null && localPlayerPatch != null && !localPlayerPatch.getEntityState().canSwitchHoldingItem() && minecraft.screen == null;
+    }
+
+    /**
+     * Checks whether the player is blocked from switching or dropping the held item.
+     *
+     * @return true if switching or dropping is blocked, false otherwise
+     */
+    public boolean isSwitchOrDropBlocked() {
+        return !this.playerPatch.getEntityState().canSwitchHoldingItem() || this.hotbarLocked;
     }
 
     public boolean moverToggling() {
