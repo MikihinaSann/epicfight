@@ -294,7 +294,7 @@ public class ControlEngine {
 		}
 
 		if (isSwitchOrDropBlocked()) {
-			consumeHotbarSlotKeyClicks();
+			disableHotbarSlotPresses();
 			consumeDropKeyClicks();
 		}
 	}
@@ -527,7 +527,7 @@ public class ControlEngine {
 	public void lockHotkeys() {
 		this.hotbarLocked = true;
 		this.lastHotbarLockedTime = this.player.tickCount;
-        consumeHotbarSlotKeyClicks();
+        disableHotbarSlotPresses();
 	}
 	
 	public void unlockHotkeys() {
@@ -748,7 +748,7 @@ public class ControlEngine {
     }
 
     /**
-     * Consumes hotbar slot key presses (keyboard only).
+     * Disables hotbar slot key presses (keyboard only).
      * <p>
      * This feature is strictly for keyboards and will not support controllers,
      * as controllers have limited buttons. Keyboard users can switch slots via
@@ -757,7 +757,7 @@ public class ControlEngine {
      *
      * @see ControlEngine#isHotbarCyclingDisabled
      */
-    private static void consumeHotbarSlotKeyClicks() {
+    private static void disableHotbarSlotPresses() {
         final KeyMapping[] hotbarSlots = Minecraft.getInstance().options.keyHotbarSlots;
         for (int i = 0; i < 9; ++i) {
             final KeyMapping hotbarSlot = hotbarSlots[i];
