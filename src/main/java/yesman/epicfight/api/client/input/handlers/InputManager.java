@@ -1,24 +1,26 @@
 package yesman.epicfight.api.client.input.handlers;
 
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
+
 import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraftforge.client.ForgeHooksClient;
-import net.minecraftforge.client.event.InputEvent;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.event.InputEvent;
 import yesman.epicfight.api.client.input.InputMode;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
+import yesman.epicfight.api.client.input.controller.ControllerBinding.InputType;
 import yesman.epicfight.api.client.input.controller.EpicFightControllerModProvider;
 import yesman.epicfight.api.client.input.controller.IEpicFightControllerMod;
 import yesman.epicfight.client.events.engine.ControlEngine;
-import yesman.epicfight.api.client.input.controller.ControllerBinding.InputType;
 
 /**
  * High-level input API that abstracts direct interactions with {@link KeyMapping}
@@ -207,7 +209,7 @@ public final class InputManager {
         final int mouseButton = isMouse ? key.getValue() : -1;
 
         @SuppressWarnings("UnstableApiUsage")
-        InputEvent.InteractionKeyMappingTriggered inputEvent = ForgeHooksClient.onClickInput(
+        InputEvent.InteractionKeyMappingTriggered inputEvent = ClientHooks.onClickInput(
                 mouseButton, keyMapping, InteractionHand.MAIN_HAND
         );
 

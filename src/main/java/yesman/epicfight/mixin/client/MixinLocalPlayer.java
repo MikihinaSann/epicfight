@@ -4,10 +4,10 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import net.minecraft.client.player.LocalPlayer;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPUpdatePlayerInput;
@@ -30,7 +30,7 @@ public abstract class MixinLocalPlayer {
 
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)
     private void onDrop(boolean fullStack, CallbackInfoReturnable<Boolean> cir) {
-        if (ClientEngine.getInstance().controlEngine.isSwitchOrDropBlocked()) {
+        if (ControlEngine.getInstance().isSwitchOrDropBlocked()) {
             // Prevents the player from accidentally dropping the item while attacking in Epic Fight mode.
             cir.cancel();
         }

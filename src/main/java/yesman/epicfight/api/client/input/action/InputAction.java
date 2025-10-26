@@ -1,12 +1,13 @@
 package yesman.epicfight.api.client.input.action;
 
-import net.minecraft.client.KeyMapping;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
-import yesman.epicfight.api.utils.ExtendableEnum;
-import yesman.epicfight.api.utils.ExtendableEnumManager;
+
+import net.minecraft.client.KeyMapping;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.api.utils.ExtensibleEnum;
+import yesman.epicfight.api.utils.ExtensibleEnumManager;
 
 /**
  * Represents a client-side input action in Epic Fight mod.
@@ -17,8 +18,8 @@ import yesman.epicfight.api.utils.ExtendableEnumManager;
  */
 @OnlyIn(Dist.CLIENT)
 @ApiStatus.Experimental
-public interface InputAction extends ExtendableEnum {
-    ExtendableEnumManager<InputAction> ENUM_MANAGER = new ExtendableEnumManager<>("input_action");
+public interface InputAction extends ExtensibleEnum {
+    ExtensibleEnumManager<InputAction> ENUM_MANAGER = new ExtensibleEnumManager<>("input_action");
 
     /**
      * Returns the Minecraft vanilla {@link KeyMapping} associated with this action.
