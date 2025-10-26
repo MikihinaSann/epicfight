@@ -2,6 +2,7 @@ package yesman.epicfight.events;
 
 import java.util.List;
 
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
@@ -110,15 +111,9 @@ public class WorldEvents {
 	public static class WorldEventsClient {
 		@SubscribeEvent
 		public static void loadLevel(LevelEvent.Load event) {
-			if (event.getLevel() instanceof FakeLevel) {
-				return;
-			}
-			
-			try {
-				FakeLevel.getFakeLevel(event.getLevel().registryAccess());
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			// Prevent infinite loop
+			if (event.getLevel() instanceof FakeLevel) return;
+			if (event.getLevel() instanceof ClientLevel clientLevel) FakeLevel.getFakeLevel(clientLevel);
 		}
 		
 		@SubscribeEvent

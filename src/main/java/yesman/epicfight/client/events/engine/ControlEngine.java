@@ -23,7 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -141,32 +141,28 @@ public class ControlEngine {
 		if (this.playerPatch == null) {
 			return;
 		}
-
+		
         InputManager.triggerOnPress(EpicFightInputActions.OPEN_SKILL_SCREEN, false, this::openSkillEditor);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.OPEN_CONFIG_SCREEN, false, this::openConfig);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_VANILLA_MODEL_DEBUGGING, false, this::switchVanillaModelDebugging);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.ATTACK, true, this::maybeAttack);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.DODGE, true, this::maybeDodge);
-
-        if (InputManager.isActionActive(EpicFightInputActions.GUARD)) {
-            maybeGuard();
-        }
-
+        
+        if (InputManager.isActionActive(EpicFightInputActions.GUARD)) this.maybeGuard();
+        
         InputManager.triggerOnPress(EpicFightInputActions.WEAPON_INNATE_SKILL, true, this::handleSeparateWeaponInnateSkill);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.MOBILITY, true, this::maybePerformMoverSkill);
-
+        
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
 		
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, () -> this.playerPatch.toggleLockOn());
-
-        if (shouldDisableSwapHandItems()) {
-            consumeSwapOffhandKeyClicks();
-        }
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this.playerPatch::toggleLockOn);
+        
+        if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
 		
 		// Pause here if player is not in battle mode
 		if (!this.playerPatch.isEpicFightMode() || Minecraft.getInstance().isPaused()) {
@@ -249,7 +245,7 @@ public class ControlEngine {
 			
 			if (!container.isEmpty()) {
 				if (container.getSkill() instanceof HoldableSkill) {
-					if (!isCurrentHoldingActionActive()) {
+					if (!this.isCurrentHoldingActionActive()) {
 						this.holdingFinished = true;
 					}
 					
@@ -382,13 +378,13 @@ public class ControlEngine {
             return;
         }
         boolean shouldCancelGuard = false;
-
+        
         if (this.playerPatch.isHoldingAny()) {
             shouldCancelGuard = true;
-        } else if (this.player.getMainHandItem().getUseAnimation() == UseAnim.BLOCK || this.player.getOffhandItem().getUseAnimation() == UseAnim.BLOCK) {
+        } else if (ShieldItem.class.isAssignableFrom(this.player.getMainHandItem().getItem().getClass()) || ShieldItem.class.isAssignableFrom(this.player.getOffhandItem().getItem().getClass())) {
             shouldCancelGuard = true;
         }
-
+        
         if (!shouldCancelGuard) {
             SkillCastEvent skillCastEvent = this.playerPatch.getSkill(SkillSlots.GUARD).sendCastRequest(this.playerPatch, this);
 
@@ -989,7 +985,7 @@ public class ControlEngine {
 									BlockHitResult blockHitResult = ((BlockHitResult)controlEngine.minecraft.hitResult);
 									BlockPos blockpos = blockHitResult.getBlockPos();
 									BlockState blockstate = controlEngine.minecraft.level.getBlockState(blockpos);
-									FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(controlEngine.minecraft.level.registryAccess());
+									FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(controlEngine.minecraft.level);
 									FakeLevel.FakeClientPlayer fakePlayerForSimulation = FakeLevel.getFakePlayer(controlEngine.minecraft.player.getGameProfile());
 									
 									yield blockstate.use(fakeLevelForSimulation, fakePlayerForSimulation, event.getHand(), blockHitResult);

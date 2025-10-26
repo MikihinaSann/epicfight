@@ -158,6 +158,17 @@ import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
  *  
  *  Made the stun shield persistent
  *  
+ *  ***************************************************************
+ *  
+ *  20.13.3
+ *  
+ *  Bugfix
+ *  
+ *  Fixed the player not to edit the sign when 'resolve_key_conflicts' is set to 'interaction'
+ *  Fixed the player can't take blocking when holding weapons from Simplyswords
+ *  Fixed the player's blocking and digging animations not removing under certain conditions (usually when it's combined with dodge skills)
+ *  Optimized texture files so that save 23% of size from the original
+ *  
  *  --- Future list ---
  *  
  *  Update language files (always)
