@@ -40,6 +40,7 @@ import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.skill.SkillCategories;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -307,6 +308,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
 
     private static @NotNull ResourceLocation getBindingId(@NotNull EpicFightInputActions action) {
         final String path = switch (action) {
+            // Project maintainers: if you change any ID (e.g., "attack"), update assets/controlify too.
             case ATTACK -> "attack";
             case MOBILITY -> "mobility";
             case GUARD -> "guard";
@@ -343,19 +345,14 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     }
 
     private static void registerInGameGuides(GuideDomainRegistry<InGameCtx> registry) {
-        registry.registerDynamicRule(
-                Rule.builder().binding(dodge)
-                        .where(ActionLocation.RIGHT)
-                        .then(TranslationKeys.getNameOf(EpicFightInputActions.DODGE))
-                        .build()
-        );
-        registry.registerDynamicRule(
-                Rule.builder().binding(lockOn)
-                        .where(ActionLocation.LEFT)
-                        .when(InGameFacts.LOOKING_AT_ENTITY)
-                        .then(TranslationKeys.getNameOf(EpicFightInputActions.LOCK_ON))
-                        .build()
-        );
+        // Facts are registered here; rules in "assets/controlify/guides/in_game.json" reference these facts.
+        registry.registerFact(new Fact<>(EpicFightMod.rl("can_perform_dodge"), ctx -> {
+            final LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
+            if (localPlayerPatch == null || !localPlayerPatch.isEpicFightMode()) {
+                return false;
+            }
+            return localPlayerPatch.getPlayerSkills().hasCategory(SkillCategories.DODGE);
+        }));
     }
 
     private static @NotNull InputBinding getControlifyBinding(@NotNull EpicFightInputActions action) {
