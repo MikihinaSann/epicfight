@@ -3,6 +3,7 @@ package yesman.epicfight.compat.controlify;
 import dev.isxander.controlify.api.ControlifyApi;
 import dev.isxander.controlify.api.bind.ControlifyBindApi;
 import dev.isxander.controlify.api.bind.InputBinding;
+import dev.isxander.controlify.api.bind.InputBindingBuilder;
 import dev.isxander.controlify.api.bind.InputBindingSupplier;
 import dev.isxander.controlify.api.buttonguide.ButtonGuideApi;
 import dev.isxander.controlify.api.buttonguide.ButtonGuidePredicate;
@@ -40,10 +41,8 @@ import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 
-import java.util.EnumSet;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 // Important for maintainers: Be careful when using Epic Fight classes here,
 // as the Epic Fight mod might not be loaded yet. For example, avoid referencing
@@ -95,38 +94,64 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     private static final BindContext IN_GAME_CONTEXT = BindContext.IN_GAME;
     private static final BindContext ANY_SCREEN_CONTEXT = BindContext.ANY_SCREEN;
 
-    private static class ComponentConstants {
-        private static final Component KEY_COMBAT = Component.translatable("key.epicfight.combat");
-        private static final Component KEY_GUI = Component.translatable("key.epicfight.gui");
-        private static final Component KEY_SYSTEM = Component.translatable("key.epicfight.system");
+    private record TranslationKeys(@NotNull String name, @NotNull String description) {
+        private @NotNull Component getNameComponent() {
+            return Component.translatable(name());
+        }
 
-        // Titles
+        private @NotNull Component getDescriptionComponent() {
+            return Component.translatable(description());
+        }
 
-        private static final Component WEAPON_INNATE_SKILL_TOOLTIP = Component.translatable("key.epicfight.show_tooltip");
-        private static final Component KEY_SWITCH_MODE = Component.translatable("key.epicfight.switch_mode");
-        private static final Component KEY_ATTACK = Component.translatable("key.epicfight.attack");
-        private static final Component KEY_WEAPON_INNATE_SKILL = Component.translatable("key.epicfight.weapon_innate_skill");
-        private static final Component KEY_SKILL_GUI = Component.translatable("key.epicfight.skill_gui");
-        private static final Component KEY_DODGE = Component.translatable("key.epicfight.dodge");
-        private static final Component KEY_GUARD = Component.translatable("key.epicfight.guard");
-        private static final Component KEY_LOCK_ON = Component.translatable("key.epicfight.lock_on");
-        private static final Component KEY_MOVER_SKILL = Component.translatable("key.epicfight.mover_skill");
-        private static final Component KEY_CONFIG = Component.translatable("key.epicfight.config");
-        private static final Component KEY_SWITCH_VANILLA_MODEL_DEBUG = Component.translatable("key.epicfight.switch_vanilla_model_debug");
+        /**
+         * Maps a non-vanilla {@link EpicFightInputActions} to its corresponding translation keys.
+         *
+         * @param action the non-vanilla action to get the translation key for
+         * @return a {@link TranslationKeys} instance containing the translation keys for the name and description
+         * @throws IllegalArgumentException if the action is a vanilla action, since getting the translation keys in this class
+         *                                  is only relevant for Epic Fight custom input binds.
+         *                                  Vanilla input binds are handled internally by Controlify.
+         */
+        private static @NotNull TranslationKeys fromAction(@NotNull EpicFightInputActions action) {
+            return switch (action) {
+                case ATTACK -> new TranslationKeys("key.epicfight.attack", "key.epicfight.attack.description");
+                case DODGE -> new TranslationKeys("key.epicfight.dodge", "key.epicfight.dodge.description");
+                case GUARD -> new TranslationKeys("key.epicfight.guard", "key.epicfight.guard.description");
+                case LOCK_ON -> new TranslationKeys("key.epicfight.lock_on", "key.epicfight.lock_on.description");
+                case SWITCH_MODE ->
+                        new TranslationKeys("key.epicfight.switch_mode", "key.epicfight.switch_mode.description");
+                case WEAPON_INNATE_SKILL ->
+                        new TranslationKeys("key.epicfight.weapon_innate_skill", "key.epicfight.weapon_innate_skill.description");
+                case WEAPON_INNATE_SKILL_TOOLTIP ->
+                        new TranslationKeys("key.epicfight.show_tooltip", "key.epicfight.show_tooltip.description");
+                case OPEN_SKILL_SCREEN ->
+                        new TranslationKeys("key.epicfight.skill_gui", "key.epicfight.skill_gui.description");
+                case OPEN_CONFIG_SCREEN ->
+                        new TranslationKeys("key.epicfight.config", "key.epicfight.config.description");
+                case SWITCH_VANILLA_MODEL_DEBUGGING ->
+                        new TranslationKeys("key.epicfight.switch_vanilla_model_debug", "key.epicfight.switch_vanilla_model_debug.description");
+                case MOBILITY ->
+                        new TranslationKeys("key.epicfight.mover_skill", "key.epicfight.mover_skill.description");
 
-        // Descriptions
+                // Vanilla actions translations already handled by Controlify.
+                case VANILLA_ATTACK_DESTROY, USE, SWAP_OFF_HAND, DROP, TOGGLE_PERSPECTIVE, JUMP,
+                     MOVE_FORWARD, MOVE_BACKWARD, MOVE_LEFT, MOVE_RIGHT, SPRINT, SNEAK ->
+                        throw new IllegalArgumentException(
+                                "TranslationKeys#fromAction() must only be called for non-vanilla actions. " +
+                                        "This action is vanilla and already registered by Controlify: " + action.name()
+                        );
+            };
+        }
 
-        private static final Component WEAPON_INNATE_SKILL_TOOLTIP_DESCRIPTION = Component.translatable("key.epicfight.show_tooltip.description");
-        private static final Component KEY_SWITCH_MODE_DESCRIPTION = Component.translatable("key.epicfight.switch_mode.description");
-        private static final Component KEY_ATTACK_DESCRIPTION = Component.translatable("key.epicfight.attack.description");
-        private static final Component KEY_WEAPON_INNATE_SKILL_DESCRIPTION = Component.translatable("key.epicfight.weapon_innate_skill.description");
-        private static final Component KEY_SKILL_GUI_DESCRIPTION = Component.translatable("key.epicfight.skill_gui.description");
-        private static final Component KEY_DODGE_DESCRIPTION = Component.translatable("key.epicfight.dodge.description");
-        private static final Component KEY_GUARD_DESCRIPTION = Component.translatable("key.epicfight.guard.description");
-        private static final Component KEY_LOCK_ON_DESCRIPTION = Component.translatable("key.epicfight.lock_on.description");
-        private static final Component KEY_MOVER_SKILL_DESCRIPTION = Component.translatable("key.epicfight.mover_skill.description");
-        private static final Component KEY_CONFIG_DESCRIPTION = Component.translatable("key.epicfight.config.description");
-        private static final Component KEY_SWITCH_VANILLA_MODEL_DEBUG_DESCRIPTION = Component.translatable("key.epicfight.switch_vanilla_model_debug.description");
+        private static @NotNull Component getNameOf(@NotNull EpicFightInputActions action) {
+            return fromAction(action).getNameComponent();
+        }
+    }
+
+    private static class EpicFightInputCategories {
+        private static final Component COMBAT = Component.translatable("key.epicfight.combat");
+        private static final Component GUI = Component.translatable("key.epicfight.gui");
+        private static final Component SYSTEM = Component.translatable("key.epicfight.system");
     }
 
     private enum EpicFightRadialIcons {
@@ -147,6 +172,10 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     private static void registerCustomRadialIcons() {
         for (EpicFightRadialIcons icon : EpicFightRadialIcons.values()) {
             final ResourceLocation location = icon.getId();
+
+            // For consistency with the current Controlify radial icons,
+            // this code is equivalent to:
+            // https://github.com/isXander/Controlify/blob/f5c94c57d5e0d4954e413624a0d7ead937b6e8ab/src/main/java/dev/isxander/controlify/bindings/RadialIcons.java#L106-L112
             RadialIcons.registerIcon(location, (graphics, x, y, tickDelta) -> {
                 var pose = CGuiPose.ofPush(graphics);
                 pose.translate(x, y);
@@ -186,14 +215,9 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             @NotNull ControlifyBindApi registrar,
             @NotNull EpicFightInputActions action
     ) {
-        final Component combatCategory = ComponentConstants.KEY_COMBAT;
-        final Component guiCategory = ComponentConstants.KEY_GUI;
-        final Component systemCategory = ComponentConstants.KEY_SYSTEM;
-
-
-        // Prevents Controlify from auto-registering this vanilla key mapping,
-        // since Epic Fight already provides native support for it.
-        final KeyMapping keyMappingToDisable = action.keyMapping();
+        final Component combatCategory = EpicFightInputCategories.COMBAT;
+        final Component guiCategory = EpicFightInputCategories.GUI;
+        final Component systemCategory = EpicFightInputCategories.SYSTEM;
 
         // Using a switch expression to enforce compile-time exhaustive checking.
         // The returned value is a dummy and does nothing; its only purpose is to
@@ -205,97 +229,102 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                             "This action is vanilla and already registered by Controlify: " + action.name()
             );
             case ATTACK -> attack = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("attack"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_ATTACK)
-                            .description(ComponentConstants.KEY_ATTACK_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case MOBILITY -> mobility = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("mobility"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_MOVER_SKILL)
-                            .description(ComponentConstants.KEY_MOVER_SKILL_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case GUARD -> guard = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("guard"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_GUARD)
-                            .description(ComponentConstants.KEY_GUARD_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case DODGE -> dodge = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("dodge"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_DODGE)
-                            .description(ComponentConstants.KEY_DODGE_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case LOCK_ON -> lockOn = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("lock_on"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_LOCK_ON)
-                            .description(ComponentConstants.KEY_LOCK_ON_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case SWITCH_MODE -> switchMode = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("switch_mode"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(systemCategory)
                             .allowedContexts(IN_GAME_CONTEXT)
-                            .name(ComponentConstants.KEY_SWITCH_MODE)
-                            .description(ComponentConstants.KEY_SWITCH_MODE_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
                             .radialCandidate(EpicFightRadialIcons.UCHIGATANA.getId())
             );
             case WEAPON_INNATE_SKILL -> weaponInnateSkill = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("weapon_innate_skill"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
-                            .name(ComponentConstants.KEY_WEAPON_INNATE_SKILL)
-                            .description(ComponentConstants.KEY_WEAPON_INNATE_SKILL_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case WEAPON_INNATE_SKILL_TOOLTIP -> weaponInnateSkillTooltip = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("weapon_innate_skill_tooltip"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
                             .allowedContexts(ANY_SCREEN_CONTEXT)
-                            .name(ComponentConstants.WEAPON_INNATE_SKILL_TOOLTIP)
-                            .description(ComponentConstants.WEAPON_INNATE_SKILL_TOOLTIP_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
             );
             case OPEN_SKILL_SCREEN -> openSkillEditorScreen = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("open_skill_editor_screen"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
                             .allowedContexts(IN_GAME_CONTEXT)
-                            .name(ComponentConstants.KEY_SKILL_GUI)
-                            .description(ComponentConstants.KEY_SKILL_GUI_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
                             .radialCandidate(EpicFightRadialIcons.SKILL_BOOK.getId())
             );
             case OPEN_CONFIG_SCREEN -> openConfigScreen = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("open_config_screen"))
+                    builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
                             .allowedContexts(IN_GAME_CONTEXT)
-                            .name(ComponentConstants.KEY_CONFIG)
-                            .description(ComponentConstants.KEY_CONFIG_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
                             .radialCandidate(RadialIcons.getItem(Items.REDSTONE))
             );
             case SWITCH_VANILLA_MODEL_DEBUGGING -> switchVanillaModeDebugging = registrar.registerBinding(
-                    builder -> builder.id(EpicFightMod.rl("switch_vanilla_mode_debugging"))
-                            .category(systemCategory)
-                            .allowedContexts(IN_GAME_CONTEXT)
-                            .name(ComponentConstants.KEY_SWITCH_VANILLA_MODEL_DEBUG)
-                            .description(ComponentConstants.KEY_SWITCH_VANILLA_MODEL_DEBUG_DESCRIPTION)
-                            .addKeyCorrelation(keyMappingToDisable)
+                    builder ->
+                            applyCommonBindingProperties(action, builder)
+                                    .category(systemCategory)
+                                    .allowedContexts(IN_GAME_CONTEXT)
             );
         };
+    }
+
+    private static @NotNull InputBindingBuilder applyCommonBindingProperties(
+            @NotNull EpicFightInputActions action,
+            @NotNull InputBindingBuilder builder
+    ) {
+        final TranslationKeys translationKeys = TranslationKeys.fromAction(action);
+        final KeyMapping keyMappingToIgnore = action.keyMapping();
+        return builder
+                .id(getBindingId(action))
+                .name(translationKeys.getNameComponent())
+                .description(translationKeys.getDescriptionComponent())
+                // Prevents Controlify from auto-registering controller bindings for Epic Fight's
+                // vanilla key mappings, since Epic Fight already provides explicit native support.
+                .addKeyCorrelation(keyMappingToIgnore);
+    }
+
+    private static @NotNull ResourceLocation getBindingId(@NotNull EpicFightInputActions action) {
+        final String path = switch (action) {
+            case ATTACK -> "attack";
+            case MOBILITY -> "mobility";
+            case GUARD -> "guard";
+            case DODGE -> "dodge";
+            case LOCK_ON -> "lock_on";
+            case SWITCH_MODE -> "switch_mode";
+            case WEAPON_INNATE_SKILL -> "weapon_innate_skill";
+            case WEAPON_INNATE_SKILL_TOOLTIP -> "weapon_innate_skill_tooltip";
+            case OPEN_SKILL_SCREEN -> "open_skill_editor_screen";
+            case OPEN_CONFIG_SCREEN -> "open_config_screen";
+            case SWITCH_VANILLA_MODEL_DEBUGGING -> "switch_vanilla_mode_debugging";
+            case VANILLA_ATTACK_DESTROY, USE, SWAP_OFF_HAND, TOGGLE_PERSPECTIVE, DROP, MOVE_FORWARD, MOVE_BACKWARD,
+                 MOVE_LEFT, MOVE_RIGHT, SPRINT, SNEAK, JUMP -> throw new IllegalArgumentException(
+                    "ControlifyCompat#getInputBindingId() must only be called for non-vanilla actions. " +
+                            "This action is vanilla and already registered by Controlify: " + action.name()
+            );
+        };
+        return EpicFightMod.rl(path);
     }
 
     private static void registerModIntegration() {
@@ -317,27 +346,35 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         registry.registerDynamicRule(
                 Rule.builder().binding(dodge)
                         .where(ActionLocation.RIGHT)
-                        .then(ComponentConstants.KEY_DODGE)
+                        .then(TranslationKeys.getNameOf(EpicFightInputActions.DODGE))
                         .build()
         );
         registry.registerDynamicRule(
                 Rule.builder().binding(lockOn)
                         .where(ActionLocation.LEFT)
                         .when(InGameFacts.LOOKING_AT_ENTITY)
-                        .then(ComponentConstants.KEY_LOCK_ON)
+                        .then(TranslationKeys.getNameOf(EpicFightInputActions.LOCK_ON))
                         .build()
         );
     }
 
     private static @NotNull InputBinding getControlifyBinding(@NotNull EpicFightInputActions action) {
         final InputBindingSupplier bindingSupplier = switch (action) {
+            // Minecraft Vanilla actions
             case VANILLA_ATTACK_DESTROY -> ControlifyBindings.ATTACK;
+            case MOVE_FORWARD -> ControlifyBindings.WALK_FORWARD;
+            case MOVE_BACKWARD -> ControlifyBindings.WALK_BACKWARD;
+            case MOVE_LEFT -> ControlifyBindings.WALK_LEFT;
+            case MOVE_RIGHT -> ControlifyBindings.WALK_RIGHT;
+            case SPRINT -> ControlifyBindings.SPRINT;
+            case SNEAK -> ControlifyBindings.SNEAK;
             case USE -> ControlifyBindings.USE;
             case SWAP_OFF_HAND -> ControlifyBindings.SWAP_HANDS;
             case DROP -> ControlifyBindings.DROP_INGAME;
             case TOGGLE_PERSPECTIVE -> ControlifyBindings.CHANGE_PERSPECTIVE;
-            case ATTACK -> attack;
             case JUMP -> ControlifyBindings.JUMP;
+            // Epic Fight custom actions
+            case ATTACK -> attack;
             case MOBILITY -> mobility;
             case GUARD -> guard;
             case DODGE -> dodge;
@@ -345,12 +382,6 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             case SWITCH_MODE -> switchMode;
             case WEAPON_INNATE_SKILL -> weaponInnateSkill;
             case WEAPON_INNATE_SKILL_TOOLTIP -> weaponInnateSkillTooltip;
-            case MOVE_FORWARD -> ControlifyBindings.WALK_FORWARD;
-            case MOVE_BACKWARD -> ControlifyBindings.WALK_BACKWARD;
-            case MOVE_LEFT -> ControlifyBindings.WALK_LEFT;
-            case MOVE_RIGHT -> ControlifyBindings.WALK_RIGHT;
-            case SPRINT -> ControlifyBindings.SPRINT;
-            case SNEAK -> ControlifyBindings.SNEAK;
             case OPEN_SKILL_SCREEN -> openSkillEditorScreen;
             case OPEN_CONFIG_SCREEN -> openConfigScreen;
             case SWITCH_VANILLA_MODEL_DEBUGGING -> switchVanillaModeDebugging;
@@ -380,7 +411,6 @@ public class ControlifyCompat implements ControlifyEntrypoint {
 
     /**
      * Allows Epic Fight to communicate with Controlify APIs without depending on their classes directly.
-     *
      */
     private static class ControlifyIntegration implements IEpicFightControllerMod {
         @Override
@@ -518,14 +548,18 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             super.handleButtons(controller);
         }
 
+        // The Skill Book screen has a single actionable button (the "learn skill" button).
+        // Controller navigation and focus are disabled, and only the primary controller
+        // button (e.g., X on DualSense) is used to trigger the action.
+
         @Override
         protected void setInitialFocus() {
-            // No-op
+            // Intentionally empty. Do NOT call super.setInitialFocus().
         }
 
         @Override
         protected void handleComponentNavigation(ControllerEntity controller) {
-            // No-op
+            // Intentionally empty. Do NOT call super.handleComponentNavigation().
         }
 
         @Override
