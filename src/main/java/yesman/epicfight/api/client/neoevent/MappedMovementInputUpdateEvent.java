@@ -22,7 +22,7 @@ public class MappedMovementInputUpdateEvent extends PlayerPatchEvent<LocalPlayer
      * {@link InputManager#setInputState} instead, which fully support controller input.
      * </p>
      *
-     * @see MovementInputEvent#getInputState
+     * @see #getMovementInput()
      */
     @SuppressWarnings("DeprecatedIsStillUsed")
     @NotNull
@@ -52,7 +52,7 @@ public class MappedMovementInputUpdateEvent extends PlayerPatchEvent<LocalPlayer
     }
     
     /**
-     * Creates a new {@link MovementInputEvent} with an immutable {@link PlayerInputState}.
+     * Creates a new {@link MappedMovementInputUpdateEvent} with an immutable {@link PlayerInputState}.
      * <p>
      * Use this constructor to fully support controllers.
      * </p>
@@ -66,7 +66,7 @@ public class MappedMovementInputUpdateEvent extends PlayerPatchEvent<LocalPlayer
         this.inputState = inputState;
         // DEPRECATED: Still set the vanilla Input for backward compatibility to avoid Epic Fight addons breakage.
         // Not setting this, may break any consumers that depend on the deprecated MovementInputEvent#getMovementInput() method.
-        this.movementInput = PlayerInputState.applyToVanillaInput(inputState, playerPatch.getOriginal().input);
+        this.movementInput = playerPatch.getOriginal().input;
     }
     
     /**
