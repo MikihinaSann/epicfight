@@ -25,6 +25,7 @@ import dev.isxander.controlify.virtualmouse.VirtualMouseBehaviour;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -41,6 +42,8 @@ import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.skill.SkillCategories;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -69,7 +72,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         registrar.registerBindContext(COMBAT_MODE_CONTEXT);
         registerInputBindings(registrar);
         registerTargetLockOnSupport();
-        registerInGameGuides(context.guideRegistries().inGame());
+        registerGuides(context.guideRegistries().inGame(), context.guideRegistries().container());
         registerScreenProcessors();
     }
 
@@ -344,14 +347,22 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         });
     }
 
-    private static void registerInGameGuides(GuideDomainRegistry<InGameCtx> registry) {
+    private static void registerGuides(GuideDomainRegistry<InGameCtx> inGameRegistry, GuideDomainRegistry<ContainerCtx> containerRegistry) {
         // Facts are registered here; rules in "assets/controlify/guides/in_game.json" reference these facts.
-        registry.registerFact(new Fact<>(EpicFightMod.rl("can_perform_dodge"), ctx -> {
+        inGameRegistry.registerFact(new Fact<>(EpicFightMod.rl("can_perform_dodge"), ctx -> {
             final LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
             if (localPlayerPatch == null || !localPlayerPatch.isEpicFightMode()) {
                 return false;
             }
             return localPlayerPatch.getPlayerSkills().hasCategory(SkillCategories.DODGE);
+        }));
+        containerRegistry.registerFact(new Fact<>(EpicFightMod.rl("can_show_weapon_innate_skill_tooltip"), ctx -> {
+            final Slot hoveredSlot = ctx.hoveredSlot();
+            if (hoveredSlot == null || !ctx.hoveredSlot().hasItem()) {
+                return false;
+            }
+            final Optional<CapabilityItem> maybeCapabilityItem = EpicFightCapabilities.getItemCapability(hoveredSlot.getItem());
+            return maybeCapabilityItem.isPresent();
         }));
     }
 

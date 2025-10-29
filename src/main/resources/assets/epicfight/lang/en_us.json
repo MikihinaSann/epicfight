@@ -348,6 +348,7 @@
 	"itemGroup.epicfight.items": "EpicFight Items",
 	
 	"inventory.epicfight.guide_innate_tooltip": "[%s] to see Innate skill",
+    "inventory.epicfight.guide.show_innate_skill": "Show Innate Skill",
 	
 	"key.epicfight.combat": "Epic Fight Combat",
 	"key.epicfight.gui": "Epic Fight GUI",
