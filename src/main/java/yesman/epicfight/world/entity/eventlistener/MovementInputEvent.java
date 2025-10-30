@@ -61,7 +61,7 @@ public class MovementInputEvent extends AbstractPlayerEvent<LocalPlayerPatch> {
         this.inputState = inputState;
         // DEPRECATED: Still set the vanilla Input for backward compatibility to avoid Epic Fight addons breakage.
         // Not setting this, may break any consumers that depend on the deprecated MovementInputEvent#getMovementInput() method.
-        this.movementInput = PlayerInputState.applyToVanillaInput(inputState, playerPatch.getOriginal().input);
+        this.movementInput = playerPatch.getOriginal().input;
     }
 
     /**
