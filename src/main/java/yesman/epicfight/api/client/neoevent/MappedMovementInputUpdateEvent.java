@@ -5,15 +5,17 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import net.minecraft.client.player.Input;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.client.input.utils.InputUtils;
 import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 
-@OnlyIn(Dist.CLIENT)
+/**
+ * Client-side only.
+ * <p>
+ * MUST NOT be called on a dedicated server — doing so will crash the server.
+ */
 public class MappedMovementInputUpdateEvent extends PlayerPatchEvent<LocalPlayerPatch> {
 	/**
      * <b>DEPRECATED:</b>: This field is kept for backward compatibility with existing Epic Fight addons.

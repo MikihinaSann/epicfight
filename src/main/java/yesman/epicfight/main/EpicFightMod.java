@@ -218,7 +218,9 @@ public class EpicFightMod {
     	WeaponCategory.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, WeaponCategories.class);
     	Faction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, Factions.class);
     	EntityPairingPacketType.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EntityPairingPacketTypes.class);
-    	InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EpicFightInputActions.class);
+    	if (EpicFightSharedConstants.isPhysicalClient()) {
+            InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EpicFightInputActions.class);
+        }
     	
     	EpicFightRegistries.DEFERRED_REGISTRIES.forEach(deferredRegistry -> deferredRegistry.register(modEventBus));
 		
@@ -278,7 +280,9 @@ public class EpicFightMod {
     	event.enqueueWork(WeaponCategory.ENUM_MANAGER::loadEnum);
     	event.enqueueWork(Faction.ENUM_MANAGER::loadEnum);
     	event.enqueueWork(EntityPairingPacketType.ENUM_MANAGER::loadEnum);
-    	event.enqueueWork(InputAction.ENUM_MANAGER::loadEnum);
+    	if (EpicFightSharedConstants.isPhysicalClient()) {
+            event.enqueueWork(InputAction.ENUM_MANAGER::loadEnum);
+        }
     	event.enqueueWork(() -> {
     		AnimationManager.addNoWarningModId(EPICSKINS_MODID);
 			AnimationRegistryEvent animationregistryevent = new AnimationRegistryEvent();
