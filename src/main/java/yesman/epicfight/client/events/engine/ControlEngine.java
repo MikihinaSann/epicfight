@@ -204,15 +204,14 @@ public class ControlEngine {
 		}
 		
 		if (this.attackLightPressToggle) {
-			SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
-			SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+            SkillSlot slot = SkillSlots.BASIC_ATTACK;
 			SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 			
 			if (skillCastEvent.isExecutable()) {
 				this.player.resetAttackStrengthTicker();
 				this.releaseAllServedKeys();
 			} else {
-				if (!this.player.isSpectator() && slot == SkillSlots.BASIC_ATTACK) {
+				if (!this.player.isSpectator()) {
 					this.reserveKey(slot, EpicFightInputAction.ATTACK);
 				}
 			}
@@ -350,8 +349,7 @@ public class ControlEngine {
 
         if (shouldPlayAttackAnimation) {
             if (!InputManager.isBoundToSamePhysicalInput(epicFightAttack, EpicFightInputAction.WEAPON_INNATE_SKILL)) {
-                SkillContainer airSlash = this.playerPatch.getSkill(SkillSlots.AIR_ATTACK);
-                SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_ATTACK : SkillSlots.BASIC_ATTACK;
+                SkillSlot slot = SkillSlots.BASIC_ATTACK;
                 SkillCastEvent skillCastEvent = this.playerPatch.getSkill(slot).sendCastRequest(this.playerPatch, this);
 
                 if (skillCastEvent.isExecutable()) {
@@ -359,7 +357,7 @@ public class ControlEngine {
                     this.attackLightPressToggle = false;
                     this.releaseAllServedKeys();
                 } else {
-                    if (!this.player.isSpectator() && slot == SkillSlots.BASIC_ATTACK) {
+                    if (!this.player.isSpectator()) {
                         this.reserveKey(slot, epicFightAttack);
                     }
                 }
