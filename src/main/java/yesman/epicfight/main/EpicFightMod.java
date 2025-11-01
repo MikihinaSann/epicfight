@@ -1,5 +1,6 @@
 package yesman.epicfight.main;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -69,6 +70,7 @@ import yesman.epicfight.compat.PlayerAnimatorCompat;
 import yesman.epicfight.compat.SkinLayer3DCompat;
 import yesman.epicfight.compat.VampirismCompat;
 import yesman.epicfight.compat.WerewolvesCompat;
+import yesman.epicfight.compat.MCreatorPlayerAnimationsCompat;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.config.ServerConfig;
@@ -266,6 +268,17 @@ public class EpicFightMod {
 			if (ModList.get().isLoaded("playeranimator")) {
 				ICompatModule.loadCompatModule(modEventBus, PlayerAnimatorCompat.class);
 			}
+
+            if (ModList.get().getModFiles().stream().anyMatch(modFile -> {
+                try {
+                    Path dataPath = modFile.getFile().findResource("data");
+                    return Files.exists(dataPath) && Files.list(dataPath).anyMatch(namespace -> Files.exists(namespace.resolve("bedrock_animations")));
+                } catch (Exception e) {
+                    return false;
+                }
+            })) {
+                ICompatModule.loadCompatModule(modEventBus, MCreatorPlayerAnimationsCompat.class);
+            }
 		}
 	}
     
