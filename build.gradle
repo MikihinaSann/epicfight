@@ -5,6 +5,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 	id 'org.spongepowered.mixin' version '0.7.+'
 	id 'org.parchmentmc.librarian.forgegradle' version '1.+'
+	id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
 version = mod_version
@@ -12,7 +13,7 @@ group = mod_group_id
 
 base {
     archivesName = "${mod_id}-forge"
-    version = "${mod_version}-1.20.1"
+    version = "${mod_version}-${minecraft_version}"
 }
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
@@ -120,7 +121,7 @@ mixin {
 
 dependencies {
 	minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
-	/**
+	
 	// Copy and paste dependencies you need at the below
 	// JEI compatibility (optional)
   	compileOnly(fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}"))
@@ -167,7 +168,7 @@ dependencies {
     // Shoulder Surfing Reloaded compatibility (optional, have to choose one)
     compileOnly fg.deobf("curse.maven:shoulder-surfing-reloaded-243190:6993792") // API only (https://www.curseforge.com/minecraft/mc-mods/shoulder-surfing-reloaded/files/6993792)
     //compileOnly fg.deobf("curse.maven:shoulder-surfing-reloaded-243190:6993788") // Actual mod file (for test)
-    **/
+    
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
 
@@ -223,4 +224,61 @@ tasks.withType(JavaCompile).configureEach {
 // Create source.jar
 java {
     withSourcesJar()
+}
+
+publishMods {
+    def readme = project.file('RELEASE_NOTES.md')
+    def readmeContent = readme.getText()
+    def pattern = """(?s)## \\[""" + mod_version + """\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"""
+    def matcher = (readmeContent =~ pattern)
+    matcher.find()
+    
+    // Extract the latest changelog without the header and API change part
+    def latestChangelog = matcher.group(1)
+    
+    // Test run to see the notification works well in discord
+    dryRun = false
+    
+    // The changelog that will be appeared in publishing websites
+    changelog = "Minecraft version: ${minecraft_version}\nForge version: ${forge_version}\n\nChangelog:\n\n" + latestChangelog
+    
+    // The name of the mod loader
+    modLoaders.add("forge")
+    
+	// Type of the release: ALPHA, BETA, STABLE
+	type = STABLE
+	
+	// The name of the file appeared in publishing websites
+	displayName = "${mod_id}-forge-${mod_version}-${minecraft_version}"
+	
+	file = jar.archiveFile
+	additionalFiles.from(tasks.named("sourcesJar").flatMap { it.archiveFile })
+	
+	// Curseforge publishing info
+    curseforge {
+        accessToken = curseforge_webhook_token
+        projectId = "405076"
+        minecraftVersions.add("1.20.1")
+        projectSlug = "epic-fight-mod"
+    }
+    // Modrinth publishing info
+    modrinth {
+        accessToken = modrinth_webhook_token
+        projectId = "vu3NZ5Ma"
+        minecraftVersions.add("1.20.1")
+    }
+    // Discord webhook and notification settings
+    discord {
+        webhookUrl = discord_webhook_url
+        dryRunWebhookUrl = dry_run_discord_webhook_url
+        username = "Update Notification"
+        avatarUrl = "https://i.imgur.com/FrxDviN.png"
+        content = changelog.map { "# Epic Fight ${mod_version} is out!\nMinecraft version: ${minecraft_version}\nForge version: ${forge_version}\n" + latestChangelog }
+        
+        style {
+			look = "MODERN"
+			link = "EMBED"
+			thumbnailUrl = "https://i.imgur.com/nI8xOCy.png"
+	    }
+    }
 }
