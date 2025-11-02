@@ -237,10 +237,10 @@ publishMods {
     def latestChangelog = matcher.group(1)
     
     // Test run to see the notification works well in discord
-    dryRun = false
+    dryRun = true
     
     // The changelog that will be appeared in publishing websites
-    changelog = "Minecraft version: ${minecraft_version}\nForge version: ${forge_version}\n\nChangelog:\n\n" + latestChangelog
+    changelog = "Minecraft version: ${minecraft_version}\nForge version: ${forge_version}\n\n" + latestChangelog
     
     // The name of the mod loader
     modLoaders.add("forge")
@@ -256,24 +256,24 @@ publishMods {
 	
 	// Curseforge publishing info
     curseforge {
-        accessToken = curseforge_webhook_token
+        accessToken = providers.environmentVariable("CURSEFORGE_TOKEN")
         projectId = "405076"
         minecraftVersions.add("1.20.1")
         projectSlug = "epic-fight-mod"
     }
     // Modrinth publishing info
     modrinth {
-        accessToken = modrinth_webhook_token
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
         projectId = "vu3NZ5Ma"
         minecraftVersions.add("1.20.1")
     }
     // Discord webhook and notification settings
     discord {
-        webhookUrl = discord_webhook_url
-        dryRunWebhookUrl = dry_run_discord_webhook_url
+        webhookUrl = providers.environmentVariable("DISCORD_WEBHOOK")
+        dryRunWebhookUrl = providers.environmentVariable("DRY_RUN_DISCORD_WEBHOOK")
         username = "Update Notification"
         avatarUrl = "https://i.imgur.com/FrxDviN.png"
-        content = changelog.map { "# Epic Fight ${mod_version} is out!\nMinecraft version: ${minecraft_version}\nForge version: ${forge_version}\n" + latestChangelog }
+        content = changelog.map { "<@&1074034800849059930>\n# Epic Fight ${mod_version} is out!\nMinecraft version: ${minecraft_version}\nForge version: ${forge_version}\n" + latestChangelog }
         
         style {
 			look = "MODERN"
