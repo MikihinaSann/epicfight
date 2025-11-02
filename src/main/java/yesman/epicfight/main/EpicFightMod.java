@@ -1,17 +1,7 @@
 package yesman.epicfight.main;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-
-import net.minecraft.resources.ResourceLocation;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
@@ -39,6 +29,8 @@ import net.neoforged.neoforge.event.AddPackFindersEvent;
 import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationRegistryEvent;
@@ -59,18 +51,7 @@ import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
 import yesman.epicfight.client.gui.screen.config.ItemsPreferenceScreen;
 import yesman.epicfight.client.renderer.patched.item.EpicFightItemProperties;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
-import yesman.epicfight.compat.AzureLibArmorCompat;
-import yesman.epicfight.compat.AzureLibCompat;
-import yesman.epicfight.compat.CuriosCompat;
-import yesman.epicfight.compat.FirstPersonCompat;
-import yesman.epicfight.compat.GeckolibCompat;
-import yesman.epicfight.compat.ICompatModule;
-import yesman.epicfight.compat.IRISCompat;
-import yesman.epicfight.compat.PlayerAnimatorCompat;
-import yesman.epicfight.compat.SkinLayer3DCompat;
-import yesman.epicfight.compat.VampirismCompat;
-import yesman.epicfight.compat.WerewolvesCompat;
-import yesman.epicfight.compat.MCreatorPlayerAnimationsCompat;
+import yesman.epicfight.compat.*;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.config.ServerConfig;
@@ -79,11 +60,7 @@ import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.network.EntityPairingPacketType;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.registry.EpicFightRegistries;
-import yesman.epicfight.registry.entries.EpicFightCommandArgumentTypes;
-import yesman.epicfight.registry.entries.EpicFightCreativeTabs;
-import yesman.epicfight.registry.entries.EpicFightItems;
-import yesman.epicfight.registry.entries.EpicFightMobEffects;
-import yesman.epicfight.registry.entries.EpicFightPotions;
+import yesman.epicfight.registry.entries.*;
 import yesman.epicfight.server.commands.AnimatorCommand;
 import yesman.epicfight.server.commands.PlayerModeCommand;
 import yesman.epicfight.server.commands.PlayerSkillCommand;
@@ -104,50 +81,14 @@ import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 import yesman.epicfight.world.item.SkillBookItem;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 /**
- *  ***************************************************************
- *  Major version changes
- *  ***************************************************************
- *  Created 21.13.1
- *  
- *  Port from 20.13.1
- *  Fixed the crash when equipping geckolib armors
- *  Fixed the armor's texture to follow the render property first
- *  Restored Skin layer 3d compatibility
- *  Fixed the first-person player model transform broken when using a shaderpack
- *  
- *  ***************************************************************
- *  
- *  ***************************************************************
- *  20.13.2
- *  
- *  Bugfix
- *  
- *  Fixed the 'resolve_key_conflicts' option not to be applied when the player is vanilla mode
- *  Fixed the 'resolve_key_conflicts' messing up the door state
- *  Fixed the Ender dragon can't hurt the player
- *  
- *  Configuration
- *  
- *  Added a new config option that you can disable Minecraft model while in vanilla mode (Same as old 'filter animation' option)
- *  Added a new config option that determines how 'item_preference' works
- *  - Adaptive: same as current work
- *  - Switch mode: like the old Epic Fight's 'auto_switching' items, it switches the player mode when the player changes a main hand item, forcing the next behavior depending on the player mode
- *  
- *  Changes
- *  
- *  Made the stun shield persistent
- *  
- *  ***************************************************************
- *  
- *  21.13.3
- *  
- *  Ported
- *  Ported from Epic Fight 20.13.3
- *  
- *  Bugfix
- *  Fixed the camera not switching when aiming ranged weapons
- *  
  *  --- Future list ---
  *  
  *  Update language files (always)
