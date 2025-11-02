@@ -103,29 +103,19 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	protected static EntityDataAccessor<Float> MAX_STUN_SHIELD;
 	protected static EntityDataAccessor<Integer> EXECUTION_RESISTANCE;
 	protected static EntityDataAccessor<Boolean> AIRBORNE;
-
+	
 	public static void initLivingEntityDataAccessor() {
-		if (dataNotNull()) return;
-		synchronized (LivingEntityPatch.class) {
-			if (dataNotNull()) return;
-			STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
-			MAX_STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
-			EXECUTION_RESISTANCE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.INT);
-			AIRBORNE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
-		}
+		STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
+		MAX_STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
+		EXECUTION_RESISTANCE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.INT);
+		AIRBORNE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.BOOLEAN);
 	}
-
-	private static boolean dataNotNull() {
-		return STUN_SHIELD != null && MAX_STUN_SHIELD != null && EXECUTION_RESISTANCE != null && AIRBORNE != null;
-	}
-
+	
 	public static void createSyncedEntityData(LivingEntity livingentity) {
-		initLivingEntityDataAccessor();
-
-		livingentity.getEntityData().define(STUN_SHIELD, 0.0F);
-		livingentity.getEntityData().define(MAX_STUN_SHIELD, 0.0F);
-		livingentity.getEntityData().define(EXECUTION_RESISTANCE, 0);
-		livingentity.getEntityData().define(AIRBORNE, false);
+		livingentity.getEntityData().define(STUN_SHIELD, Float.valueOf(0.0F));
+		livingentity.getEntityData().define(MAX_STUN_SHIELD, Float.valueOf(0.0F));
+		livingentity.getEntityData().define(EXECUTION_RESISTANCE, Integer.valueOf(0));
+		livingentity.getEntityData().define(AIRBORNE, Boolean.valueOf(false));
 	}
 	
 	public static final double WEIGHT_CORRECTION = 37.037D;
