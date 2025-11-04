@@ -233,6 +233,9 @@ publishMods {
     def matcher = (readmeContent =~ pattern)
     matcher.find()
     
+    // No publishing without matching changelog
+    if (!matcher.hasGroup()) return;
+    
     // Extract the latest changelog without the header and API change part
     def latestChangelog = matcher.group(1)
     

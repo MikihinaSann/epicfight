@@ -7,6 +7,7 @@
 		"client.MixinAbstractContainerEventHandler",
 		"client.MixinAgeableListModel",
 		"client.MixinBufferBuilder",
+		"client.MixinClientLevel",
 		"client.MixinClientPacketListener",
 		"client.MixinCompositeRenderType",
 		"client.MixinEnderDragonRenderer",
