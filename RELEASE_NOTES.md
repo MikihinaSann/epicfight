@@ -1,14 +1,14 @@
 # Epic Fight in Minecraft 1.21.1 Changelog
 # Changelog on publishing websites and Discord will be parsed between version header ([x.x.x] - yyyy-mm-dd) and (For Devs) section
 
-## [21.13.4] - Unreleased
+## [21.13.4] - 2025-11-04
 
 ### Changed
 - Updated the default config to disable the mine block highlight guide.
 
 ### Fixed
 - Fixed a crash when joining a world with BadOptimizations installed. [BadOptimizations#108](https://github.com/imthosea/BadOptimizations/issues/108), [#2160](https://github.com/Epic-Fight/epicfight/issues/2160).
-- Fixed a crash when joining a world with Ecliptic Seasons installed. [#2164](https://github.com/Epic-Fight/epicfight/issues/2164)
+- Fixed a crash when joining a world with [Ecliptic Seasons](https://www.curseforge.com/minecraft/mc-mods/ecliptic-seasons) installed.
 
 ## [21.13.3] - 2025-11-01
 
