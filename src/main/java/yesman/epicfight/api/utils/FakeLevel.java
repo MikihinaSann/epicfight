@@ -1,14 +1,6 @@
 package yesman.epicfight.api.utils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
 import com.mojang.authlib.GameProfile;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.Screen;
@@ -43,6 +35,12 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.main.EpicFightMod;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 @OnlyIn(Dist.CLIENT)
 public class FakeLevel extends ClientLevel {
@@ -179,14 +177,7 @@ public class FakeLevel extends ClientLevel {
 	public List<AbstractClientPlayer> players() {
 		return this.refLevel.players();
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	public static class FakeClientPlayer extends AbstractClientPlayer {
-		public FakeClientPlayer(FakeLevel fakeLevel, GameProfile gameProfile) {
-			super(fakeLevel, gameProfile);
-		}
-	}
-	
+
 	/**
 	 * Writer methods does nothing in general
 	 */
@@ -204,7 +195,14 @@ public class FakeLevel extends ClientLevel {
 	public boolean destroyBlock(BlockPos pPos, boolean pDropBlock, @Nullable Entity pEntity, int pRecursionLeft) {
 		return false;
 	}
-	
+
+    @OnlyIn(Dist.CLIENT)
+    public static class FakeClientPlayer extends AbstractClientPlayer {
+        public FakeClientPlayer(FakeLevel fakeLevel, GameProfile gameProfile) {
+            super(fakeLevel, gameProfile);
+        }
+    }
+
 	@OnlyIn(Dist.CLIENT)
 	private static class FakeClientPacketListener extends ClientPacketListener {
 		private static final Connection DUMMY_CONNECTION = new Connection(PacketFlow.CLIENTBOUND);
