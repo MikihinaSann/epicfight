@@ -231,10 +231,13 @@ publishMods {
     def readmeContent = readme.getText()
     def pattern = """(?s)## \\[""" + mod_version + """\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"""
     def matcher = (readmeContent =~ pattern)
-    matcher.find()
+    def found = matcher.find()
     
     // No publishing without matching changelog
-    if (!matcher.hasGroup()) return;
+    if (!found) {
+    	println ("No matching changelog found for version ${mod_version} in RELEASE_NOTES.md. Publishing is skipped.")
+    	return
+    }
     
     // Extract the latest changelog without the header and API change part
     def latestChangelog = matcher.group(1)
