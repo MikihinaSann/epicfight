@@ -1,6 +1,12 @@
 # Epic Fight in Minecraft 1.21.1 Changelog
 # Changelog on publishing websites and Discord will be parsed between version header ([x.x.x] - yyyy-mm-dd) and (For Devs) section
 
+## [21.13.5] - Unreleased
+
+### For Devs
+- Adopted KeyConflictContext for each keybind as documented by [Neoforge](https://docs.neoforged.net/docs/misc/keymappings/#ikeyconflictcontext) to avoid potential problem from inconsistency
+- Made GUARD and DODGE CombatKeyMapping, to activate only in Epic Fight mode
+
 ## [21.13.4] - 2025-11-04
 
 ### Changed
