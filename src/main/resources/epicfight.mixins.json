@@ -8,7 +8,6 @@
 		"client.MixinAgeableListModel",
 		"client.MixinClientPacketListener",
 		"client.MixinClientCommonPacketListenerImpl",
-        "client.MixinClientLevel",
 		"client.MixinCompositeRenderType",
 		"client.MixinEnderDragonRenderer",
 		"client.MixinEntityRenderer",
@@ -23,12 +22,7 @@
 		"client.MixinMinecraft",
 		"client.MixinMouseHandler",
 		"client.MixinParticleEngine",
-		"client.MixinThrownTridentRenderer",
-		"geckolib.MixinGeoArmorRenderer",
-		"skinlayers.MixinCustomModelPart",
-		"skinlayers.MixinCustomizableCubeWrapper$SkinLayer3DMixinCustomModelCube",
-		"teamlapen.MixinVampirePlayerHeadLayer",
-		"teamlapen.MixinHumanWerewolfLayer"
+		"client.MixinThrownTridentRenderer"
 	],
 	"mixins": [
 		"common.MixinCrossbowAttack",
