@@ -26,9 +26,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.events.engine.ControlEngine;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
 import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 @Mixin(value = Minecraft.class)
 public abstract class MixinMinecraft {
@@ -60,23 +59,17 @@ public abstract class MixinMinecraft {
 	
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Options;setCameraType(Lnet/minecraft/client/CameraType;)V", shift = Shift.AFTER), method = "handleKeybinds()V")
 	private void epicfight$handleKeybindsINVOKE(CallbackInfo callbackInfo) {
-		if (ClientEngine.getInstance().renderEngine.isTPSMode()) ClientEngine.getInstance().renderEngine.setCameraRotations(this.player.getXRot(), this.player.getYRot(), true);
-		
-		EpicFightCapabilities.getUnparameterizedEntityPatch(this.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (this.options.getCameraType() != CameraType.THIRD_PERSON_BACK && playerpatch.isTargetLockedOn()) {
-				playerpatch.setLockOn(false);
-			}
-		});
+		EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+		if (cameraApi.isTPSMode()) cameraApi.setCameraRotations(this.player.getXRot(), this.player.getYRot(), true);
+		if (this.options.getCameraType() != CameraType.THIRD_PERSON_BACK && cameraApi.isLockingOnTarget()) cameraApi.setLockOn(false);
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "shouldEntityAppearGlowing(Lnet/minecraft/world/entity/Entity;)Z", cancellable = true)
 	private void epicfight$shouldEntityAppearGlowing(Entity entity, CallbackInfoReturnable<Boolean> callbackInfo) {
-		EpicFightCapabilities.getUnparameterizedEntityPatch(this.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (playerpatch.shouldHighlightTarget(entity)) {
-				callbackInfo.setReturnValue(true);
-				callbackInfo.cancel();
-			}
-		});
+		if (EpicFightCameraAPI.getInstance().shouldHighlightTarget(entity)) {
+			callbackInfo.setReturnValue(true);
+			callbackInfo.cancel();
+		}
 	}
 
     @Inject(at = @At("HEAD"), method = "startAttack", cancellable = true)
@@ -103,7 +96,7 @@ public abstract class MixinMinecraft {
 		method = "tick()V"
 	)
 	private void epicfight$tick(GameRenderer gameRenderer, float partialTick) {
-		if (ClientEngine.getInstance().renderEngine.isTPSMode()) {
+		if (EpicFightCameraAPI.getInstance().isTPSMode()) {
 			this.pickInTPSPerspectiveMode(partialTick);
 		} else {
 			this.gameRenderer.pick(partialTick);
@@ -118,21 +111,19 @@ public abstract class MixinMinecraft {
 		Entity entity = this.getCameraEntity();
 		if (entity != null) {
 			if (this.level != null) {
-				EpicFightCapabilities.getUnparameterizedEntityPatch(this.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					this.hitResult = playerpatch.getCameraBasedHitResult();
+				this.hitResult = EpicFightCameraAPI.getInstance().getCrosshairHitResult();
+				
+				if (this.hitResult != null) {
+					double d0 = (double) this.gameMode.getPickRange();
+					double entityReach = this.player.getEntityReach();
+					double distanceLimit = Math.max(d0, entityReach) + ClientConfig.cameraZoom * 0.5D;
+					Vec3 hitPos = this.hitResult.getLocation();
 					
-					if (this.hitResult != null) {
-						double d0 = (double) this.gameMode.getPickRange();
-						double entityReach = this.player.getEntityReach();
-						double distanceLimit = Math.max(d0, entityReach) + ClientConfig.cameraZoom * 0.5D;
-						Vec3 hitPos = this.hitResult.getLocation();
-						
-						if (hitPos.distanceToSqr(this.gameRenderer.getMainCamera().getPosition()) > distanceLimit * distanceLimit) {
-							Vec3 cameraPos = this.gameRenderer.getMainCamera().getPosition();
-							this.hitResult = BlockHitResult.miss(hitPos, Direction.getNearest(cameraPos.x, cameraPos.y, cameraPos.z), BlockPos.containing(hitPos));
-						}
+					if (hitPos.distanceToSqr(this.gameRenderer.getMainCamera().getPosition()) > distanceLimit * distanceLimit) {
+						Vec3 cameraPos = this.gameRenderer.getMainCamera().getPosition();
+						this.hitResult = BlockHitResult.miss(hitPos, Direction.getNearest(cameraPos.x, cameraPos.y, cameraPos.z), BlockPos.containing(hitPos));
 					}
-				});
+				}
 			}
 		}
 	}

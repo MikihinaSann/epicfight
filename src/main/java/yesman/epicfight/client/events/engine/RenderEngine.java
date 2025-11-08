@@ -24,7 +24,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.BossHealthOverlay;
@@ -34,7 +33,6 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -57,7 +55,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -72,7 +69,6 @@ import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -84,7 +80,6 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.ViewLimit;
-import yesman.epicfight.api.client.forgeevent.CameraSetupEvent;
 import yesman.epicfight.api.client.forgeevent.PatchedRenderersEvent;
 import yesman.epicfight.api.client.forgeevent.RenderEnderDragonEvent;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
@@ -145,7 +140,6 @@ import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon.EnderDragonPatch;
 import yesman.epicfight.world.capabilities.item.BowCapability;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
 import yesman.epicfight.world.capabilities.item.CrossbowCapability;
 import yesman.epicfight.world.capabilities.item.MapCapability;
 import yesman.epicfight.world.capabilities.item.ShieldCapability;
@@ -173,6 +167,7 @@ public class RenderEngine {
 	private PHumanoidRenderer<?, ?, ?, ?, ?> basicHumanoidRenderer;
 	private int modelInitTimer;
 	
+	/**
 	// TPS perspective variables
 	private float cameraXRotO;
 	private float cameraYRotO;
@@ -183,6 +178,7 @@ public class RenderEngine {
 	private boolean zoomingIn;
 	private int zoomOutStandbyTicks = 0;
 	public int zoomCount = 0;
+	**/
 	
 	public RenderEngine() {
 		Events.renderEngine = this;
@@ -413,200 +409,12 @@ public class RenderEngine {
 		return availableRendererEntities;
 	}
 	
-	public void zoomIn() {
-		if (!this.zoomingIn) {
-			this.zoomingIn = true;
-			this.zoomCount = this.zoomCount == 0 ? 1 : this.zoomCount;
-		}
-	}
-	
-	public void zoomOut(int zoomOutTicks) {
-		if (this.zoomingIn) {
-			this.zoomingIn = false;
-			this.zoomOutStandbyTicks = zoomOutTicks;
-		}
-	}
-	
-	public boolean isZooming() {
-		return this.zoomingIn;
-	}
-	
 	public void setModelInitializerTimer(int tick) {
 		this.modelInitTimer = tick;
 	}
 	
-	public boolean turnPlayer(double dy, double dx) {
-		MutableBoolean cancel = new MutableBoolean(false);
-		
-		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (this.isTPSMode()) {
-				cancel.setValue(true);
-				
-				if (!playerpatch.isTargetLockedOn() || EpicFightKeyMappings.SHIFT_TARGET.isDown()) {
-					this.setCameraRotations(Mth.clamp(this.cameraXRot + (float)dx * 0.15F, -90.0F, 90.0F), this.cameraYRot + (float)dy * 0.15F, true);
-				}
-			} else if (playerpatch.isTargetLockedOn()) {
-				if (!EpicFightKeyMappings.SHIFT_TARGET.isDown()) {
-					cancel.setValue(true);
-				} else {
-					this.cameraXRot = Mth.clamp(this.cameraXRot + (float)dx * 0.15F, -90.0F, 90.0F);
-					this.cameraYRot = this.cameraYRot + (float)dy * 0.15F;
-				}
-			}
-		});
-		
-		return cancel.booleanValue();
-	}
-	
-	public float getCameraXRot() {
-		return this.cameraXRot;
-	}
-	
-	public float getCameraYRot() {
-		return this.cameraYRot;
-	}
-	
-	public void setCameraXRot(float xRot) {
-		this.cameraXRot = xRot;
-	}
-	
-	public void setCameraYRot(float yRot) {
-		this.cameraYRot = yRot;
-	}
-	
-	public void setCameraRotations(float xRot, float yRot, boolean syncOld) {
-		this.cameraXRot = xRot;
-		this.cameraYRot = yRot;
-		
-		if (syncOld) {
-			this.cameraXRotO = this.cameraXRot;
-			this.cameraYRotO = this.cameraYRot;
-		}
-	}
-	
 	// true when cancel the existing camera setup
-	public boolean setupCamera(Camera camera, float partialTick) {
-		if (!camera.getEntity().is(this.minecraft.player)) {
-			return false;
-		}
-		
-		MutableBoolean isLockingOn = new MutableBoolean(false);
-		
-		EpicFightCapabilities.getUnparameterizedEntityPatch(camera.getEntity(), LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (playerpatch.getTarget() != null && playerpatch.isTargetLockedOn()) {
-				isLockingOn.setValue(true);
-			}
-		});
-		
-		CameraSetupEvent cameraSetupEvent = new CameraSetupEvent(camera, partialTick, isLockingOn.booleanValue(), this);
-		MinecraftForge.EVENT_BUS.post(cameraSetupEvent);
-		
-		if (cameraSetupEvent.isCanceled()) {
-			return cameraSetupEvent.shouldCancelVanillaSetup();
-		}
-		
-		if (this.isTPSMode()) {
-			float delta = ClientConfig.cameraMode == ClientConfig.TPSType.WHEN_AIMING ? ((float)this.zoomCount / (float)this.maxZoomCount) : 1.0F;
-			float xRot = Mth.rotLerp(delta, this.minecraft.player.getXRot(), Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
-			float yRot = Mth.rotLerp(delta, this.minecraft.player.getYRot(), Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot));
-			camera.setRotation(yRot, xRot);
-			
-			Vec3 playerPos = new Vec3(
-				Mth.lerp((double)partialTick, camera.getEntity().xo, camera.getEntity().getX()),
-				Mth.lerp((double)partialTick, camera.getEntity().yo, camera.getEntity().getY()) + Mth.lerp((double)partialTick, camera.eyeHeightOld, camera.eyeHeight),
-				Mth.lerp((double)partialTick, camera.getEntity().zo, camera.getEntity().getZ())
-			);
-			
-			Vec3f relocation = new Vec3f(ClientConfig.cameraHorizontalLocation * 0.2F, ClientConfig.cameraVerticalLocation * 0.2F, 0.0F);
-			OpenMatrix4f.transform3v(OpenMatrix4f.createRotatorDeg(-yRot, Vec3f.Y_AXIS), relocation, relocation);
-			double cameraZoom = ClientConfig.cameraZoom * 0.5D - (this.zoomCount * 0.05D);
-			double hitDistance = 1.0D;
-			
-			for (int i = 0; i < 8; ++i) {
-				float f = (float)((i & 1) * 2 - 1);
-				float f1 = (float)((i >> 1 & 1) * 2 - 1);
-				float f2 = (float)((i >> 2 & 1) * 2 - 1);
-				f *= 0.1F;
-				f1 *= 0.1F;
-				f2 *= 0.1F;
-				
-				Vec3 vec3 = playerPos.add((double)f, (double)f1, (double)f2);
-				Vec3 vec31 = new Vec3(
-					playerPos.x + (relocation.x - (double)camera.getLookVector().x() * cameraZoom) + (double)f,
-					playerPos.y + (relocation.y - (double)camera.getLookVector().y() * cameraZoom) + (double)f1,
-					playerPos.z + (relocation.z - (double)camera.getLookVector().z() * cameraZoom) + (double)f2
-				);
-				double length = vec3.distanceTo(vec31);
-				HitResult hitresult = this.minecraft.level.clip(new ClipContext(vec3, vec31, ClipContext.Block.VISUAL, ClipContext.Fluid.NONE, camera.getEntity()));
-				
-				if (hitresult.getType() != HitResult.Type.MISS) {
-					double d0 = hitresult.getLocation().distanceTo(playerPos) / length;
-					
-					if (d0 < hitDistance) {
-						hitDistance = d0;
-					}
-				}
-			}
-			
-			double nearestX = playerPos.x + (relocation.x - (double)camera.getLookVector().x() * cameraZoom) * hitDistance;
-			double nearestY = playerPos.y + (relocation.y - (double)camera.getLookVector().y() * cameraZoom) * hitDistance;
-			double nearestZ = playerPos.z + (relocation.z - (double)camera.getLookVector().z() * cameraZoom) * hitDistance;
-			
-			if (Float.compare(1.0F, delta) == 0) {
-				camera.setPosition(nearestX, nearestY, nearestZ);
-			} else {
-				// Setup vanilla location first
-				camera.setRotation(this.minecraft.player.getViewYRot(partialTick), this.minecraft.player.getViewXRot(partialTick));
-				camera.setPosition(
-					Mth.lerp((double) partialTick, this.minecraft.player.xo, this.minecraft.player.getX()),
-					Mth.lerp((double) partialTick, this.minecraft.player.yo, this.minecraft.player.getY()) + (double) Mth.lerp(partialTick, camera.eyeHeightOld, camera.eyeHeight),
-					Mth.lerp((double) partialTick, this.minecraft.player.zo, this.minecraft.player.getZ())
-				);
-				camera.move(-camera.getMaxZoom(4.0D), 0.0D, 0.0D);
-				
-				// Restore rotation
-				camera.setRotation(yRot, xRot);
-				camera.setPosition(
-					camera.getPosition().x() + (nearestX - camera.getPosition().x()) * delta,
-					camera.getPosition().y() + (nearestY - camera.getPosition().y()) * delta,
-					camera.getPosition().z() + (nearestZ - camera.getPosition().z()) * delta
-				);
-			}
-			
-			return true;
-		} else if (isLockingOn.getValue()) {
-			if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
-				float xRot = Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot);
-				float yRot = Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot);
-				
-				camera.setRotation(yRot, xRot);
-				camera.setPosition(
-					Mth.lerp((double)partialTick, camera.getEntity().xo, camera.getEntity().getX()),
-					Mth.lerp((double)partialTick, camera.getEntity().yo, camera.getEntity().getY()) + (double)Mth.lerp(partialTick, camera.eyeHeightOld, camera.eyeHeight),
-					Mth.lerp((double)partialTick, camera.getEntity().zo, camera.getEntity().getZ())
-				);
-				
-				if (camera.isDetached()) {
-					camera.move(-camera.getMaxZoom(4.0D), 0.0D, 0.0D);
-				} else if (camera.getEntity() instanceof LivingEntity livingEntity && livingEntity.isSleeping()) {
-					Direction direction = ((LivingEntity)camera.getEntity()).getBedOrientation();
-					camera.setRotation(direction != null ? direction.toYRot() - 180.0F : 0.0F, 0.0F);
-					camera.move(0.0D, 0.3D, 0.0D);
-				}
-				return true;
-			} else if (this.minecraft.options.getCameraType() == CameraType.FIRST_PERSON) {
-				if (!EpicFightKeyMappings.SHIFT_TARGET.isDown()) {
-					camera.getEntity().setXRot(Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
-					camera.getEntity().setYRot(Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot));
-				} else {
-					this.cameraXRot = camera.getEntity().getXRot();
-					this.cameraYRot = camera.getEntity().getYRot();
-				}
-			}
-		}
-		
-		return false;
-	}
+	
 	
 	public OverlayManager getOverlayManager() {
 		return this.overlayManager;
@@ -626,10 +434,6 @@ public class RenderEngine {
 	
 	public boolean shouldRenderVanillaModel() {
 		return ClientEngine.getInstance().isVanillaModelDebuggingMode() || this.modelInitTimer > 0;
-	}
-	
-	public boolean isTPSMode() {
-		return this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && (ClientConfig.cameraMode.shouldSwitch(this));
 	}
 	
 	public void addBossEventOwner(UUID uuid, BossPatch bosspatch) {
@@ -661,7 +465,8 @@ public class RenderEngine {
 	}
 	
 	public void clear() {
-		this.zoomOut(0);
+		EpicFightCameraAPI.getInstance().zoomOut(0);
+		
 		this.bossEventOwners.clear();
 		
 		if (!RenderSystem.isOnRenderThread()) {
@@ -819,24 +624,15 @@ public class RenderEngine {
 		
 		@SubscribeEvent
 		public static void cameraSetupEvent(ViewportEvent.ComputeCameraAngles event) {
-			if (renderEngine.zoomCount > 0) {
-				if (renderEngine.zoomOutStandbyTicks > 0) {
-					renderEngine.zoomOutStandbyTicks--;
-				} else {
-					renderEngine.zoomCount = renderEngine.zoomingIn ? renderEngine.zoomCount + 1 : renderEngine.zoomCount - 1;
-				}
-				
-				renderEngine.zoomCount = Math.min(renderEngine.maxZoomCount, renderEngine.zoomCount);
-			}
-			
 			EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 				// First person camera correction
 				if (ClientConfig.enablePovAction && renderEngine.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
 					float partialTick = (float)event.getPartialTick();
+					EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
 					
-					if (playerpatch.isLerpingFpv()) {
-						float xRot = playerpatch.getLerpedFpvXRot(partialTick);
-						float yRot = playerpatch.getLerpedFpvYRot(partialTick);
+					if (cameraApi.isLerpingFpv()) {
+						float xRot = cameraApi.getLerpedFpvXRot(partialTick);
+						float yRot = cameraApi.getLerpedFpvYRot(partialTick);
 						renderEngine.minecraft.cameraEntity.setXRot(xRot);
 						renderEngine.minecraft.cameraEntity.setYRot(yRot);
 					} else {
@@ -848,7 +644,7 @@ public class RenderEngine {
 							float clampedYRot = Mth.clamp(event.getYaw(), bodyY + viewLimit.yRotMin(), bodyY + viewLimit.yRotMax());
 							
 							if (Float.compare(clampedXRot, event.getPitch()) != 0 || Float.compare(clampedYRot, event.getYaw()) != 0) {
-								playerpatch.fixFpvRotation(clampedXRot, playerpatch.getYRot());
+								cameraApi.fixFpvRotation(clampedXRot, playerpatch.getYRot(), 5);
 							}
 						}
 					}
@@ -918,7 +714,7 @@ public class RenderEngine {
 					return;
 				}
 				
-				if (cameraType.isFirstPerson() || cameraType == CameraType.THIRD_PERSON_BACK && renderEngine.isTPSMode()) {
+				if (cameraType.isFirstPerson() || cameraType == CameraType.THIRD_PERSON_BACK && EpicFightCameraAPI.getInstance().isTPSMode()) {
 					MutableBoolean itemAction = new MutableBoolean(true); // true: combat, false: mine
 					
 					if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
@@ -1043,47 +839,9 @@ public class RenderEngine {
 		public static void clientTickEvent(TickEvent.ClientTickEvent event) {
 			if (event.phase == TickEvent.Phase.START) {
 				renderEngine.freeUnusedSources();
-				renderEngine.cameraXRotO = renderEngine.cameraXRot;
-				renderEngine.cameraYRotO = renderEngine.cameraYRot;
-				
-				EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					// Sync camera rotation when free cam
-					if (!renderEngine.isTPSMode() && !playerpatch.isTargetLockedOn()) {
-						renderEngine.cameraXRot = playerpatch.getOriginal().getXRot();
-						renderEngine.cameraYRot = playerpatch.getOriginal().getYRot();
-					}
-					
-					// Handle camera zoom in/out
-					CapabilityItem mainhandItemCap = playerpatch.getAdvancedHoldingItemCapability(InteractionHand.MAIN_HAND);
-					CapabilityItem offhandItemCap = playerpatch.getAdvancedHoldingItemCapability(InteractionHand.OFF_HAND);
-					CapabilityItem.ZoomInType rangeWeaponZoomInType =
-						mainhandItemCap.isEmpty() || mainhandItemCap.getZoomInType() == ZoomInType.NONE
-							? offhandItemCap.getZoomInType() : mainhandItemCap.getZoomInType();
-					
-					switch (rangeWeaponZoomInType) {
-					case ALWAYS -> {
-						renderEngine.zoomIn();
-					}
-					case USE_TICK -> {
-						if (playerpatch.getOriginal().getUseItemRemainingTicks() > 0) {
-							renderEngine.zoomIn();
-						} else {
-							renderEngine.zoomOut(40);
-						}
-					}
-					case AIMING -> {
-						if (playerpatch.getClientAnimator().isAiming()) {
-							renderEngine.zoomIn();
-						} else {
-							renderEngine.zoomOut(40);
-						}
-					}
-					case CUSTOM -> {} //Zoom manually handled
-					default -> {
-						renderEngine.zoomOut(0);
-					}
-					}
-				});
+				EpicFightCameraAPI.getInstance().preClientTick();
+			} else {
+				EpicFightCameraAPI.getInstance().postClientTick();
 			}
 		}
 		

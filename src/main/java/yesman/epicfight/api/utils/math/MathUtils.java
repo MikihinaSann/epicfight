@@ -13,15 +13,19 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.joml.Vector4f;
 import org.joml.Vector4i;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 
+import net.minecraft.client.Camera;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 
 public class MathUtils {
@@ -544,6 +548,39 @@ public class MathUtils {
 	
 	public static byte normalIntValue(float pNum) {
 		return (byte)((int)(Mth.clamp(pNum, -1.0F, 1.0F) * 127.0F) & 255);
+	}
+	
+	/**
+	 * Wrap a value within bounds
+	 */
+	public static int wrapClamp(int value, int min, int max) {
+		int stride = max - min + 1;
+		while (value < min) value += stride;
+		while (value > max) value -= stride;
+		return value;
+	}
+	
+	/**
+	 * Transform the world coordinate system to -1~1 screen coord system
+	 * @param projection	current projection matrix
+	 * @param modelView		current model-view matrix
+	 * @param position		a source vector to transform
+	 */
+	public static Vec2 worldToScreenCoord(Matrix4f projectionMatrix, Camera camera, Vec3 position) {
+		Vector4f relativeCamera = new Vector4f((float)camera.getPosition().x() - (float)position.x(), (float)camera.getPosition().y() - (float)position.y(), (float)camera.getPosition().z() - (float)position.z(), 1.0F);
+		relativeCamera.rotate(Axis.YP.rotationDegrees(camera.getYRot() + 180.0F));
+		relativeCamera.rotate(Axis.XP.rotationDegrees(camera.getXRot()));
+		relativeCamera.mul(projectionMatrix);
+		
+		float depth = relativeCamera.w;
+		relativeCamera.mul(1.0F / relativeCamera.w());
+		
+		if (depth < 0.0F) {
+			relativeCamera.x = -relativeCamera.x;
+			relativeCamera.y = -relativeCamera.y;
+		}
+		
+		return new Vec2(relativeCamera.x(), relativeCamera.y());
 	}
 	
 	private MathUtils() {}

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
-import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
 
 @Mixin(value = Camera.class)
 public abstract class MixinCamera {
@@ -29,6 +29,6 @@ public abstract class MixinCamera {
 		this.entity = entity;
 		this.detached = detached;
 		
-		if (ClientEngine.getInstance().renderEngine.setupCamera((Camera)(Object)this, partialTick)) callbackInfo.cancel();
+		if (EpicFightCameraAPI.getInstance().setupCamera((Camera)(Object)this, partialTick)) callbackInfo.cancel();
 	}
 }

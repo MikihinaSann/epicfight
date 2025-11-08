@@ -39,6 +39,8 @@ public enum EpicFightInputActions implements InputAction {
     GUARD(false),
     DODGE(false),
     LOCK_ON(false),
+    LOCK_ON_SHIFT_LEFT(false),
+    LOCK_ON_SHIFT_RIGHT(false),
     SWITCH_MODE(false),
     WEAPON_INNATE_SKILL(false),
     WEAPON_INNATE_SKILL_TOOLTIP(false),
@@ -100,6 +102,8 @@ public enum EpicFightInputActions implements InputAction {
             case GUARD -> EpicFightKeyMappings.GUARD;
             case DODGE -> EpicFightKeyMappings.DODGE;
             case LOCK_ON -> EpicFightKeyMappings.LOCK_ON;
+            case LOCK_ON_SHIFT_LEFT -> EpicFightKeyMappings.LOCK_ON_SHIFT_LEFT;
+            case LOCK_ON_SHIFT_RIGHT -> EpicFightKeyMappings.LOCK_ON_SHIFT_RIGHT;
             case SWITCH_MODE -> EpicFightKeyMappings.SWITCH_MODE;
             case WEAPON_INNATE_SKILL -> EpicFightKeyMappings.WEAPON_INNATE_SKILL;
             case WEAPON_INNATE_SKILL_TOOLTIP -> EpicFightKeyMappings.WEAPON_INNATE_SKILL_TOOLTIP;

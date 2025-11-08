@@ -4,16 +4,16 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import yesman.epicfight.client.ClientEngine;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
+import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPUpdatePlayerInput;
@@ -27,7 +27,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	}
 
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V", shift = At.Shift.BEFORE), method = "tick()V")
-	private void epicfight_tick(CallbackInfo callbackInfo) {
+	private void epicfight$tick(CallbackInfo callbackInfo) {
 		LocalPlayer epicfight$entity = (LocalPlayer)(Object)this;
 		LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getEntityPatch(epicfight$entity, LocalPlayerPatch.class);
 		
@@ -49,13 +49,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 	
 	@Override
 	public void moveRelative(float amount, Vec3 relative) {
-		EpicFightCapabilities.getUnparameterizedEntityPatch((Entity)(Object)this, LocalPlayerPatch.class).ifPresentOrElse(entitypatch -> {
-			Vec3 vec3 = entitypatch.getRelativeMoveVector(relative, amount);
-			this.setDeltaMovement(this.getDeltaMovement().add(vec3));
-		}, () -> {
-			// @Shadow unsupported at here... Used access transformer
-			Vec3 vec3 = getInputVector(relative, amount, this.getYRot());
-			this.setDeltaMovement(this.getDeltaMovement().add(vec3));
-		});
+		Vec3 vec3 = EpicFightCameraAPI.getInstance().getRelativeMove(relative, amount);
+		this.setDeltaMovement(this.getDeltaMovement().add(vec3));
 	}
 }

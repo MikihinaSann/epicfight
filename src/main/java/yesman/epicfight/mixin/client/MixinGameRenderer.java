@@ -14,10 +14,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import yesman.epicfight.client.ClientEngine;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
 import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 @Mixin(value = GameRenderer.class)
 public abstract class MixinGameRenderer {
@@ -36,7 +34,7 @@ public abstract class MixinGameRenderer {
 		method = "renderLevel(FJLcom/mojang/blaze3d/vertex/PoseStack;)V"
 	)
 	private void epicfight$renderLevel(GameRenderer gameRenderer, float partialTick) {
-		if (ClientEngine.getInstance().renderEngine.isTPSMode()) {
+		if (EpicFightCameraAPI.getInstance().isTPSMode()) {
 			this.pickInTPSPerspective(partialTick);
 		} else {
 			this.pick(partialTick);
@@ -51,21 +49,20 @@ public abstract class MixinGameRenderer {
 		Entity entity = this.minecraft.getCameraEntity();
 		if (entity != null) {
 			if (this.minecraft.level != null) {
-				EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					this.minecraft.hitResult = playerpatch.getCameraBasedHitResult();
+				this.minecraft.hitResult = EpicFightCameraAPI.getInstance().getCrosshairHitResult();
+				this.minecraft.crosshairPickEntity = EpicFightCameraAPI.getInstance().getFocusingEntity();
+				
+				if (this.minecraft.hitResult != null) {
+					double d0 = (double) this.minecraft.gameMode.getPickRange();
+					double entityReach = this.minecraft.player.getEntityReach();
+					double distanceLimit = Math.max(d0, entityReach) + ClientConfig.cameraZoom * 0.5D;
+					Vec3 hitPos = this.minecraft.hitResult.getLocation();
 					
-					if (this.minecraft.hitResult != null) {
-						double d0 = (double) this.minecraft.gameMode.getPickRange();
-						double entityReach = this.minecraft.player.getEntityReach();
-						double distanceLimit = Math.max(d0, entityReach) + ClientConfig.cameraZoom * 0.5D;
-						Vec3 hitPos = this.minecraft.hitResult.getLocation();
-						
-						if (hitPos.distanceToSqr(this.mainCamera.getPosition()) > distanceLimit * distanceLimit) {
-							Vec3 cameraPos = this.mainCamera.getPosition();
-							this.minecraft.hitResult = BlockHitResult.miss(hitPos, Direction.getNearest(cameraPos.x, cameraPos.y, cameraPos.z), BlockPos.containing(hitPos));
-						}
+					if (hitPos.distanceToSqr(this.mainCamera.getPosition()) > distanceLimit * distanceLimit) {
+						Vec3 cameraPos = this.mainCamera.getPosition();
+						this.minecraft.hitResult = BlockHitResult.miss(hitPos, Direction.getNearest(cameraPos.x, cameraPos.y, cameraPos.z), BlockPos.containing(hitPos));
 					}
-				});
+				}
 			}
 		}
 	}

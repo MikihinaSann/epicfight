@@ -1,5 +1,6 @@
 package yesman.epicfight.world.capabilities.entitypatch;
 
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
@@ -11,7 +12,6 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import yesman.epicfight.api.client.forgeevent.ProcessEntityPairingPacketEvent;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.network.server.SPEntityPairingPacket;
 
 public abstract class EntityPatch<T extends Entity> {
@@ -92,7 +92,7 @@ public abstract class EntityPatch<T extends Entity> {
 	}
 	
 	@OnlyIn(Dist.CLIENT)
-	public boolean isOutlineVisible(LocalPlayerPatch player) {
+	public boolean isOutlineVisible(LocalPlayer player) {
 		return true;
 	}
 }

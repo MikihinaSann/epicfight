@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.widgets.EpicFightOptionList;
 import yesman.epicfight.client.gui.widgets.RewindableButton;
@@ -40,7 +41,8 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.longPressCounter)
 				),
 				button -> {
-					ClientConfig.longPressCounter++;
+					ClientConfig.longPressCounter = MathUtils.wrapClamp(++ClientConfig.longPressCounter, 1, 10);
+					
 					button.setMessage(
 						Component.translatable(
 							EpicFightMod.format("gui.%s.long_press_counter"),
@@ -49,7 +51,8 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					);
 				},
 				button -> {
-					ClientConfig.longPressCounter--;
+					ClientConfig.longPressCounter = MathUtils.wrapClamp(--ClientConfig.longPressCounter, 1, 10);
+					
 					button.setMessage(
 						Component.translatable(
 							EpicFightMod.format("gui.%s.long_press_counter"),
@@ -75,34 +78,6 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 			.build();
 		
 		this.optionsList.addSmall(longPressCounterButton, cameraAutoSwitchButton);
-		buttonHeight += 24;
-		
-		Button itemPreferenceButton =
-			Button.builder(
-				Component.translatable(EpicFightMod.format("gui.%s.item_preferences")),
-				button -> {
-					this.minecraft.setScreen(new ItemsPreferenceScreen(this));
-				}
-			)
-			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
-			.size(160, 20)
-			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.item_preferences.tooltip"))))
-			.build();
-		
-		Button preferenceWorkButton =
-			Button.builder(
-				Component.translatable(EpicFightMod.format("gui.%s.preference_work." + ClientConfig.preferenceWork.getSerializedName())),
-				button -> {
-					ClientConfig.preferenceWork = ClientConfig.preferenceWork.nextEnum();
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.preference_work." + ClientConfig.preferenceWork.getSerializedName())));
-				}
-			)
-			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
-			.size(160, 20)
-			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.preference_work.tooltip"))))
-			.build();
-		
-		this.optionsList.addSmall(itemPreferenceButton, preferenceWorkButton);
 		buttonHeight += 24;
 		
 		Button resolveKeyConflictsButton =
@@ -132,6 +107,50 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
                         .build();
 		
 		this.optionsList.addSmall(resolveKeyConflictsButton, cameraPerspectiveToggleMode);
+		buttonHeight += 24;
+		
+		Button enableLockOnQuickShiftButton =
+			Button.builder(
+				Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))),
+				button -> {
+					ClientConfig.lockOnQuickShift = !ClientConfig.lockOnQuickShift;
+					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))));
+				}
+			)
+			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
+			.size(160, 20)
+			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift.tooltip"))))
+			.build();
+		
+		this.optionsList.addSmall(enableLockOnQuickShiftButton, null);
+		buttonHeight += 24;
+		
+		Button itemPreferenceButton =
+			Button.builder(
+				Component.translatable(EpicFightMod.format("gui.%s.item_preferences")),
+				button -> {
+					this.minecraft.setScreen(new ItemsPreferenceScreen(this));
+				}
+			)
+			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
+			.size(160, 20)
+			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.item_preferences.tooltip"))))
+			.build();
+		
+		Button preferenceWorkButton =
+			Button.builder(
+				Component.translatable(EpicFightMod.format("gui.%s.preference_work." + ClientConfig.preferenceWork.getSerializedName())),
+				button -> {
+					ClientConfig.preferenceWork = ClientConfig.preferenceWork.nextEnum();
+					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.preference_work." + ClientConfig.preferenceWork.getSerializedName())));
+				}
+			)
+			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
+			.size(160, 20)
+			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.preference_work.tooltip"))))
+			.build();
+		
+		this.optionsList.addSmall(itemPreferenceButton, preferenceWorkButton);
 		buttonHeight += 24;
 		
 		this.addWidget(this.optionsList);

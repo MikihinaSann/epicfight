@@ -2,8 +2,6 @@ package yesman.epicfight.client.events.engine;
 
 import java.util.Set;
 
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.world.entity.player.Inventory;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -17,12 +15,14 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -38,10 +38,10 @@ import net.minecraftforge.event.entity.living.LivingEvent.LivingJumpEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import yesman.epicfight.api.animation.types.EntityState;
-import yesman.epicfight.api.utils.FakeLevel;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
+import yesman.epicfight.api.utils.FakeLevel;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
@@ -160,7 +160,11 @@ public class ControlEngine {
         
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
 
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this.playerPatch::toggleLockOn);
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, EpicFightCameraAPI.getInstance()::toggleLockOn);
+        
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_LEFT, false, () -> EpicFightCameraAPI.getInstance().setNextLockOnTarget(1));
+        
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_RIGHT, false, () -> EpicFightCameraAPI.getInstance().setNextLockOnTarget(-1));
         
         if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
 		
@@ -294,7 +298,7 @@ public class ControlEngine {
 			consumeDropKeyClicks();
 		}
 
-        if (this.minecraft.level != null && ClientEngine.getInstance().renderEngine.isTPSMode() && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
+        if (this.minecraft.level != null && EpicFightCameraAPI.getInstance().isTPSMode() && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
             if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LEFT)) {
                 ClientConfig.cameraHorizontalLocation = Math.min(10, ClientConfig.cameraHorizontalLocation + 1);
             }
@@ -462,7 +466,7 @@ public class ControlEngine {
         }
         this.playerPatch.toggleMode();
     }
-	
+    
 	private void inputTick(Input input) {
         PlayerInputState inputState = InputManager.getInputState(input);
 		if (this.moverPressToggle) {
