@@ -3,7 +3,17 @@
 
 ## [21.13.5] - Unreleased
 
+### Fixed
+
+- Fixed a regression where the Phantom Ascent skill was triggered when
+  pressing the jump key while any screen was open (e.g., inventory, chat).
+  [#2170](https://github.com/Epic-Fight/epicfight/issues/2170)
+
 ### Changed
+
+- Refactored the code to eliminate unnecessary native GLFW calls,
+  optimizing whether key down checks are performed per tick, by adapting
+  Minecraft vanilla `KeyMapping`, which may also potentially fix other compatibility issues with other mods.
 - Avoid registering mixins for non-existing third-party mods to avoid spamming the console log and prevent unnecessary operations.
 
 ### For Devs
