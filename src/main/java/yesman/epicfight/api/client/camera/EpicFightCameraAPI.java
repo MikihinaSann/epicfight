@@ -1,4 +1,4 @@
-package yesman.epicfight.client.events.engine;
+package yesman.epicfight.api.client.camera;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -46,13 +46,13 @@ import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPSetPlayerTarget;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
-import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
 
@@ -348,27 +348,22 @@ public final class EpicFightCameraAPI {
 				return true;
 			}
 			
-			if (ClientConfig.preferenceWork.checkHitResult()) {
-				if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
-					// For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
-					if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-						BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
-						BlockState bs = this.minecraft.level.getBlockState(bp);
-						return !this.minecraft.player.getMainHandItem().getItem().canAttackBlock(bs, this.minecraft.player.level(), bp, this.minecraft.player) || !this.minecraft.player.getMainHandItem().isCorrectToolForDrops(bs);
-					}
-					
-					return true;
-				} else {
-					// if hit result is block, 
-					if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-						return false;
-					}
-					
-					return true;
+			if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
+				// For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
+				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+					BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+					BlockState bs = this.minecraft.level.getBlockState(bp);
+					return !this.minecraft.player.getMainHandItem().getItem().canAttackBlock(bs, this.minecraft.player.level(), bp, this.minecraft.player) || !this.minecraft.player.getMainHandItem().isCorrectToolForDrops(bs);
 				}
+				
+				return true;
 			} else {
-				LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
-				return playerpatch != null && playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
+				// if hit result is block, 
+				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+					return false;
+				}
+				
+				return true;
 			}
 		}
 		

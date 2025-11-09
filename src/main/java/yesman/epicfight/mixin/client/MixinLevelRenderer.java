@@ -26,7 +26,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
-import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.config.ClientConfig;
 
 @Mixin(value = LevelRenderer.class)

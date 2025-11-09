@@ -13,7 +13,7 @@ import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.client.ClientEngine;
-import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPUpdatePlayerInput;

@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
-import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 
 @Mixin(value = Camera.class)
 public abstract class MixinCamera {

@@ -26,7 +26,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.events.engine.ControlEngine;
-import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.config.ClientConfig;
 
 @Mixin(value = Minecraft.class)

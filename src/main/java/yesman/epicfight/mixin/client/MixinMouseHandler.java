@@ -6,7 +6,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 
 import net.minecraft.client.MouseHandler;
 import net.minecraft.client.player.LocalPlayer;
-import yesman.epicfight.client.events.engine.EpicFightCameraAPI;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 
 @Mixin(value = MouseHandler.class)
 public abstract class MixinMouseHandler {
