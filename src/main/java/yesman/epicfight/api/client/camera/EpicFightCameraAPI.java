@@ -46,10 +46,15 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
 import java.util.*;
 
 /**
- * Provides a way to access & modify camera variables featured in Epic Fight
- * This has camera rotations in TPS mode, Entity focusing and Lock-on, and
- * fixing First-person point of view for directional animation (climbing ladder)
+ * Provides access to Epic Fight's camera and third-person systems, including
+ * lock-on functionality, zoom controls, camera rotation, and entity focusing.
+ * <p>
+ * This API can be used to integrate with Epic Fight's custom third-person
+ * camera or by addons to extend its functionality, modify camera variables,
+ * and provide explicit support for directional animations (e.g., fixing
+ * first-person view while climbing ladders).
  */
+
 public final class EpicFightCameraAPI {
     private static final EpicFightCameraAPI INSTANCE = new EpicFightCameraAPI();
     private static final int MAX_ZOOM_TICK = 8;
