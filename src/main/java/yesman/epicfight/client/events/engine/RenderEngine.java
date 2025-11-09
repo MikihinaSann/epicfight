@@ -807,4 +807,20 @@ public class RenderEngine implements IEventBasedEngine {
 	public void modEventBus(IEventBus modEventBus) {
 		modEventBus.addListener(this::epicfight$addLayers);
 	}
+
+    /**
+     * @deprecated Use {@link EpicFightCameraAPI#zoomIn()} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void zoomIn() {
+        EpicFightCameraAPI.getInstance().zoomIn();
+    }
+
+    /**
+     * @deprecated Use {@link EpicFightCameraAPI#zoomOut(int)} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void zoomOut(int zoomOutTicks) {
+        EpicFightCameraAPI.getInstance().zoomOut(zoomOutTicks);
+    }
 }
