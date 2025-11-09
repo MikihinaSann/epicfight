@@ -554,4 +554,20 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
     public boolean isTargetLockedOn() {
         return EpicFightCameraAPI.getInstance().isLockingOnTarget();
     }
+
+    /**
+     * @deprecated Use {@link EpicFightCameraAPI#setLockOn(boolean)} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void setLockOn(boolean targetLockedOn) {
+        EpicFightCameraAPI.getInstance().setLockOn(targetLockedOn);
+    }
+
+    /**
+     * @deprecated Use {@link EpicFightCameraAPI#toggleLockOn()} instead
+     */
+    @Deprecated(forRemoval = true)
+    public void toggleLockOn() {
+        this.setLockOn(!EpicFightCameraAPI.getInstance().isLockingOnTarget());
+    }
 }
