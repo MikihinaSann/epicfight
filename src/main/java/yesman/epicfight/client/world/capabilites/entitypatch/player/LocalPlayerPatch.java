@@ -1,9 +1,5 @@
 package yesman.epicfight.client.world.capabilites.entitypatch.player;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -39,11 +35,11 @@ import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.ViewLimit;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.client.ClientEngine;
-import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.config.ClientConfig;
@@ -60,6 +56,10 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.entity.eventlistener.PlayerEventListener.EventType;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @OnlyIn(Dist.CLIENT)
 public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
@@ -546,4 +546,12 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			return this.linkCameraTransform;
 		}
 	}
+
+    /**
+     * @deprecated Use {@link EpicFightCameraAPI#isLockingOnTarget()} instead
+     */
+    @Deprecated(forRemoval = true)
+    public boolean isTargetLockedOn() {
+        return EpicFightCameraAPI.getInstance().isLockingOnTarget();
+    }
 }
