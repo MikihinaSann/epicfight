@@ -160,11 +160,11 @@ public class ControlEngine {
         
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
 
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, EpicFightCameraAPI.getInstance()::toggleLockOn);
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this::toggleLockOnState);
         
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_LEFT, false, () -> EpicFightCameraAPI.getInstance().setNextLockOnTarget(1));
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_LEFT, false, this::searchNewTargetFromLeft);
         
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_RIGHT, false, () -> EpicFightCameraAPI.getInstance().setNextLockOnTarget(-1));
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_RIGHT, false, this::searchNewTargetFromRight);
         
         if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
 		
@@ -465,6 +465,18 @@ public class ControlEngine {
             return;
         }
         this.playerPatch.toggleMode();
+    }
+    
+    private void toggleLockOnState() {
+    	EpicFightCameraAPI.getInstance().toggleLockOn();
+    }
+    
+    private void searchNewTargetFromLeft() {
+    	EpicFightCameraAPI.getInstance().setNextLockOnTarget(1);
+    }
+    
+    private void searchNewTargetFromRight() {
+    	EpicFightCameraAPI.getInstance().setNextLockOnTarget(-1);
     }
     
 	private void inputTick(Input input) {

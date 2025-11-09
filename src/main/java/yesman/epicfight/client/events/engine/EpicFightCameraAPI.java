@@ -41,10 +41,11 @@ import net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.fml.ModList;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
+import yesman.epicfight.api.client.input.action.EpicFightInputActions;
+import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
-import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.network.EpicFightNetworkManager;
@@ -263,8 +264,9 @@ public final class EpicFightCameraAPI {
 		
 		// Create a compact projection matrix without view, hurt bob
 		PoseStack posestack = new PoseStack();
-		double d0 = 70.0F;//this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
-		posestack.mulPoseMatrix(this.minecraft.gameRenderer.getProjectionMatrix(d0));
+		double fov = 70.0F;//this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
+		double maxDistance = Math.pow(this.minecraft.options.renderDistance().get() * 16.0D, 2);
+		posestack.mulPoseMatrix(this.minecraft.gameRenderer.getProjectionMatrix(fov));
 		Matrix4f compactProjection = posestack.last().pose();
 		
 		// Select the nearest target on the screen from the given direction
@@ -272,11 +274,12 @@ public final class EpicFightCameraAPI {
 			.filter(entity ->
 				entity instanceof LivingEntity &&
 				!entity.is(this.minecraft.player) && !entity.is(this.focusingEntity) &&
+				MathUtils.canBeSeen(entity, this.minecraft.player, maxDistance) &&
 				(
 					this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
 					entity.hasIndirectPassenger(this.minecraft.player)	// Excludes riding entities
 				) &&
-				entity.distanceToSqr(this.minecraft.player) < Math.pow(this.minecraft.options.renderDistance().get() * 16.0D, 2)
+				entity.distanceToSqr(this.minecraft.player) < maxDistance
 			)
 			.map(entity -> Pair.of((LivingEntity)entity, MathUtils.worldToScreenCoord(compactProjection, this.minecraft.gameRenderer.getMainCamera(), entity.getBoundingBox().getCenter()).x))
 			.filter(pair -> pair.getSecond() >= -1.0F && pair.getSecond() <= 1.0F && (direction == 0 || MathUtils.getSign(pair.getSecond()) == MathUtils.getSign(direction)))
@@ -313,7 +316,9 @@ public final class EpicFightCameraAPI {
 	public void alignPlayerLookToCamera() {
 		if (this.minecraft.player == null) return;
 		
-		this.minecraft.player.setYRot(this.cameraYRot);
+		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+			playerpatch.setYRot(this.cameraYRot);
+		});
 	}
 	
 	/**
@@ -382,7 +387,7 @@ public final class EpicFightCameraAPI {
 			cancel.setValue(this.isTPSMode() || this.lockingOnTarget);
 			
 			if (cancel.booleanValue()) {
-				float modifier = !this.lockingOnTarget || EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown() ? 0.15F : (ClientConfig.lockOnQuickShift ? 0.005F : 0.0F);
+				float modifier = !this.lockingOnTarget || InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY) ? 0.15F : (ClientConfig.lockOnQuickShift ? 0.005F : 0.0F);
 				this.setCameraRotations(Mth.clamp(this.cameraXRot + (float)dx * modifier, -90.0F, 90.0F), this.cameraYRot + (float)dy * modifier, false);
 				
 				if (ClientConfig.lockOnQuickShift && this.quickShiftDelay <= 0) {
@@ -491,13 +496,13 @@ public final class EpicFightCameraAPI {
 			
 			if (!entityHitResult.getEntity().is(this.focusingEntity)) {
 				if (entityHitResult.getEntity() instanceof LivingEntity livingentity) {
-					if (!(entityHitResult.getEntity() instanceof ArmorStand) && (!this.lockingOnTarget || EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown())) {
+					if (!(entityHitResult.getEntity() instanceof ArmorStand) && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY))) {
 						this.focusingEntity = livingentity;
 					}
 				} else if (entityHitResult.getEntity() instanceof PartEntity<?> partEntity) {
 					Entity parent = partEntity.getParent();
 					
-					if (parent instanceof LivingEntity parentLivingEntity && (!this.lockingOnTarget || EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown())) {
+					if (parent instanceof LivingEntity parentLivingEntity && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY))) {
 						this.focusingEntity = parentLivingEntity;
 					}
 				} else {
@@ -554,7 +559,9 @@ public final class EpicFightCameraAPI {
 					// Target is invisible
 					this.focusingEntity.isInvisibleTo(localPlayer) ||
 					// Distance too far
-					distance > pickRange/*(localPlayer.getAttributeValue(ForgeMod.ENTITY_REACH.get()) + 3) * 5.0D*/ || 
+					distance > pickRange ||
+					// Has no line of sight
+					!MathUtils.canBeSeen(this.focusingEntity, this.minecraft.player, pickRange) ||
 					// Angle between look vec and to target too wide
 					!this.lockingOnTarget &&
 						this.focusingEntity.getBoundingBox().getCenter().subtract(this.minecraft.gameRenderer.getMainCamera().getPosition()).normalize()
@@ -596,11 +603,11 @@ public final class EpicFightCameraAPI {
 				Mth.abs(localPlayer.input.forwardImpulse) > 1.0E-5F || Mth.abs(localPlayer.input.leftImpulse) > 1.0E-5F || 	// When moving
 				this.minecraft.options.keyAttack.isDown() ||																// When pressing left button
 				localPlayer.isUsingItem() && tpsItemAnimations.contains(localPlayer.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
-				this.isZooming() ||																					// when zooming
+				this.isZooming() ||																							// when zooming
 				(playerpatch == null || playerpatch.isHoldingAny()); 														// When holding a skill
 			
 			// Handle camera lock-on
-			if (this.focusingEntity != null && this.lockingOnTarget && !this.isLerpingFpv() && !EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown()) {
+			if (this.focusingEntity != null && this.lockingOnTarget && !this.isLerpingFpv() && !InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY)) {
 				Vec3 povPos = tpsMode ? cameraPos : localPlayer.getEyePosition();
 				Vec3 targetPos = tpsMode ? this.focusingEntity.getBoundingBox().getCenter() : this.focusingEntity.getEyePosition();
 				Vec3 toTarget = targetPos.subtract(povPos);
@@ -625,7 +632,7 @@ public final class EpicFightCameraAPI {
 				
 				desiredXRot = (float)MathUtils.getXRotOfVector(playerToTarget);
 				desiredYRot = (float)MathUtils.getYRotOfVector(playerToTarget);
-			} else if (this.lockingOnTarget && EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown()) {
+			} else if (this.lockingOnTarget && InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY)) {
 				desiredXRot = this.getCameraXRot();
 				desiredYRot = this.getCameraYRot();
 			} else if (tpsMode) { // Handle camera tps rotation
@@ -785,7 +792,7 @@ public final class EpicFightCameraAPI {
 				}
 				return true;
 			} else if (this.minecraft.options.getCameraType() == CameraType.FIRST_PERSON) {
-				if (!EpicFightKeyMappings.LOCK_ON_SHIFT_FREELY.isDown()) {
+				if (!InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY)) {
 					camera.getEntity().setXRot(Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
 					camera.getEntity().setYRot(Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot));
 				} else {
