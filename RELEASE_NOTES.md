@@ -8,6 +8,8 @@
 - Fixed a regression where the Phantom Ascent skill was triggered when
   pressing the jump key while any screen was open (e.g., inventory, chat).
   [#2170](https://github.com/Epic-Fight/epicfight/issues/2170)
+- Fixed a crash when right click some blocks from Supplementaries
+  [#2187](https://github.com/Epic-Fight/epicfight/issues/2187)
 
 ### Changed
 
