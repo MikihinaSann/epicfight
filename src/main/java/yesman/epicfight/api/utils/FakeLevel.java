@@ -150,7 +150,7 @@ public class FakeLevel extends ClientLevel {
 	
 	@Override
 	public FluidState getFluidState(BlockPos pPos) {
-		return this.getFluidState(pPos);
+		return this.refLevel.getFluidState(pPos);
 	}
 	
 	@Override
