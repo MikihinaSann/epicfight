@@ -1,19 +1,8 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -43,11 +32,7 @@ import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.client.events.engine.RenderEngine;
-import yesman.epicfight.client.gui.datapack.screen.DatapackEditScreen;
-import yesman.epicfight.client.gui.datapack.screen.MessageScreen;
-import yesman.epicfight.client.gui.datapack.screen.SelectAnimationScreen;
-import yesman.epicfight.client.gui.datapack.screen.SelectFromRegistryScreen;
-import yesman.epicfight.client.gui.datapack.screen.SelectModelScreen;
+import yesman.epicfight.client.gui.datapack.screen.*;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.main.EpicFightMod;
@@ -55,9 +40,18 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
 
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 @OnlyIn(Dist.CLIENT)
 public abstract class PopupBox<T> extends AbstractWidget implements DataBindingComponent<T, Pair<String, T>> {
-	public static final ResourceLocation POPUP_ICON = ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "textures/gui/popup_icon.png");
+	public static final ResourceLocation POPUP_ICON = ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "textures/gui/widget/popup_icon.png");
 	
 	protected final Screen owner;
 	protected final Font font;

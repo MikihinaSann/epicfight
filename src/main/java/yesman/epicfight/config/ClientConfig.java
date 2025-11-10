@@ -14,6 +14,7 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.apache.commons.compress.utils.Lists;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.api.utils.CirculatableEnum;
@@ -28,8 +29,10 @@ import yesman.epicfight.main.AuthenticationHelper.AuthenticationProvider;
 import yesman.epicfight.main.EpicFightMod;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
@@ -38,25 +41,38 @@ public class ClientConfig {
 	private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 	
 	// Graphic Configurations
-	public static final BooleanValue SHOW_TARGET_INDICATOR = BUILDER.define("ingame.show_target_indicator", () -> true);
-	public static final EnumValue<HealthBarVisibility> HEALTH_BAR_VISIBILITY = BUILDER.defineEnum("ingame.health_bar_show_option", HealthBarVisibility.HURT);
-	public static final IntValue MAX_STUCK_PROJECTILES = BUILDER.defineInRange("ingame.max_hit_projectiles", 30, 0, 30);
-	public static final DoubleValue AIM_HELPER_COLOR = BUILDER.defineInRange("ingame.laser_pointer_color", 0.328125D, 0.0D, 1.0D);
-	public static final BooleanValue ENABLE_AIM_HELPER = BUILDER.define("ingame.enable_laser_pointer", () -> true);
-	public static final BooleanValue BLOOD_EFFECTS = BUILDER.define("ingame.blood_effects", () -> true);
-	public static final BooleanValue AIMING_POV_CORRECTION = BUILDER.define("ingame.aiming_correction", () -> true);
-	public static final BooleanValue SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP = BUILDER.define("ingame.show_epicfight_attributes", () -> true);
-	public static final BooleanValue ACTIVATE_COMPUTE_SHADER = BUILDER.define("ingame.use_compute_shader", () -> false);
-	public static final BooleanValue ENABLE_ANIMATED_FIRST_PERSON_MODEL = BUILDER.define("ingame.first_person_model", () -> true);
-	public static final EnumValue<BlockGuideOptions> MINE_BLOCK_GUIDE_OPTION = BUILDER.defineEnum("ingame.mine_block_guide_option", BlockGuideOptions.CROSSHAIR);
-	public static final BooleanValue ENABLE_TARGET_ENTITY_GUIDE = BUILDER.define("ingame.enable_target_entity_guide", () -> true);
-	public static final BooleanValue ENABLE_POV_ACTION = BUILDER.define("ingame.enable_pov_action", () -> true);
-	public static final BooleanValue ENABLE_COSMETICS = BUILDER.define("ingame.enable_cosmetics", () -> true);
-	public static final BooleanValue ENABLE_PLAYER_VANILLA_MODEL = BUILDER.define("ingame.enable_player_vanilla_model", () -> true);
+
+    // UI
+    public static final BooleanValue SHOW_TARGET_INDICATOR = BUILDER.define("ingame.show_target_indicator", () -> true);
+    public static final EnumValue<HealthBarVisibility> HEALTH_BAR_VISIBILITY = BUILDER.defineEnum("ingame.health_bar_show_option", HealthBarVisibility.HURT);
+    public static final BooleanValue SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP = BUILDER.define("ingame.show_epicfight_attributes", () -> true);
+    public static final DoubleValue TARGET_OUTLINE_COLOR = BUILDER.defineInRange("ingame.target_outline_color", 0.0D, 0.0D, 1.0D);
+    public static final EnumValue<BlockGuideOptions> MINE_BLOCK_GUIDE_OPTION = BUILDER.defineEnum("ingame.mine_block_guide_option", BlockGuideOptions.CROSSHAIR);
+    public static final BooleanValue ENABLE_TARGET_ENTITY_GUIDE = BUILDER.define("ingame.enable_target_entity_guide", () -> true);
+
+    // Particle
+    public static final BooleanValue BLOOD_EFFECTS = BUILDER.define("ingame.blood_effects", () -> true);
+
+    // Model
+    public static final IntValue MAX_STUCK_PROJECTILES = BUILDER.defineInRange("ingame.max_hit_projectiles", 30, 0, 30);
+    public static final BooleanValue ENABLE_ANIMATED_FIRST_PERSON_MODEL = BUILDER.define("ingame.first_person_model", () -> true);
+    public static final BooleanValue ENABLE_PLAYER_VANILLA_MODEL = BUILDER.define("ingame.enable_player_vanilla_model", () -> true);
+    public static final BooleanValue ENABLE_COSMETICS = BUILDER.define("ingame.enable_cosmetics", () -> true);
+
+    // Performance
+    public static final BooleanValue ACTIVATE_COMPUTE_SHADER = BUILDER.define("ingame.use_compute_shader", () -> false);
+
+    // Camera
+    public static final BooleanValue ENABLE_POV_ACTION = BUILDER.define("ingame.enable_pov_action", () -> true);
+    public static final ConfigValue<TPSType> CAMERA_MODE = BUILDER.defineEnum("ingame.camera.camera_mode", TPSType.WHEN_AIMING);
+    public static final IntValue CAMERA_HORIZONTAL_LOCATION = BUILDER.defineInRange("ingame.camera.horizontal_location", -5, -10, 10);
+    public static final IntValue CAMERA_VERTICAL_LOCATION = BUILDER.defineInRange("ingame.camera.vertical_location", 0, -2, 5);
+    public static final IntValue CAMERA_ZOOM = BUILDER.defineInRange("ingame.camera.zoom", 3, 6, 10);
 	
 	// Control Configurations
 	public static final IntValue LONG_PRESS_COUNTER = BUILDER.defineInRange("ingame.long_press_count", 2, 1, 10);
 	public static final BooleanValue AUTO_SWITCH_CAMERA = BUILDER.define("ingame.camera_auto_switch", () -> false);
+    public static final BooleanValue LOCK_ON_QUICK_SHIFT = BUILDER.define("ingame.camera.lock_on_quick_shift", () -> true);
 	public static final EnumValue<KeyConflictResolveScope> KEY_CONFLICT_RESOLVE_SCOPE = BUILDER.defineEnum("ingame.key_conflict_resolve_scope", KeyConflictResolveScope.INTERACTION);
 	public static final EnumValue<PreferenceWork> PREFERENCE_WORK = BUILDER.defineEnum("ingame.preference_work", PreferenceWork.ADAPTIVE);
     public static final EnumValue<CameraPerspectiveToggleMode> CAMERA_PERSPECTIVE_TOGGLE_MODE = BUILDER
@@ -72,7 +88,7 @@ public class ClientConfig {
                            Other perspectives remain available.
                     """)
             .defineEnum("ingame.camera_perspective_toggle_mode", CameraPerspectiveToggleMode.VANILLA);
-	
+
 	public static final ConfigValue<List<? extends String>> COMBAT_PREFERRED_ITEMS = BUILDER.defineList("ingame.combat_preferred_items", Lists.newArrayList(), null, (element) -> {
 		if (element instanceof String str) {
 			return str.contains(":");
@@ -88,30 +104,32 @@ public class ClientConfig {
 		
 		return false;
 	});
-	
-	// UI Configurations
+
+    // UI Element Positions
+
+    // Stamina bar
 	public static final ConfigValue<Integer> STAMINA_BAR_X = BUILDER.define("ingame.ui.stamina_bar_x", 120);
 	public static final ConfigValue<Integer> STAMINA_BAR_Y = BUILDER.define("ingame.ui.stamina_bar_y", 10);
 	public static final EnumValue<HorizontalBasis> STAMINA_BAR_BASE_X = BUILDER.defineEnum("ingame.ui.stamina_bar_x_base", HorizontalBasis.RIGHT);
 	public static final EnumValue<VerticalBasis> STAMINA_BAR_BASE_Y = BUILDER.defineEnum("ingame.ui.stamina_bar_y_base", VerticalBasis.BOTTOM);
-	
-	public static final ConfigValue<Integer> WEAPON_INNATE_X = BUILDER.define("ingame.ui.weapon_innate_x", 42);
-	public static final ConfigValue<Integer> WEAPON_INNATE_Y = BUILDER.define("ingame.ui.weapon_innate_y", 48);
-	public static final EnumValue<HorizontalBasis> WEAPON_INNATE_BASE_X = BUILDER.defineEnum("ingame.ui.weapon_innate_x_base", HorizontalBasis.RIGHT);
-	public static final EnumValue<VerticalBasis> WEAPON_INNATE_BASE_Y = BUILDER.defineEnum("ingame.ui.weapon_innate_y_base", VerticalBasis.BOTTOM);
-	
-	public static final ConfigValue<Integer> PASSIVE_X = BUILDER.define("ingame.ui.passives_x", 70);
-	public static final ConfigValue<Integer> PASSIVE_Y = BUILDER.define("ingame.ui.passives_y", 36);
-	public static final EnumValue<HorizontalBasis> PASSIVE_BASE_X = BUILDER.defineEnum("ingame.ui.passives_x_base", HorizontalBasis.RIGHT);
-	public static final EnumValue<VerticalBasis> PASSIVE_BASE_Y = BUILDER.defineEnum("ingame.ui.passives_y_base", VerticalBasis.BOTTOM);
-	public static final EnumValue<AlignDirection> PASSIVE_ALIGN_DIRECTION = BUILDER.defineEnum("ingame.ui.passives_align_direction", AlignDirection.HORIZONTAL);
-	
-	public static final ConfigValue<Integer> CHARGING_BAR_X = BUILDER.define("ingame.ui.charging_bar_x", -119);
-	public static final ConfigValue<Integer> CHARGING_BAR_Y = BUILDER.define("ingame.ui.charging_bar_y", 60);
-	public static final EnumValue<HorizontalBasis> CHARGING_BAR_BASE_X = BUILDER.defineEnum("ingame.ui.charging_bar_x_base", HorizontalBasis.CENTER);
-	public static final EnumValue<VerticalBasis> CHARGING_BAR_BASE_Y = BUILDER.defineEnum("ingame.ui.charging_bar_y_base", VerticalBasis.CENTER);
-	
-	//Epic Skins Tokens
+    // Weapon Innate
+    public static final ConfigValue<Integer> WEAPON_INNATE_X = BUILDER.define("ingame.ui.weapon_innate_x", 42);
+    public static final ConfigValue<Integer> WEAPON_INNATE_Y = BUILDER.define("ingame.ui.weapon_innate_y", 48);
+    public static final EnumValue<HorizontalBasis> WEAPON_INNATE_BASE_X = BUILDER.defineEnum("ingame.ui.weapon_innate_x_base", HorizontalBasis.RIGHT);
+    public static final EnumValue<VerticalBasis> WEAPON_INNATE_BASE_Y = BUILDER.defineEnum("ingame.ui.weapon_innate_y_base", VerticalBasis.BOTTOM);
+    // Passives
+    public static final ConfigValue<Integer> PASSIVE_X = BUILDER.define("ingame.ui.passives_x", 70);
+    public static final ConfigValue<Integer> PASSIVE_Y = BUILDER.define("ingame.ui.passives_y", 36);
+    public static final EnumValue<HorizontalBasis> PASSIVE_BASE_X = BUILDER.defineEnum("ingame.ui.passives_x_base", HorizontalBasis.RIGHT);
+    public static final EnumValue<VerticalBasis> PASSIVE_BASE_Y = BUILDER.defineEnum("ingame.ui.passives_y_base", VerticalBasis.BOTTOM);
+    public static final EnumValue<AlignDirection> PASSIVE_ALIGN_DIRECTION = BUILDER.defineEnum("ingame.ui.passives_align_direction", AlignDirection.HORIZONTAL);
+    // Charging bar
+    public static final ConfigValue<Integer> CHARGING_BAR_X = BUILDER.define("ingame.ui.charging_bar_x", -119);
+    public static final ConfigValue<Integer> CHARGING_BAR_Y = BUILDER.define("ingame.ui.charging_bar_y", 60);
+    public static final EnumValue<HorizontalBasis> CHARGING_BAR_BASE_X = BUILDER.defineEnum("ingame.ui.charging_bar_x_base", HorizontalBasis.CENTER);
+    public static final EnumValue<VerticalBasis> CHARGING_BAR_BASE_Y = BUILDER.defineEnum("ingame.ui.charging_bar_y_base", VerticalBasis.CENTER);
+
+    //Epic Skins Tokens
 	public static final ModConfigSpec.ConfigValue<String> ACCESS_TOKEN = BUILDER.comment("Login information for epic fight patron server. Do not change these values manually").define("access_token", "");
 	public static final ModConfigSpec.ConfigValue<String> REFRESH_TOKNE = BUILDER.define("refresh_token", "");
 	public static final ModConfigSpec.EnumValue<AuthenticationProvider> PROVIDER = BUILDER.defineEnum("provider", AuthenticationProvider.NULL);
@@ -121,8 +139,8 @@ public class ClientConfig {
 	
 	// Graphic Config Values
 	public static int maxStuckProjectiles;
-	public static double aimHelperColor;
-	public static int aimHelperPackedColor = 0xFFFFFFFF;
+	public static double targetOutlineColor;
+	public static int packedTargetOutlineColor = 0xFFFFFFFF;
 	public static boolean enableAimHelper;
 	public static boolean bloodEffects;
 	public static boolean aimingPovCorrection;
@@ -137,14 +155,19 @@ public class ClientConfig {
 	
 	// Control Config Values
 	public static int longPressCounter;
-	public static boolean authSwitchCamera;
+	public static boolean autoSwitchCamera;
+    public static boolean lockOnQuickShift;
 	public static KeyConflictResolveScope keyConflictResolveScope;
 	public static PreferenceWork preferenceWork;
     public static CameraPerspectiveToggleMode cameraPerspectiveToggleMode;
-	
+
 	public static Set<Item> combatPreferredItems;
 	public static Set<Item> miningPreferredItems;
-	
+    public static TPSType cameraMode;
+    public static int cameraHorizontalLocation;
+    public static int cameraVerticalLocation;
+    public static int cameraZoom;
+
 	// UI Config value
 	public static boolean showTargetIndicator;
 	public static HealthBarVisibility healthBarVisibility;
@@ -173,11 +196,9 @@ public class ClientConfig {
 		}
 		
 		maxStuckProjectiles = MAX_STUCK_PROJECTILES.get();
-		aimHelperColor = AIM_HELPER_COLOR.get();
-		aimHelperPackedColor = ColorSlider.rgbColor(aimHelperColor);
-		enableAimHelper = ENABLE_AIM_HELPER.get();
+        targetOutlineColor = TARGET_OUTLINE_COLOR.get();
+        packedTargetOutlineColor = ColorSlider.rgbColor(targetOutlineColor);
 		bloodEffects = BLOOD_EFFECTS.get();
-		aimingPovCorrection = AIMING_POV_CORRECTION.get();
 		showEpicFightAttributesInTooltip = SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get();
 		activateComputeShader = ACTIVATE_COMPUTE_SHADER.get();
 		enableAnimatedFirstPersonModel = ENABLE_ANIMATED_FIRST_PERSON_MODEL.get();
@@ -186,13 +207,19 @@ public class ClientConfig {
 		enablePovAction = ENABLE_POV_ACTION.get();
 		enableCosmetics = ENABLE_COSMETICS.get();
 		enableOriginalModel = ENABLE_PLAYER_VANILLA_MODEL.get();
-		
+        cameraMode = CAMERA_MODE.get();
+        cameraHorizontalLocation = CAMERA_HORIZONTAL_LOCATION.get();
+        cameraVerticalLocation = CAMERA_VERTICAL_LOCATION.get();
+        cameraZoom = CAMERA_ZOOM.get();
+
 		longPressCounter = LONG_PRESS_COUNTER.get();
-		authSwitchCamera = AUTO_SWITCH_CAMERA.get();
+		autoSwitchCamera = AUTO_SWITCH_CAMERA.get();
+        lockOnQuickShift = LOCK_ON_QUICK_SHIFT.get();
+
 		keyConflictResolveScope = KEY_CONFLICT_RESOLVE_SCOPE.get();
 		preferenceWork = PREFERENCE_WORK.get();
         cameraPerspectiveToggleMode = CAMERA_PERSPECTIVE_TOGGLE_MODE.get();
-		
+
 		combatPreferredItems = COMBAT_PREFERRED_ITEMS.get().stream()
 				.map(itemName -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemName)))
 				.collect(Collectors.toSet());
@@ -240,28 +267,172 @@ public class ClientConfig {
 			ClientEngine.getInstance().getAuthHelper().initialize(ACCESS_TOKEN, REFRESH_TOKNE, PROVIDER);
 		}
     }
-	
+
+    public static List<Runnable> getUnsaved() {
+        List<Runnable> saveWorks = new ArrayList<>();
+
+        if (maxStuckProjectiles != MAX_STUCK_PROJECTILES.get())
+            saveWorks.add(() -> MAX_STUCK_PROJECTILES.set(maxStuckProjectiles));
+
+        if (targetOutlineColor != TARGET_OUTLINE_COLOR.get())
+            saveWorks.add(() -> {TARGET_OUTLINE_COLOR.set(targetOutlineColor); packedTargetOutlineColor = ColorSlider.rgbColor(targetOutlineColor);});
+
+        if (bloodEffects != BLOOD_EFFECTS.get())
+            saveWorks.add(() -> BLOOD_EFFECTS.set(bloodEffects));
+
+        if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get())
+            saveWorks.add(() -> SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip));
+
+        if (activateComputeShader != ACTIVATE_COMPUTE_SHADER.get())
+            saveWorks.add(() -> ACTIVATE_COMPUTE_SHADER.set(activateComputeShader));
+
+        if (enableAnimatedFirstPersonModel != ENABLE_ANIMATED_FIRST_PERSON_MODEL.get())
+            saveWorks.add(() -> ENABLE_ANIMATED_FIRST_PERSON_MODEL.set(enableAnimatedFirstPersonModel));
+
+        if (mineBlockGuideOption != MINE_BLOCK_GUIDE_OPTION.get())
+            saveWorks.add(() -> MINE_BLOCK_GUIDE_OPTION.set(mineBlockGuideOption));
+
+        if (enableTargetEntityGuide != ENABLE_TARGET_ENTITY_GUIDE.get())
+            saveWorks.add(() -> ENABLE_TARGET_ENTITY_GUIDE.set(enableTargetEntityGuide));
+
+        if (enablePovAction != ENABLE_POV_ACTION.get())
+            saveWorks.add(() -> ENABLE_POV_ACTION.set(enablePovAction));
+
+        if (enableCosmetics != ENABLE_COSMETICS.get())
+            saveWorks.add(() -> ENABLE_COSMETICS.set(enableCosmetics));
+
+        if (enableOriginalModel != ENABLE_PLAYER_VANILLA_MODEL.get())
+            saveWorks.add(() -> ENABLE_PLAYER_VANILLA_MODEL.set(enableOriginalModel));
+
+        if (cameraMode != CAMERA_MODE.get())
+            saveWorks.add(() -> CAMERA_MODE.set(cameraMode));
+
+        if (cameraHorizontalLocation != CAMERA_HORIZONTAL_LOCATION.get())
+            saveWorks.add(() -> CAMERA_HORIZONTAL_LOCATION.set(cameraHorizontalLocation));
+
+        if (cameraVerticalLocation != CAMERA_VERTICAL_LOCATION.get())
+            saveWorks.add(() -> CAMERA_VERTICAL_LOCATION.set(cameraVerticalLocation));
+
+        if (cameraZoom != CAMERA_ZOOM.get())
+            saveWorks.add(() -> CAMERA_ZOOM.set(cameraZoom));
+
+        if (longPressCounter != LONG_PRESS_COUNTER.get())
+            saveWorks.add(() -> LONG_PRESS_COUNTER.set(longPressCounter));
+
+        if (autoSwitchCamera != AUTO_SWITCH_CAMERA.get())
+            saveWorks.add(() -> AUTO_SWITCH_CAMERA.set(autoSwitchCamera));
+
+        if (lockOnQuickShift != LOCK_ON_QUICK_SHIFT.get())
+            saveWorks.add(() -> LOCK_ON_QUICK_SHIFT.set(lockOnQuickShift));
+
+        if (keyConflictResolveScope != KEY_CONFLICT_RESOLVE_SCOPE.get())
+            saveWorks.add(() -> KEY_CONFLICT_RESOLVE_SCOPE.set(keyConflictResolveScope));
+
+        if (preferenceWork != PREFERENCE_WORK.get())
+            saveWorks.add(() -> PREFERENCE_WORK.set(preferenceWork));
+
+        if (!combatPreferredItems.equals(
+            COMBAT_PREFERRED_ITEMS.get().stream()
+                .map(itemName -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemName)))
+                .collect(Collectors.toSet())
+        )
+        ) {
+            saveWorks.add(() -> COMBAT_PREFERRED_ITEMS.set(combatPreferredItems.stream().map((item) -> BuiltInRegistries.ITEM.getKey(item).toString()).collect(Collectors.toList())));
+        }
+
+        if (
+            !miningPreferredItems.equals(
+                MINING_PREFERRED_ITEMS.get().stream()
+                    .map(itemName -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemName)))
+                    .collect(Collectors.toSet())
+            )
+        ) {
+            saveWorks.add(() -> MINING_PREFERRED_ITEMS.set(miningPreferredItems.stream().map((item) -> BuiltInRegistries.ITEM.getKey(item).toString()).collect(Collectors.toList())));
+        }
+
+        if (showTargetIndicator != SHOW_TARGET_INDICATOR.get())
+            saveWorks.add(() -> SHOW_TARGET_INDICATOR.set(showTargetIndicator));
+
+        if (healthBarVisibility != HEALTH_BAR_VISIBILITY.get())
+            saveWorks.add(() -> HEALTH_BAR_VISIBILITY.set(healthBarVisibility));
+
+        if (staminaBarX != STAMINA_BAR_X.get())
+            saveWorks.add(() -> STAMINA_BAR_X.set(staminaBarX));
+
+        if (staminaBarY != STAMINA_BAR_Y.get())
+            saveWorks.add(() -> STAMINA_BAR_Y.set(staminaBarY));
+
+        if (staminaBarBaseX != STAMINA_BAR_BASE_X.get())
+            saveWorks.add(() -> STAMINA_BAR_BASE_X.set(staminaBarBaseX));
+
+        if (staminaBarBaseY != STAMINA_BAR_BASE_Y.get())
+            saveWorks.add(() -> STAMINA_BAR_BASE_Y.set(staminaBarBaseY));
+
+        if (weaponInnateX != WEAPON_INNATE_X.get())
+            saveWorks.add(() -> WEAPON_INNATE_X.set(weaponInnateX));
+
+        if (weaponInnateX != WEAPON_INNATE_Y.get())
+            saveWorks.add(() -> WEAPON_INNATE_Y.set(weaponInnateY));
+
+        if (weaponInnateBaseX != WEAPON_INNATE_BASE_X.get())
+            saveWorks.add(() -> WEAPON_INNATE_BASE_X.set(weaponInnateBaseX));
+
+        if (weaponInnateBaseY != WEAPON_INNATE_BASE_Y.get())
+            saveWorks.add(() -> WEAPON_INNATE_BASE_Y.set(weaponInnateBaseY));
+
+        if (passiveX != PASSIVE_X.get())
+            saveWorks.add(() -> PASSIVE_X.set(passiveX));
+
+        if (passiveY != PASSIVE_Y.get())
+            saveWorks.add(() -> PASSIVE_Y.set(passiveY));
+
+        if (passiveBaseX != PASSIVE_BASE_X.get())
+            saveWorks.add(() -> PASSIVE_BASE_X.set(passiveBaseX));
+
+        if (passiveBaseY != PASSIVE_BASE_Y.get())
+            saveWorks.add(() -> PASSIVE_BASE_Y.set(passiveBaseY));
+
+        if (passiveAlignDirection != PASSIVE_ALIGN_DIRECTION.get())
+            saveWorks.add(() -> PASSIVE_ALIGN_DIRECTION.set(passiveAlignDirection));
+
+        if (chargingBarX != CHARGING_BAR_X.get())
+            saveWorks.add(() -> CHARGING_BAR_X.set(chargingBarX));
+
+        if (chargingBarY != CHARGING_BAR_Y.get())
+            saveWorks.add(() -> CHARGING_BAR_Y.set(chargingBarY));
+
+        if (chargingBarBaseX != CHARGING_BAR_BASE_X.get())
+            saveWorks.add(() -> CHARGING_BAR_BASE_X.set(chargingBarBaseX));
+
+        if (chargingBarBaseY != CHARGING_BAR_BASE_Y.get())
+            saveWorks.add(() -> CHARGING_BAR_BASE_Y.set(chargingBarBaseY));
+
+        return saveWorks;
+    }
+
 	public static void saveChanges() {
-		if (maxStuckProjectiles != MAX_STUCK_PROJECTILES.get()) { MAX_STUCK_PROJECTILES.set(maxStuckProjectiles); MAX_STUCK_PROJECTILES.save(); }
-		if (aimHelperColor != AIM_HELPER_COLOR.get()) { AIM_HELPER_COLOR.set(aimHelperColor); AIM_HELPER_COLOR.save(); aimHelperPackedColor = ColorSlider.rgbColor(aimHelperColor); }
-		if (enableAimHelper != ENABLE_AIM_HELPER.get()) { ENABLE_AIM_HELPER.set(enableAimHelper); ENABLE_AIM_HELPER.save(); }
-		if (bloodEffects != BLOOD_EFFECTS.get()) { BLOOD_EFFECTS.set(bloodEffects); BLOOD_EFFECTS.save(); }
-		if (aimingPovCorrection != AIMING_POV_CORRECTION.get()) { AIMING_POV_CORRECTION.set(aimingPovCorrection); AIMING_POV_CORRECTION.save(); }
-		if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get()) { SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip); SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.save(); }
-		if (activateComputeShader != ACTIVATE_COMPUTE_SHADER.get()) { ACTIVATE_COMPUTE_SHADER.set(activateComputeShader); ACTIVATE_COMPUTE_SHADER.save(); }
-		if (enableAnimatedFirstPersonModel != ENABLE_ANIMATED_FIRST_PERSON_MODEL.get()) { ENABLE_ANIMATED_FIRST_PERSON_MODEL.set(enableAnimatedFirstPersonModel); ENABLE_ANIMATED_FIRST_PERSON_MODEL.save(); }
-		if (mineBlockGuideOption != MINE_BLOCK_GUIDE_OPTION.get()) { MINE_BLOCK_GUIDE_OPTION.set(mineBlockGuideOption); MINE_BLOCK_GUIDE_OPTION.save(); }
-		if (enableTargetEntityGuide != ENABLE_TARGET_ENTITY_GUIDE.get()) { ENABLE_TARGET_ENTITY_GUIDE.set(enableTargetEntityGuide); ENABLE_TARGET_ENTITY_GUIDE.save(); }
-		if (enablePovAction != ENABLE_POV_ACTION.get()) { ENABLE_POV_ACTION.set(enablePovAction); ENABLE_POV_ACTION.save(); }
-		if (enableCosmetics != ENABLE_COSMETICS.get()) { ENABLE_COSMETICS.set(enableCosmetics); ENABLE_COSMETICS.save(); }
-		if (enableOriginalModel != ENABLE_PLAYER_VANILLA_MODEL.get()) { ENABLE_PLAYER_VANILLA_MODEL.set(enableOriginalModel); ENABLE_PLAYER_VANILLA_MODEL.save(); }
-		
-		if (longPressCounter != LONG_PRESS_COUNTER.get()) { LONG_PRESS_COUNTER.set(longPressCounter); LONG_PRESS_COUNTER.save(); }
-		if (authSwitchCamera != AUTO_SWITCH_CAMERA.get()) { AUTO_SWITCH_CAMERA.set(authSwitchCamera); AUTO_SWITCH_CAMERA.save(); }
-		if (keyConflictResolveScope != KEY_CONFLICT_RESOLVE_SCOPE.get()) { KEY_CONFLICT_RESOLVE_SCOPE.set(keyConflictResolveScope); KEY_CONFLICT_RESOLVE_SCOPE.save(); }
-		if (preferenceWork != PREFERENCE_WORK.get()) { PREFERENCE_WORK.set(preferenceWork); PREFERENCE_WORK.save(); }
+        if (maxStuckProjectiles != MAX_STUCK_PROJECTILES.get()) MAX_STUCK_PROJECTILES.set(maxStuckProjectiles);
+        if (targetOutlineColor != TARGET_OUTLINE_COLOR.get()) { TARGET_OUTLINE_COLOR.set(targetOutlineColor); packedTargetOutlineColor = ColorSlider.rgbColor(targetOutlineColor); }
+        if (bloodEffects != BLOOD_EFFECTS.get()) BLOOD_EFFECTS.set(bloodEffects);
+        if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get()) SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip);
+        if (activateComputeShader != ACTIVATE_COMPUTE_SHADER.get()) ACTIVATE_COMPUTE_SHADER.set(activateComputeShader);
+        if (enableAnimatedFirstPersonModel != ENABLE_ANIMATED_FIRST_PERSON_MODEL.get()) ENABLE_ANIMATED_FIRST_PERSON_MODEL.set(enableAnimatedFirstPersonModel);
+        if (mineBlockGuideOption != MINE_BLOCK_GUIDE_OPTION.get()) MINE_BLOCK_GUIDE_OPTION.set(mineBlockGuideOption);
+        if (enableTargetEntityGuide != ENABLE_TARGET_ENTITY_GUIDE.get()) ENABLE_TARGET_ENTITY_GUIDE.set(enableTargetEntityGuide);
+        if (enablePovAction != ENABLE_POV_ACTION.get()) ENABLE_POV_ACTION.set(enablePovAction);
+        if (enableCosmetics != ENABLE_COSMETICS.get()) ENABLE_COSMETICS.set(enableCosmetics);
+        if (enableOriginalModel != ENABLE_PLAYER_VANILLA_MODEL.get()) ENABLE_PLAYER_VANILLA_MODEL.set(enableOriginalModel);
+        if (cameraMode != CAMERA_MODE.get()) CAMERA_MODE.set(cameraMode);
+        if (cameraHorizontalLocation != CAMERA_HORIZONTAL_LOCATION.get()) CAMERA_HORIZONTAL_LOCATION.set(cameraHorizontalLocation);
+        if (cameraVerticalLocation != CAMERA_VERTICAL_LOCATION.get()) CAMERA_VERTICAL_LOCATION.set(cameraVerticalLocation);
+        if (cameraZoom != CAMERA_ZOOM.get()) CAMERA_ZOOM.set(cameraZoom);
+        if (longPressCounter != LONG_PRESS_COUNTER.get()) LONG_PRESS_COUNTER.set(longPressCounter);
+        if (autoSwitchCamera != AUTO_SWITCH_CAMERA.get()) AUTO_SWITCH_CAMERA.set(autoSwitchCamera);
+        if (lockOnQuickShift != LOCK_ON_QUICK_SHIFT.get()) LOCK_ON_QUICK_SHIFT.set(lockOnQuickShift);
+        if (keyConflictResolveScope != KEY_CONFLICT_RESOLVE_SCOPE.get()) KEY_CONFLICT_RESOLVE_SCOPE.set(keyConflictResolveScope);
+        if (preferenceWork != PREFERENCE_WORK.get()) PREFERENCE_WORK.set(preferenceWork);
         if (cameraPerspectiveToggleMode != CAMERA_PERSPECTIVE_TOGGLE_MODE.get()) { CAMERA_PERSPECTIVE_TOGGLE_MODE.set(cameraPerspectiveToggleMode); CAMERA_PERSPECTIVE_TOGGLE_MODE.save(); }
-		if (!combatPreferredItems.equals(COMBAT_PREFERRED_ITEMS.get().stream()
+        if (!combatPreferredItems.equals(COMBAT_PREFERRED_ITEMS.get().stream()
 				.map(itemName -> BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemName)))
 				.collect(Collectors.toSet()))
 		) {
@@ -350,8 +521,8 @@ public class ClientConfig {
 	public enum BlockGuideOptions implements CirculatableEnum<BlockGuideOptions>, StringRepresentable {
 		NONE(false, false), CROSSHAIR(true, false), HIGHLIGHT(false, true), CROSSHAIR_AND_HIGHLIGHT(true, true);
 		
-		boolean showCrosshair;
-		boolean showBlockHighlight;
+		final boolean showCrosshair;
+        final boolean showBlockHighlight;
 		
 		BlockGuideOptions(boolean showCrosshair, boolean showBlockHighlight) {
 			this.showCrosshair = showCrosshair;
@@ -388,9 +559,9 @@ public class ClientConfig {
 	@OnlyIn(Dist.CLIENT)
 	public enum KeyConflictResolveScope implements CirculatableEnum<KeyConflictResolveScope>, StringRepresentable {
 		NONE(false, false), INTERACTION(true, false), ITEM_USE(false, true), INTERACTION_AND_ITEMUSE(true, true);
-		
-		boolean cancelInteraction;
-		boolean cancelItemUse;
+
+        final boolean cancelInteraction;
+        final boolean cancelItemUse;
 		
 		KeyConflictResolveScope(boolean cancelBlockInteraction, boolean cancelItemInteraction) {
 			this.cancelInteraction = cancelBlockInteraction;
@@ -425,8 +596,8 @@ public class ClientConfig {
 	@OnlyIn(Dist.CLIENT)
 	public enum PreferenceWork implements CirculatableEnum<PreferenceWork>, StringRepresentable {
 		ADAPTIVE(true), SWITCH_MODE(false);
-		
-		boolean checkHitResult;
+
+        final boolean checkHitResult;
 		
 		PreferenceWork(boolean checkHitResult) {
 			this.checkHitResult = checkHitResult;
@@ -473,6 +644,44 @@ public class ClientConfig {
 
         @Override
         public @NotNull String getSerializedName() {
+            return ParseUtil.toLowerCase(this.name());
+        }
+    }
+
+    /**
+     * Determines when camera should transite to TPS perspective in third-person
+     *
+     * ALWAYS_BACK: always locates the camera in player's back like vanilla
+     * WHEN_AIMING : activate tps perspective when player aims
+     * ALWAYS : always activate tps perspective
+     */
+    @OnlyIn(Dist.CLIENT)
+    public enum TPSType implements CirculatableEnum<TPSType>, StringRepresentable {
+        ALWAYS_BACK(false, null), WHEN_AIMING(true, EpicFightCameraAPI::isZooming), ALWAYS(true, cameraApi -> true);
+
+        final boolean hasTPSTransition;
+        final Predicate<EpicFightCameraAPI> checker;
+
+        TPSType(boolean hasTPSTransition, Predicate<EpicFightCameraAPI> checker) {
+            this.hasTPSTransition = hasTPSTransition;
+            this.checker = checker;
+        }
+
+        public boolean shouldSwitch(EpicFightCameraAPI renderEngine) {
+            return this.hasTPSTransition && this.checker.test(renderEngine);
+        }
+
+        public boolean hasTPSTransition() {
+            return this.hasTPSTransition;
+        }
+
+        @Override
+        public TPSType nextEnum() {
+            return TPSType.values()[(this.ordinal() + 1) % 3];
+        }
+
+        @Override
+        public String getSerializedName() {
             return ParseUtil.toLowerCase(this.name());
         }
     }

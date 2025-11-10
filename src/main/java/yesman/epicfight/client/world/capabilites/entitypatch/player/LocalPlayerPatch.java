@@ -8,18 +8,17 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.decoration.ArmorStand;
-import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.animation.Keyframe;
@@ -27,6 +26,7 @@ import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.animation.TransformSheet;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
+import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.DirectStaticAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
@@ -35,6 +35,7 @@ import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.ViewLimit;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.utils.math.MathUtils;
@@ -45,37 +46,28 @@ import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.network.EpicFightNetworkManager;
-import yesman.epicfight.network.client.*;
+import yesman.epicfight.network.client.CPAnimatorControl;
+import yesman.epicfight.network.client.CPChangePlayerMode;
+import yesman.epicfight.network.client.CPModifyEntityModelYRot;
+import yesman.epicfight.network.client.CPSetStamina;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.registry.entries.EpicFightDataComponentTypes;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
-import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
 
 import java.util.List;
 import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
-	private Minecraft minecraft;
+	private final Minecraft minecraft;
+    private final FirstPersonLayer firstPersonLayer = new FirstPersonLayer();
+
 	private LivingEntity rayTarget;
 	private boolean targetLockedOn;
 	private int chargingTicksO;
-	private float lockOnXRot;
-	private float lockOnXRotO;
-	private float lockOnYRot;
-	private float lockOnYRotO;
-	
-	private float fpvXRotO;
-	private float fpvXRot;
-	private float fpvYRotO;
-	private float fpvYRot;
 	private int fpvLerpTick;
-	
-	private FirstPersonLayer firstPersonLayer = new FirstPersonLayer();
 	private AnimationSubFileReader.PovSettings povSettings;
 	
 	public LocalPlayerPatch(LocalPlayer entity) {
@@ -87,29 +79,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void onRespawnLocalPlayer(ClientPlayerNetworkEvent.Clone event) {
 		this.onJoinWorld(event.getNewPlayer(), new EntityJoinLevelEvent(event.getNewPlayer(), event.getNewPlayer().level()));
 	}
-	
-	private EntityHitResult pickEntity() {
-		double distance = this.original.blockInteractionRange() * 2.0D;
-		double entityReach = this.original.entityInteractionRange() * 2.0D;
-		double pickRange = Math.max(distance, entityReach);
-		Vec3 vec3 = this.original.getEyePosition(1.0F);
-		Vec3 vec31 = this.original.getViewVector(1.0F);
-		Vec3 vec32 = vec3.add(vec31.x * pickRange, vec31.y * pickRange, vec31.z * pickRange);
-		BlockHitResult blockHitResulst = this.getOriginal().level().clip(new ClipContext(vec3, vec32, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, this.original));
-		
-		if (blockHitResulst.getType() != HitResult.Type.MISS) {
-			pickRange = blockHitResulst.getLocation().distanceToSqr(vec3);
-		}
-		
-        AABB aabb = this.original.getBoundingBox().expandTowards(vec31.scale(distance)).inflate(1.0D, 1.0D, 1.0D);
-        
-        EntityHitResult entityhitresult = ProjectileUtil.getEntityHitResult(this.original, vec3, vec32, aabb, (p_234237_) -> {
-           return !p_234237_.isSpectator() && p_234237_.isPickable();
-        }, pickRange);
-        
-        return entityhitresult;
-	}
-	
+
 	@Override
 	public void preTick(EntityTickEvent.Pre event) {
 		if (this.isHoldingAny()) {
@@ -120,130 +90,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		
 		super.preTick(event);
 	}
-	
-	@Override
-	public void preTickClient(EntityTickEvent.Pre event) {
-		super.preTickClient(event);
-		
-		// Handle targeting entity
-		EntityHitResult cameraHitResult = this.pickEntity();
-		
-		if (cameraHitResult != null) {
-			Entity hit = cameraHitResult.getEntity();
-			
-			if (hit != this.rayTarget && hit != this.original) {
-				if (hit instanceof LivingEntity livingentity) {
-					if (!(hit instanceof ArmorStand) && !this.targetLockedOn) {
-						this.rayTarget = livingentity;
-					}
-				} else if (hit instanceof PartEntity<?> partEntity) {
-					Entity parent = partEntity.getParent();
-					
-					if (parent instanceof LivingEntity parentLivingEntity && !this.targetLockedOn) {
-						this.rayTarget = parentLivingEntity;
-					}
-				} else {
-					this.rayTarget = null;
-				}
-				
-				if (this.rayTarget != null) {
-					EpicFightNetworkManager.sendToServer(new CPSetPlayerTarget(this.getTarget().getId()));
-				}
-			}
-		}
-		
-		this.lockOnXRotO = this.lockOnXRot;
-		this.lockOnYRotO = this.lockOnYRot;
-		
-		// Handle camera lock-on
-		if (this.rayTarget != null) {
-			if (this.targetLockedOn && !this.isLerpingFpv()) {
-				Vec3 playerPosition = this.original.getEyePosition();
-				Vec3 targetPosition = this.rayTarget.getEyePosition();
-				Vec3 toTarget = targetPosition.subtract(playerPosition);
-				float yaw = (float)MathUtils.getYRotOfVector(toTarget);
-				float pitch = (float)MathUtils.getXRotOfVector(toTarget);
-				CameraType cameraType = this.minecraft.options.getCameraType();
-				
-				float lockOnXRotDst = pitch + (cameraType.isFirstPerson() ? 0.0F : 30.0F);
-				lockOnXRotDst = Mth.clamp(lockOnXRotDst, 0.0F, 60.0F);
-				
-				if (cameraType.isMirrored()) {
-					lockOnXRotDst = -lockOnXRotDst;
-				}
-				
-				float lockOnYRotDst = yaw + (cameraType.isMirrored() ? 180.0F : 0.0F);
-				float xDiff = Mth.wrapDegrees(lockOnXRotDst - this.lockOnXRotO);
-				float yDiff = Mth.wrapDegrees(lockOnYRotDst - this.lockOnYRotO);
-				float xLerp = Mth.clamp(xDiff * 0.4F, -30.0F, 30.0F);
-				float yLerp = Mth.clamp(yDiff * 0.4F, -30.0F, 30.0F);
-				this.lockOnXRot = this.lockOnXRotO + xLerp;
-				this.lockOnYRot = this.lockOnYRotO + yLerp;
-				
-				if (!this.getEntityState().turningLocked() || this.getEntityState().lookTarget()) {
-					Vec3 playerEye = this.original.getEyePosition();
-					Vec3 targetEye = this.rayTarget.getEyePosition();
-					double eyeYDiff = Math.abs(playerEye.y - targetEye.y);
-					double dist = playerEye.distanceTo(targetEye);
-					double xDegree = Math.tan(eyeYDiff / dist) * (180.0F / Math.PI);
-					xDegree = Mth.clamp(xDegree, -60.0F, 60.0F);
-					
-					this.original.setXRot((float)xDegree);
-					this.original.setYRot(lockOnYRotDst);
-				}
-			} else {
-				this.lockOnXRot = this.original.getXRot();
-				this.lockOnYRot = this.original.getYRot();
-			}
-			
-			if (this.rayTarget.isRemoved() || this.rayTarget.isInvisibleTo(this.original) || this.getOriginal().distanceToSqr(this.rayTarget) > 400.0D || (this.getAngleTo(this.rayTarget) > 80.0D && !this.targetLockedOn)) {
-				if (this.targetLockedOn) {
-					this.original.setXRot(this.lockOnXRot);
-					this.original.setYRot(this.lockOnYRot);
-					this.targetLockedOn = false;
-				}
-				
-				this.rayTarget = null;
-				EpicFightNetworkManager.sendToServer(new CPSetPlayerTarget(-1));
-			}
-		} else {
-			this.lockOnXRot = this.original.getXRot();
-			this.lockOnYRot = this.original.getYRot();
-			this.targetLockedOn = false;
-		}
-		
-		// Handle camera zoom in/out
-		CapabilityItem mainhandItemCap = this.getAdvancedHoldingItemCapability(InteractionHand.MAIN_HAND);
-		CapabilityItem offhandItemCap = this.getAdvancedHoldingItemCapability(InteractionHand.OFF_HAND);
-		CapabilityItem.ZoomInType rangeWeaponZoomInType =
-			mainhandItemCap.isEmpty() || mainhandItemCap.getZoomInType() == ZoomInType.NONE
-				? offhandItemCap.getZoomInType() : mainhandItemCap.getZoomInType();
-		
-		switch (rangeWeaponZoomInType) {
-		case ALWAYS -> {
-			RenderEngine.getInstance().zoomIn();
-		}
-		case USE_TICK -> {
-			if (this.original.getUseItemRemainingTicks() > 0) {
-				RenderEngine.getInstance().zoomIn();
-			} else {
-				RenderEngine.getInstance().zoomOut(8);
-			}
-		}
-		case AIMING -> {
-			if (this.getClientAnimator().isAiming()) {
-				RenderEngine.getInstance().zoomIn();
-			} else {
-				RenderEngine.getInstance().zoomOut(8);
-			}
-		}
-		case CUSTOM -> {} //Zoom manually handled
-		default -> {
-			RenderEngine.getInstance().zoomOut(0);
-		}
-		}
-	}
-	
+
 	@Override
 	public void postTickClient(EntityTickEvent.Post event) {
 		// Handle first person animation
@@ -276,14 +123,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		if (this.firstPersonLayer.animationPlayer.getAnimation().equals(Animations.EMPTY_ANIMATION)) {
 			this.povSettings = null;
 		}
-		
-		boolean isLerping = this.isLerpingFpv();
-		
-		if (isLerping) this.fpvLerpTick--;
-		if (isLerping && !this.isLerpingFpv()) {
-			this.original.setXRot(this.fpvXRot);
-			this.original.setYRot(this.fpvYRot);
-		}
 	}
 	
 	@Override
@@ -300,7 +139,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	@Override
 	public LivingEntity getTarget() {
-		return this.rayTarget;
+		return EpicFightCameraAPI.getInstance().getFocusingEntity();
 	}
 	
 	@Override
@@ -308,7 +147,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		RenderEngine.getInstance().battleModeHUD.slideDown();
 		
 		if (this.playerMode != PlayerMode.VANILLA) {
-			if (ClientConfig.authSwitchCamera) {
+			if (ClientConfig.autoSwitchCamera) {
 				this.minecraft.options.setCameraType(CameraType.FIRST_PERSON);
 			}
 			
@@ -325,7 +164,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		RenderEngine.getInstance().battleModeHUD.slideUp();
 		
 		if (this.playerMode != PlayerMode.EPICFIGHT) {
-			if (ClientConfig.authSwitchCamera) {
+			if (ClientConfig.autoSwitchCamera) {
 				this.minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 			}
 			
@@ -360,36 +199,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		return this.chargingTicksO;
 	}
 
-	public float getLerpedLockOnX(double partialTick) {
-		return Mth.rotLerp((float)partialTick, this.lockOnXRotO, this.lockOnXRot);
-	}
-	
-	public float getLerpedLockOnY(double partialTick) {
-		return Mth.rotLerp((float)partialTick, this.lockOnYRotO, this.lockOnYRot);
-	}
-	
-	@Override
-	public Vec3 getViewVector(float partialTick) {
-		return this.targetLockedOn ? this.original.calculateViewVector(this.original.getXRot(), this.getLerpedLockOnY(partialTick)) : super.getViewVector(partialTick);
-	}
-	
-	public boolean isTargetLockedOn() {
-		return this.targetLockedOn;
-	}
-	
-	public void setLockOn(boolean targetLockedOn) {
-		if (this.targetLockedOn && this.rayTarget != null) {
-			this.original.setXRot(this.lockOnXRot);
-			this.original.setYRot(this.lockOnYRot);
-		}
-		
-		this.targetLockedOn = targetLockedOn;
-	}
-	
-	public void toggleLockOn() {
-		this.setLockOn(!this.targetLockedOn);
-	}
-	
 	public FirstPersonLayer getFirstPersonLayer() {
 		return this.firstPersonLayer;
 	}
@@ -406,15 +215,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void setStamina(float value) {
 		EpicFightNetworkManager.sendToServer(new CPSetStamina(value, true));
 	}
-	
-	@Override
-	public void onDeath(LivingDeathEvent event) {
-		super.onDeath(event);
-		
-		this.original.setXRot(this.lockOnXRot);
-		this.original.setYRot(this.lockOnYRot);
-	}
-	
+
 	@Override
 	public void setModelYRot(float amount, boolean sendPacket) {
 		super.setModelYRot(amount, sendPacket);
@@ -437,29 +238,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		this.useModelYRot = false;
 		this.modelYRot = originalDeg;
 	}
-	
-	public void fixFpvRotation(float xRot, float yRot) {
-		this.fpvXRot = Mth.wrapDegrees(xRot);
-		this.fpvXRotO = Mth.wrapDegrees(this.original.getXRot());
-		this.fpvYRot = Mth.wrapDegrees(yRot);
-		this.fpvYRotO = Mth.wrapDegrees(this.original.getYRot());
-		this.fpvLerpTick = 5;
-	}
-	
-	public float getLerpedFpvXRot(float partialTicks) {
-		float delta = ((this.fpvLerpTick) / 5.0F + (1.0F - partialTicks) * (1.0F / 5.0F));
-		return this.isLerpingFpv() ? Mth.rotLerp(delta, this.fpvXRot, this.fpvXRotO) : this.original.getXRot();
-	}
-	
-	public float getLerpedFpvYRot(float partialTicks) {
-		float delta = ((this.fpvLerpTick) / 5.0F + (1.0F - partialTicks) * (1.0F / 5.0F));
-		return this.isLerpingFpv() ? Mth.rotLerp(delta, this.fpvYRot, this.fpvYRotO) : this.original.getYRot();
-	}
-	
-	public boolean isLerpingFpv() {
-		return this.fpvLerpTick > -1;
-	}
-	
+
 	@Override
 	public void disableModelYRot(boolean sendPacket) {
 		super.disableModelYRot(sendPacket);
@@ -516,29 +295,30 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	@Override
 	public void beginAction(ActionAnimation animation) {
-		if (!this.useModelYRot || animation.getProperty(ActionAnimationProperty.SYNC_CAMERA).orElse(false)) {
-			this.modelYRot = this.getOriginal().getYRot();
-		}
-		
-		if (this.targetLockedOn) {
-			if (this.rayTarget != null && !this.rayTarget.isRemoved()) {
-				Vec3 playerPosition = this.original.position();
-				Vec3 targetPosition = this.rayTarget.position();
-				Vec3 toTarget = targetPosition.subtract(playerPosition);
-				float yaw = (float)MathUtils.getYRotOfVector(toTarget); 
-				float pitch = (float)MathUtils.getXRotOfVector(toTarget);
-				this.original.setYRot(yaw);
-				this.original.setXRot(pitch);
-			} else {
-				this.original.setYRot(this.lockOnYRot);
-				this.original.setXRot(this.lockOnXRot);
-			}
-		}
+        EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+
+        if (cameraApi.isTPSMode()) {
+            if (cameraApi.getFocusingEntity() != null && animation instanceof AttackAnimation) {
+                this.original.setYRot((float)MathUtils.getYRotOfVector(cameraApi.getFocusingEntity().getEyePosition().subtract(this.original.getEyePosition())));
+            } else {
+                cameraApi.alignPlayerLookToCamera();
+            }
+        }
+
+        if (!this.useModelYRot || animation.getProperty(ActionAnimationProperty.SYNC_CAMERA).orElse(false)) {
+            this.modelYRot = this.original.getYRot();
+        }
+
+        if (cameraApi.getFocusingEntity() != null && cameraApi.isLockingOnTarget() && !cameraApi.getFocusingEntity().isRemoved()) {
+            Vec3 playerPosition = this.original.position();
+            Vec3 targetPosition = cameraApi.getFocusingEntity().position();
+            Vec3 toTarget = targetPosition.subtract(playerPosition);
+            this.original.setYRot((float)MathUtils.getYRotOfVector(toTarget));
+        }
 	}
 	
 	/**
 	 * Play an animation after the current animation is finished
-	 * @param animation
 	 */
 	@Override
 	public void reserveAnimation(AssetAccessor<? extends StaticAnimation> animation) {
@@ -548,7 +328,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	/**
 	 * Play an animation without convert time
-	 * @param animation
 	 */
 	@Override
 	public void playAnimationInstantly(AssetAccessor<? extends StaticAnimation> animation) {
@@ -568,8 +347,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	/**
 	 * Stop playing an animation
-	 * @param animation
-	 * @param transitionTimeModifier
 	 */
 	@Override
 	public void stopPlaying(AssetAccessor<? extends StaticAnimation> animation) {
@@ -581,9 +358,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	 * Play an animation ensuring synchronization between client-server
 	 * Plays animation when getting response from server if it called in client side.
 	 * Do not call this in client side for non-player entities.
-	 * 
-	 * @param animation
-	 * @param transitionTimeModifier
 	 */
 	@Override
 	public void playAnimationSynchronized(AssetAccessor<? extends StaticAnimation> animation, float transitionTimeModifier) {
@@ -592,8 +366,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	/**
 	 * Play an animation only in client side, including all clients tracking this entity
-	 * @param animation
-	 * @param convertTimeModifier
 	 */
 	@Override
 	public void playAnimationInClientSide(AssetAccessor<? extends StaticAnimation> animation, float transitionTimeModifier) {
@@ -605,7 +377,6 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	 * Pause an animator until it receives a proper order
 	 * @param action SOFT_PAUSE: resume when next animation plays
 	 * 				 HARD_PAUSE: resume when hard pause is set false
-	 * @param pause
 	 **/
 	@Override
 	public void pauseAnimator(AbstractAnimatorControl.Action action, boolean pause) {
@@ -654,70 +425,50 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	 * Judge the next behavior depending on player's item preference and where he's looking at
 	 * @return true if the next action is swing a weapon, false if the next action is breaking a block
 	 */
-	public boolean canPlayAttackAnimation() {
-		if (this.getPlayerMode() == PlayerPatch.PlayerMode.VANILLA) {
-			return false;
-		}
-		
-		if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.ENTITY)) {
-			Entity hitEntity = ((EntityHitResult)this.minecraft.hitResult).getEntity();
-			
-			if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof PartEntity)) {
-				return false;
-			}
-		}
-		
-		if (this.targetLockedOn) {
-			return true;
-		}
-		
-		if (ClientConfig.preferenceWork.checkHitResult()) {
-			if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
-				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
-					BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
-					BlockState bs = this.minecraft.level.getBlockState(bp);
-					return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
-				}
-			} else {
-				return RenderEngine.hitResultNotEquals(this.minecraft.hitResult, HitResult.Type.BLOCK);
-			}
-			
-			return true;
-		} else {
-            return this.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
-		}
-	}
-	
-	public boolean shouldHighlightTarget(Entity entity) {
-		if (!ClientConfig.enableTargetEntityGuide) {
-			return false;
-		}
-		
-		if (entity == this.rayTarget) {
-			if (!EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).map(entitypatch -> entitypatch.isOutlineVisible(this)).orElse(false)) {
-				return false;
-			}
+    public boolean canPlayAttackAnimation() {
+        if (this.getPlayerMode() == PlayerPatch.PlayerMode.VANILLA) {
+            return false;
+        }
 
-            if (ClientConfig.preferenceWork.checkHitResult()) {
-                if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
-                    if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
-                        BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
-                        BlockState bs = this.minecraft.level.getBlockState(bp);
-                        return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
-                    }
+        EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
 
-                    return true;
-                } else {
-                    return this.minecraft.crosshairPickEntity == entity;
+        HitResult hitResult =
+            (EpicFightCameraAPI.getInstance().isTPSMode() && cameraApi.getCrosshairHitResult() != null && cameraApi.getCrosshairHitResult().getLocation().distanceToSqr(this.original.getEyePosition()) < this.original.blockInteractionRange() * this.original.blockInteractionRange())
+                ? cameraApi.getCrosshairHitResult() : this.minecraft.hitResult;
+
+        if (hitResult == null) {
+            return true;
+        }
+
+        if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.ENTITY)) {
+            Entity hitEntity = ((EntityHitResult)hitResult).getEntity();
+
+            if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof PartEntity)) {
+                return false;
+            }
+        }
+
+        if (EpicFightCameraAPI.getInstance().isLockingOnTarget()) {
+            return true;
+        }
+
+        if (ClientConfig.preferenceWork.checkHitResult()) {
+            if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
+                if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
+                    BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
+                    BlockState bs = this.minecraft.level.getBlockState(bp);
+                    return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
                 }
             } else {
-                return this.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
+                return RenderEngine.hitResultNotEquals(this.minecraft.hitResult, HitResult.Type.BLOCK);
             }
-		}
-		
-		return false;
-	}
-	
+
+            return true;
+        } else {
+            return this.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
+        }
+    }
+
 	@OnlyIn(Dist.CLIENT)
 	public class FirstPersonLayer extends Layer {
 		private TransformSheet linkCameraTransform = new TransformSheet(List.of(new Keyframe(0.0F, JointTransform.empty()), new Keyframe(Float.MAX_VALUE, JointTransform.empty())));

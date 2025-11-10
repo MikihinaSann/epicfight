@@ -1,21 +1,22 @@
 package yesman.epicfight.mixin.client;
 
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import yesman.epicfight.client.ClientEngine;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 
 @Mixin(value = MouseHandler.class)
 public abstract class MixinMouseHandler {
-	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V", shift = At.Shift.BEFORE), method = "turnPlayer(D)V", cancellable = true)
-	private void epicfight$turnPlayer(double movementTime, CallbackInfo callbackInfo) {
-		LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
-		
-		if (localPlayerPatch != null && localPlayerPatch.isTargetLockedOn()) {
-			callbackInfo.cancel();
-		}
-	}
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/player/LocalPlayer;turn(DD)V"
+        ),
+        method = "turnPlayer(D)V"
+    )
+    private void epicfight$turnPlayer(LocalPlayer player, double yRot, double xRot) {
+        if (!EpicFightCameraAPI.getInstance().turnCamera(yRot, xRot)) player.turn(yRot, xRot);
+    }
 }

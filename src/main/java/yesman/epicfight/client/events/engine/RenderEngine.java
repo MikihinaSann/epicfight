@@ -1,19 +1,5 @@
 package yesman.epicfight.client.events.engine;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.ImmutableMap;
@@ -23,11 +9,10 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Gui;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -48,38 +33,28 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShieldItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.LogicalSide;
 import net.neoforged.fml.ModLoader;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.CustomizeGuiOverlayEvent;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RenderFrameEvent;
-import net.neoforged.neoforge.client.event.RenderGuiEvent;
-import net.neoforged.neoforge.client.event.RenderGuiLayerEvent;
-import net.neoforged.neoforge.client.event.RenderHandEvent;
-import net.neoforged.neoforge.client.event.RenderHighlightEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-import net.neoforged.neoforge.client.event.RenderLivingEvent;
-import net.neoforged.neoforge.client.event.ViewportEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.ViewLimit;
+import yesman.epicfight.api.client.animation.AnimationSubFileReader;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.client.model.Meshes;
@@ -95,41 +70,12 @@ import yesman.epicfight.client.gui.VersionNotifier;
 import yesman.epicfight.client.gui.screen.overlay.OverlayManager;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.mesh.HumanoidMesh;
-import yesman.epicfight.client.renderer.AimHelperRenderer;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.FakeBlockRenderer;
 import yesman.epicfight.client.renderer.FirstPersonRenderer;
 import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PCreeperRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PCustomEntityRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PCustomHumanoidEntityRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PDrownedRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PEnderDragonRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PEndermanRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PHoglinRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PIllagerRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PIronGolemRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PPlayerRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PRavagerRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PSpiderRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PStrayRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PVexRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PVindicatorRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PWitchRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PWitherRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PWitherSkeletonMinionRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PZombieVillagerRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PatchedEntityRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRenderer;
-import yesman.epicfight.client.renderer.patched.entity.PresetRenderer;
-import yesman.epicfight.client.renderer.patched.entity.WitherGhostCloneRenderer;
-import yesman.epicfight.client.renderer.patched.item.RenderFilledMap;
-import yesman.epicfight.client.renderer.patched.item.RenderItemBase;
-import yesman.epicfight.client.renderer.patched.item.RenderKatana;
-import yesman.epicfight.client.renderer.patched.item.RenderShield;
-import yesman.epicfight.client.renderer.patched.item.RenderTrident;
-import yesman.epicfight.client.renderer.patched.item.RenderTwoHandedRangedWeapon;
+import yesman.epicfight.client.renderer.patched.entity.*;
+import yesman.epicfight.client.renderer.patched.item.*;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.main.EpicFightMod;
@@ -139,13 +85,13 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon.EnderDragonPatch;
-import yesman.epicfight.world.capabilities.item.BowCapability;
-import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.capabilities.item.CrossbowCapability;
-import yesman.epicfight.world.capabilities.item.MapCapability;
-import yesman.epicfight.world.capabilities.item.ShieldCapability;
-import yesman.epicfight.world.capabilities.item.TridentCapability;
+import yesman.epicfight.world.capabilities.item.*;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @SuppressWarnings("rawtypes")
 @OnlyIn(Dist.CLIENT)
@@ -169,17 +115,10 @@ public class RenderEngine implements IEventBasedEngine {
 	private FakeBlockRenderer fakeBlockRenderer;
 	
 	private Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers;
-	private AimHelperRenderer aimHelper;
 	private FirstPersonRenderer firstPersonRenderer;
 	private PHumanoidRenderer<?, ?, ?, ?, ?> basicHumanoidRenderer;
 	private int modelInitTimer;
-	
-	private boolean zoomingIn;
-	private int zoomTick = 0;
-	private int zoomTickO = 0;
-	private final int maxZoomTicks = 6;
-	private int zoomOutStandbyTicks = 0;
-	
+
 	private RenderEngine() {
 		this.minecraft = Minecraft.getInstance();
 		this.battleModeHUD = new BattleModeGui(this.minecraft);
@@ -366,175 +305,11 @@ public class RenderEngine implements IEventBasedEngine {
 		
 		return availableRendererEntities;
 	}
-	
-	public void zoomIn() {
-		// Nothing happens if player is already zooming-in
-		if (!this.zoomingIn) {
-			this.zoomingIn = true;
-			this.zoomTick = this.zoomTick == 0 ? 1 : this.zoomTick;
-		}
-	}
-	
-	public void zoomOut(int zoomOutTicks) {
-		// Nothing happens if player is already zooming-out
-		if (this.zoomingIn) {
-			this.zoomingIn = false;
-			this.zoomOutStandbyTicks = zoomOutTicks;
-		}
-	}
-	
+
 	public void setModelInitializerTimer(int tick) {
 		this.modelInitTimer = tick;
 	}
-	
-	private static final Vec3f AIMING_CORRECTION = new Vec3f(-1.5F, 0.0F, 1.25F);
-	
-	public void setRangedWeaponThirdPerson(Camera camera, CameraType pov, double partialTicks) {
-		if (this.zoomTickO < 1) {
-			return;
-		}
-		
-		if (ClientEngine.getInstance().getPlayerPatch() == null) {
-			return;
-		}
-		
-		Entity entity = this.minecraft.getCameraEntity();
-		Vec3 vector = camera.getPosition();
-		double totalX = vector.x();
-		double totalY = vector.y();
-		double totalZ = vector.z();
-		
-		if (pov == CameraType.THIRD_PERSON_BACK) {
-			double posX = vector.x();
-			double posY = vector.y();
-			double posZ = vector.z();
-			double entityPosX = entity.xOld + (entity.getX() - entity.xOld) * partialTicks;
-			double entityPosY = entity.yOld + (entity.getY() - entity.yOld) * partialTicks + entity.getEyeHeight();
-			double entityPosZ = entity.zOld + (entity.getZ() - entity.zOld) * partialTicks;
-			float zoomAmount = pov == CameraType.THIRD_PERSON_BACK ? (float)(Mth.lerp(partialTicks, this.zoomTickO, this.zoomTick)) / (float)this.maxZoomTicks : 0;
-			Vec3f interpolatedCorrection = new Vec3f(AIMING_CORRECTION.x * zoomAmount, AIMING_CORRECTION.y * zoomAmount, AIMING_CORRECTION.z * zoomAmount);
-			OpenMatrix4f rotationMatrix = ClientEngine.getInstance().getPlayerPatch().getMatrix((float)partialTicks);
-			Vec3f rotateVec = OpenMatrix4f.transform3v(rotationMatrix, interpolatedCorrection, null);
-			double d3 = Math.sqrt((rotateVec.x * rotateVec.x) + (rotateVec.y * rotateVec.y) + (rotateVec.z * rotateVec.z));
-			double smallest = d3;
-			double d00 = posX + rotateVec.x;
-			double d11 = posY - rotateVec.y;
-			double d22 = posZ + rotateVec.z;
-			
-			for (int i = 0; i < 8; ++i) {
-				float f = (float) ((i & 1) * 2 - 1);
-				float f1 = (float) ((i >> 1 & 1) * 2 - 1);
-				float f2 = (float) ((i >> 2 & 1) * 2 - 1);
-				f = f * 0.1F;
-				f1 = f1 * 0.1F;
-				f2 = f2 * 0.1F;
-				HitResult raytraceresult = this.minecraft.level.clip(new ClipContext(new Vec3(entityPosX + f, entityPosY + f1, entityPosZ + f2), new Vec3(d00 + f + f2, d11 + f1, d22 + f2), ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, entity));
 
-				if (raytraceresult != null) {
-					double d7 = raytraceresult.getLocation().distanceTo(new Vec3(entityPosX, entityPosY, entityPosZ));
-					if (d7 < smallest) {
-						smallest = d7;
-					}
-				}
-			}
-			
-			float dist = d3 == 0 ? 0 : (float) (smallest / d3);
-			totalX += rotateVec.x * dist;
-			totalY -= rotateVec.y * dist;
-			totalZ += rotateVec.z * dist;
-		}
-		
-		camera.setPosition(totalX, totalY, totalZ);
-	}
-	
-	private static final OpenMatrix4f PLAYER_ROTATION = new OpenMatrix4f();
-	private static final Vector3f CAMERA_ROTATION_EULER = new Vector3f();
-	
-	@SuppressWarnings("deprecation")
-	public void correctCamera(ViewportEvent.ComputeCameraAngles event, float partialTicks) {
-		LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
-		Camera camera = event.getCamera();
-		CameraType cameraType = this.minecraft.options.getCameraType();
-		
-		if (localPlayerPatch != null) {
-			// Lock on correction
-			if (localPlayerPatch.getTarget() != null && localPlayerPatch.isTargetLockedOn()) {
-				float xRot = localPlayerPatch.getLerpedLockOnX(partialTicks);
-				float yRot = localPlayerPatch.getLerpedLockOnY(partialTicks);
-				
-				if (cameraType.isMirrored()) {
-					yRot += 180.0F;
-					xRot *= -1.0F;
-				}
-				
-				camera.setRotation(yRot, xRot);
-				event.setPitch(xRot);
-				event.setYaw(yRot);
-				
-				if (!cameraType.isFirstPerson()) {
-					Entity cameraEntity = this.minecraft.cameraEntity;
-					camera.setPosition(
-						  Mth.lerp(partialTicks, cameraEntity.xo, cameraEntity.getX())
-						, Mth.lerp(partialTicks, cameraEntity.yo, cameraEntity.getY()) + Mth.lerp(partialTicks, camera.eyeHeightOld, camera.eyeHeight)
-						, Mth.lerp(partialTicks, cameraEntity.zo, cameraEntity.getZ())
-					);
-					
-					camera.move(-camera.getMaxZoom(4.0F), 0.0F, 0.0F);
-				}
-			}
-			
-			// First person camera correction
-			if (ClientConfig.enablePovAction && cameraType.isFirstPerson() && localPlayerPatch.isEpicFightMode() && !localPlayerPatch.getFirstPersonLayer().isOff()) {
-				if (localPlayerPatch.isLerpingFpv()) {
-					float xRot = localPlayerPatch.getLerpedFpvXRot(partialTicks);
-					float yRot = localPlayerPatch.getLerpedFpvYRot(partialTicks);
-					this.minecraft.cameraEntity.setXRot(xRot);
-					this.minecraft.cameraEntity.setYRot(yRot);
-				} else {
-					ViewLimit viewLimit = localPlayerPatch.getPovSettings().viewLimit();
-					
-					if (viewLimit != null) {
-						float clampedXRot = Mth.clamp(event.getPitch(), viewLimit.xRotMin(), viewLimit.xRotMax());
-						float bodyY = MathUtils.findNearestRotation(event.getYaw(), localPlayerPatch.getYRot());
-						float clampedYRot = Mth.clamp(event.getYaw(), bodyY + viewLimit.yRotMin(), bodyY + viewLimit.yRotMax());
-						
-						if (Float.compare(clampedXRot, event.getPitch()) != 0 || Float.compare(clampedYRot, event.getYaw()) != 0) {
-							localPlayerPatch.fixFpvRotation(clampedXRot, localPlayerPatch.getYRot());
-						}
-					}
-				}
-				
-				if (localPlayerPatch.hasCameraAnimation()) {
-					float time = Mth.lerp(partialTicks, localPlayerPatch.getFirstPersonLayer().animationPlayer.getPrevElapsedTime(), localPlayerPatch.getFirstPersonLayer().animationPlayer.getElapsedTime());
-					JointTransform cameraTransform;
-					
-					if (localPlayerPatch.getFirstPersonLayer().animationPlayer.getAnimation().get().isLinkAnimation() || localPlayerPatch.getPovSettings() == null) {
-						cameraTransform = localPlayerPatch.getFirstPersonLayer().getLinkCameraTransform().getInterpolatedTransform(time);
-					} else {
-						cameraTransform = localPlayerPatch.getPovSettings().cameraTransform().getInterpolatedTransform(time);
-					}
-					
-					float xRot = localPlayerPatch.getOriginal().getXRot();
-					float yRot = localPlayerPatch.getOriginal().getYRot();
-					
-					Vec3f translation = OpenMatrix4f.transform3v(OpenMatrix4f.ofRotationDegree(yRot, Vec3f.Y_AXIS, PLAYER_ROTATION).rotate(xRot, Vec3f.X_AXIS), cameraTransform.translation(), null);
-					Quaternionf rot = cameraTransform.rotation();
-					rot.getEulerAnglesXYZ(CAMERA_ROTATION_EULER);
-					
-					CAMERA_ROTATION_EULER.x = (float)Math.toDegrees(CAMERA_ROTATION_EULER.x);
-					CAMERA_ROTATION_EULER.y = (float)Math.toDegrees(CAMERA_ROTATION_EULER.y);
-					CAMERA_ROTATION_EULER.z = (float)Math.toDegrees(CAMERA_ROTATION_EULER.z);
-					
-					camera.move(translation.x, translation.y, translation.z);
-					
-					event.setPitch(event.getPitch() + CAMERA_ROTATION_EULER.x);
-					event.setYaw(event.getYaw() + CAMERA_ROTATION_EULER.y);
-					event.setRoll(event.getRoll() + CAMERA_ROTATION_EULER.z);
-				}
-			}
-		}
-	}
-	
 	public OverlayManager getOverlayManager() {
 		return this.overlayManager;
 	}
@@ -576,7 +351,7 @@ public class RenderEngine implements IEventBasedEngine {
 	}
 	
 	public void clear() {
-		this.zoomOut(0);
+        EpicFightCameraAPI.getInstance().zoomOut(0);
 		this.bossEventOwners.clear();
 		
 		if (!RenderSystem.isOnRenderThread()) {
@@ -643,17 +418,16 @@ public class RenderEngine implements IEventBasedEngine {
 				}
 			}
 		}
-		
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
-		
-		if (playerpatch != null && !this.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
-			LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
-			
-			for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
-				if (entityIndicator.shouldDraw(livingentity, entitypatch, playerpatch, event.getPartialTick())) {
-					entityIndicator.draw(livingentity, entitypatch, playerpatch, event.getPoseStack(), event.getMultiBufferSource(), event.getPartialTick());
-				}
-			}
+		if (!this.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+            EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+                EpicFightCapabilities.getUnparameterizedEntityPatch(livingentity, LivingEntityPatch.class).ifPresent(entitypatch -> {
+                    for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
+                        if (entityIndicator.shouldDraw(livingentity, entitypatch, playerpatch, event.getPartialTick())) {
+                            entityIndicator.draw(livingentity, entitypatch, playerpatch, event.getPoseStack(), event.getMultiBufferSource(), event.getPartialTick());
+                        }
+                    }
+                });
+            });
 		}
 	}
 	
@@ -716,9 +490,64 @@ public class RenderEngine implements IEventBasedEngine {
 			});
 		}
 	}
-	
+
+    private static final Vector3f CAMERA_ROTATION_EULER = new Vector3f();
+    private static final OpenMatrix4f PLAYER_ROTATION = new OpenMatrix4f();
+
 	private void epicfight$computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
-		this.correctCamera(event, (float)event.getPartialTick());
+        EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+            // First person camera correction
+            if (ClientConfig.enablePovAction && this.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
+                float partialTick = (float)event.getPartialTick();
+                EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+
+                if (cameraApi.isLerpingFpv()) {
+                    float xRot = cameraApi.getLerpedFpvXRot(partialTick);
+                    float yRot = cameraApi.getLerpedFpvYRot(partialTick);
+                    this.minecraft.cameraEntity.setXRot(xRot);
+                    this.minecraft.cameraEntity.setYRot(yRot);
+                } else {
+                    AnimationSubFileReader.PovSettings.ViewLimit viewLimit = playerpatch.getPovSettings().viewLimit();
+
+                    if (viewLimit != null) {
+                        float clampedXRot = Mth.clamp(event.getPitch(), viewLimit.xRotMin(), viewLimit.xRotMax());
+                        float bodyY = MathUtils.findNearestRotation(event.getYaw(), playerpatch.getYRot());
+                        float clampedYRot = Mth.clamp(event.getYaw(), bodyY + viewLimit.yRotMin(), bodyY + viewLimit.yRotMax());
+
+                        if (Float.compare(clampedXRot, event.getPitch()) != 0 || Float.compare(clampedYRot, event.getYaw()) != 0) {
+                            cameraApi.fixFpvRotation(clampedXRot, playerpatch.getYRot(), 5);
+                        }
+                    }
+                }
+
+                if (playerpatch.hasCameraAnimation()) {
+                    float time = Mth.lerp(partialTick, playerpatch.getFirstPersonLayer().animationPlayer.getPrevElapsedTime(), playerpatch.getFirstPersonLayer().animationPlayer.getElapsedTime());
+                    JointTransform cameraTransform;
+
+                    if (playerpatch.getFirstPersonLayer().animationPlayer.getAnimation().get().isLinkAnimation() || playerpatch.getPovSettings() == null) {
+                        cameraTransform = playerpatch.getFirstPersonLayer().getLinkCameraTransform().getInterpolatedTransform(time);
+                    } else {
+                        cameraTransform = playerpatch.getPovSettings().cameraTransform().getInterpolatedTransform(time);
+                    }
+
+                    float xRot = playerpatch.getOriginal().getXRot();
+                    float yRot = playerpatch.getOriginal().getYRot();
+
+                    Vec3f translation = OpenMatrix4f.transform3v(OpenMatrix4f.ofRotationDegree(yRot, Vec3f.Y_AXIS, PLAYER_ROTATION).rotate(xRot, Vec3f.X_AXIS), cameraTransform.translation(), null);
+                    Quaternionf rot = cameraTransform.rotation();
+                    rot.getEulerAnglesXYZ(CAMERA_ROTATION_EULER);
+
+                    CAMERA_ROTATION_EULER.x = (float)Math.toDegrees(CAMERA_ROTATION_EULER.x);
+                    CAMERA_ROTATION_EULER.y = (float)Math.toDegrees(CAMERA_ROTATION_EULER.y);
+                    CAMERA_ROTATION_EULER.z = (float)Math.toDegrees(CAMERA_ROTATION_EULER.z);
+
+                    event.getCamera().move(translation.x, translation.y, translation.z);
+                    event.setPitch(event.getPitch() + CAMERA_ROTATION_EULER.x);
+                    event.setYaw(event.getYaw() + CAMERA_ROTATION_EULER.y);
+                    event.setRoll(event.getRoll() + CAMERA_ROTATION_EULER.z);
+                }
+            }
+        });
 	}
 	
 	private void epicfight$renderGuiPre(RenderGuiEvent.Pre event) {
@@ -736,7 +565,7 @@ public class RenderEngine implements IEventBasedEngine {
 			this.versionNotifier.render(event.getGuiGraphics(), true);
 		}
 	}
-	
+
 	private static final ResourceLocation YELLOWBAR_BACKGROUND = ResourceLocation.withDefaultNamespace("boss_bar/yellow_background");
 	private static final ResourceLocation YELLOWBAR_PROGRESS = ResourceLocation.withDefaultNamespace("boss_bar/yellow_progress");
 	
@@ -798,11 +627,6 @@ public class RenderEngine implements IEventBasedEngine {
 					}
 				});
 			}
-		} else if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
-			if (ClientConfig.aimingPovCorrection && this.zoomTick > 0 && this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
-				float partialTick = event.getPartialTick().getGameTimeDeltaPartialTick(false);
-				this.aimHelper.doRender(event.getPoseStack(), partialTick);
-			}
 		}
 	}
 	
@@ -817,7 +641,21 @@ public class RenderEngine implements IEventBasedEngine {
 			});
 		}
 	}
-	
+
+    /**
+     * Turn the player toward the direction that the player is digging now
+     * Only needs to fire in TPS mode
+     */
+    private void epicfight$rightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (event.getSide() == LogicalSide.SERVER || !EpicFightCameraAPI.getInstance().isTPSMode()) return;
+
+        EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+            Vec3 toHit = event.getHitVec().getLocation().subtract(playerpatch.getOriginal().getEyePosition());
+            playerpatch.getOriginal().setXRot((float)MathUtils.getXRotOfVector(toHit));
+            playerpatch.getOriginal().setYRot((float)MathUtils.getYRotOfVector(toHit));
+        });
+    }
+
 	private void epicfight$renderTickPre(RenderFrameEvent.Pre event) {
 		EntityUI.HEALTH_BAR.reset();
 	}
@@ -826,34 +664,22 @@ public class RenderEngine implements IEventBasedEngine {
 		EntityUI.HEALTH_BAR.remove();
 	}
 	
-	private void epicfight$clientTickPre(ClientTickEvent.Pre event) {
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
-		
-		if (playerpatch != null) {
-			this.battleModeHUD.tick(playerpatch);
-		}
-		
+	private void epicfight$clientTick$Pre(ClientTickEvent.Pre event) {
+        EpicFightCameraAPI.getInstance().preClientTick();
+        EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(this.battleModeHUD::tick);
 		this.freeUnusedSources();
 	}
-	
+
+    private void epicfight$clientTick$Post(ClientTickEvent.Post event) {
+        EpicFightCameraAPI.getInstance().postClientTick();
+    }
+
 	private void epicfight$levelTickPost(LevelTickEvent.Post event) {
 		if (!event.getLevel().isClientSide()) {
 			return;
 		}
 		
-		this.zoomTickO = this.zoomTick;
-		
 		EntityUI.HEALTH_BAR.tick();
-		
-		if (this.zoomTick > 0 && ClientConfig.aimingPovCorrection) {
-			if (this.zoomOutStandbyTicks > 0) {
-				this.zoomOutStandbyTicks--;
-			} else {
-				this.zoomTick = this.zoomingIn ? this.zoomTick + 1 : this.zoomTick - 1;
-			}
-			
-			this.zoomTick = Math.clamp(this.zoomTick, 0, this.maxZoomTicks);
-		}
 	}
 	
 	private void epicfight$renderBlockHighlight(RenderHighlightEvent.Block event) {
@@ -863,36 +689,47 @@ public class RenderEngine implements IEventBasedEngine {
 			}
 		});
 	}
-	
-	private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
-		if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
-			CameraType cameraType = this.minecraft.options.getCameraType();
-			
-			// Cancel if a modified crosshair is rendered
-			if (event.isCanceled() && cameraType.isFirstPerson() || !cameraType.isFirstPerson()) {
-				return;
-			}
-			
-			MutableBoolean itemAction = new MutableBoolean(true); // true: combat, false: mine
-			
-			if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
-				EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					itemAction.setValue(playerpatch.canPlayAttackAnimation());
-				});
-			}
-			
-			if (!itemAction.booleanValue()) {
-				event.setCanceled(true);
-				
-				RenderSystem.enableBlend();
-				RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
 
-				event.getGuiGraphics().blit(EntityUI.BATTLE_ICON, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 0, 240, 15, 15);
-				
-				RenderSystem.defaultBlendFunc();
-				RenderSystem.disableBlend();
-			}
-		}
+    private static final ResourceLocation GUI_ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
+
+	private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
+        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
+            CameraType cameraType = this.minecraft.options.getCameraType();
+
+            // Cancel if a modified crosshair is rendered
+            if (event.isCanceled() && cameraType.isFirstPerson()) {
+                return;
+            }
+
+            if (cameraType.isFirstPerson() || EpicFightCameraAPI.getInstance().isTPSMode()) {
+                MutableBoolean itemAction = new MutableBoolean(true); // true: combat, false: mine
+
+                if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
+                    EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+                        itemAction.setValue(playerpatch.canPlayAttackAnimation());
+                    });
+                }
+
+                RenderSystem.enableBlend();
+                RenderSystem.blendFuncSeparate(
+                    GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
+                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR,
+                    GlStateManager.SourceFactor.ONE,
+                    GlStateManager.DestFactor.ZERO
+                );
+
+                if (itemAction.booleanValue()) {
+                    event.getGuiGraphics().blitSprite(Gui.CROSSHAIR_SPRITE, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 15, 15);
+                } else {
+                    event.getGuiGraphics().blit(EntityUI.BATTLE_ICON, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 0, 240, 15, 15);
+                }
+
+                RenderSystem.defaultBlendFunc();
+                RenderSystem.disableBlend();
+
+                event.setCanceled(true);
+            }
+        }
 	}
 	
 	/**********************
@@ -937,8 +774,7 @@ public class RenderEngine implements IEventBasedEngine {
 		
 		this.firstPersonRenderer = new FirstPersonRenderer(context, EntityType.PLAYER);
 		this.basicHumanoidRenderer = new PHumanoidRenderer<>(Meshes.BIPED, context, EntityType.PLAYER);
-		this.aimHelper = new AimHelperRenderer();
-		
+
 		ModLoader.postEvent(new PatchedRenderersEvent.Add(this.entityRendererProvider, context));
 		
 		this.resetRenderers();
@@ -957,9 +793,11 @@ public class RenderEngine implements IEventBasedEngine {
 		gameEventBus.addListener(this::epicfight$renderHand);
 		gameEventBus.addListener(this::epicfight$renderAfterLevel);
 		gameEventBus.addListener(this::epicfight$renderEnderDragon);
+        gameEventBus.addListener(this::epicfight$rightClickBlock);
 		gameEventBus.addListener(this::epicfight$renderTickPre);
 		gameEventBus.addListener(this::epicfight$renderTickPost);
-		gameEventBus.addListener(this::epicfight$clientTickPre);
+		gameEventBus.addListener(this::epicfight$clientTick$Pre);
+        gameEventBus.addListener(this::epicfight$clientTick$Post);
 		gameEventBus.addListener(this::epicfight$levelTickPost);
 		gameEventBus.addListener(this::epicfight$renderBlockHighlight);
 		gameEventBus.addListener(this::epicfight$renderGuiLayer$Pre);

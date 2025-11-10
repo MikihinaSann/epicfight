@@ -1,9 +1,5 @@
 package yesman.epicfight.client.world.capabilites.entitypatch.player;
 
-import java.util.Optional;
-
-import org.joml.Vector4f;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -22,11 +18,8 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import yesman.epicfight.api.animation.Animator;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.animation.LivingMotions;
-import yesman.epicfight.api.animation.Pose;
+import org.joml.Vector4f;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.property.AnimationProperty.StaticAnimationProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
@@ -53,6 +46,8 @@ import yesman.epicfight.world.capabilities.entitypatch.EntityDecorations;
 import yesman.epicfight.world.capabilities.entitypatch.EntityDecorations.RenderAttributeModifier;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+
+import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class AbstractClientPlayerPatch<T extends AbstractClientPlayer> extends PlayerPatch<T> implements ClothSimulatable {
@@ -298,18 +293,13 @@ public class AbstractClientPlayerPatch<T extends AbstractClientPlayer> extends P
 	public void poseTick(DynamicAnimation animation, Pose pose, float elapsedTime, float partialTick) {
 		if (pose.hasTransform("Head") && this.armature.hasJoint("Head")) {
 			if (animation.doesHeadRotFollowEntityHead()) {
-				float headRotO = this.modelYRotO - this.original.yHeadRotO;
-				float headRot = this.modelYRot - this.original.yHeadRot;
-				float partialHeadRot = Mth.wrapDegrees(MathUtils.lerpBetween(headRotO, headRot, partialTick));
-				float xRot = -this.original.getXRot();
-				partialHeadRot = Mth.clamp(partialHeadRot, -90.0F, 90.0F);
-				
-				OpenMatrix4f toOriginalRotation = this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head")).removeScale().removeTranslation().invert();
-				Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
-				Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
-				
-				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(partialHeadRot, yAxis).rotateDeg(xRot, xAxis);
-				pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
+                float headRelativeRot = Mth.rotLerp(partialTick, Mth.wrapDegrees(this.modelYRotO - this.original.yHeadRotO), Mth.wrapDegrees(this.modelYRot - this.original.yHeadRot));
+                OpenMatrix4f headTransform = this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head"));
+                OpenMatrix4f toOriginalRotation = headTransform.removeScale().removeTranslation().invert();
+                Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
+                Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
+                OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(headRelativeRot, yAxis).rotateDeg(-Mth.rotLerp(partialTick, this.original.xRotO, this.original.getXRot()), xAxis);
+                pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
 			}
 		}
 	}

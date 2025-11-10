@@ -1,26 +1,22 @@
 package yesman.epicfight.client.gui;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public abstract class EntityUI {
@@ -34,9 +30,9 @@ public abstract class EntityUI {
 	}
 	
 	public static void setupPoseStack(PoseStack poseStack, LivingEntity entity, float uiX, float uiY, float uiZ, boolean lockRotation, float partialTick) {
-		Entity cameraEntity = Minecraft.getInstance().cameraEntity;
-		float xRot = -Mth.lerp(partialTick, cameraEntity.xRotO, cameraEntity.getXRot());
-		float yRot = -Mth.lerp(partialTick, cameraEntity.yRotO, cameraEntity.getYRot()) + 180.0F;
+        EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+		float xRot = -cameraApi.getCameraXRot();
+		float yRot = -cameraApi.getCameraYRot() + 180.0F;
 		poseStack.translate(uiX, uiY, uiZ);
 		poseStack.mulPose(Axis.YP.rotationDegrees(yRot));
 		poseStack.mulPose(Axis.XP.rotationDegrees(xRot));

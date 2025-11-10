@@ -1,9 +1,19 @@
 package yesman.epicfight.mixin.client;
 
-import java.util.Iterator;
-
+import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.culling.Frustum;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.TickRateManager;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -11,33 +21,17 @@ import org.spongepowered.asm.mixin.injection.At.Shift;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
+import yesman.epicfight.config.ClientConfig;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-
-import net.minecraft.client.Camera;
-import net.minecraft.client.DeltaTracker;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.LevelRenderer;
-import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.OutlineBufferSource;
-import net.minecraft.client.renderer.RenderBuffers;
-import net.minecraft.client.renderer.culling.Frustum;
-import net.minecraft.core.BlockPos;
-import net.minecraft.util.profiling.ProfilerFiller;
-import net.minecraft.world.TickRateManager;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.phys.Vec3;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import java.util.Iterator;
 
 @Mixin(value = LevelRenderer.class)
 public class MixinLevelRenderer {
-	@Shadow
+	@Shadow @Final
 	private RenderBuffers renderBuffers;
 	
-	@Shadow
+	@Shadow @Final
 	private Minecraft minecraft;
 	
 	@Inject(
@@ -74,8 +68,10 @@ public class MixinLevelRenderer {
 		OutlineBufferSource local20,
 		int local21
 	) {
-		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (playerpatch.shouldHighlightTarget(local17)) this.renderBuffers.outlineBufferSource().setColor(255, 40, 40, 255);
-		});
+        int color = ClientConfig.packedTargetOutlineColor;
+        int r = color >> 16 & 255;
+        int g = color >> 8 & 255;
+        int b = color & 255;
+        if (EpicFightCameraAPI.getInstance().shouldHighlightTarget(local17)) this.renderBuffers.outlineBufferSource().setColor(r, g, b, 255);
 	}
 }

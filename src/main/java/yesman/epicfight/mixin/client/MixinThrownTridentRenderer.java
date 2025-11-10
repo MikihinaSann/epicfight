@@ -27,19 +27,25 @@ public abstract class MixinThrownTridentRenderer extends EntityRenderer<ThrownTr
 		super(p_174008_);
 	}
 	
-	@Inject(	at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionf;)V", ordinal = 0),
-			method = "render(Lnet/minecraft/world/entity/projectile/ThrownTrident;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", cancellable = true)
-	private void epicfight_render(ThrownTrident tridentEntity, float yRot, float partialTicks, PoseStack poseStack, MultiBufferSource multiSourceBuffer, int packedLight, CallbackInfo info) {
+	@Inject(
+        at = @At(
+            value = "INVOKE",
+            target = "Lcom/mojang/blaze3d/vertex/PoseStack;mulPose(Lorg/joml/Quaternionf;)V",
+            ordinal = 0
+        ),
+        method = "render(Lnet/minecraft/world/entity/projectile/ThrownTrident;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V"
+    )
+	private void epicfight$render(ThrownTrident tridentEntity, float yRot, float partialTicks, PoseStack poseStack, MultiBufferSource multiSourceBuffer, int packedLight, CallbackInfo info) {
 		ThrownTridentPatch tridentPatch = EpicFightCapabilities.getEntityPatch(tridentEntity, ThrownTridentPatch.class);
 		
 		if (tridentPatch != null) {
-			if (tridentPatch.isInnateActivated()) {
+			if (tridentPatch.isInnateActivated() && tridentEntity.getOwner() != null) {
 				Entity owner = tridentEntity.getOwner();
 				Vec3 toOwner = owner.position().subtract(tridentEntity.position());
 				Vec3 toOwnerHorizontalNorm = owner.position().subtract(tridentEntity.position()).subtract(0, toOwner.y, 0).normalize();
 				Vec3 toOwnerNorm = toOwner.normalize();
 				Vec3 rotAxis = toOwnerHorizontalNorm.cross(toOwnerNorm).normalize();
-				float deg = (float) (MathUtils.getAngleBetween(toOwnerNorm, toOwnerHorizontalNorm) * (180D / Math.PI));
+				float deg = (float) MathUtils.getAngleBetween(toOwnerNorm, toOwnerHorizontalNorm);
 				
 				poseStack.mulPose(QuaternionUtils.rotationDegrees(new Vector3f((float)rotAxis.x, (float)rotAxis.y, (float)rotAxis.z), deg));
 				poseStack.mulPose(QuaternionUtils.XP.rotationDegrees(90.0F));
@@ -58,8 +64,8 @@ public abstract class MixinThrownTridentRenderer extends EntityRenderer<ThrownTr
 		}
 	}
 	
-	@Inject(at = @At(value = "TAIL"), method = "render(Lnet/minecraft/world/entity/projectile/ThrownTrident;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", cancellable = true)
-	private void epicfight_renderPost(ThrownTrident tridentEntity, float yRot, float partialTicks, PoseStack poseStack, MultiBufferSource multiSourceBuffer, int packedLight, CallbackInfo info) {
+	@Inject(at = @At(value = "TAIL"), method = "render(Lnet/minecraft/world/entity/projectile/ThrownTrident;FFLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V")
+	private void epicfight$renderPost(ThrownTrident tridentEntity, float yRot, float partialTicks, PoseStack poseStack, MultiBufferSource multiSourceBuffer, int packedLight, CallbackInfo info) {
 		ThrownTridentPatch tridentPatch = EpicFightCapabilities.getEntityPatch(tridentEntity, ThrownTridentPatch.class);
 		
 		if (tridentPatch != null) {

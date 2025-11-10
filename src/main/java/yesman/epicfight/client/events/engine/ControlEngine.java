@@ -1,16 +1,6 @@
 package yesman.epicfight.client.events.engine;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
-
 import com.mojang.blaze3d.platform.InputConstants;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -36,7 +26,13 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import yesman.epicfight.api.animation.types.EntityState;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
@@ -58,6 +54,9 @@ import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.skill.PlayerSkills;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ControlEngine implements IEventBasedEngine {
 	private static final ControlEngine INSTANCE = new ControlEngine();
@@ -163,9 +162,13 @@ public class ControlEngine implements IEventBasedEngine {
         InputManager.triggerOnPress(EpicFightInputActions.MOBILITY, true, this::maybePerformMoverSkill);
         
         InputManager.triggerOnPress(EpicFightInputActions.SWITCH_MODE, false, this::switchMode);
-		
-        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this.playerpatch::toggleLockOn);
-        
+
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON, false, this::toggleLockOnState);
+
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_LEFT, false, this::searchNewTargetFromLeft);
+
+        InputManager.triggerOnPress(EpicFightInputActions.LOCK_ON_SHIFT_RIGHT, false, this::searchNewTargetFromRight);
+
         if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
 		
 		// Pause here if player is not in battle mode
@@ -299,6 +302,24 @@ public class ControlEngine implements IEventBasedEngine {
 			disableHotbarSlotPresses();
 			consumeDropKeyClicks();
 		}
+
+        if (this.minecraft.level != null && EpicFightCameraAPI.getInstance().isTPSMode() && InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LCONTROL)) {
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_LEFT)) {
+                ClientConfig.cameraHorizontalLocation = Math.min(10, ClientConfig.cameraHorizontalLocation + 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_RIGHT)) {
+                ClientConfig.cameraHorizontalLocation = Math.max(-10, ClientConfig.cameraHorizontalLocation - 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_UP)) {
+                ClientConfig.cameraVerticalLocation = Math.min(5, ClientConfig.cameraVerticalLocation + 1);
+            }
+
+            if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), InputConstants.KEY_DOWN)) {
+                ClientConfig.cameraVerticalLocation = Math.max(-2, ClientConfig.cameraVerticalLocation - 1);
+            }
+        }
 	}
 
     private void openSkillEditor() {
@@ -452,8 +473,20 @@ public class ControlEngine implements IEventBasedEngine {
         }
         this.playerpatch.toggleMode();
     }
-	
-	private PlayerInputState inputTick(Input input) {
+
+    private void toggleLockOnState() {
+        EpicFightCameraAPI.getInstance().toggleLockOn();
+    }
+
+    private void searchNewTargetFromLeft() {
+        EpicFightCameraAPI.getInstance().setNextLockOnTarget(1);
+    }
+
+    private void searchNewTargetFromRight() {
+        EpicFightCameraAPI.getInstance().setNextLockOnTarget(-1);
+    }
+
+    private PlayerInputState inputTick(Input input) {
 		if (this.tickSinceLastJump > 0) this.tickSinceLastJump--;
 		PlayerInputState inputState = InputManager.getInputState(input);
 		

@@ -1,13 +1,9 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import com.google.common.collect.Maps;
-
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -41,11 +37,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
-import yesman.epicfight.api.animation.Animator;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.animation.LivingMotions;
-import yesman.epicfight.api.animation.Pose;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.property.AnimationProperty.StaticAnimationProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
@@ -60,7 +52,6 @@ import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.data.loot.function.SetSkillFunction;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.Armatures;
@@ -73,6 +64,10 @@ import yesman.epicfight.registry.entries.EpicFightSounds;
 import yesman.epicfight.world.capabilities.entitypatch.MobPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
 import yesman.epicfight.world.damagesource.StunType;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKinematicsSimulatable, BossPatch<EnderDragon> {
 	public static final TargetingConditions DRAGON_TARGETING = TargetingConditions.forCombat().ignoreLineOfSight();
@@ -410,7 +405,7 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	
 	@Override
 	@OnlyIn(Dist.CLIENT)
-	public boolean isOutlineVisible(LocalPlayerPatch player) {
+	public boolean isOutlineVisible(LocalPlayer player) {
 		return false;
 	}
 	

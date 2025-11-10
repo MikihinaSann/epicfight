@@ -94,7 +94,7 @@ public final class EntityEvents {
 	@SubscribeEvent
 	public static void epicfight$entityConstructing(EntityEvent.EntityConstructing event) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), EntityPatch.class).ifPresent(entitypatch -> {
-			if (!entitypatch.isInitialized()) {
+			if (entitypatch.uninitialized()) {
 				entitypatch.onConstructed(event);
 			}
 		});
@@ -104,7 +104,7 @@ public final class EntityEvents {
 	@SubscribeEvent
 	public static void epicfight$entityJoinLevel(EntityJoinLevelEvent event) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), EntityPatch.class).ifPresent(entitypatch -> {
-			if (!entitypatch.isInitialized()) {
+			if (entitypatch.uninitialized()) {
 				entitypatch.onJoinWorld(event.getEntity(), event);
 			}
 		});

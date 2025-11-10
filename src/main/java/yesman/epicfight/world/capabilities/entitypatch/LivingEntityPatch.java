@@ -1,17 +1,6 @@
 package yesman.epicfight.world.capabilities.entitypatch;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
-import org.jetbrains.annotations.ApiStatus;
-import org.joml.Vector4f;
-
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -21,11 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EquipmentSlot;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MoverType;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -42,20 +27,12 @@ import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import org.jetbrains.annotations.ApiStatus;
+import org.joml.Vector4f;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
-import yesman.epicfight.api.animation.AnimationPlayer;
-import yesman.epicfight.api.animation.Animator;
-import yesman.epicfight.api.animation.Joint;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.animation.LivingMotions;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.Pose;
-import yesman.epicfight.api.animation.ServerAnimator;
-import yesman.epicfight.api.animation.types.ActionAnimation;
-import yesman.epicfight.api.animation.types.AttackAnimation;
-import yesman.epicfight.api.animation.types.DynamicAnimation;
-import yesman.epicfight.api.animation.types.EntityState;
-import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.animation.types.*;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.ClientAnimator;
 import yesman.epicfight.api.collider.Collider;
@@ -95,6 +72,12 @@ import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.damagesource.EpicFightDamageSources;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.data.ExpandedSyncedData;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public abstract class LivingEntityPatch<T extends LivingEntity> extends HurtableEntityPatch<T> {
 	public static final double WEIGHT_CORRECTION = 37.037D;
@@ -201,21 +184,19 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	public void preTickClient(EntityTickEvent.Pre event) {
 		this.entityDecorations.tick();
 	}
-	
-	public void poseTick(DynamicAnimation animation, Pose pose, float elapsedTime, float partialTick) {
-		if (pose.hasTransform("Head") && this.armature.hasJoint("Head")) {
-			if (animation.doesHeadRotFollowEntityHead()) {
-				float headRotO = this.original.yBodyRotO - this.original.yHeadRotO;
-				float headRot = this.original.yBodyRot - this.original.yHeadRot;
-				float partialHeadRot = MathUtils.lerpBetween(headRotO, headRot, partialTick);
-				OpenMatrix4f toOriginalRotation = new OpenMatrix4f(this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head"))).removeScale().removeTranslation().invert();
-				Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
-				Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
-				OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(partialHeadRot, yAxis).rotateDeg(-this.original.getXRot(), xAxis);
-				pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
-			}
-		}
-	}
+
+    public void poseTick(DynamicAnimation animation, Pose pose, float elapsedTime, float partialTick) {
+        if (pose.hasTransform("Head") && this.armature.hasJoint("Head")) {
+            if (animation.doesHeadRotFollowEntityHead()) {
+                float headRelativeRot = Mth.rotLerp(partialTick, Mth.wrapDegrees(this.original.yBodyRotO - this.original.yHeadRotO), Mth.wrapDegrees(this.original.yBodyRot - this.original.yHeadRot));
+                OpenMatrix4f toOriginalRotation = new OpenMatrix4f(this.armature.getBoundTransformFor(pose, this.armature.searchJointByName("Head"))).removeScale().removeTranslation().invert();
+                Vec3f xAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.X_AXIS, null);
+                Vec3f yAxis = OpenMatrix4f.transform3v(toOriginalRotation, Vec3f.Y_AXIS, null);
+                OpenMatrix4f headRotation = OpenMatrix4f.createRotatorDeg(headRelativeRot, yAxis).rotateDeg(-Mth.rotLerp(partialTick, this.original.xRotO, this.original.getXRot()), xAxis);
+                pose.orElseEmpty("Head").frontResult(JointTransform.fromMatrix(headRotation), OpenMatrix4f::mul);
+            }
+        }
+    }
 	
 	@OnlyIn(Dist.CLIENT)
 	@Override
@@ -454,15 +435,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 			return;
 		}
 		
-		/**
-		 * Swap hand items to decrease the durability of offhand item
-		 */
+		// Swap hand items to decrease the durability of offhand item
 		this.getOriginal().setItemInHand(InteractionHand.MAIN_HAND, offhandValid ? offhandItemStack : ItemStack.EMPTY);
 		this.getOriginal().setItemInHand(InteractionHand.OFF_HAND, mainhandItemStack);
 		
-		/**
-		 * Swap item's attributes before {@link LivingEntity#setItemInHand} called
-		 */
+		// Swap item's attributes before {@link LivingEntity#setItemInHand} called
 		AttributeInstance damageAttributeInstance = this.original.getAttribute(Attributes.ATTACK_DAMAGE);
 		mainhandAttributes.forEach(damageAttributeInstance::removeModifier);
 		offhandAttributes.forEach(damageAttributeInstance::addTransientModifier);
@@ -624,10 +601,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	/**
 	 * Play an animation
 	 * This method doesn't synchronize animations between client and server
-	 * Use {@link playAnimationSynchronized} instead if you want to synchronize animations to every remote player
-	 * 
-	 * @param animation
-	 * @param transitionTimeModifier
+	 * Use {@link #playAnimationSynchronized} instead if you want to synchronize animations to every remote player
 	 */
 	public void playAnimation(AssetAccessor<? extends StaticAnimation> animation, float transitionTimeModifier) {
 		this.animator.playAnimation(animation, transitionTimeModifier);
@@ -635,7 +609,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	/**
 	 * Play an animation without convert time
-	 * @param animation
 	 */
 	public void playAnimationInstantly(AssetAccessor<? extends StaticAnimation> animation) {
 		this.animator.playAnimationInstantly(animation);
@@ -647,7 +620,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	/**
 	 * Reserve an animation to be played after the current animation
-	 * @param animation
 	 */
 	public void reserveAnimation(AssetAccessor<? extends StaticAnimation> animation) {
 		this.animator.reserveAnimation(animation);
@@ -659,9 +631,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	/**
 	 * Stop playing an animation
-	 * 
-	 * @param animation
-	 * @param transitionTimeModifier
 	 */
 	public void stopPlaying(AssetAccessor<? extends StaticAnimation> animation) {
 		this.animator.stopPlaying(animation);
@@ -675,9 +644,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	 * Play an animation ensuring synchronization between client-server
 	 * Plays animation when getting response from server if it called in client side.
 	 * Do not call this in client side for non-player entities.
-	 * 
-	 * @param animation
-	 * @param transitionTimeModifier
 	 */
 	public void playAnimationSynchronized(AssetAccessor<? extends StaticAnimation> animation, float transitionTimeModifier) {
 		this.animator.playAnimation(animation, transitionTimeModifier);
@@ -689,8 +655,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	/**
 	 * Play an animation only in client side, including all clients tracking this entity
-	 * @param animation
-	 * @param convertTimeModifier
 	 */
 	public void playAnimationInClientSide(AssetAccessor<? extends StaticAnimation> animation, float transitionTimeModifier) {
 		if (this.isLogicalClient()) {
@@ -714,9 +678,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	/**
 	 * Play an animation with custom packet
-	 * @param animation
-	 * @param transitionTimeModifier
-	 * @param packetProvider
 	 */
 	private void handleAnimationPayload(SPAnimatorControl payload) {
 		if (this.isLogicalClient()) {

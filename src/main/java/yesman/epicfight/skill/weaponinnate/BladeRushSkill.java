@@ -1,12 +1,6 @@
 package yesman.epicfight.skill.weaponinnate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.google.common.collect.Maps;
-
 import io.netty.buffer.Unpooled;
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
@@ -38,6 +32,11 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 public class BladeRushSkill extends WeaponInnateSkill {
 	public static final class Builder extends WeaponInnateSkill.Builder<BladeRushSkill.Builder> {
@@ -149,7 +148,7 @@ public class BladeRushSkill extends WeaponInnateSkill {
 	
 	@Override
 	public boolean checkExecuteCondition(SkillContainer container) {
-		return container.getExecutor().getTarget() != null && container.getExecutor().getTarget().isAlive();
+		return container.getExecutor().getTarget() != null && container.getExecutor().getTarget().isAlive() && container.getExecutor().getOriginal().distanceToSqr(container.getExecutor().getTarget()) < 100.0D;
 	}
 	
 	@OnlyIn(Dist.CLIENT)
@@ -161,9 +160,13 @@ public class BladeRushSkill extends WeaponInnateSkill {
 	@Override
 	public void validationFeedback(SkillContainer container) {
 		Skill skill = container.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND).getInnateSkill(container.getExecutor(), container.getExecutor().getOriginal().getItemInHand(InteractionHand.MAIN_HAND));
-		
-		if (this.equals(skill) && !this.checkExecuteCondition(container)) {
-			Minecraft.getInstance().gui.setOverlayMessage(Component.translatable("gui.epicfight.warn.no_target"), false);
-		}
+
+        if (this.equals(skill) && !this.checkExecuteCondition(container)) {
+            if (container.getExecutor().getTarget() == null || !container.getExecutor().getTarget().isAlive()) {
+                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.no_target")), false);
+            } else {
+                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.target_too_far")), false);
+            }
+        }
 	}
 }

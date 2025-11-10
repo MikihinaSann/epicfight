@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.widgets.EpicFightOptionList;
 import yesman.epicfight.client.gui.widgets.RewindableButton;
@@ -40,8 +41,9 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.longPressCounter)
 				),
 				button -> {
-					ClientConfig.longPressCounter++;
-					button.setMessage(
+                    ClientConfig.longPressCounter = MathUtils.wrapClamp(++ClientConfig.longPressCounter, 1, 10);
+
+                    button.setMessage(
 						Component.translatable(
 							EpicFightMod.format("gui.%s.long_press_counter"),
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.longPressCounter)
@@ -49,8 +51,9 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					);
 				},
 				button -> {
-					ClientConfig.longPressCounter--;
-					button.setMessage(
+                    ClientConfig.longPressCounter = MathUtils.wrapClamp(--ClientConfig.longPressCounter, 1, 10);
+
+                    button.setMessage(
 						Component.translatable(
 							EpicFightMod.format("gui.%s.long_press_counter"),
 							ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.longPressCounter)
@@ -63,10 +66,10 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 		
 		Button cameraAutoSwitchButton =
 			Button.builder(
-				Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.authSwitchCamera ? "on" : "off"))),
+				Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.autoSwitchCamera ? "on" : "off"))),
 				button -> {
-					ClientConfig.authSwitchCamera = !ClientConfig.authSwitchCamera;
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.authSwitchCamera ? "on" : "off"))));
+					ClientConfig.autoSwitchCamera = !ClientConfig.autoSwitchCamera;
+					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.autoSwitchCamera ? "on" : "off"))));
 				}
 			)
 			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
@@ -76,7 +79,52 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 		
 		this.optionsList.addSmall(longPressCounterButton, cameraAutoSwitchButton);
 		buttonHeight += 24;
-		
+
+        Button resolveKeyConflictsButton =
+            Button.builder(
+                Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope." + ClientConfig.keyConflictResolveScope.getSerializedName())),
+                button -> {
+                    ClientConfig.keyConflictResolveScope = ClientConfig.keyConflictResolveScope.nextEnum();
+                    button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope." + ClientConfig.keyConflictResolveScope.getSerializedName())));
+                }
+            )
+            .pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
+            .size(160, 20)
+            .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope.tooltip"))))
+            .build();
+
+        Button enableLockOnQuickShiftButton =
+            Button.builder(
+                Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))),
+                button -> {
+                    ClientConfig.lockOnQuickShift = !ClientConfig.lockOnQuickShift;
+                    button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))));
+                }
+            )
+            .pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
+            .size(160, 20)
+            .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift.tooltip"))))
+            .build();
+
+        this.optionsList.addSmall(resolveKeyConflictsButton, enableLockOnQuickShiftButton);
+        buttonHeight += 24;
+
+        Button cameraPerspectiveToggleMode =
+            Button.builder(
+                Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode." + ClientConfig.cameraPerspectiveToggleMode.getSerializedName())),
+                button -> {
+                    ClientConfig.cameraPerspectiveToggleMode = ClientConfig.cameraPerspectiveToggleMode.nextEnum();
+                    button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode." + ClientConfig.cameraPerspectiveToggleMode.getSerializedName())));
+                }
+            )
+            .pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
+            .size(160, 20)
+            .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode.tooltip"))))
+            .build();
+
+        this.optionsList.addSmall(cameraPerspectiveToggleMode, null);
+        buttonHeight += 24;
+
 		Button itemPreferenceButton =
 			Button.builder(
 				Component.translatable(EpicFightMod.format("gui.%s.item_preferences")),
@@ -84,7 +132,7 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					this.minecraft.setScreen(new ItemsPreferenceScreen(this));
 				}
 			)
-			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
+			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
 			.size(160, 20)
 			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.item_preferences.tooltip"))))
 			.build();
@@ -97,41 +145,12 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.preference_work." + ClientConfig.preferenceWork.getSerializedName())));
 				}
 			)
-			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
+			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
 			.size(160, 20)
 			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.preference_work.tooltip"))))
 			.build();
 		
 		this.optionsList.addSmall(itemPreferenceButton, preferenceWorkButton);
-		buttonHeight += 24;
-		
-		Button resolveKeyConflictsButton =
-			Button.builder(
-				Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope." + ClientConfig.keyConflictResolveScope.getSerializedName())),
-				button -> {
-					ClientConfig.keyConflictResolveScope = ClientConfig.keyConflictResolveScope.nextEnum();
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope." + ClientConfig.keyConflictResolveScope.getSerializedName())));
-				}
-			)
-			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
-			.size(160, 20)
-			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope.tooltip"))))
-			.build();
-
-        Button cameraPerspectiveToggleMode =
-                Button.builder(
-                                Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode." + ClientConfig.cameraPerspectiveToggleMode.getSerializedName())),
-                                button -> {
-                                    ClientConfig.cameraPerspectiveToggleMode = ClientConfig.cameraPerspectiveToggleMode.nextEnum();
-                                    button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode." + ClientConfig.cameraPerspectiveToggleMode.getSerializedName())));
-                                }
-                        )
-                        .pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
-                        .size(160, 20)
-                        .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode.tooltip"))))
-                        .build();
-		
-		this.optionsList.addSmall(resolveKeyConflictsButton, cameraPerspectiveToggleMode);
 		buttonHeight += 24;
 		
 		this.addWidget(this.optionsList);

@@ -1,17 +1,16 @@
 package yesman.epicfight.api.animation;
 
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-
-import org.joml.Quaternionf;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Quaternionf;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class TransformSheet {
 	public static final TransformSheet EMPTY_SHEET = new TransformSheet(List.of(new Keyframe(0.0F, JointTransform.empty()), new Keyframe(Float.MAX_VALUE, JointTransform.empty())));
@@ -167,7 +166,7 @@ public class TransformSheet {
 		Keyframe startKeyframe = keyframes[0];
 		Keyframe endKeyframe = keyframes[keyframes.length - 1];
 		float pitchDeg = (float) Math.toDegrees(Mth.atan2(modifiedStartToEnd.y - startToEnd.y, modifiedStartToEnd.length()));
-		float yawDeg = (float) Math.toDegrees(MathUtils.getAngleBetween(modifiedStartToEnd.copy().multiply(1.0F, 0.0F, 1.0F).normalize(), startToEnd.copy().multiply(1.0F, 0.0F, 1.0F).normalize()));
+		float yawDeg = (float) MathUtils.getAngleBetween(modifiedStartToEnd.copy().multiply(1.0F, 0.0F, 1.0F).normalize(), startToEnd.copy().multiply(1.0F, 0.0F, 1.0F).normalize());
 		
 		for (Keyframe kf : keyframes) {
 			float lerp = (kf.time() - startKeyframe.time()) / (endKeyframe.time() - startKeyframe.time());

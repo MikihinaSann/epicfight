@@ -94,9 +94,36 @@ public class EpicFightKeyMappings {
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
             InputConstants.KEY_G,
-            EpicFightMod.format("key.%s.combat")
+            EpicFightMod.format("key.%s.camera")
         );
-	
+
+    public static final KeyMapping LOCK_ON_SHIFT_LEFT =
+        new KeyMapping(
+            EpicFightMod.format("key.%s.lock_on_shift_left"),
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_LEFT,
+            EpicFightMod.format("key.%s.camera")
+        );
+
+    public static final KeyMapping LOCK_ON_SHIFT_RIGHT =
+        new KeyMapping(
+            EpicFightMod.format("key.%s.lock_on_shift_right"),
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            InputConstants.KEY_RIGHT,
+            EpicFightMod.format("key.%s.camera")
+        );
+
+    public static final KeyMapping LOCK_ON_SHIFT_FREELY =
+        new KeyMapping(
+            EpicFightMod.format("key.%s.lock_on_shift_freely"),
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.MOUSE,
+            InputConstants.MOUSE_BUTTON_RIGHT,
+            EpicFightMod.format("key.%s.camera")
+        );
+
 	// Systemical key mappings especially for debugging
 	public static final KeyMapping SWITCH_VANILLA_MODEL_DEBUGGING =
         new KeyMapping(
@@ -118,6 +145,9 @@ public class EpicFightKeyMappings {
 		event.register(MOVER_SKILL);
 		event.register(SKILL_EDIT);
 		event.register(LOCK_ON);
+        event.register(LOCK_ON_SHIFT_LEFT);
+        event.register(LOCK_ON_SHIFT_RIGHT);
+        event.register(LOCK_ON_SHIFT_FREELY);
 		event.register(OPEN_CONFIG_SCREEN);
 		event.register(SWITCH_VANILLA_MODEL_DEBUGGING);
 	}

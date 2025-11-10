@@ -1,22 +1,18 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.Map;
-import java.util.Optional;
-
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import yesman.epicfight.api.animation.AnimationClip;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.Keyframe;
-import yesman.epicfight.api.animation.Pose;
-import yesman.epicfight.api.animation.TransformSheet;
 import yesman.epicfight.api.animation.types.EntityState.StateFactor;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class LinkAnimation extends DynamicAnimation implements AnimationAccessor<LinkAnimation> {
 	protected TransformSheet coord;
@@ -86,7 +82,7 @@ public class LinkAnimation extends DynamicAnimation implements AnimationAccessor
 	
 	@Override
 	public Pose getPoseByTime(LivingEntityPatch<?> entitypatch, float time, float partialTicks) {
-		Pose nextStartingPose = this.toAnimation.get().getPoseByTime(entitypatch, this.nextStartTime, 1.0F);
+		Pose nextStartingPose = this.toAnimation.get().getPoseByTime(entitypatch, this.nextStartTime, partialTicks);
 		
 		/**
 		 * Update dest pose

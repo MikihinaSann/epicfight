@@ -1,31 +1,69 @@
 package yesman.epicfight.mixin.client;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import com.llamalad7.mixinextras.sugar.Local;
-
 import net.minecraft.client.Camera;
-import net.minecraft.client.CameraType;
-import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
-import yesman.epicfight.client.events.engine.RenderEngine;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import org.spongepowered.asm.mixin.Final;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
+import yesman.epicfight.config.ClientConfig;
 
 @Mixin(value = GameRenderer.class)
-public class MixinGameRenderer {
-	@Inject(
-		method = "renderLevel(Lnet/minecraft/client/DeltaTracker;)V",
-		at = @At(
-			value = "INVOKE",
-			target = "Lnet/minecraft/client/Camera;setup(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;ZZF)V",
-			shift = At.Shift.AFTER
-		)
-	)
-	private void epicfight$renderLevel(DeltaTracker deltaTracker, CallbackInfo callbackInfo, @Local Camera camera, @Local(ordinal = 1) float f1) {
-		CameraType cameraType = Minecraft.getInstance().options.getCameraType();
-		RenderEngine.getInstance().setRangedWeaponThirdPerson(camera, cameraType, f1);
-	}
+public abstract class MixinGameRenderer {
+    @Shadow @Final
+    private Camera mainCamera;
+    @Shadow @Final
+    Minecraft minecraft;
+    @Shadow
+    public abstract void pick(float partialTick);
+
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/client/renderer/GameRenderer;pick(F)V"
+        ),
+        method = "renderLevel(Lnet/minecraft/client/DeltaTracker;)V"
+    )
+    private void epicfight$renderLevel(GameRenderer gameRenderer, float partialTick) {
+        if (EpicFightCameraAPI.getInstance().isTPSMode()) {
+            this.pickInTPSPerspective();
+        } else {
+            this.pick(partialTick);
+        }
+    }
+
+    /**
+     * Code copy from {@link GameRenderer#pick(float)}
+     */
+    @Unique
+    private void pickInTPSPerspective() {
+        Entity entity = this.minecraft.getCameraEntity();
+        if (entity != null) {
+            if (this.minecraft.level != null && this.minecraft.player != null) {
+                this.minecraft.hitResult = EpicFightCameraAPI.getInstance().getCrosshairHitResult();
+                this.minecraft.crosshairPickEntity = EpicFightCameraAPI.getInstance().getFocusingEntity();
+
+                if (this.minecraft.hitResult != null) {
+                    double d0 = this.minecraft.player.blockInteractionRange();
+                    double entityReach = this.minecraft.player.entityInteractionRange();
+                    double distanceLimit = Math.max(d0, entityReach) + ClientConfig.cameraZoom * 0.5D;
+                    Vec3 hitPos = this.minecraft.hitResult.getLocation();
+
+                    if (hitPos.distanceToSqr(this.mainCamera.getPosition()) > distanceLimit * distanceLimit) {
+                        Vec3 cameraPos = this.mainCamera.getPosition();
+                        this.minecraft.hitResult = BlockHitResult.miss(hitPos, Direction.getNearest(cameraPos.x, cameraPos.y, cameraPos.z), BlockPos.containing(hitPos));
+                    }
+                }
+            }
+        }
+    }
 }
