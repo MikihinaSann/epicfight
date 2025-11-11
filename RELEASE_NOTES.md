@@ -1,7 +1,7 @@
 # Epic Fight in Minecraft 1.20.1 Changelog
 # Changelog on publishing websites and Discord will be parsed between version header ([x.x.x] - yyyy-mm-dd) and (For Devs) section
 
-## [20.13.5] - Unreleased
+## [20.13.5] - 2025-11-11
 
 ### Fixed
 
@@ -10,6 +10,11 @@
   [#2170](https://github.com/Epic-Fight/epicfight/issues/2170)
 - Fixed a crash when right click some blocks from Supplementaries
   [#2187](https://github.com/Epic-Fight/epicfight/issues/2187)
+- Fixed patron capes always being default
+- Fixed an unintended mechanism where you weren't able to attack in Epic Fight
+  mode while Preference Work is set to Switch Mode, so it works in the same way
+  as Item Auto Switching option, an old config where automatically sets player
+  mode depending on the item that player holds
 
 ### Changed
 

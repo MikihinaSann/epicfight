@@ -7,17 +7,19 @@ import net.minecraftforge.common.ForgeConfigSpec;
 
 @OnlyIn(Dist.CLIENT)
 public interface AuthenticationHelper {
-	public boolean valid();
+	boolean valid();
 	
-	default void initialize(
+	void initialize(
 		ForgeConfigSpec.ConfigValue<String> accessToken,
 		ForgeConfigSpec.ConfigValue<String> refreshToken,
 		ForgeConfigSpec.EnumValue<AuthenticationProvider> provider
-	) {}
+	);
 	
 	default Screen getAvatarEditorScreen(Screen parentScreen) {
 		return null;
 	}
+	
+	Status status();
 	
 	@OnlyIn(Dist.CLIENT)
 	public enum Status {

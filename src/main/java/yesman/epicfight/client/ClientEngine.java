@@ -12,6 +12,7 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.ForgeHooksClient;
+import net.minecraftforge.common.ForgeConfigSpec;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
@@ -33,8 +34,21 @@ public class ClientEngine {
 	private boolean vanillaModelDebuggingMode = false;
 	private AuthenticationHelper authenticationHelper = new AuthenticationHelper() {
 		@Override
+		public void initialize(
+			ForgeConfigSpec.ConfigValue<String> accessToken,
+			ForgeConfigSpec.ConfigValue<String> refreshToken,
+			ForgeConfigSpec.EnumValue<AuthenticationProvider> provider
+		) {
+		}
+		
+		@Override
 		public boolean valid() {
 			return false;
+		}
+
+		@Override
+		public Status status() {
+			return Status.OFFLINE_MODE;
 		}
 	};
 	
@@ -54,6 +68,10 @@ public class ClientEngine {
 		return this.vanillaModelDebuggingMode;
 	}
 	
+	/**
+	 * DEPRECATED: use {@link EpicFightCapabilities#getUnparameterizedEntityPatch} for better null check
+	 */
+	@Deprecated(forRemoval = true, since = "1.21.1")
 	@Nullable
 	public LocalPlayerPatch getPlayerPatch() {
 		return EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
