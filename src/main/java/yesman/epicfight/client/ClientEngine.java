@@ -1,21 +1,22 @@
 package yesman.epicfight.client;
 
-import java.util.Comparator;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.client.particle.EpicFightParticleRenderTypes;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.AuthenticationHelper;
 import yesman.epicfight.network.server.SPPlayUISound;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+
+import javax.annotation.Nullable;
+import java.util.Comparator;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 public class ClientEngine {
@@ -29,11 +30,28 @@ public class ClientEngine {
 	
 	private boolean vanillaModelDebuggingMode = false;
 	private AuthenticationHelper authenticationHelper = new AuthenticationHelper() {
-		@Override
-		public boolean valid() {
-			return false;
-		}
-	};
+        @Override
+        public void initialize(
+            ModConfigSpec.ConfigValue<String> accessToken,
+            ModConfigSpec.ConfigValue<String> refreshToken,
+            ModConfigSpec.EnumValue<AuthenticationProvider> provider
+        ) {
+        }
+
+        @Override
+        public boolean valid() {
+            return false;
+        }
+
+        @Override
+        public Status status() {
+            return Status.OFFLINE_MODE;
+        }
+
+        @Override
+        public void loadPlayerSkin() {
+        }
+    };
 	
 	public ClientEngine() {
 		instance = this;
@@ -48,7 +66,11 @@ public class ClientEngine {
 	public boolean isVanillaModelDebuggingMode() {
 		return this.vanillaModelDebuggingMode;
 	}
-	
+
+    /**
+     * DEPRECATED: use {@link EpicFightCapabilities#getUnparameterizedEntityPatch} for better null check
+     */
+    @Deprecated(forRemoval = true, since = "1.21.1")
 	@Nullable
 	public LocalPlayerPatch getPlayerPatch() {
 		return EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
@@ -81,7 +103,7 @@ public class ClientEngine {
 	}
 	
 	/**
-	 * Copy from {@link ForgeHooksClient#makeParticleRenderTypeComparator} but prioritize {@link ParticleRenderType#CUSTOM} lowest since it resets GL parameters setup
+	 * Copy from {@link ClientHooks#makeParticleRenderTypeComparator} but prioritize {@link ParticleRenderType#CUSTOM} lowest since it resets GL parameters setup
 	 */
 	public static Comparator<ParticleRenderType> makeCustomLowestParticleRenderTypeComparator(List<ParticleRenderType> renderOrder) {
 		Comparator<ParticleRenderType> vanillaComparator = Comparator.comparingInt(renderOrder::indexOf);

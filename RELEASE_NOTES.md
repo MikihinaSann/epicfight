@@ -1,15 +1,22 @@
 # Epic Fight in Minecraft 1.21.1 Changelog
 # Changelog on publishing websites and Discord will be parsed between version header ([x.x.x] - yyyy-mm-dd) and (For Devs) section
 
-## [21.13.5] - Unreleased
+## [21.13.5] - 2025-11-12
 
 ### Fixed
 
 - Fixed a regression where the Phantom Ascent skill was triggered when
   pressing the jump key while any screen was open (e.g., inventory, chat).
   [#2170](https://github.com/Epic-Fight/epicfight/issues/2170)
+- Fixed a regression where the weapon’s innate skill tooltip did not trigger.
+  [#2198](https://github.com/Epic-Fight/epicfight/pull/2197)
 - Fixed a crash when right click some blocks from Supplementaries
   [#2187](https://github.com/Epic-Fight/epicfight/issues/2187)
+- Fixed a cosmetic configuration button always inactivated
+- Fixed an unintended mechanism where you weren't able to attack in Epic Fight
+  mode while Preference Work is set to Switch Mode, so it works in the same way
+  as Item Auto Switching option, an old config where automatically sets player
+  mode depending on the item that player holds
 
 ### Changed
 

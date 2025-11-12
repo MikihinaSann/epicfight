@@ -1,11 +1,5 @@
 package yesman.epicfight.config;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import org.apache.commons.compress.utils.Lists;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -18,11 +12,8 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
-import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
-import net.neoforged.neoforge.common.ModConfigSpec.DoubleValue;
-import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
-import net.neoforged.neoforge.common.ModConfigSpec.IntValue;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
+import org.apache.commons.compress.utils.Lists;
 import yesman.epicfight.api.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.api.utils.CirculatableEnum;
 import yesman.epicfight.api.utils.ParseUtil;
@@ -34,6 +25,11 @@ import yesman.epicfight.client.gui.ScreenCalculations.VerticalBasis;
 import yesman.epicfight.client.gui.widgets.ColorSlider;
 import yesman.epicfight.main.AuthenticationHelper.AuthenticationProvider;
 import yesman.epicfight.main.EpicFightMod;
+
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
 @OnlyIn(Dist.CLIENT)
@@ -213,14 +209,17 @@ public class ClientConfig {
 			
     		try {
     			// Try loading epic skins code dynamically
-    			Class.forName("yesman.epicfight.epicskins.user.AuthenticationHelperImpl");
+    			Class<?> cls = Class.forName("yesman.epicfight.epicskins.user.AuthenticationHelperImpl");
+                Constructor<?> authImpl = cls.getDeclaredConstructor();
+                authImpl.setAccessible(true);
+                Object o = authImpl.newInstance();
     		} catch (Exception e) {
     			EpicFightMod.LOGGER.info("Epic Fight web server status: Failed at initializing Authentication provider: " + e);
     		}
 		} else {
 			EpicFightMod.LOGGER.info("Epic Fight web server connection helper: unsupported");
 		}
-		
+
 		if (EpicFightServerConnectionHelper.supported() && ClientEngine.getInstance().getAuthHelper().valid()) {
 			ClientEngine.getInstance().getAuthHelper().initialize(ACCESS_TOKEN, REFRESH_TOKNE, PROVIDER);
 		}

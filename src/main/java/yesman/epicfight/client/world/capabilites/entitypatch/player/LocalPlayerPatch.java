@@ -1,8 +1,5 @@
 package yesman.epicfight.client.world.capabilites.entitypatch.player;
 
-import java.util.List;
-import java.util.Optional;
-
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -16,11 +13,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.EntityHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -52,11 +45,7 @@ import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.network.EpicFightNetworkManager;
-import yesman.epicfight.network.client.CPAnimatorControl;
-import yesman.epicfight.network.client.CPChangePlayerMode;
-import yesman.epicfight.network.client.CPModifyEntityModelYRot;
-import yesman.epicfight.network.client.CPSetPlayerTarget;
-import yesman.epicfight.network.client.CPSetStamina;
+import yesman.epicfight.network.client.*;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.registry.entries.EpicFightDataComponentTypes;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -65,6 +54,9 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
+
+import java.util.List;
+import java.util.Optional;
 
 @OnlyIn(Dist.CLIENT)
 public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
@@ -692,7 +684,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			
 			return true;
 		} else {
-			return ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem());
+            return this.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
 		}
 	}
 	
@@ -705,18 +697,22 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			if (!EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).map(entitypatch -> entitypatch.isOutlineVisible(this)).orElse(false)) {
 				return false;
 			}
-			
-			if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
-				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
-					BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
-					BlockState bs = this.minecraft.level.getBlockState(bp);
-					return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
-				}
-				
-				return true;
-			} else {
-				return this.minecraft.crosshairPickEntity == entity;
-			}
+
+            if (ClientConfig.preferenceWork.checkHitResult()) {
+                if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
+                    if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
+                        BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
+                        BlockState bs = this.minecraft.level.getBlockState(bp);
+                        return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
+                    }
+
+                    return true;
+                } else {
+                    return this.minecraft.crosshairPickEntity == entity;
+                }
+            } else {
+                return this.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT;
+            }
 		}
 		
 		return false;

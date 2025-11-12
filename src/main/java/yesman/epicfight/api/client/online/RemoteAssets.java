@@ -1,15 +1,7 @@
 package yesman.epicfight.api.client.online;
 
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.AbstractTexture;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
@@ -22,6 +14,12 @@ import yesman.epicfight.api.client.model.Mesh;
 import yesman.epicfight.api.client.online.texture.RemoteTexture;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Queue;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 @OnlyIn(Dist.CLIENT)
 public class RemoteAssets {
@@ -54,7 +52,7 @@ public class RemoteAssets {
 		this.cachedMeshes.put(seq, remoteMeshAccessor);
 		
 		CompletableFuture.runAsync(() -> {
-			EpicFightServerConnectionHelper.loadRemoteMesh(path, (mesh, exception) -> {
+			EpicFightServerConnectionHelper.loadRemoteMesh(EpicFightSharedConstants.webServerDomain(), path, (mesh, exception) -> {
 				if (exception != null) {
 					EpicFightMod.LOGGER.error("Failed at loading remote mesh " + seq + ": " + exception.getMessage());
 					exception.printStackTrace();
@@ -72,7 +70,7 @@ public class RemoteAssets {
 		AbstractTexture texture = TEXTURE_MANAGER.getTexture(textureLocation, MissingTextureAtlasSprite.getTexture());
 		
 		if (texture == MissingTextureAtlasSprite.getTexture()) {
-			AbstractTexture httptexture = new RemoteTexture(EpicFightSharedConstants.SERVER_URL + "/textures/" + fileName, MissingTextureAtlasSprite.getLocation());
+			AbstractTexture httptexture = new RemoteTexture(EpicFightSharedConstants.webServerDomain() + "/textures/" + fileName, MissingTextureAtlasSprite.getLocation());
 			TEXTURE_MANAGER.register(textureLocation, httptexture);
 		}
 		

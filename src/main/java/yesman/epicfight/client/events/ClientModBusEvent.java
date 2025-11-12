@@ -1,8 +1,5 @@
 package yesman.epicfight.client.events;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.entity.NoopRenderer;
@@ -14,35 +11,13 @@ import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent.RegisterRenderers;
-import net.neoforged.neoforge.client.event.ModelEvent;
-import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import yesman.epicfight.api.client.model.SoftBodyTranslatable;
 import yesman.epicfight.api.client.physics.cloth.ClothSimulatable;
+import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.events.engine.RenderEngine;
-import yesman.epicfight.client.particle.AirBurstParticle;
-import yesman.epicfight.client.particle.AnimationTrailParticle;
-import yesman.epicfight.client.particle.AshDirectionalParticle;
-import yesman.epicfight.client.particle.BladeRushParticle;
-import yesman.epicfight.client.particle.BloodParticle;
-import yesman.epicfight.client.particle.CatharsisParticle;
-import yesman.epicfight.client.particle.CutParticle;
-import yesman.epicfight.client.particle.DustParticle;
-import yesman.epicfight.client.particle.EnderParticle;
-import yesman.epicfight.client.particle.EntityAfterimageParticle;
-import yesman.epicfight.client.particle.EviscerateParticle;
-import yesman.epicfight.client.particle.FeatherParticle;
-import yesman.epicfight.client.particle.ForceFieldEndParticle;
-import yesman.epicfight.client.particle.ForceFieldParticle;
-import yesman.epicfight.client.particle.GroundSlamParticle;
-import yesman.epicfight.client.particle.HitBluntParticle;
-import yesman.epicfight.client.particle.HitCutParticle;
-import yesman.epicfight.client.particle.LaserParticle;
-import yesman.epicfight.client.particle.ProjectileTrailParticle;
-import yesman.epicfight.client.particle.TsunamiSplashParticle;
+import yesman.epicfight.client.particle.*;
 import yesman.epicfight.client.renderer.blockentity.FractureBlockRenderer;
 import yesman.epicfight.client.renderer.entity.DroppedNetherStarRenderer;
 import yesman.epicfight.client.renderer.entity.WitherGhostRenderer;
@@ -54,6 +29,9 @@ import yesman.epicfight.registry.entries.EpicFightBlockEntities;
 import yesman.epicfight.registry.entries.EpicFightEntityTypes;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.skill.SkillCategory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
 @EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
@@ -98,8 +76,8 @@ public final class ClientModBusEvent {
 		event.registerEntityRenderer(EpicFightEntityTypes.DODGE_LOCATION_INDICATOR.get(), NoopRenderer::new);
 		event.registerEntityRenderer(EpicFightEntityTypes.WITHER_GHOST_CLONE.get(), WitherGhostRenderer::new);
 		event.registerEntityRenderer(EpicFightEntityTypes.WITHER_SKELETON_MINION.get(), WitherSkeletonMinionRenderer::new);
-		
 		event.registerBlockEntityRenderer(EpicFightBlockEntities.FRACTURE.get(), FractureBlockRenderer::new);
+        ClientEngine.getInstance().getAuthHelper().loadPlayerSkin();
 	}
 	
 	/**
