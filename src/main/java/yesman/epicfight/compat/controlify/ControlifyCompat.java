@@ -16,6 +16,7 @@ import dev.isxander.controlify.bindings.BindContext;
 import dev.isxander.controlify.bindings.ControlifyBindings;
 import dev.isxander.controlify.bindings.RadialIcons;
 import dev.isxander.controlify.bindings.input.Input;
+import dev.isxander.controlify.bindings.input.InputType;
 import dev.isxander.controlify.controller.ControllerEntity;
 import dev.isxander.controlify.screenop.ScreenProcessor;
 import dev.isxander.controlify.screenop.ScreenProcessorProvider;
@@ -29,6 +30,8 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Vector2f;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.InputMode;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
@@ -38,6 +41,7 @@ import yesman.epicfight.api.client.input.controller.IEpicFightControllerMod;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
+import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 
@@ -67,7 +71,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         registerCustomRadialIcons();
         registrar.registerBindContext(COMBAT_MODE_CONTEXT);
         registerInputBindings(registrar);
-        registerTargetLockOnSupport();
+        registerEvents();
         registerGuides();
         registerScreenProcessors();
     }
@@ -76,13 +80,17 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     private static InputBindingSupplier mobility;
     private static InputBindingSupplier guard;
     private static InputBindingSupplier dodge;
-    private static InputBindingSupplier lockOn;
     private static InputBindingSupplier switchMode;
     private static InputBindingSupplier weaponInnateSkill;
     private static InputBindingSupplier weaponInnateSkillTooltip;
     private static InputBindingSupplier openSkillEditorScreen;
     private static InputBindingSupplier openConfigScreen;
     private static InputBindingSupplier switchVanillaModeDebugging;
+
+    private static InputBindingSupplier lockOn;
+    private static InputBindingSupplier lockOnShiftLeft;
+    private static InputBindingSupplier lockOnShiftRight;
+    private static InputBindingSupplier lockOnShiftFreely;
 
     private static final BindContext COMBAT_MODE_CONTEXT = new BindContext(
             EpicFightMod.rl("epicfight_combat"),
@@ -118,6 +126,9 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                 case DODGE -> new TranslationKeys("key.epicfight.dodge", "key.epicfight.dodge.description");
                 case GUARD -> new TranslationKeys("key.epicfight.guard", "key.epicfight.guard.description");
                 case LOCK_ON -> new TranslationKeys("key.epicfight.lock_on", "key.epicfight.lock_on.description");
+                case LOCK_ON_SHIFT_LEFT -> new TranslationKeys("key.epicfight.lock_on_shift_left", "key.epicfight.lock_on_shift_left.description");
+                case LOCK_ON_SHIFT_RIGHT -> new TranslationKeys("key.epicfight.lock_on_shift_right", "key.epicfight.lock_on_shift_right.description");
+                case LOCK_ON_SHIFT_FREELY -> new TranslationKeys("key.epicfight.lock_on_shift_freely", "key.epicfight.lock_on_shift_freely.description");
                 case SWITCH_MODE ->
                         new TranslationKeys("key.epicfight.switch_mode", "key.epicfight.switch_mode.description");
                 case WEAPON_INNATE_SKILL ->
@@ -146,12 +157,6 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         private static @NotNull Component getNameOf(@NotNull EpicFightInputActions action) {
             return fromAction(action).getNameComponent();
         }
-    }
-
-    private static class EpicFightInputCategories {
-        private static final Component COMBAT = Component.translatable("key.epicfight.combat");
-        private static final Component GUI = Component.translatable("key.epicfight.gui");
-        private static final Component SYSTEM = Component.translatable("key.epicfight.system");
     }
 
     private enum EpicFightRadialIcons {
@@ -215,9 +220,10 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             @NotNull ControlifyBindApi registrar,
             @NotNull EpicFightInputActions action
     ) {
-        final Component combatCategory = EpicFightInputCategories.COMBAT;
-        final Component guiCategory = EpicFightInputCategories.GUI;
-        final Component systemCategory = EpicFightInputCategories.SYSTEM;
+        final Component combatCategory = Component.translatable(EpicFightKeyMappings.InputCategories.COMBAT);
+        final Component guiCategory = Component.translatable(EpicFightKeyMappings.InputCategories.GUI);
+        final Component cameraCategory = Component.translatable(EpicFightKeyMappings.InputCategories.CAMERA);
+        final Component systemCategory = Component.translatable(EpicFightKeyMappings.InputCategories.SYSTEM);
 
         // Using a switch expression to enforce compile-time exhaustive checking.
         // The returned value is a dummy and does nothing; its only purpose is to
@@ -250,7 +256,22 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             );
             case LOCK_ON -> lockOn = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
-                            .category(combatCategory)
+                            .category(cameraCategory)
+                            .allowedContexts(COMBAT_MODE_CONTEXT)
+            );
+            case LOCK_ON_SHIFT_LEFT -> lockOnShiftLeft = registrar.registerBinding(
+                    builder -> applyCommonBindingProperties(action, builder)
+                            .category(cameraCategory)
+                            .allowedContexts(COMBAT_MODE_CONTEXT)
+            );
+            case LOCK_ON_SHIFT_RIGHT -> lockOnShiftRight = registrar.registerBinding(
+                    builder -> applyCommonBindingProperties(action, builder)
+                            .category(cameraCategory)
+                            .allowedContexts(COMBAT_MODE_CONTEXT)
+            );
+            case LOCK_ON_SHIFT_FREELY -> lockOnShiftFreely = registrar.registerBinding(
+                    builder -> applyCommonBindingProperties(action, builder)
+                            .category(cameraCategory)
                             .allowedContexts(COMBAT_MODE_CONTEXT)
             );
             case SWITCH_MODE -> switchMode = registrar.registerBinding(
@@ -313,6 +334,9 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             case GUARD -> "guard";
             case DODGE -> "dodge";
             case LOCK_ON -> "lock_on";
+            case LOCK_ON_SHIFT_LEFT -> "lock_on_shift_left";
+            case LOCK_ON_SHIFT_RIGHT -> "lock_on_shift_right";
+            case LOCK_ON_SHIFT_FREELY -> "lock_on_shift_freely";
             case SWITCH_MODE -> "switch_mode";
             case WEAPON_INNATE_SKILL -> "weapon_innate_skill";
             case WEAPON_INNATE_SKILL_TOOLTIP -> "weapon_innate_skill_tooltip";
@@ -332,13 +356,20 @@ public class ControlifyCompat implements ControlifyEntrypoint {
         EpicFightControllerModProvider.set(EpicFightMod.MODID, new ControlifyIntegration());
     }
 
-    private static void registerTargetLockOnSupport() {
+    private static void registerEvents() {
         ControlifyEvents.LOOK_INPUT_MODIFIER.register(event -> {
-            LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
+            // Workaround: Since these values are normalized
+            // (e.g., x = -10 with default sensitivity or -20 when sensitivity is maxed),
+            // while mouse values are not normalized (e.g., around 110.00000983476669),
+            // handle the difference by scaling the values by 10.
+            final double multiplier = 10;
 
-            if (localPlayerPatch != null && localPlayerPatch.isTargetLockedOn()) {
-                // Fixes a minor issue when locking on an enemy.
-                event.lookInput().zero();
+            final Vector2f lookInput = event.lookInput();
+            final double dy = lookInput.x * multiplier;
+            final double dx = lookInput.y * multiplier;
+
+            if (EpicFightCameraAPI.getInstance().turnCamera(dy, dx)) {
+                lookInput.zero();
             }
         });
     }
@@ -370,6 +401,9 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             case GUARD -> guard;
             case DODGE -> dodge;
             case LOCK_ON -> lockOn;
+            case LOCK_ON_SHIFT_LEFT -> lockOnShiftLeft;
+            case LOCK_ON_SHIFT_RIGHT -> lockOnShiftRight;
+            case LOCK_ON_SHIFT_FREELY -> lockOnShiftFreely;
             case SWITCH_MODE -> switchMode;
             case WEAPON_INNATE_SKILL -> weaponInnateSkill;
             case WEAPON_INNATE_SKILL_TOOLTIP -> weaponInnateSkillTooltip;
