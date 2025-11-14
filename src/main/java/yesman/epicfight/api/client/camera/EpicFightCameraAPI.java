@@ -235,6 +235,12 @@ public final class EpicFightCameraAPI {
 		return this.lockingOnTarget;
 	}
 	
+	public int getFocusingEntityPickRange() {
+		if (this.minecraft.player == null) return 0;
+		
+		return ClientConfig.lockOnRange;
+	}
+	
 	/**
 	 * Find a new target on the screen based on the direction
 	 * <p>
@@ -257,8 +263,8 @@ public final class EpicFightCameraAPI {
 		
 		// Create a compact projection matrix without view, hurt bob
 		PoseStack posestack = new PoseStack();
-		double fov = 70.0F;//this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
-		double maxDistance = Math.pow(this.minecraft.options.renderDistance().get() * 16.0D, 2);
+		double fov = this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
+		double lockOnRange = this.getFocusingEntityPickRange();
 		posestack.mulPoseMatrix(this.minecraft.gameRenderer.getProjectionMatrix(fov));
 		Matrix4f compactProjection = posestack.last().pose();
 		
@@ -267,12 +273,13 @@ public final class EpicFightCameraAPI {
 			.filter(entity ->
 				entity instanceof LivingEntity &&
 				!entity.is(this.minecraft.player) && !entity.is(this.focusingEntity) &&
-				MathUtils.canBeSeen(entity, this.minecraft.player, maxDistance) &&
+				entity.isAlive() &&
+				MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
 				(
 					this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
 					entity.hasIndirectPassenger(this.minecraft.player)	// Excludes riding entities
 				) &&
-				entity.distanceToSqr(this.minecraft.player) < maxDistance
+				entity.distanceToSqr(this.minecraft.player) < lockOnRange * lockOnRange
 			)
 			.map(entity -> Pair.of((LivingEntity)entity, MathUtils.worldToScreenCoord(compactProjection, this.minecraft.gameRenderer.getMainCamera(), entity.getBoundingBox().getCenter()).x))
 			.filter(pair -> pair.getSecond() >= -1.0F && pair.getSecond() <= 1.0F && (direction == 0 || MathUtils.getSign(pair.getSecond()) == MathUtils.getSign(direction)))
@@ -311,6 +318,7 @@ public final class EpicFightCameraAPI {
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 			playerpatch.setYRot(this.cameraYRot);
+			playerpatch.getOriginal().setYRot(this.cameraYRot);
 		});
 	}
 	
@@ -465,8 +473,9 @@ public final class EpicFightCameraAPI {
 		LocalPlayer localPlayer = this.minecraft.player;
 		this.crosshairHitResult = localPlayer.level().clip(new ClipContext(cameraPos, rayEed, ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, localPlayer));
 		
-		pickRange = this.crosshairHitResult.getLocation().distanceToSqr(cameraPos);
-		AABB aabb = localPlayer.getBoundingBox().move(cameraPos.subtract(localPlayer.getEyePosition(1.0F))).expandTowards(lookVec.scale(pickRange)).inflate(1.0D, 1.0D, 1.0D);
+		int focusingRange = this.getFocusingEntityPickRange();
+		double entityPickRange = Math.min(this.crosshairHitResult.getLocation().distanceToSqr(cameraPos), focusingRange * focusingRange);
+		AABB aabb = localPlayer.getBoundingBox().move(cameraPos.subtract(localPlayer.getEyePosition(1.0F))).expandTowards(lookVec.scale(entityPickRange)).inflate(1.0D, 1.0D, 1.0D);
         
 		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
 			localPlayer,
@@ -476,7 +485,7 @@ public final class EpicFightCameraAPI {
 			entity -> {
 				return !entity.isSpectator() && entity.isPickable() && !entity.is(localPlayer);
 			},
-			pickRange
+			entityPickRange
 		);
 		
 		if (entityHitResult != null) {
@@ -531,25 +540,23 @@ public final class EpicFightCameraAPI {
 		}
 		
 		// Tick the target entity
-		if (
-			this.focusingEntity != null &
-			(entityHitResult == null || !entityHitResult.getEntity().is(this.focusingEntity)) // Prevents removing target that is just set in this tick
-		) {
+		if (this.focusingEntity != null) {
 			if (this.lockingOnTarget && !this.focusingEntity.isAlive()) {
 				// Searches a new lock-on target when current target is dead
 				if (!this.setNextLockOnTarget(0)) {
 					this.setLockOn(false);
 				}
 			} else {
-				double distance = localPlayer.distanceTo(this.focusingEntity);
+				double distance = localPlayer.distanceToSqr(this.focusingEntity);
+				double maxLockOnDistance = focusingRange * focusingRange;
 				
 				if (
 					// Target is invisible
 					this.focusingEntity.isInvisibleTo(localPlayer) ||
 					// Distance too far
-					distance > pickRange ||
+					distance > maxLockOnDistance ||
 					// Has no line of sight
-					!MathUtils.canBeSeen(this.focusingEntity, this.minecraft.player, pickRange) ||
+					!MathUtils.canBeSeen(this.focusingEntity, this.minecraft.player, maxLockOnDistance) ||
 					// Angle between look vec and to target too wide
 					!this.lockingOnTarget &&
 						this.focusingEntity.getBoundingBox().getCenter().subtract(this.minecraft.gameRenderer.getMainCamera().getPosition()).normalize()
@@ -610,7 +617,7 @@ public final class EpicFightCameraAPI {
 				float yLerp = Mth.clamp(Mth.wrapDegrees(yRot - this.getCameraYRot()) * 0.4F, -clamp, clamp);
 				Vec3 playerToTarget = targetPos.subtract(localPlayer.getEyePosition());
 				
-				// Limit angle difference in cinemtaic camera
+				// Limit angle difference in tps mode
 				if (tpsMode) {
 					double angle = MathUtils.getAngleBetween(playerToTarget, toTarget);
 					if (angle < 30.0D) this.setCameraRotations(this.getCameraXRot() + xLerp, this.getCameraYRot() + yLerp, false);
@@ -680,7 +687,7 @@ public final class EpicFightCameraAPI {
 		for (CameraSetupListener setupListener : this.cameraSetupListeners.values()) {
 			if (setupListener.setup(this)) {
 				skipped = true;
-				continue;
+				break;
 			}
 		}
 		

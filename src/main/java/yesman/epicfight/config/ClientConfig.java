@@ -72,6 +72,7 @@ public class ClientConfig {
 	public static final IntValue CAMERA_HORIZONTAL_LOCATION = BUILDER.defineInRange("ingame.camera.horizontal_location", -5, -10, 10);
 	public static final IntValue CAMERA_VERTICAL_LOCATION = BUILDER.defineInRange("ingame.camera.vertical_location", 0, -2, 5);
 	public static final IntValue CAMERA_ZOOM = BUILDER.defineInRange("ingame.camera.zoom", 3, 6, 10);
+	public static final IntValue LOCK_ON_RANGE = BUILDER.defineInRange("ingame.camera.lock_on_range", 20, 5, 25);
 	
 	// Control Configurations
 	public static final IntValue LONG_PRESS_COUNTER = BUILDER.defineInRange("ingame.long_press_count", 2, 1, 10);
@@ -155,7 +156,7 @@ public class ClientConfig {
 	
 	// Control Config Values
 	public static int longPressCounter;
-	public static boolean authSwitchCamera;
+	public static boolean autoSwitchCamera;
 	public static boolean lockOnQuickShift;
 	public static KeyConflictResolveScope keyConflictResolveScope;
 	public static PreferenceWork preferenceWork;
@@ -167,6 +168,7 @@ public class ClientConfig {
 	public static int cameraHorizontalLocation;
 	public static int cameraVerticalLocation;
 	public static int cameraZoom;
+	public static int lockOnRange;
 	
 	// UI Config value
 	public static boolean showTargetIndicator;
@@ -211,9 +213,10 @@ public class ClientConfig {
 		cameraHorizontalLocation = CAMERA_HORIZONTAL_LOCATION.get();
 		cameraVerticalLocation = CAMERA_VERTICAL_LOCATION.get();
 		cameraZoom = CAMERA_ZOOM.get();
+		lockOnRange = LOCK_ON_RANGE.get();
 		
 		longPressCounter = LONG_PRESS_COUNTER.get();
-		authSwitchCamera = AUTO_SWITCH_CAMERA.get();
+		autoSwitchCamera = AUTO_SWITCH_CAMERA.get();
 		lockOnQuickShift = LOCK_ON_QUICK_SHIFT.get();
 		
 		keyConflictResolveScope = KEY_CONFLICT_RESOLVE_SCOPE.get();
@@ -317,11 +320,14 @@ public class ClientConfig {
 		if (cameraZoom != CAMERA_ZOOM.get())
 			saveWorks.add(() -> CAMERA_ZOOM.set(cameraZoom));
 		
+		if (lockOnRange != LOCK_ON_RANGE.get())
+			saveWorks.add(() -> LOCK_ON_RANGE.set(lockOnRange));
+		
 		if (longPressCounter != LONG_PRESS_COUNTER.get())
 			saveWorks.add(() -> LONG_PRESS_COUNTER.set(longPressCounter));
 		
-		if (authSwitchCamera != AUTO_SWITCH_CAMERA.get())
-			saveWorks.add(() -> AUTO_SWITCH_CAMERA.set(authSwitchCamera));
+		if (autoSwitchCamera != AUTO_SWITCH_CAMERA.get())
+			saveWorks.add(() -> AUTO_SWITCH_CAMERA.set(autoSwitchCamera));
 		
 		if (lockOnQuickShift != LOCK_ON_QUICK_SHIFT.get())
 			saveWorks.add(() -> LOCK_ON_QUICK_SHIFT.set(lockOnQuickShift));
@@ -427,8 +433,9 @@ public class ClientConfig {
 		if (cameraHorizontalLocation != CAMERA_HORIZONTAL_LOCATION.get()) CAMERA_HORIZONTAL_LOCATION.set(cameraHorizontalLocation);
 		if (cameraVerticalLocation != CAMERA_VERTICAL_LOCATION.get()) CAMERA_VERTICAL_LOCATION.set(cameraVerticalLocation);
 		if (cameraZoom != CAMERA_ZOOM.get()) CAMERA_ZOOM.set(cameraZoom);
+		if (lockOnRange != LOCK_ON_RANGE.get()) LOCK_ON_RANGE.set(lockOnRange);
 		if (longPressCounter != LONG_PRESS_COUNTER.get()) LONG_PRESS_COUNTER.set(longPressCounter);
-		if (authSwitchCamera != AUTO_SWITCH_CAMERA.get()) AUTO_SWITCH_CAMERA.set(authSwitchCamera);
+		if (autoSwitchCamera != AUTO_SWITCH_CAMERA.get()) AUTO_SWITCH_CAMERA.set(autoSwitchCamera);
 		if (lockOnQuickShift != LOCK_ON_QUICK_SHIFT.get()) LOCK_ON_QUICK_SHIFT.set(lockOnQuickShift);
 		if (keyConflictResolveScope != KEY_CONFLICT_RESOLVE_SCOPE.get()) KEY_CONFLICT_RESOLVE_SCOPE.set(keyConflictResolveScope);
 		if (preferenceWork != PREFERENCE_WORK.get()) PREFERENCE_WORK.set(preferenceWork);
@@ -668,8 +675,8 @@ public class ClientConfig {
 			this.checker = checker;
 		}
 		
-		public boolean shouldSwitch(EpicFightCameraAPI renderEngine) {
-			return this.hasTPSTransition ? this.checker.test(renderEngine) : false;
+		public boolean shouldSwitch(EpicFightCameraAPI cameraApi) {
+			return this.hasTPSTransition ? this.checker.test(cameraApi) : false;
 		}
 		
 		public boolean hasTPSTransition() {

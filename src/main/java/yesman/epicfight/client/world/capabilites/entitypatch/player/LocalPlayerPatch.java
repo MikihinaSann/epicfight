@@ -164,7 +164,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		if (this.playerMode != PlayerMode.VANILLA) {
 			ClientEngine.getInstance().renderEngine.downSlideSkillUI();
 			
-			if (ClientConfig.authSwitchCamera) {
+			if (ClientConfig.autoSwitchCamera) {
 				this.minecraft.options.setCameraType(CameraType.FIRST_PERSON);
 			}
 			
@@ -181,7 +181,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		if (this.playerMode != PlayerMode.EPICFIGHT) {
 			ClientEngine.getInstance().renderEngine.upSlideSkillUI();
 			
-			if (ClientConfig.authSwitchCamera) {
+			if (ClientConfig.autoSwitchCamera) {
 				this.minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 			}
 			

@@ -66,10 +66,10 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
 		
 		Button cameraAutoSwitchButton =
 			Button.builder(
-				Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.authSwitchCamera ? "on" : "off"))),
+				Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.autoSwitchCamera ? "on" : "off"))),
 				button -> {
-					ClientConfig.authSwitchCamera = !ClientConfig.authSwitchCamera;
-					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.authSwitchCamera ? "on" : "off"))));
+					ClientConfig.autoSwitchCamera = !ClientConfig.autoSwitchCamera;
+					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.camera_auto_switch." + (ClientConfig.autoSwitchCamera ? "on" : "off"))));
 				}
 			)
 			.pos(this.width / 2 + 5, this.height / 4 + buttonHeight)

@@ -198,13 +198,10 @@
 	"gui.epicfight.key_conflict_resolve_scope.interaction": "Key Conflict Resolve: Interaction",
 	"gui.epicfight.key_conflict_resolve_scope.item_use": "Key Conflict Resolve: Item Use",
 	"gui.epicfight.key_conflict_resolve_scope.interaction_and_itemuse": "Key Conflict Resolve: Interaction and Item Use",
-<<<<<<< Upstream, based on 1.20.1-base
     "gui.epicfight.camera_perspective_toggle_mode.vanilla": "Perspective Toggle: Vanilla",
     "gui.epicfight.camera_perspective_toggle_mode.skip_third_person_front": "Perspective Toggle: Skip Front View",
-=======
 	"gui.epicfight.lock_on_quick_shift.on": "Lock-on Quick Shift: ON",
 	"gui.epicfight.lock_on_quick_shift.off": "Lock-on Quick Shift: OFF",
->>>>>>> 8c1749d 20.14.0.1 - patreon release
 	"gui.epicfight.blood_effects.on": "Blood Effects: ON",
 	"gui.epicfight.blood_effects.off": "Blood Effects: OFF",
 	"gui.epicfight.tps_perspective.always_back": "TPS Perspective: Always back",
