@@ -4,6 +4,7 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -15,7 +16,9 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPAbsorption;
@@ -28,7 +31,7 @@ import yesman.epicfight.world.entity.ai.attribute.EpicFightAttributeSupplier;
 @Mixin(value = LivingEntity.class)
 public abstract class MixinLivingEntity {
 	@Shadow
-	protected void hurtArmor(DamageSource p_21122_, float p_21123_) {}
+	protected abstract void hurtArmor(DamageSource damageSource, float amount);
 	
 	@Inject(at = @At(value = "TAIL"), method = "<clinit>")
 	private static void epicfight_staticInitialize(CallbackInfo callbackInfo) {
@@ -126,5 +129,21 @@ public abstract class MixinLivingEntity {
 		if (!self.level().isClientSide()) {
 			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(new SPAbsorption(self.getId(), absorptionAmount), self);
 		}
+	}
+	
+	@Redirect(
+		at = @At(
+			value = "INVOKE",
+			target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
+		),
+		method = "jumpFromGround()V"
+	)
+	private float epicfight$jumpFromGround(LivingEntity livingEntity) {
+		if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+            EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+            return cameraApi.isTPSMode() ? cameraApi.getCameraYRot() : livingEntity.getYRot();
+        }
+
+        return livingEntity.getYRot();
 	}
 }
