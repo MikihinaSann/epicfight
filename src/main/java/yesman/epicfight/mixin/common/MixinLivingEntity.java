@@ -1,12 +1,5 @@
 package yesman.epicfight.mixin.common;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -15,7 +8,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.neoevent.EntityRemoveEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.network.EpicFightNetworkManager;
@@ -29,8 +31,8 @@ import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 @Mixin(value = LivingEntity.class)
 public abstract class MixinLivingEntity {
 	@Shadow
-	protected void hurtArmor(DamageSource p_21122_, float p_21123_) {}
-	
+	protected abstract void hurtArmor(DamageSource damageSource, float amount);
+
 	@Inject(at = @At(value = "TAIL"), method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V")
 	private void epicfight$constructor(EntityType<?> entityType, Level level, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
@@ -129,4 +131,20 @@ public abstract class MixinLivingEntity {
 			entitypatch.onRemoved(new EntityRemoveEvent(Entity.RemovalReason.KILLED, self));
 		});
 	}
+
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
+        ),
+        method = "jumpFromGround()V"
+    )
+    private float epicfight$jumpFromGround(LivingEntity livingEntity) {
+        if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+            EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+            return cameraApi.isTPSMode() ? cameraApi.getCameraYRot() : livingEntity.getYRot();
+        }
+
+        return livingEntity.getYRot();
+    }
 }

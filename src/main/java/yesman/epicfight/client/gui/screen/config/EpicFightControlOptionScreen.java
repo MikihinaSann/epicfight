@@ -93,22 +93,6 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
             .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.key_conflict_resolve_scope.tooltip"))))
             .build();
 
-        Button enableLockOnQuickShiftButton =
-            Button.builder(
-                Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))),
-                button -> {
-                    ClientConfig.lockOnQuickShift = !ClientConfig.lockOnQuickShift;
-                    button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))));
-                }
-            )
-            .pos(this.width / 2 + 5, this.height / 4 + buttonHeight)
-            .size(160, 20)
-            .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift.tooltip"))))
-            .build();
-
-        this.optionsList.addSmall(resolveKeyConflictsButton, enableLockOnQuickShiftButton);
-        buttonHeight += 24;
-
         Button cameraPerspectiveToggleMode =
             Button.builder(
                 Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode." + ClientConfig.cameraPerspectiveToggleMode.getSerializedName())),
@@ -122,8 +106,57 @@ public class EpicFightControlOptionScreen extends EpicFightOptionSubScreen {
             .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.camera_perspective_toggle_mode.tooltip"))))
             .build();
 
-        this.optionsList.addSmall(cameraPerspectiveToggleMode, null);
+        this.optionsList.addSmall(resolveKeyConflictsButton, cameraPerspectiveToggleMode);
         buttonHeight += 24;
+
+        Button enableLockOnQuickShiftButton =
+            Button.builder(
+                    Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))),
+                    button -> {
+                        ClientConfig.lockOnQuickShift = !ClientConfig.lockOnQuickShift;
+                        button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift." + (ClientConfig.lockOnQuickShift ? "on" : "off"))));
+                    }
+                )
+                .pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
+                .size(160, 20)
+                .tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.lock_on_quick_shift.tooltip"))))
+                .build();
+
+        Button lockOnRangeButton =
+            new RewindableButton(
+                this.width / 2 + 5,
+                this.height / 4 + buttonHeight,
+                160,
+                20,
+                Component.translatable(
+                    EpicFightMod.format("gui.%s.lock_on_range"),
+                    ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.lockOnRange)
+                ),
+                button -> {
+                    ClientConfig.lockOnRange = MathUtils.wrapClamp(++ClientConfig.lockOnRange, 5, 25);
+
+                    button.setMessage(
+                        Component.translatable(
+                            EpicFightMod.format("gui.%s.lock_on_range"),
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.lockOnRange)
+                        )
+                    );
+                },
+                button -> {
+                    ClientConfig.lockOnRange = MathUtils.wrapClamp(--ClientConfig.lockOnRange, 5, 25);
+
+                    button.setMessage(
+                        Component.translatable(
+                            EpicFightMod.format("gui.%s.lock_on_range"),
+                            ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(ClientConfig.lockOnRange)
+                        )
+                    );
+                }
+            );
+
+        lockOnRangeButton.setTooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.lock_on_range.tooltip"))));
+
+        this.optionsList.addSmall(enableLockOnQuickShiftButton, lockOnRangeButton);
 
 		Button itemPreferenceButton =
 			Button.builder(

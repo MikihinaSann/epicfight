@@ -537,12 +537,14 @@ public final class EpicFightCameraAPI {
         // Tick the target entity
         if (this.focusingEntity != null) {
             if (this.lockingOnTarget && !this.focusingEntity.isAlive()) {
+                boolean releaseLockOn = !ClientConfig.lockOnQuickShift || !this.setNextLockOnTarget(0);
+
                 // Searches a new lock-on target when current target is dead
-                if (!this.setNextLockOnTarget(0)) {
+                if (releaseLockOn) {
                     this.setLockOn(false);
                 }
             } else {
-                double distance = localPlayer.distanceToSqr(this.focusingEntity);
+                double distance = cameraPos.distanceToSqr(this.focusingEntity.position());
                 double maxLockOnDistance = focusingRange * focusingRange;
 
                 if (
