@@ -25,6 +25,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.api.data.reloader.SkillManager;
+import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPChangeSkill;
@@ -45,8 +46,8 @@ public class SkillEditScreen extends Screen {
 	
 	private static final int MAX_SKILL_OPTIONS_ROWS = 6;
 	private static final int MAX_SLOT_ROWS = 9;
-	private static final int STRIDE = 18;
-	
+	private static final int STRIDE = SlotButton.SIZE;
+
 	private final Player player;
 	private final CapabilitySkill skills;
 	private final Map<SkillSlot, SlotButton> slotButtons = new LinkedHashMap<> ();
@@ -136,7 +137,7 @@ public class SkillEditScreen extends Screen {
 									.setActive(this.skills.getSkillContainer(skill) == null)
 								);
 								
-								widgetHeight.add(26);
+								widgetHeight.add(EquipSkillButton.SPACING);
 							});
 							
 							for (Button shownButton : this.equipSkillButtons) {
@@ -234,7 +235,7 @@ public class SkillEditScreen extends Screen {
 						--this.start;
 						
 						for (Button button : this.equipSkillButtons) {
-							button.setY(button.getY() + 26);
+							button.setY(button.getY() + EquipSkillButton.SPACING);
 						}
 						
 						return true;
@@ -244,7 +245,7 @@ public class SkillEditScreen extends Screen {
 						++this.start;
 						
 						for (Button button : this.equipSkillButtons) {
-							button.setY(button.getY() - 26);
+							button.setY(button.getY() - EquipSkillButton.SPACING);
 						}
 						
 						return true;
@@ -296,11 +297,12 @@ public class SkillEditScreen extends Screen {
 	
 	@OnlyIn(Dist.CLIENT)
 	class SlotButton extends Button {
+        private static final int SIZE = 18;
 		private final SkillContainer skillContainer;
 		private final Component slotExplanation;
 		
 		public SlotButton(int x, int y, SkillContainer skillContainer, OnPress pressedAction, Component tooltipMessage) {
-			super(x, y, 18, 18, Component.empty(), pressedAction, Button.DEFAULT_NARRATION);
+			super(x, y, SIZE, SIZE, Component.empty(), pressedAction, Button.DEFAULT_NARRATION);
 			
 			this.skillContainer = skillContainer;
 			this.slotExplanation = tooltipMessage;
@@ -309,7 +311,8 @@ public class SkillEditScreen extends Screen {
 		
 		@Override
 		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-			int y = ((this.isHovered || selectedSlotButton == this) && !this.skillContainer.onReplaceCooldown()) ? 35 : 17;
+            this.active = !this.skillContainer.onReplaceCooldown();
+			int y = ((this.isHoveredOrFocused() || selectedSlotButton == this) && !this.skillContainer.onReplaceCooldown()) ? 35 : 17;
 			guiGraphics.blit(SKILL_EDIT_UI, this.getX(), this.getY(), 237, y, this.width, this.height);
 			
 			if (!this.skillContainer.isEmpty()) {
@@ -325,18 +328,42 @@ public class SkillEditScreen extends Screen {
 				float lerp = Mth.clampedLerp(0.0F, 16.0F, 1.0F - (float)this.skillContainer.getReplaceCooldown() / maxCooldown);
 				guiGraphics.fill(this.getX() + 1, this.getY() + 1 + (int)lerp, this.getX() + 17, this.getY() + 17, 0x78000000);
 				
-				if (this.isHovered) {
+				if (this.isHoveredOrFocused()) {
 					this.setTooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.container_on_cooldown"), this.skillContainer.getReplaceCooldown() / 20)));
 				}
 			} else {
 				this.setTooltip(Tooltip.create(this.slotExplanation));
 			}
 		}
-		
-		@Override
-		protected boolean clicked(double mouseX, double mouseY) {
-			return super.clicked(mouseX, mouseY) && !this.skillContainer.onReplaceCooldown();
-		}
+
+        @Override
+        public void setFocused(boolean focused) {
+            super.setFocused(focused);
+
+            // Supports key arrow navigation
+            maybeScroll();
+        }
+
+        private void maybeScroll() {
+            if (SkillEditScreen.this.maxScroll == 0) {
+                return;
+            }
+            final int scroll = SkillEditScreen.this.scroll;
+
+            final int index = slotButtons.values().stream().toList().indexOf(this);
+            final int relativeIndex = index - scroll;
+
+            final boolean needsScrollDown = relativeIndex >= (MAX_SLOT_ROWS - 1);
+            final boolean needsScrollTop = relativeIndex == 0;
+
+            if (needsScrollDown || needsScrollTop) {
+                if (needsScrollDown) {
+                    scrollDown();
+                } else {
+                    scrollUp();
+                }
+            }
+        }
 	}
 	
 	@OnlyIn(Dist.CLIENT)
@@ -349,7 +376,7 @@ public class SkillEditScreen extends Screen {
 		}
 		
 		@Override
-		protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+		protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 			if (this.up && scroll != 0) guiGraphics.blit(SCROLL_ARROW_UP, this.getX(), this.getY(), this.width, this.height, 0, 0, 16, 16, 16, 16);
 			else if (!this.up && scroll != maxScroll) guiGraphics.blit(SCROLL_ARROW_DOWN, this.getX(), this.getY(), this.width, this.height, 0, 0, 16, 16, 16, 16);
 		}
@@ -361,7 +388,9 @@ public class SkillEditScreen extends Screen {
 	}
 	
 	@OnlyIn(Dist.CLIENT)
-	class EquipSkillButton extends Button {
+	public class EquipSkillButton extends Button {
+        private static final int SPACING = 26;
+
 		private final Skill skill;
 
 		public EquipSkillButton(int x, int y, int width, int height, Skill skill, Component title, OnPress pressedAction) {
@@ -372,15 +401,15 @@ public class SkillEditScreen extends Screen {
 		@Override
 		public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
 			this.isHovered = mouseX >= this.getX() && mouseY >= this.getY() && mouseX < this.getX() + this.width && mouseY < this.getY() + this.height;
-			int texY = (this.isHovered || !this.active) ? 224 : 200;
+			int texY = (this.isHoveredOrFocused() || !this.active) ? 224 : 200;
 			guiGraphics.blit(SKILL_EDIT_UI, this.getX(), this.getY(), 0, texY, this.width, this.height);
 			
 			RenderSystem.enableBlend();
 			guiGraphics.blit(this.skill.getSkillTexture(), this.getX() + 5, this.getY() + 4, 16, 16, 0, 0, 128, 128, 128, 128);
-			guiGraphics.drawString(font, this.getMessage(), this.getX() + 26, this.getY() + 2, -1, false);
+			guiGraphics.drawString(font, this.getMessage(), this.getX() + SPACING, this.getY() + 2, -1, false);
 			
 			if (!this.active) {
-				guiGraphics.drawString(font, Component.literal(skills.getSkillContainer(this.skill).getSlot().toString().toLowerCase(Locale.ROOT)), this.getX()+26, this.getY() + 12, 16736352, false);
+				guiGraphics.drawString(font, Component.literal(skills.getSkillContainer(this.skill).getSlot().toString().toLowerCase(Locale.ROOT)), this.getX() + EquipSkillButton.SPACING, this.getY() + 12, 16736352, false);
 			}
 		}
 		
@@ -390,14 +419,47 @@ public class SkillEditScreen extends Screen {
 				boolean flag = this.clickedNoCountActive(x, y);
 				
 				if (flag) {
-					this.playDownSound(Minecraft.getInstance().getSoundManager());
-					minecraft.setScreen(new SkillBookScreen(player, this.skill, null, SkillEditScreen.this));
+					openSkillInfoScreen();
 					return true;
 				}
 			}
 			
 			return super.mouseClicked(x, y, pressType);
 		}
+
+        public void openSkillInfoScreen() {
+            this.playDownSound(Minecraft.getInstance().getSoundManager());
+            minecraft.setScreen(new SkillBookScreen(player, this.skill, null, SkillEditScreen.this));
+        }
+
+        @Override
+        public void setFocused(boolean focused) {
+            super.setFocused(focused);
+
+            // Supports key arrow navigation
+            maybeScroll();
+        }
+
+        private void maybeScroll() {
+            final List<EquipSkillButton> buttons = SkillEditScreen.this.equipSkillButtons;
+            final int start = SkillEditScreen.this.start;
+            final int maxRows = MAX_SKILL_OPTIONS_ROWS;
+
+            final int i = buttons.indexOf(this);
+            final boolean isOutsideVisibleRowsAtBottom = i >= start + maxRows;
+            final boolean isOutsideVisibleRowsAtTop = i < start;
+
+            if (isOutsideVisibleRowsAtBottom || isOutsideVisibleRowsAtTop) {
+                int nextStart = (isOutsideVisibleRowsAtBottom) ? Math.max(0, i - maxRows + 1) : i;
+                int diff = (start - nextStart);
+
+                for (Button button : buttons) {
+                    button.setY(button.getY() + EquipSkillButton.SPACING * diff);
+                }
+
+                SkillEditScreen.this.start = nextStart;
+            }
+        }
 		
 		protected boolean clickedNoCountActive(double x, double y) {
 			return this.visible && x >= (double) this.getX() && y >= (double) this.getY() && x < (double) (this.getX() + this.width) && y < (double) (this.getY() + this.height);
