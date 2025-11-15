@@ -64,10 +64,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	private final Minecraft minecraft;
     private final FirstPersonLayer firstPersonLayer = new FirstPersonLayer();
 
-	private LivingEntity rayTarget;
-	private boolean targetLockedOn;
 	private int chargingTicksO;
-	private int fpvLerpTick;
 	private AnimationSubFileReader.PovSettings povSettings;
 	
 	public LocalPlayerPatch(LocalPlayer entity) {
@@ -471,7 +468,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 
 	@OnlyIn(Dist.CLIENT)
 	public class FirstPersonLayer extends Layer {
-		private TransformSheet linkCameraTransform = new TransformSheet(List.of(new Keyframe(0.0F, JointTransform.empty()), new Keyframe(Float.MAX_VALUE, JointTransform.empty())));
+		private final TransformSheet linkCameraTransform = new TransformSheet(List.of(new Keyframe(0.0F, JointTransform.empty()), new Keyframe(Float.MAX_VALUE, JointTransform.empty())));
 		
 		public FirstPersonLayer() {
 			super(null);

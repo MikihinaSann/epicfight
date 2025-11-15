@@ -111,4 +111,17 @@ public abstract class MixinEntity {
 			entitypatch.readData(compoundTag);
 		});
 	}
+
+    /**
+     * Useful mixin to debug y rotation, especially for action animations
+     @Inject(at = @At(value = "HEAD"), method = "setYRot()V")
+     private void epicfight$setYRot(float pYRot, CallbackInfo callbackInfo) {
+         if (Float.isFinite(pYRot)) {
+             if (!Minecraft.getInstance().isPaused()) {
+                 System.out.println("set YRot " + pYRot + ((Entity)(Object)this).level().isClientSide());
+                 new Exception().printStackTrace();
+             }
+         }
+     }
+     **/
 }
