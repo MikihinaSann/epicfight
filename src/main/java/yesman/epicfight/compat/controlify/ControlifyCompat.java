@@ -76,7 +76,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     public void onControlifyPreInit(PreInitContext context) {
         final ControlifyBindApi registrar = ControlifyBindApi.get();
         registerCustomRadialIcons();
-        registrar.registerBindContext(COMBAT_MODE_CONTEXT);
+        BindContexts.EpicFight.register(registrar);
         registerInputBindings(registrar);
         registerEvents();
         registerGuides(context.guideRegistries().inGame(), context.guideRegistries().container());
@@ -99,15 +99,34 @@ public class ControlifyCompat implements ControlifyEntrypoint {
     private static InputBindingSupplier lockOnShiftRight;
     private static InputBindingSupplier lockOnShiftFreely;
 
-    private static final BindContext COMBAT_MODE_CONTEXT = new BindContext(
-            EpicFightMod.rl("epicfight_combat"),
-            mc -> {
-                final boolean isInGame = mc.screen == null && mc.level != null && mc.player != null;
-                return isInGame && ClientEngine.getInstance().isEpicFightMode();
+    private static final class BindContexts {
+        private BindContexts() {
+        }
+
+        private static final class EpicFight {
+            private EpicFight() {
             }
-    );
-    private static final BindContext IN_GAME_CONTEXT = BindContext.IN_GAME;
-    private static final BindContext ANY_SCREEN_CONTEXT = BindContext.ANY_SCREEN;
+
+            private static final BindContext COMBAT_MODE = new BindContext(
+                    EpicFightMod.rl("epicfight_combat"),
+                    mc -> {
+                        final boolean isInGame = isInGame(mc);
+                        return isInGame && ClientEngine.getInstance().isEpicFightMode();
+                    }
+            );
+
+            public static void register(@NotNull ControlifyBindApi registrar) {
+                registrar.registerBindContext(COMBAT_MODE);
+            }
+        }
+
+        private static final BindContext IN_GAME = BindContext.IN_GAME;
+        private static final BindContext ANY_SCREEN = BindContext.ANY_SCREEN;
+
+        private static boolean isInGame(@NotNull Minecraft mc) {
+            return mc.screen == null && mc.level != null && mc.player != null;
+        }
+    }
 
     private record TranslationKeys(@NotNull String name, @NotNull String description) {
         private @NotNull Component getNameComponent() {
@@ -133,9 +152,12 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                 case DODGE -> new TranslationKeys("key.epicfight.dodge", "key.epicfight.dodge.description");
                 case GUARD -> new TranslationKeys("key.epicfight.guard", "key.epicfight.guard.description");
                 case LOCK_ON -> new TranslationKeys("key.epicfight.lock_on", "key.epicfight.lock_on.description");
-                case LOCK_ON_SHIFT_LEFT -> new TranslationKeys("key.epicfight.lock_on_shift_left", "key.epicfight.lock_on_shift_left.description");
-                case LOCK_ON_SHIFT_RIGHT -> new TranslationKeys("key.epicfight.lock_on_shift_right", "key.epicfight.lock_on_shift_right.description");
-                case LOCK_ON_SHIFT_FREELY -> new TranslationKeys("key.epicfight.lock_on_shift_freely", "key.epicfight.lock_on_shift_freely.description");
+                case LOCK_ON_SHIFT_LEFT ->
+                        new TranslationKeys("key.epicfight.lock_on_shift_left", "key.epicfight.lock_on_shift_left.description");
+                case LOCK_ON_SHIFT_RIGHT ->
+                        new TranslationKeys("key.epicfight.lock_on_shift_right", "key.epicfight.lock_on_shift_right.description");
+                case LOCK_ON_SHIFT_FREELY ->
+                        new TranslationKeys("key.epicfight.lock_on_shift_freely", "key.epicfight.lock_on_shift_freely.description");
                 case SWITCH_MODE ->
                         new TranslationKeys("key.epicfight.switch_mode", "key.epicfight.switch_mode.description");
                 case WEAPON_INNATE_SKILL ->
@@ -244,76 +266,76 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             case ATTACK -> attack = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case MOBILITY -> mobility = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case GUARD -> guard = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case DODGE -> dodge = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case LOCK_ON -> lockOn = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case LOCK_ON_SHIFT_LEFT -> lockOnShiftLeft = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case LOCK_ON_SHIFT_RIGHT -> lockOnShiftRight = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case LOCK_ON_SHIFT_FREELY -> lockOnShiftFreely = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case SWITCH_MODE -> switchMode = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(systemCategory)
-                            .allowedContexts(IN_GAME_CONTEXT)
+                            .allowedContexts(BindContexts.IN_GAME)
                             .radialCandidate(EpicFightRadialIcons.UCHIGATANA.getId())
             );
             case WEAPON_INNATE_SKILL -> weaponInnateSkill = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(combatCategory)
-                            .allowedContexts(COMBAT_MODE_CONTEXT)
+                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
             );
             case WEAPON_INNATE_SKILL_TOOLTIP -> weaponInnateSkillTooltip = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
-                            .allowedContexts(ANY_SCREEN_CONTEXT)
+                            .allowedContexts(BindContexts.ANY_SCREEN)
             );
             case OPEN_SKILL_SCREEN -> openSkillEditorScreen = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
-                            .allowedContexts(IN_GAME_CONTEXT)
+                            .allowedContexts(BindContexts.IN_GAME)
                             .radialCandidate(EpicFightRadialIcons.SKILL_BOOK.getId())
             );
             case OPEN_CONFIG_SCREEN -> openConfigScreen = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
-                            .allowedContexts(IN_GAME_CONTEXT)
+                            .allowedContexts(BindContexts.IN_GAME)
                             .radialCandidate(RadialIcons.getItem(Items.REDSTONE))
             );
             case SWITCH_VANILLA_MODEL_DEBUGGING -> switchVanillaModeDebugging = registrar.registerBinding(
                     builder ->
                             applyCommonBindingProperties(action, builder)
                                     .category(systemCategory)
-                                    .allowedContexts(IN_GAME_CONTEXT)
+                                    .allowedContexts(BindContexts.IN_GAME)
             );
         };
     }
