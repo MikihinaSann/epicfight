@@ -107,9 +107,17 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                         return isInGame && ClientEngine.getInstance().isBattleMode();
                     }
             );
+            private static final BindContext LOCK_ON = new BindContext(
+                    EpicFightMod.rl("lock_on"),
+                    mc -> {
+                        final boolean isInGame = isInGame(mc);
+                        return isInGame && EpicFightCameraAPI.getInstance().isLockingOnTarget();
+                    }
+            );
 
             public static void register(@NotNull ControlifyBindApi registrar) {
                 registrar.registerBindContext(COMBAT_MODE);
+                registrar.registerBindContext(LOCK_ON);
             }
         }
 
@@ -284,17 +292,17 @@ public class ControlifyCompat implements ControlifyEntrypoint {
             case LOCK_ON_SHIFT_LEFT -> lockOnShiftLeft = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
+                            .allowedContexts(BindContexts.EpicFight.LOCK_ON)
             );
             case LOCK_ON_SHIFT_RIGHT -> lockOnShiftRight = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
+                            .allowedContexts(BindContexts.EpicFight.LOCK_ON)
             );
             case LOCK_ON_SHIFT_FREELY -> lockOnShiftFreely = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(cameraCategory)
-                            .allowedContexts(BindContexts.EpicFight.COMBAT_MODE)
+                            .allowedContexts(BindContexts.EpicFight.LOCK_ON)
             );
             case SWITCH_MODE -> switchMode = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)
