@@ -11,12 +11,10 @@ import dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint;
 import dev.isxander.controlify.api.entrypoint.InitContext;
 import dev.isxander.controlify.api.entrypoint.PreInitContext;
 import dev.isxander.controlify.api.event.ControlifyEvents;
-import dev.isxander.controlify.api.guide.*;
 import dev.isxander.controlify.bindings.BindContext;
 import dev.isxander.controlify.bindings.ControlifyBindings;
 import dev.isxander.controlify.bindings.RadialIcons;
 import dev.isxander.controlify.bindings.input.Input;
-import dev.isxander.controlify.bindings.input.InputType;
 import dev.isxander.controlify.controller.ControllerEntity;
 import dev.isxander.controlify.screenop.ScreenProcessor;
 import dev.isxander.controlify.screenop.ScreenProcessorProvider;
@@ -42,7 +40,6 @@ import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 
 import java.util.Objects;
@@ -108,7 +105,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                     }
             );
             private static final BindContext LOCK_ON = new BindContext(
-                    EpicFightMod.rl("lock_on"),
+                    EpicFightMod.rl("epicfight_lock_on"),
                     mc -> {
                         final boolean isInGame = isInGame(mc);
                         return isInGame && EpicFightCameraAPI.getInstance().isLockingOnTarget();
