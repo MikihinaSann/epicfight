@@ -115,7 +115,7 @@ public class ControlifyCompat implements ControlifyEntrypoint {
                     }
             );
             private static final BindContext LOCK_ON = new BindContext(
-                    EpicFightMod.rl("lock_on"),
+                    EpicFightMod.rl("epicfight_lock_on"),
                     mc -> {
                         final boolean isInGame = isInGame(mc);
                         return isInGame && EpicFightCameraAPI.getInstance().isLockingOnTarget();
