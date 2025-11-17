@@ -275,15 +275,14 @@ public final class EpicFightCameraAPI {
         // Excludes riding entities
         Optional<Pair<LivingEntity, Float>> next = entitiesInLevel.stream()
             .filter(entity ->
-                entity instanceof LivingEntity &&
-                    !entity.is(this.minecraft.player) && !entity.is(this.focusingEntity) &&
-                    entity.isAlive() &&
-                    MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
-                    (
-                        this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
-                            entity.hasIndirectPassenger(this.minecraft.player)    // Excludes riding entities
-                    ) &&
-                    entity.distanceToSqr(this.minecraft.player) < lockOnRange * lockOnRange
+                this.predicateFocusableEntity(entity) &&
+                !entity.is(this.focusingEntity) &&
+                MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
+                (
+                    this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
+                        entity.hasIndirectPassenger(this.minecraft.player)    // Excludes riding entities
+                ) &&
+                entity.distanceToSqr(this.minecraft.player) < lockOnRange * lockOnRange
             )
             .map(entity -> Pair.of((LivingEntity) entity, MathUtils.worldToScreenCoord(compactProjection, this.minecraft.gameRenderer.getMainCamera(), entity.getBoundingBox().getCenter()).x))
             .filter(pair -> pair.getSecond() >= -1.0F && pair.getSecond() <= 1.0F && (direction == 0 || MathUtils.getSign(pair.getSecond()) == MathUtils.getSign(direction)))
@@ -299,7 +298,6 @@ public final class EpicFightCameraAPI {
 
     /**
      * Requires *modid* that is loaded by Forge so that we can prevent addons from having a fragmentized camera setup function
-     * @param listener
      */
     public void addCameraSetupListener(String modid, CameraSetupListener listener) {
         if (this.cameraSetupListeners.containsKey(modid)) {
@@ -473,15 +471,7 @@ public final class EpicFightCameraAPI {
         int focusingRange = this.getFocusingEntityPickRange();
         double entityPickRange = Math.min(this.crosshairHitResult.getLocation().distanceToSqr(cameraPos), focusingRange * focusingRange);
         AABB aabb = localPlayer.getBoundingBox().move(cameraPos.subtract(localPlayer.getEyePosition(1.0F))).expandTowards(lookVec.scale(entityPickRange)).inflate(1.0D, 1.0D, 1.0D);
-
-        EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-            localPlayer,
-            cameraPos,
-            rayEed,
-            aabb,
-            entity -> !entity.isSpectator() && entity.isPickable() && !entity.is(localPlayer),
-            entityPickRange
-        );
+        EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(localPlayer, cameraPos, rayEed, aabb, this::predicateFocusableEntity, entityPickRange);
 
         if (entityHitResult != null) {
             this.crosshairHitResult = entityHitResult;
@@ -793,6 +783,10 @@ public final class EpicFightCameraAPI {
         }
 
         return false;
+    }
+
+    private boolean predicateFocusableEntity(Entity entity) {
+        return entity instanceof LivingEntity livingEntity && !entity.isSpectator() && entity.isPickable() && entity.isAlive() && !entity.is(this.minecraft.player) && this.minecraft.player.canAttack(livingEntity);
     }
 
     /**
