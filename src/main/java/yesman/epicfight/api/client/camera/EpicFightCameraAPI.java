@@ -271,9 +271,8 @@ public final class EpicFightCameraAPI {
 		// Select the nearest target on the screen from the given direction
 		Optional<Pair<LivingEntity, Float>> next = entitiesInLevel.stream()
 			.filter(entity ->
-				entity instanceof LivingEntity &&
-				!entity.is(this.minecraft.player) && !entity.is(this.focusingEntity) &&
-				entity.isAlive() &&
+				this.predicateFocusableEntity(entity) &&
+				!entity.is(this.focusingEntity) &&
 				MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
 				(
 					this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
@@ -283,9 +282,7 @@ public final class EpicFightCameraAPI {
 			)
 			.map(entity -> Pair.of((LivingEntity)entity, MathUtils.worldToScreenCoord(compactProjection, this.minecraft.gameRenderer.getMainCamera(), entity.getBoundingBox().getCenter()).x))
 			.filter(pair -> pair.getSecond() >= -1.0F && pair.getSecond() <= 1.0F && (direction == 0 || MathUtils.getSign(pair.getSecond()) == MathUtils.getSign(direction)))
-			.sorted((p1, p2) -> Float.compare(Math.abs(p1.getSecond()), Math.abs(p2.getSecond())))
-			.findFirst()
-			;
+			.min((p1, p2) -> Float.compare(Math.abs(p1.getSecond()), Math.abs(p2.getSecond())));
 		
 		next.ifPresent(pair -> {
 			this.focusingEntity = pair.getFirst();
@@ -477,16 +474,7 @@ public final class EpicFightCameraAPI {
 		double entityPickRange = Math.min(this.crosshairHitResult.getLocation().distanceToSqr(cameraPos), focusingRange * focusingRange);
 		AABB aabb = localPlayer.getBoundingBox().move(cameraPos.subtract(localPlayer.getEyePosition(1.0F))).expandTowards(lookVec.scale(entityPickRange)).inflate(1.0D, 1.0D, 1.0D);
         
-		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(
-			localPlayer,
-			cameraPos,
-			rayEed,
-			aabb,
-			entity -> {
-				return !entity.isSpectator() && entity.isPickable() && !entity.is(localPlayer);
-			},
-			entityPickRange
-		);
+		EntityHitResult entityHitResult = ProjectileUtil.getEntityHitResult(localPlayer, cameraPos, rayEed, aabb, this::predicateFocusableEntity, entityPickRange);
 		
 		if (entityHitResult != null) {
 			this.crosshairHitResult = entityHitResult;
@@ -801,6 +789,10 @@ public final class EpicFightCameraAPI {
 		
 		return false;
 	}
+	
+	private boolean predicateFocusableEntity(Entity entity) {
+        return entity instanceof LivingEntity livingEntity && !entity.isSpectator() && entity.isPickable() && entity.isAlive() && !entity.is(this.minecraft.player) && this.minecraft.player.canAttack(livingEntity);
+    }
 	
 	/**
 	 * A listener interface to control camera transform
