@@ -292,7 +292,7 @@ public final class EpicFightCameraAPI {
 	}
 	
 	/**
-	 * Requires *modid* that is loaded by Forge so that we can prevent addons from having a fragmentized camera setup function
+	 * Requires *mod id* that is loaded by Forge so that we can prevent addons from having a fragmentized camera setup function
 	 * @param listener
 	 */
 	public void addCameraSetupListener(String modid, CameraSetupListener listener) {
@@ -331,41 +331,32 @@ public final class EpicFightCameraAPI {
 	 * Appearing outline means the player will do Epic Fight attack instead of vanilla swings to hit entities or break blocks
 	 */
 	public boolean shouldHighlightTarget(@NotNull Entity entity) {
-		if (!ClientConfig.enableTargetEntityGuide || this.minecraft.player == null) return false;
+		// Checks the giant rule for target entity outline: config option, in-game state, and focusing entity
+		if (!ClientConfig.enableTargetEntityGuide || this.minecraft.player == null || !entity.is(this.focusingEntity)) return false;
 		
-		if (entity.is(this.focusingEntity)) {
-			/**
-			 * When the outline is disabled by {@link EntityPatch#isOutlineVisible}
-			 */
-			if (!EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).map(entitypatch -> entitypatch.isOutlineVisible(this.minecraft.player)).orElse(false)) {
-				return false;
-			}
-			
-			// When lock-on is activated, always apply the outliner
-			if (this.lockingOnTarget) {
-				return true;
-			}
-			
-			if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
-				// For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
-				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-					BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
-					BlockState bs = this.minecraft.level.getBlockState(bp);
-					return !this.minecraft.player.getMainHandItem().getItem().canAttackBlock(bs, this.minecraft.player.level(), bp, this.minecraft.player) || !this.minecraft.player.getMainHandItem().isCorrectToolForDrops(bs);
-				}
-				
-				return true;
-			} else {
-				// if hit result is block, 
-				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-					return false;
-				}
-				
-				return true;
-			}
+		/// When the outline is disabled by {@link EntityPatch#isOutlineVisible}
+		if (!EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).map(entitypatch -> entitypatch.isOutlineVisible(this.minecraft.player)).orElse(false)) {
+			return false;
 		}
 		
-		return false;
+		// When lock-on is activated, always apply the outliner
+		if (this.lockingOnTarget) {
+			return true;
+		}
+		
+		if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
+			// For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
+			if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+				BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+				BlockState bs = this.minecraft.level.getBlockState(bp);
+				return !this.minecraft.player.getMainHandItem().getItem().canAttackBlock(bs, this.minecraft.player.level(), bp, this.minecraft.player) || !this.minecraft.player.getMainHandItem().isCorrectToolForDrops(bs);
+			}
+			
+			return true;
+		} else {
+			// if hit result is block, 
+			return !RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK);
+		}
 	}
 	
 	/**
@@ -671,19 +662,10 @@ public final class EpicFightCameraAPI {
 			return false;
 		}
 		
-		boolean skipped = false;
-		
-		// Add listener
+		// Check camera setup listeners
 		for (CameraSetupListener setupListener : this.cameraSetupListeners.values()) {
-			if (setupListener.setup(this)) {
-				skipped = true;
-				break;
-			}
-		}
-		
-		// Skip the camera setup when it's canceled
-		if (skipped) {
-			return true;
+			// Skip the post camera setup process when it's canceled
+			if (setupListener.setup(this, camera, partialTick)) return true;
 		}
 		
 		if (this.isTPSMode()) {
@@ -802,6 +784,6 @@ public final class EpicFightCameraAPI {
 		/**
 		 * return true to skip the camera trasform of Epic Fight
 		 */
-		boolean setup(EpicFightCameraAPI cameraApi);
+		boolean setup(EpicFightCameraAPI cameraApi, Camera camera, float partialTick);
 	}
 }
