@@ -1,7 +1,7 @@
 # Epic Fight in Minecraft 1.21.1 Changelog
 # Changelog on publishing websites and Discord will be parsed between version header ([x.x.x] - yyyy-mm-dd) and (For Devs) section
 
-## [Unreleased]
+## [21.14.1] - Unreleased
 
 ### Added
 
@@ -10,6 +10,15 @@
   [#2205](https://github.com/Epic-Fight/epicfight/issues/2205)
 - Improved arrow key navigation (`↑`, `↓`, `→`, `←`) in the skill editor screen, including proper scrolling support. [#2203](https://github.com/Epic-Fight/epicfight/issues/2203)
 - **[Controlify]** Added native controller support for the skill editor screen and disabled virtual mouse behavior.
+- An option that you can always activate the TPS perspective, which was only activated when aiming with ranged weapons.
+- An option screen where you can set up the camera position in TPS perspective
+- An auto-tracking functionality that aligns the player's look to the crosshair when aiming and striking entities.
+- A new keybind that moves camera freely while locking on any entity to search another target
+- A lock-on snapping feature that cycles lock-on entities in the screen by snapping mouse left or right
+- An auto-targeting functionality that searches a next target when the current lock-on entity is dead
+- An option to toggle lock-on snapping and auto target
+- An option to set the maximum distance that the player can focus entities
+- See the devlog [here](https://www.patreon.com/posts/tps-camera-and-141028682)
 
 ### Fixed
 
