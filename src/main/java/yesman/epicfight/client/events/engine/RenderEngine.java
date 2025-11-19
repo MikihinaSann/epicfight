@@ -441,9 +441,13 @@ public class RenderEngine {
 		return hitResult == null ? true : !hitType.equals(hitResult.getType());
 	}
 	
-	/** These methods will be removed in 20.13 **/
+	/** These methods will be removed in 1.21.1 **/
 	@Deprecated
-	public void correctCamera(ViewportEvent.ComputeCameraAngles event, float partialTicks) {}
+	public void correctCamera(ViewportEvent.ComputeCameraAngles event, float partialTicks) {
+		// Leave this method for shoulder surfing
+		event.getCamera().setRotation(1.0F, 1.0F);
+	}
+	
 	@Deprecated
 	public void setRangedWeaponThirdPerson(ViewportEvent.ComputeCameraAngles event, CameraType pov, double partialTicks) {}
 	
