@@ -140,6 +140,14 @@ public final class EpicFightCameraAPI {
 		}
 	}
 	
+	public float getCameraXRotO() {
+		return this.cameraXRotO;
+	}
+	
+	public float getCameraYRotO() {
+		return this.cameraYRotO;
+	}
+	
 	public float getCameraXRot() {
 		return this.cameraXRot;
 	}
