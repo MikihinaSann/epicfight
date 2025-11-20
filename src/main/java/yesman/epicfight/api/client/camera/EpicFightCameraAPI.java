@@ -844,13 +844,7 @@ public final class EpicFightCameraAPI {
      */
     @ApiStatus.Internal
     public float getYRotForHead(LocalPlayer localPlayer) {
-        /**
-         System.out.println(
-         ((this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot())
-         );
-         **/
-
-        return this.cameraYRot;//(this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot();
+        return (this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot();
     }
 
     private boolean predicateFocusableEntity(Entity entity) {
@@ -858,13 +852,11 @@ public final class EpicFightCameraAPI {
     }
 
     private boolean predicateCouplingPlayer() {
-        /**
-         * We do assume playerpatch is never null, but check the null for the crash resistancy
-         */
+        // We do assume playerpatch is never null, but check the null for the crash resistancy
         @Nullable
         LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
 
-        return InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F ||								// When moving
+        return InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F ||							// When moving
             this.minecraft.options.keyAttack.isDown() ||																					// When pressing left button
             this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
             this.isZooming() ||																												// when zooming
