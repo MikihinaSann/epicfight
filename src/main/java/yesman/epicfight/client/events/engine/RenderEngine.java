@@ -634,19 +634,19 @@ public class RenderEngine implements IEventBasedEngine {
 			}
 		}
 	}
-	
+
 	private void epicfight$renderAfterLevel(RenderLevelStageEvent event) {
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
-			if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && this.minecraft.hitResult.getType() == HitResult.Type.BLOCK) {
+			if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
 				EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					if (!playerpatch.canPlayAttackAnimation()) {
+					if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
 						this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, ((BlockHitResult)this.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
 					}
 				});
 			}
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	private void epicfight$renderEnderDragon(RenderEnderDragonEvent event) {
 		EnderDragon livingentity = event.getEntity();
@@ -723,7 +723,7 @@ public class RenderEngine implements IEventBasedEngine {
 
                 if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
                     EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-                        itemAction.setValue(playerpatch.canPlayAttackAnimation());
+                        itemAction.setValue(playerpatch.canPlayAttackAnimation() || playerpatch.isVanillaMode());
                     });
                 }
 

@@ -1,14 +1,6 @@
 package yesman.epicfight.gameasset;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-
 import com.google.common.collect.Lists;
-
 import it.unimi.dsi.fastutil.ints.IntIntPair;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -25,12 +17,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LightningBolt;
-import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.DragonFireball;
@@ -40,29 +27,20 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
-import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.NeoForgeConfig;
 import net.neoforged.neoforge.event.EventHooks;
-import yesman.epicfight.api.animation.AnimationClip;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationManager.AnimationBuilder;
 import yesman.epicfight.api.animation.AnimationManager.AnimationRegistryEvent;
-import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.AnimationVariables.IndependentVariableKey;
-import yesman.epicfight.api.animation.Joint;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.Keyframe;
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.Pose;
-import yesman.epicfight.api.animation.TransformSheet;
 import yesman.epicfight.api.animation.property.AnimationEvent;
 import yesman.epicfight.api.animation.property.AnimationEvent.InPeriodEvent;
 import yesman.epicfight.api.animation.property.AnimationEvent.InTimeEvent;
@@ -75,36 +53,11 @@ import yesman.epicfight.api.animation.property.AnimationProperty.AttackAnimation
 import yesman.epicfight.api.animation.property.AnimationProperty.AttackPhaseProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.StaticAnimationProperty;
 import yesman.epicfight.api.animation.property.MoveCoordFunctions;
-import yesman.epicfight.api.animation.types.ActionAnimation;
-import yesman.epicfight.api.animation.types.AimAnimation;
-import yesman.epicfight.api.animation.types.AirSlashAnimation;
-import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.*;
 import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
-import yesman.epicfight.api.animation.types.ComboAttackAnimation;
-import yesman.epicfight.api.animation.types.DashAttackAnimation;
-import yesman.epicfight.api.animation.types.DirectStaticAnimation;
-import yesman.epicfight.api.animation.types.DodgeAnimation;
-import yesman.epicfight.api.animation.types.EntityState;
-import yesman.epicfight.api.animation.types.GuardAnimation;
-import yesman.epicfight.api.animation.types.HitAnimation;
-import yesman.epicfight.api.animation.types.InvincibleAnimation;
-import yesman.epicfight.api.animation.types.KnockdownAnimation;
-import yesman.epicfight.api.animation.types.LongHitAnimation;
-import yesman.epicfight.api.animation.types.MirrorAnimation;
-import yesman.epicfight.api.animation.types.MountAttackAnimation;
-import yesman.epicfight.api.animation.types.MovementAnimation;
-import yesman.epicfight.api.animation.types.OffAnimation;
-import yesman.epicfight.api.animation.types.RangedAttackAnimation;
-import yesman.epicfight.api.animation.types.ReboundAnimation;
-import yesman.epicfight.api.animation.types.SelectiveAnimation;
-import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.animation.types.grappling.GrapplingAttackAnimation;
 import yesman.epicfight.api.animation.types.grappling.GrapplingTryAnimation;
-import yesman.epicfight.api.animation.types.procedural.EnderDragonActionAnimation;
-import yesman.epicfight.api.animation.types.procedural.EnderDragonAttackAnimation;
-import yesman.epicfight.api.animation.types.procedural.EnderDragonDeathAnimation;
-import yesman.epicfight.api.animation.types.procedural.EnderDragonDynamicActionAnimation;
-import yesman.epicfight.api.animation.types.procedural.EnderDragonWalkAnimation;
+import yesman.epicfight.api.animation.types.procedural.*;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.physics.ik.InverseKinematicsSimulator.InverseKinematicsDefinition;
@@ -112,20 +65,12 @@ import yesman.epicfight.api.utils.HitEntityList;
 import yesman.epicfight.api.utils.HitEntityList.Priority;
 import yesman.epicfight.api.utils.LevelUtil;
 import yesman.epicfight.api.utils.TimePairList;
-import yesman.epicfight.api.utils.math.MathUtils;
-import yesman.epicfight.api.utils.math.OpenMatrix4f;
-import yesman.epicfight.api.utils.math.QuaternionUtils;
-import yesman.epicfight.api.utils.math.ValueModifier;
-import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.math.*;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.mixin.common.MixinWitherBossAccessor;
 import yesman.epicfight.model.armature.types.ToolHolderArmature;
-import yesman.epicfight.registry.entries.EpicFightAttributes;
-import yesman.epicfight.registry.entries.EpicFightParticles;
-import yesman.epicfight.registry.entries.EpicFightSkills;
-import yesman.epicfight.registry.entries.EpicFightSounds;
-import yesman.epicfight.registry.entries.EpicFightSynchedAnimationVariableKeys;
+import yesman.epicfight.registry.entries.*;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.identity.MeteorSlamSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -136,11 +81,11 @@ import yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon.PatchedP
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.damagesource.EpicFightDamageSource;
-import yesman.epicfight.world.damagesource.EpicFightDamageSources;
-import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
-import yesman.epicfight.world.damagesource.ExtraDamageInstance;
-import yesman.epicfight.world.damagesource.StunType;
+import yesman.epicfight.world.damagesource.*;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @EventBusSubscriber(modid = EpicFightMod.MODID)
 public class Animations {
@@ -826,19 +771,14 @@ public class Animations {
 				.addProperty(ActionAnimationProperty.STOP_MOVEMENT, true)
 				.addProperty(StaticAnimationProperty.PLAY_SPEED_MODIFIER, Animations.ReusableSources.CHARGING)
 				.addProperty(StaticAnimationProperty.POSE_MODIFIER, (self, pose, entitypatch, time, partialTicks) -> {
-					if (!self.isStaticAnimation()) {
-						return;
-					}
+                    if (!self.isStaticAnimation()) {
+                        return;
+                    }
 
-					float xRot = Mth.clamp(entitypatch.getCameraXRot(), -60.0F, 50.0F);
-					float yRot = Mth.clamp(Mth.wrapDegrees(entitypatch.getCameraYRot() - entitypatch.getOriginal().getYRot()), -60.0F, 60.0F);
-					
-					JointTransform chest = pose.orElseEmpty("Chest");
-					chest.frontResult(JointTransform.rotation(QuaternionUtils.YP.rotationDegrees(yRot)), OpenMatrix4f::mulAsOriginInverse);
-
-					JointTransform head = pose.orElseEmpty("Head");
-					MathUtils.mulQuaternion(QuaternionUtils.XP.rotationDegrees(xRot), head.rotation(), head.rotation());
-				})
+                    float xRot = Mth.clamp(entitypatch.getOriginal().getXRot(), -60.0F, 50.0F);
+                    JointTransform head = pose.orElseEmpty("Head");
+                    MathUtils.mulQuaternion(QuaternionUtils.XP.rotationDegrees(xRot), head.rotation(), head.rotation());
+                })
 				.addProperty(StaticAnimationProperty.RESET_LIVING_MOTION, LivingMotions.IDLE)
 				.newTimePair(0.0F, Float.MAX_VALUE)
 					.addStateRemoveOld(EntityState.COMBO_ATTACKS_DOABLE, true)

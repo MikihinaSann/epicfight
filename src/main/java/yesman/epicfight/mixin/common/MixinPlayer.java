@@ -1,12 +1,13 @@
 package yesman.epicfight.mixin.common;
 
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
-
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.damagesource.CombatTracker;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
@@ -26,4 +27,19 @@ public abstract class MixinPlayer {
 		
 		self.recordDamage(damagesource, damage);
 	}
+
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/player/Player;getYRot()F"
+        ),
+        method = "serverAiStep()V"
+    )
+    private float epicfight$serverAiStep(Player player) {
+        if (player.isLocalPlayer()) {
+            return EpicFightCameraAPI.getInstance().getYRotForHead((LocalPlayer)player);
+        }
+
+        return player.getYRot();
+    }
 }

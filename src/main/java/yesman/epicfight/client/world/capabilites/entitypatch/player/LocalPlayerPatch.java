@@ -423,7 +423,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	 * @return true if the next action is swing a weapon, false if the next action is breaking a block
 	 */
     public boolean canPlayAttackAnimation() {
-        if (this.getPlayerMode() == PlayerPatch.PlayerMode.VANILLA) {
+        if (this.isVanillaMode()) {
             return false;
         }
 

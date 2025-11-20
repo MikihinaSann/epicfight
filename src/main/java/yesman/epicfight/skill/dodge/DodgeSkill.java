@@ -1,8 +1,5 @@
 package yesman.epicfight.skill.dodge;
 
-import java.util.List;
-import java.util.function.Function;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
@@ -14,6 +11,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.client.input.utils.InputUtils;
@@ -25,6 +23,9 @@ import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+
+import java.util.List;
+import java.util.function.Function;
 
 public class DodgeSkill extends Skill {
 	public static class Builder<B extends DodgeSkill.Builder<B>> extends SkillBuilder<B> {
@@ -65,7 +66,7 @@ public class DodgeSkill extends Skill {
         final MovementDirection movementDirection = MovementDirection.fromInputState(InputManager.getInputState(localPlayer.input));
 		final int vertic = movementDirection.vertical();
 		final int horizon = movementDirection.horizontal();
-		float yRot = Minecraft.getInstance().gameRenderer.getMainCamera().getYRot();
+        float yRot = EpicFightCameraAPI.getInstance().getForwardYRot();
 		float degree = Mth.wrapDegrees(-(90 * horizon * (1 - Math.abs(vertic)) + 45 * vertic * horizon) + yRot);
 		
 		arguments.putInt("direction", vertic >= 0 ? 0 : 1);

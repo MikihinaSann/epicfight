@@ -28,6 +28,7 @@
 - Fixed a bug that allowed the player to replace the current skill slot even during cooldown.
 - **Fixed:** The **Shoulder Surfing compatibility module** was not being registered,
   causing issues with its intended functionality.
+- Fixed the mining crosshair not to show in vanilla mode
 
 ## [21.13.5] - 2025-11-12
 

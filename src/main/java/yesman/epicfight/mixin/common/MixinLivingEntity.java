@@ -1,5 +1,6 @@
 package yesman.epicfight.mixin.common;
 
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -143,6 +144,39 @@ public abstract class MixinLivingEntity {
         if (livingEntity instanceof Player player && player.isLocalPlayer()) {
             EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
             return cameraApi.isTPSMode() ? cameraApi.getCameraYRot() : livingEntity.getYRot();
+        }
+
+        return livingEntity.getYRot();
+    }
+
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F",
+            ordinal = 0
+        ),
+        method = "tick()V"
+    )
+    private float epicfight$tick(LivingEntity livingEntity) {
+        // returns the basis y rotation as camera in TPS mode
+        if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+            return EpicFightCameraAPI.getInstance().getYRotForHead((LocalPlayer)player);
+        }
+
+        return livingEntity.getYRot();
+    }
+
+    @Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
+        ),
+        method = "tickHeadTurn(FF)F"
+    )
+    protected float epicfight$tickHeadTurn(LivingEntity livingEntity) {
+        // returns the basis y rotation as camera in TPS mode
+        if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+            return EpicFightCameraAPI.getInstance().getYRotForHead((LocalPlayer)player);
         }
 
         return livingEntity.getYRot();

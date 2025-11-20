@@ -1,8 +1,5 @@
 package yesman.epicfight.skill.mover;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -14,6 +11,7 @@ import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
@@ -33,6 +31,9 @@ import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillEvent;
 import yesman.epicfight.skill.SkillEvent.Side;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class PhantomAscentSkill extends Skill {
 	private final List<AnimationAccessor<? extends StaticAnimation>> animations = new ArrayList<> (2);
@@ -111,7 +112,7 @@ public class PhantomAscentSkill extends Skill {
 					Vec3 jumpDir = OpenMatrix4f.transform(OpenMatrix4f.createRotatorDeg(-degree, Vec3f.Y_AXIS), forwardHorizontal.scale(0.15D * scale));
 					Vec3 deltaMove = skillContainer.getExecutor().getOriginal().getDeltaMovement();
 					skillContainer.getExecutor().getOriginal().setDeltaMovement(deltaMove.x + jumpDir.x, this.jumpPower + skillContainer.getExecutor().getOriginal().getJumpBoostPower(), deltaMove.z + jumpDir.z);
-					skillContainer.getExecutor().setModelYRot(skillContainer.getExecutor().getOriginal().getYRot() + degree, true);
+                    event.getPlayerPatch().setModelYRot(EpicFightCameraAPI.getInstance().getForwardYRot() + degree, true);
 					skillContainer.getExecutor().playAnimationInClientSide(this.animations.get(vertic < 0 ? 1 : 0), 0.0F);
 					ControlEngine.getInstance().releaseAllServedKeys();
 				};
