@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.CombatRules;
@@ -34,17 +35,17 @@ public abstract class MixinLivingEntity {
 	protected abstract void hurtArmor(DamageSource damageSource, float amount);
 	
 	@Inject(at = @At(value = "TAIL"), method = "<clinit>")
-	private static void epicfight_staticInitialize(CallbackInfo callbackInfo) {
+	private static void epicfight$staticInitialize(CallbackInfo callbackInfo) {
 		LivingEntityPatch.initLivingEntityDataAccessor();
 	}
 	
 	@Inject(at = @At(value = "TAIL"), method = "defineSynchedData()V", cancellable = true)
-	protected void epicfight_defineSynchedData(CallbackInfo info) {
+	protected void epicfight$defineSynchedData(CallbackInfo info) {
 		LivingEntityPatch.createSyncedEntityData((LivingEntity)(Object)this);
 	}
 	
 	@Inject(at = @At(value = "TAIL"), method = "blockUsingShield(Lnet/minecraft/world/entity/LivingEntity;)V", cancellable = true)
-	private void epicfight_blockUsingShield(LivingEntity p_21200_, CallbackInfo info) {
+	private void epicfight$blockUsingShield(LivingEntity p_21200_, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		LivingEntityPatch<?> opponentEntitypatch = EpicFightCapabilities.getEntityPatch(p_21200_, LivingEntityPatch.class);
 		LivingEntityPatch<?> selfEntitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
@@ -59,7 +60,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "RETURN"), method = "hurt", cancellable = true)
-	private void epicfight_hurt(DamageSource damagesource, float amount, CallbackInfoReturnable<Boolean> info) {
+	private void epicfight$hurt(DamageSource damagesource, float amount, CallbackInfoReturnable<Boolean> info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(damagesource.getEntity(), LivingEntityPatch.class);
 		
@@ -71,7 +72,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "push(Lnet/minecraft/world/entity/Entity;)V", cancellable = true)
-	private void epicfight_push(Entity p_20293_, CallbackInfo info) {
+	private void epicfight$push(Entity p_20293_, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
 		
@@ -81,7 +82,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "getDamageAfterArmorAbsorb(Lnet/minecraft/world/damagesource/DamageSource;F)F", cancellable = true)
-	private void epicfight_getDamageAfterArmorAbsorb(DamageSource source, float amount, CallbackInfoReturnable<Float> info) {
+	private void epicfight$getDamageAfterArmorAbsorb(DamageSource source, float amount, CallbackInfoReturnable<Float> info) {
 		if (source instanceof EpicFightDamageSource epicFightDamageSource && !source.is(DamageTypeTags.BYPASSES_ARMOR)) {
 			this.hurtArmor(source, amount);
 			float armorNegationAmount = amount * Math.min(epicFightDamageSource.calculateArmorNegation() * 0.01F , 1.0F);
@@ -94,7 +95,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V")
-	private void epicfight_readAdditionalSaveData(CompoundTag compTag, CallbackInfo info) {
+	private void epicfight$readAdditionalSaveData(CompoundTag compTag, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
 		
@@ -104,7 +105,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V")
-	private void epicfight_addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo info) {
+	private void epicfight$addAdditionalSaveData(CompoundTag compoundTag, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
 		
@@ -114,7 +115,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "TAIL"), method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V", cancellable = true)
-	private void epicfight_constructor(EntityType<?> entityType, Level level, CallbackInfo info) {
+	private void epicfight$constructor(EntityType<?> entityType, Level level, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(self, HurtableEntityPatch.class).ifPresent((entitypatch) -> {
@@ -123,7 +124,7 @@ public abstract class MixinLivingEntity {
 	}
 	
 	@Inject(at = @At(value = "TAIL"), method = "setAbsorptionAmount(F)V", cancellable = true)
-	private void epicfight_setAbsorptionAmount(float absorptionAmount, CallbackInfo info) {
+	private void epicfight$setAbsorptionAmount(float absorptionAmount, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		
 		if (!self.level().isClientSide()) {
@@ -145,5 +146,38 @@ public abstract class MixinLivingEntity {
         }
 
         return livingEntity.getYRot();
+	}
+	
+	@Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F",
+            ordinal = 0
+        ),
+        method = "tick()V"
+    )
+    private float epicfight$tick(LivingEntity livingEntity) {
+		// returns the basis y rotation as camera in TPS mode
+		if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+			return EpicFightCameraAPI.getInstance().getYRotForHead((LocalPlayer)player);
+		}
+		
+		return livingEntity.getYRot();
+    }
+	
+	@Redirect(
+        at = @At(
+            value = "INVOKE",
+            target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
+        ),
+        method = "tickHeadTurn(FF)F"
+    )
+	protected float epicfight$tickHeadTurn(LivingEntity livingEntity) {
+		// returns the basis y rotation as camera in TPS mode
+		if (livingEntity instanceof Player player && player.isLocalPlayer()) {
+			return EpicFightCameraAPI.getInstance().getYRotForHead((LocalPlayer)player);
+		}
+		
+		return livingEntity.getYRot();
 	}
 }

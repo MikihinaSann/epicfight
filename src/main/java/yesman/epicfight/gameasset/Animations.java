@@ -823,12 +823,7 @@ public class Animations {
 						return;
 					}
 
-					float xRot = Mth.clamp(entitypatch.getCameraXRot(), -60.0F, 50.0F);
-					float yRot = Mth.clamp(Mth.wrapDegrees(entitypatch.getCameraYRot() - entitypatch.getOriginal().getYRot()), -60.0F, 60.0F);
-					
-					JointTransform chest = pose.orElseEmpty("Chest");
-					chest.frontResult(JointTransform.rotation(QuaternionUtils.YP.rotationDegrees(yRot)), OpenMatrix4f::mulAsOriginInverse);
-
+					float xRot = Mth.clamp(entitypatch.getOriginal().getXRot(), -60.0F, 50.0F);
 					JointTransform head = pose.orElseEmpty("Head");
 					MathUtils.mulQuaternion(QuaternionUtils.XP.rotationDegrees(xRot), head.rotation(), head.rotation());
 				})

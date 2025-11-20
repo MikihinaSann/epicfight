@@ -189,7 +189,7 @@ public class AbstractClientPlayerPatch<T extends AbstractClientPlayer> extends P
 		super.clientTick(event);
 		
 		if (!this.getEntityState().updateLivingMotion()) {
-			this.original.yBodyRot = this.original.getYRot();
+			this.original.yBodyRot = this.original.yHeadRot;
 		}
 		
 		boolean isMainHandChanged = this.prevHeldItem != this.original.getInventory().getSelected().getItem();

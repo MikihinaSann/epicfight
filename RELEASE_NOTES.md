@@ -23,6 +23,7 @@
 ### Fixed
 
 - Fixed a bug that allowed the player to replace the current skill slot even during cooldown.
+- Fixed the mining crosshair not to show in vanilla mode
 
 ## [20.13.6] - 2025-11-12
 

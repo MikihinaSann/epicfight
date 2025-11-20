@@ -120,19 +120,6 @@ public class RenderEngine {
 	private PHumanoidRenderer<?, ?, ?, ?, ?> basicHumanoidRenderer;
 	private int modelInitTimer;
 	
-	/**
-	// TPS perspective variables
-	private float cameraXRotO;
-	private float cameraYRotO;
-	private float cameraXRot;
-	private float cameraYRot;
-	
-	private final int maxZoomCount = 20;
-	private boolean zoomingIn;
-	private int zoomOutStandbyTicks = 0;
-	public int zoomCount = 0;
-	**/
-	
 	public RenderEngine() {
 		Events.renderEngine = this;
 		
@@ -676,7 +663,7 @@ public class RenderEngine {
 					
 					if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
 						EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-							itemAction.setValue(playerpatch.canPlayAttackAnimation());
+							itemAction.setValue(playerpatch.canPlayAttackAnimation() || playerpatch.isVanillaMode());
 						});
 					}
 					
@@ -753,7 +740,7 @@ public class RenderEngine {
 			if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
 				if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && hitResultEquals(renderEngine.minecraft.hitResult, HitResult.Type.BLOCK)) {
 					EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-						if (!playerpatch.canPlayAttackAnimation()) {
+						if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
 							renderEngine.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), renderEngine.minecraft.renderBuffers().bufferSource(), renderEngine.minecraft.level, ((BlockHitResult)renderEngine.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
 						}
 					});

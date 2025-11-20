@@ -623,14 +623,6 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 		return Mth.clamp(correct, -30.0F, 30.0F);
 	}
 	
-	public float getCameraXRot() {
-		return Mth.wrapDegrees(this.original.getXRot());
-	}
-	
-	public float getCameraYRot() {
-		return Mth.wrapDegrees(this.original.getYRot());
-	}
-	
 	@Override
 	public OpenMatrix4f getModelMatrix(float partialTicks) {
 		float yRotO;

@@ -15,6 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
@@ -110,7 +111,7 @@ public class PhantomAscentSkill extends Skill {
 						Vec3 jumpDir = OpenMatrix4f.transform(OpenMatrix4f.createRotatorDeg(-degree, Vec3f.Y_AXIS), forwardHorizontal.scale(0.15D * scale));
 						Vec3 deltaMove = container.getExecutor().getOriginal().getDeltaMovement();
 						container.getExecutor().getOriginal().setDeltaMovement(deltaMove.x + jumpDir.x, this.jumpPower + container.getExecutor().getOriginal().getJumpBoostPower(), deltaMove.z + jumpDir.z);
-						event.getPlayerPatch().setModelYRot(container.getExecutor().getOriginal().getYRot() + degree, true);
+						event.getPlayerPatch().setModelYRot(EpicFightCameraAPI.getInstance().getForwardYRot() + degree, true);
 						event.getPlayerPatch().playAnimationInClientSide(this.animations.get(vertic < 0 ? 1 : 0), 0.0F);
 						ClientEngine.getInstance().controlEngine.releaseAllServedKeys();
 					};

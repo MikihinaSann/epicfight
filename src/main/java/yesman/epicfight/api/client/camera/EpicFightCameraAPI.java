@@ -1,8 +1,22 @@
 package yesman.epicfight.api.client.camera;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+
 import com.ibm.icu.text.MessageFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -18,15 +32,14 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles;
 import net.minecraftforge.entity.PartEntity;
 import net.minecraftforge.fml.ModList;
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.input.action.EpicFightInputActions;
 import yesman.epicfight.api.client.input.handlers.InputManager;
@@ -42,8 +55,6 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
-
-import java.util.*;
 
 /**
  * Provides access to Epic Fight's camera and third-person systems, including
@@ -61,7 +72,8 @@ public final class EpicFightCameraAPI {
 	}
 	
 	private final Minecraft minecraft;
-	private final Map<String, CameraSetupListener> cameraSetupListeners = new LinkedHashMap<> ();
+	private final Map<String, CameraSetupListenerPre> cameraSetupPreListeners = new LinkedHashMap<> ();
+	private final Map<String, CameraSetupListenerPost> cameraSetupPostListeners = new LinkedHashMap<> ();
 	private final Set<UseAnim> tpsItemAnimations = Set.of(UseAnim.BLOCK, UseAnim.BOW, UseAnim.SPEAR, UseAnim.CROSSBOW);
 	
 	// Camera zoom parameters to activate the cemera TPS position in third-person back
@@ -74,6 +86,7 @@ public final class EpicFightCameraAPI {
 	private float cameraXRot;
 	private float cameraYRotO;
 	private float cameraYRot;
+	private boolean couplingYRot;
 	
 	// First-person view limit
 	private float fpvXRotO;
@@ -172,6 +185,40 @@ public final class EpicFightCameraAPI {
 			this.cameraXRotO = this.cameraXRot;
 			this.cameraYRotO = this.cameraYRot;
 		}
+	}
+	
+	/**
+	 * You can manually couple the player look vector into the camera's
+	 * Note: This is a scoped state that must be decoupled again, or the player will look at the crosshair forever
+	 * @param flag 	whether the player should follow the camera view
+	 */
+	public void setCouplingState(boolean flag) {
+		if (this.isTPSMode()) {
+			this.couplingYRot = flag;
+		} else {
+			this.couplingYRot = true;
+		}
+	}
+	
+	/**
+	 * Returns the player-camera coupling state
+	 */
+	public boolean getCouplingState() {
+		return this.couplingYRot;
+	}
+	
+	/**
+	 * Returns the x rotation of the forward vector of the camera
+	 */
+	public float getForwardXRot() {
+		return this.isTPSMode() ? this.cameraXRot : this.minecraft.player.getXRot();
+	}
+	
+	/**
+	 * Returns the y rotation of the forward vector of the camera
+	 */
+	public float getForwardYRot() {
+		return this.isTPSMode() ? this.cameraYRot : this.minecraft.player.getYRot();
 	}
 	
 	/**
@@ -303,16 +350,32 @@ public final class EpicFightCameraAPI {
 	 * Requires *mod id* that is loaded by Forge so that we can prevent addons from having a fragmentized camera setup function
 	 * @param listener
 	 */
-	public void addCameraSetupListener(String modid, CameraSetupListener listener) {
-		if (this.cameraSetupListeners.containsKey(modid)) {
-			throw new IllegalStateException(MessageFormat.format("{}: Camera setup listener for {} already exists!", this.getClass().getSimpleName(), modid));
+	public void addCameraSetupListenerPre(String modid, CameraSetupListenerPre listener) {
+		if (this.cameraSetupPreListeners.containsKey(modid)) {
+			throw new IllegalStateException(MessageFormat.format("{}: Pre camera setup listener for {} already exists!", this.getClass().getSimpleName(), modid));
 		}
 		
 		if (!ModList.get().isLoaded(modid)) {
 			throw new IllegalStateException(MessageFormat.format("{}: There is no mod with the identifier {}", this.getClass().getSimpleName(), modid));
 		}
 		
-		this.cameraSetupListeners.put(modid, listener);
+		this.cameraSetupPreListeners.put(modid, listener);
+	}
+	
+	/**
+	 * Requires *mod id* that is loaded by Forge so that we can prevent addons from having a fragmentized camera setup function
+	 * @param listener
+	 */
+	public void addCameraSetupListenerPost(String modid, CameraSetupListenerPost listener) {
+		if (this.cameraSetupPostListeners.containsKey(modid)) {
+			throw new IllegalStateException(MessageFormat.format("{}: Post camera setup listener for {} already exists!", this.getClass().getSimpleName(), modid));
+		}
+		
+		if (!ModList.get().isLoaded(modid)) {
+			throw new IllegalStateException(MessageFormat.format("{}: There is no mod with the identifier {}", this.getClass().getSimpleName(), modid));
+		}
+		
+		this.cameraSetupPostListeners.put(modid, listener);
 	}
 	
 	/**
@@ -322,7 +385,6 @@ public final class EpicFightCameraAPI {
 		if (this.minecraft.player == null) return;
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			playerpatch.setYRot(this.cameraYRot);
 			playerpatch.getOriginal().setYRot(this.cameraYRot);
 		});
 	}
@@ -579,16 +641,9 @@ public final class EpicFightCameraAPI {
 			 */
 			@Nullable
 			LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(localPlayer, LocalPlayerPatch.class);
-			
 			float clamp = 30.0F;
 			float desiredXRot = 0.0F;
 			float desiredYRot = 0.0F;
-			boolean shouldSyncYaw =
-				Mth.abs(localPlayer.input.forwardImpulse) > 1.0E-5F || Mth.abs(localPlayer.input.leftImpulse) > 1.0E-5F || 	// When moving
-				this.minecraft.options.keyAttack.isDown() ||																// When pressing left button
-				localPlayer.isUsingItem() && tpsItemAnimations.contains(localPlayer.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
-				this.isZooming() ||																							// when zooming
-				(playerpatch == null || playerpatch.isHoldingAny()); 														// When holding a skill
 			
 			// Handle camera lock-on
 			if (this.focusingEntity != null && this.lockingOnTarget && !this.isLerpingFpv() && !InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY)) {
@@ -602,27 +657,29 @@ public final class EpicFightCameraAPI {
 				if (!cameraType.isFirstPerson()) xRot = Mth.clamp(xRot, -clamp, clamp);
 				xRot += (cameraType.isFirstPerson() || tpsMode ? 0.0F : 30.0F + xRot * 0.5F);
 				
-				float xLerp = Mth.clamp(Mth.wrapDegrees(xRot - this.getCameraXRot()) * 0.4F, -clamp, clamp);
-				float yLerp = Mth.clamp(Mth.wrapDegrees(yRot - this.getCameraYRot()) * 0.4F, -clamp, clamp);
+				float xLerp = Mth.clamp(Mth.wrapDegrees(xRot - this.cameraXRot) * 0.4F, -clamp, clamp);
+				float yLerp = Mth.clamp(Mth.wrapDegrees(yRot - this.cameraYRot) * 0.4F, -clamp, clamp);
 				Vec3 playerToTarget = targetPos.subtract(localPlayer.getEyePosition());
 				
 				// Limit angle difference in tps mode
 				if (tpsMode) {
 					double angle = MathUtils.getAngleBetween(playerToTarget, toTarget);
-					if (angle < 30.0D) this.setCameraRotations(this.getCameraXRot() + xLerp, this.getCameraYRot() + yLerp, false);
+					if (angle < 30.0D) this.setCameraRotations(this.cameraXRot + xLerp, this.cameraYRot + yLerp, false);
 				} else {
-					this.setCameraRotations(this.getCameraXRot() + xLerp, this.getCameraYRot() + yLerp, false);
+					this.setCameraRotations(this.cameraXRot + xLerp, this.cameraYRot + yLerp, false);
 				}
 				
 				desiredXRot = (float)MathUtils.getXRotOfVector(playerToTarget);
 				desiredYRot = (float)MathUtils.getYRotOfVector(playerToTarget);
 			} else if (this.lockingOnTarget && InputManager.isActionActive(EpicFightInputActions.LOCK_ON_SHIFT_FREELY)) {
-				desiredXRot = this.getCameraXRot();
-				desiredYRot = this.getCameraYRot();
+				desiredXRot = this.cameraXRot;
+				desiredYRot = this.cameraYRot;
 			} else if (tpsMode) { // Handle camera tps rotation
+				boolean shouldCoupling = this.predicateCouplingPlayer();
+				
 				// The player follows the camera look when the head rotation is not clamped by body rotation
 				// This gives a slight control of the player's head within the allowed angles
-				if (Mth.abs(Mth.wrapDegrees(this.getCameraYRot() - localPlayer.yBodyRot)) <= 51.0F || shouldSyncYaw) {
+				if (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || shouldCoupling) {
 					Vec3 toHitResult;
 					
 					if (this.lockingOnTarget) {
@@ -638,7 +695,7 @@ public final class EpicFightCameraAPI {
 					
 					toHitResult = toHitResult.subtract(localPlayer.getEyePosition());
 					desiredXRot = (float)MathUtils.getXRotOfVector(toHitResult);
-					desiredYRot = shouldSyncYaw ? (float)MathUtils.getYRotOfVector(toHitResult) : this.getCameraYRot();
+					desiredYRot = shouldCoupling ? (Math.abs(this.cameraXRot) > 80.0F ? this.cameraYRot : (float)MathUtils.getYRotOfVector(toHitResult)) : this.cameraYRot;
 				} else {
 					desiredXRot = 0.0F;
 					desiredYRot = localPlayer.yBodyRot;
@@ -648,7 +705,7 @@ public final class EpicFightCameraAPI {
 			
 			// Turns the player to desired rotation, based on the player state and camera setup
 			if (
-				(playerpatch == null || !playerpatch.getEntityState().inaction() && (!playerpatch.getEntityState().turningLocked() || playerpatch.getEntityState().lockonRotate())) &&
+				(playerpatch == null || !playerpatch.getEntityState().turningLocked() || playerpatch.getEntityState().lockonRotate()) &&
 				(tpsMode || this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && this.lockingOnTarget)
 			) {
 				float xDelta = Mth.clamp(Mth.wrapDegrees(desiredXRot - localPlayer.getXRot()), -clamp, clamp);
@@ -671,7 +728,7 @@ public final class EpicFightCameraAPI {
 		}
 		
 		// Check camera setup listeners
-		for (CameraSetupListener setupListener : this.cameraSetupListeners.values()) {
+		for (CameraSetupListenerPre setupListener : this.cameraSetupPreListeners.values()) {
 			// Skip the post camera setup process when it's canceled
 			if (setupListener.setup(this, camera, partialTick)) return true;
 		}
@@ -780,18 +837,67 @@ public final class EpicFightCameraAPI {
 		return false;
 	}
 	
+	/**
+	 * Called after {@link #setupCamera} to apply a simple transform
+	 */
+	@ApiStatus.Internal
+	public void fireCameraBuildPost(Camera camera, float partialTick) {
+		// Check camera setup listeners
+		for (CameraSetupListenerPost setupListener : this.cameraSetupPostListeners.values()) {
+			// Skip the post camera setup process when it's canceled
+			setupListener.setup(this, camera, partialTick);
+		}
+	}
+	
+	/**
+	 * REturns a new basis for {@link LivingEntity#yRotHead} instead of coupling it to {@link Entity#getYRot}
+	 */
+	@ApiStatus.Internal
+	public float getYRotForHead(LocalPlayer localPlayer) {
+		/**
+		System.out.println(
+			((this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot())
+		);
+		**/
+		
+		return this.cameraYRot;//(this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot();
+	}
+	
 	private boolean predicateFocusableEntity(Entity entity) {
         return entity instanceof LivingEntity livingEntity && !entity.isSpectator() && entity.isPickable() && entity.isAlive() && !entity.is(this.minecraft.player) && this.minecraft.player.canAttack(livingEntity);
     }
+	
+	private boolean predicateCouplingPlayer() {
+		/**
+		 * We do assume playerpatch is never null, but check the null for the crash resistancy
+		 */
+		@Nullable
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
+		
+		return InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F ||								// When moving
+				this.minecraft.options.keyAttack.isDown() ||																					// When pressing left button
+				this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
+				this.isZooming() ||																												// when zooming
+				(playerpatch == null || playerpatch.isHoldingAny()) ||																			// When holding a skill
+				this.couplingYRot;																												// When the player rotation is manually coupled
+	}
 	
 	/**
 	 * A listener interface to control camera transform
 	 */
 	@FunctionalInterface
-	public interface CameraSetupListener {
+	public interface CameraSetupListenerPre {
 		/**
 		 * return true to skip the camera trasform of Epic Fight
 		 */
 		boolean setup(EpicFightCameraAPI cameraApi, Camera camera, float partialTick);
+	}
+	
+	/**
+	 * A listener interface to control camera transform
+	 */
+	@FunctionalInterface
+	public interface CameraSetupListenerPost {
+		void setup(EpicFightCameraAPI cameraApi, Camera camera, float partialTick);
 	}
 }

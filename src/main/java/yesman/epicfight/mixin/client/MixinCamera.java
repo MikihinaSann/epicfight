@@ -29,6 +29,13 @@ public abstract class MixinCamera {
 		this.entity = entity;
 		this.detached = detached;
 		
-		if (EpicFightCameraAPI.getInstance().setupCamera((Camera)(Object)this, partialTick)) callbackInfo.cancel();
+		EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+		Camera camera = (Camera)(Object)this;
+		
+		if (cameraApi.setupCamera(camera, partialTick)) {
+			callbackInfo.cancel();
+		}
+		
+		cameraApi.fireCameraBuildPost(camera, partialTick);
 	}
 }
