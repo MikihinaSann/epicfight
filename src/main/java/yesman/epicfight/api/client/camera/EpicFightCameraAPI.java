@@ -854,13 +854,7 @@ public final class EpicFightCameraAPI {
 	 */
 	@ApiStatus.Internal
 	public float getYRotForHead(LocalPlayer localPlayer) {
-		/**
-		System.out.println(
-			((this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot())
-		);
-		**/
-		
-		return this.cameraYRot;//(this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot();
+		return (this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - localPlayer.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : localPlayer.getYRot();
 	}
 	
 	private boolean predicateFocusableEntity(Entity entity) {
