@@ -83,7 +83,7 @@ public class PlayerEvents {
 		event.getOriginal().reviveCaps();
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getOriginal(), ServerPlayerPatch.class).ifPresent(oldCap -> {
-			EpicFightCapabilities.<ServerPlayer, ServerPlayerPatch>getParameterizedEntityPatch(event.getEntity(), ServerPlayer.class, ServerPlayerPatch.class).ifPresent(newCap -> {
+			EpicFightCapabilities.getPlayerPatch(event.getEntity()).ifPresent(newCap -> {
 				if ((!event.isWasDeath() || EpicFightGameRules.KEEP_SKILLS.getRuleValue(event.getOriginal().level()))) {
 					newCap.copySkillsFrom(oldCap, event.isWasDeath());
 				}
@@ -141,7 +141,7 @@ public class PlayerEvents {
 	
 	@SubscribeEvent
 	public static void itemUseStartEvent(LivingEntityUseItemEvent.Start event) {
-		EpicFightCapabilities.<Player, PlayerPatch<Player>>getParameterizedEntityPatch(event.getEntity(), Player.class, PlayerPatch.class).ifPresent(playerpatch -> {
+		EpicFightCapabilities.getPlayerPatch(event.getEntity()).ifPresent(playerpatch -> {
 			InteractionHand hand = playerpatch.getOriginal().getItemInHand(InteractionHand.MAIN_HAND).equals(event.getItem()) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 			CapabilityItem itemCap = playerpatch.getHoldingItemCapability(hand);
 			

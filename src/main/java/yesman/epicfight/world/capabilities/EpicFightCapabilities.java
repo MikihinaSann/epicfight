@@ -10,7 +10,10 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.projectile.ProjectilePatch;
 import yesman.epicfight.world.capabilities.skill.CapabilitySkill;
@@ -46,7 +49,6 @@ public class EpicFightCapabilities {
 	 * 
 	 * @param entity An entity object to extract an entity patch
 	 * @param type A class type to cast
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends EntityPatch> T getEntityPatch(Entity entity, Class<T> type) {
@@ -67,7 +69,6 @@ public class EpicFightCapabilities {
 	 * 
 	 * @param entity An entity object to extract an entity patch
 	 * @param type A class type to cast
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends EntityPatch<?>> Optional<T> getUnparameterizedEntityPatch(Entity entity, Class<T> type) {
@@ -90,7 +91,6 @@ public class EpicFightCapabilities {
 	 * @param entity An entity object to extract an entity patch
 	 * @param entitytype An entity type to cast
 	 * @param patchtype A class type to cast
-	 * @return
 	 */
 	@SuppressWarnings("unchecked")
 	public static <E extends Entity, T extends EntityPatch<E>> Optional<T> getParameterizedEntityPatch(Entity entity, Class<E> entitytype, Class<?> patchtype) {
@@ -100,6 +100,52 @@ public class EpicFightCapabilities {
 			if (entitypatch != null && patchtype.isAssignableFrom(entitypatch.getClass())) {
 				return Optional.of((T)entitypatch);
 			}
+		}
+		
+		return Optional.empty();
+	}
+	
+	/**
+	 * Returns {@link PlayerPatch} from a player
+	 * @param player A player to extract the entity patch
+	 */
+	public static Optional<PlayerPatch<?>> getPlayerPatch(Entity entity) {
+		EntityPatch<?> entitypatch = entity.getCapability(EpicFightCapabilities.CAPABILITY_ENTITY).orElse(null);
+		
+		if (entitypatch instanceof PlayerPatch<?> playerpatch) {
+			return Optional.of(playerpatch);
+		}
+		
+		return Optional.empty();
+	}
+	
+	/**
+	 * Returns {@link LocalPlayerPatch} from a local player
+	 * Warning: developers must check physical & logical side before calling this method
+	 * <p>
+	 * @param player A player to extract the entity patch
+	 */
+	public static Optional<LocalPlayerPatch> getLocalPlayerPatch(Entity entity) {
+		EntityPatch<?> entitypatch = entity.getCapability(EpicFightCapabilities.CAPABILITY_ENTITY).orElse(null);
+		
+		if (entitypatch instanceof LocalPlayerPatch localplayerpatch) {
+			return Optional.of(localplayerpatch);
+		}
+		
+		return Optional.empty();
+	}
+	
+	/**
+	 * Returns {@link ServerPlayerPatch} from a server player
+	 * Warning: developers must check logical side before calling this method
+	 * <p>
+	 * @param player A player to extract the entity patch
+	 */
+	public static Optional<ServerPlayerPatch> getServerPlayerPatch(Entity entity) {
+		EntityPatch<?> entitypatch = entity.getCapability(EpicFightCapabilities.CAPABILITY_ENTITY).orElse(null);
+		
+		if (entitypatch instanceof ServerPlayerPatch serverplayerpatch) {
+			return Optional.of(serverplayerpatch);
 		}
 		
 		return Optional.empty();

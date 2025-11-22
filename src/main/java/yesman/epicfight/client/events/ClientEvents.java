@@ -17,6 +17,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.Mod;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
@@ -118,13 +119,17 @@ public class ClientEvents {
 			if (!playerpatch.getEntityState().canUseItem()) {
 				event.setCanceled(true);
 			} else if (playerpatch.getOriginal().getOffhandItem().getUseAnimation() == UseAnim.NONE) {
-				boolean canceled = playerpatch.getEventListener().triggerEvents(EventType.CLIENT_ITEM_USE_EVENT, new RightClickItemEvent<>(playerpatch));
+				boolean canceled = playerpatch.getEventListener().triggerEvents(EventType.CLIENT_ITEM_USE_EVENT, new RightClickItemEvent<> (playerpatch));
 				
 				if (playerpatch.getEntityState().movementLocked()) {
 					canceled = true;
 				}
 				
 				event.setCanceled(canceled);
+			}
+			
+			if (!event.isCanceled()) {
+				EpicFightCameraAPI.getInstance().onItemUseHook(event.getEntity(), playerpatch, event.getItemStack(), event.getHand());
 			}
 		});
 	}
