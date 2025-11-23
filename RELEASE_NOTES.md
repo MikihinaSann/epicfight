@@ -28,6 +28,13 @@
 - Fixed a bug that allowed the player to replace the current skill slot even during cooldown.
 - Fixed the mining crosshair not to show in vanilla mode
 
+### For Devs
+
+- New API feature: Hooks
+    - Replaces the mod-loader event system into Epic Fight API, as we planning to support multi-loader developer environment
+    - The feautre is still WIP, supporting only events for EpicFightCameraAPI
+    - We will eventually replace all Forge/Neoforge events owned by Epic Fight into Hooks
+
 ## [20.13.6] - 2025-11-12
 
 ### Fixed
