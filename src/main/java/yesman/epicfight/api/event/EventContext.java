@@ -1,4 +1,4 @@
-package yesman.epicfight.api.hook;
+package yesman.epicfight.api.event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,7 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * A hook context that holds who called the event so far
+ * A event context that holds who called the event so far
  * and who canceled the event
  * <p>
  * Developers can decide whether fire the event or not
@@ -24,28 +24,28 @@ public class EventContext {
 	private String currentSubscriber;
 	
 	/**
-	 * Returns if the hook is cancel by anyone
+	 * Returns if the event is cancel by anyone
 	 */
 	public boolean isCanceled() {
 		return !this.canceledBy.isEmpty();
 	}
 	
 	/**
-	 * Returns if the hook is cancel by a specific subscriber
+	 * Returns if the event is cancel by a specific subscriber
 	 */
 	public boolean isCanceledBy(String name) {
 		return this.canceledBy.contains(name);
 	}
 	
 	/**
-	 * Returns if the hook is called by a specific subscriber
+	 * Returns if the event is called by a specific subscriber
 	 */
 	public boolean hasCalledBy(String name) {
 		return this.calledBy.contains(name);
 	}
 	
 	/**
-	 * Only used by {@link Hook#post} and {@link CancelableHook#post}
+	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
 	 */
 	@ApiStatus.Internal
 	public void onCalled() {
@@ -61,7 +61,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link Hook#post} and {@link CancelableHook#post}
+	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
 	 */
 	@ApiStatus.Internal
 	public void subscriptionStart(String name) {
@@ -69,7 +69,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link Hook#post} and {@link CancelableHook#post}
+	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
 	 */
 	@ApiStatus.Internal
 	public void subscriptionEnd() {

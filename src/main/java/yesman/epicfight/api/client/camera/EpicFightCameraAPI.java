@@ -39,9 +39,9 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles;
 import net.minecraftforge.entity.PartEntity;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
-import yesman.epicfight.api.client.hook.EpicFightClientHooks;
-import yesman.epicfight.api.client.hook.instances.BuildCameraTransform;
-import yesman.epicfight.api.client.hook.instances.ItemUsedInDecoupledCamera;
+import yesman.epicfight.api.client.event.EpicFightClientEvents;
+import yesman.epicfight.api.client.event.instances.BuildCameraTransform;
+import yesman.epicfight.api.client.event.instances.ItemUsedInDecoupledCamera;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.handlers.InputManager;
 import yesman.epicfight.api.utils.math.MathUtils;
@@ -195,7 +195,7 @@ public final class EpicFightCameraAPI {
 	 * will look at the crosshair forever.
 	 * <p>
 	 * Alternatively, if you want to focus the player to crosshair for specific item use, you can
-	 * consider registering {@link EpicFightClientHooks.Camera#ITEM_USED_WHEN_DECOUPLED} for better maintenance
+	 * consider registering {@link EpicFightClientEvents.Camera#ITEM_USED_WHEN_DECOUPLED} for better maintenance
 	 * <p>
 	 * @param flag 	whether the player should follow the camera view
 	 */
@@ -735,10 +735,10 @@ public final class EpicFightCameraAPI {
 			return false;
 		}
 		
-		BuildCameraTransform.Pre hook = new BuildCameraTransform.Pre(this, camera, partialTick);
-		EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.post(hook);
+		BuildCameraTransform.Pre event = new BuildCameraTransform.Pre(this, camera, partialTick);
+		EpicFightClientEvents.Camera.BUILD_TRANSFORM_PRE.post(event);
 		
-		if (hook.hasCanceled()) {
+		if (event.hasCanceled()) {
 			return true;
 		}
 		
@@ -851,7 +851,7 @@ public final class EpicFightCameraAPI {
 	 */
 	@ApiStatus.Internal
 	public void fireCameraBuildPost(Camera camera, float partialTick) {
-		EpicFightClientHooks.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
+		EpicFightClientEvents.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
 	}
 	
 	/**
@@ -882,7 +882,7 @@ public final class EpicFightCameraAPI {
 	}
 	
 	@ApiStatus.Internal
-	public void onItemUseHook(Player player, PlayerPatch<?> playerpatch, ItemStack itemstack, InteractionHand hand) {
-		if (this.isTPSMode()) EpicFightClientHooks.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
+	public void onItemUseEvent(Player player, PlayerPatch<?> playerpatch, ItemStack itemstack, InteractionHand hand) {
+		if (this.isTPSMode()) EpicFightClientEvents.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
 	}
 }

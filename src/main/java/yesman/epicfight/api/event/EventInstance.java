@@ -1,26 +1,26 @@
-package yesman.epicfight.api.hook;
+package yesman.epicfight.api.event;
 
 import org.jetbrains.annotations.ApiStatus;
 
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.hook.subscriptions.ContextAwareHookSubscription;
+import yesman.epicfight.api.event.subscriptions.ContextAwareEventSubscription;
 
 /**
- * When {@link Hook} is fired, the typed event instance should be created. Refer to
- * {@link EpicFightCameraAPI#onItemUseHook} to see the usage
+ * When {@link Event} is fired, the typed event instance should be created. Refer to
+ * {@link EpicFightCameraAPI#onItemUseEvent} to see the usage
  */
 public abstract class EventInstance {
 	/**
-	 * Holds information about whose called the event by hook so far,
+	 * Holds information about whose called the event by event so far,
 	 * and who canceled the event
 	 * <p>
-	 * the name of subscribers are specified as parameter in {@link Hook#registerPassiveHook} and
-	 * {@link CancelableHook#registerCancelableHook} and {@link CancelableHook#registerContextAwareHook}
+	 * the name of subscribers are specified as parameter in {@link Event#registerPassiveevent} and
+	 * {@link CancelableEvent#registerCancelableevent} and {@link CancelableEvent#registerContextAwareevent}
 	 */
 	private EventContext eventContext;
 	
 	/**
-	 * Returns whether the event hook canceled
+	 * Returns whether the event event canceled
 	 * This method requires the class to inherit {@link CancelableEventInstance} to be used property,
 	 * or it always returns false
 	 */
@@ -33,20 +33,20 @@ public abstract class EventInstance {
 	}
 	
 	/**
-	 * Cancels the event hook
+	 * Cancels the event event
 	 * This method requires the class to inherit {@link CancelableEventInstance} to be used
 	 */
 	public void cancel() {
 		if (!(this instanceof CancelableEventInstance)) {
-			throw new IllegalStateException("Unable to cancel a non cancelable hook");
+			throw new IllegalStateException("Unable to cancel a non cancelable event");
 		}
 		
 		this.eventContext.onCanceled();
 	}
 	
 	/**
-	 * Initialize {@link EventContext}, which is used by {@link ContextAwareHookSubscription}
-	 * only called by {@link Hook#post}
+	 * Initialize {@link EventContext}, which is used by {@link ContextAwareEventSubscription}
+	 * only called by {@link Event#post}
 	 */
 	@ApiStatus.Internal
 	public EventContext initEventContext() {

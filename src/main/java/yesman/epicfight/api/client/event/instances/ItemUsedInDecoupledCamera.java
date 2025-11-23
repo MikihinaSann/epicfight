@@ -1,10 +1,10 @@
-package yesman.epicfight.api.client.hook.instances;
+package yesman.epicfight.api.client.event.instances;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.hook.EventInstance;
+import yesman.epicfight.api.event.EventInstance;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class ItemUsedInDecoupledCamera extends EventInstance {

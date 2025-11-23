@@ -1,6 +1,6 @@
 @FieldsAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-package yesman.epicfight.api.client.hook.instances;
+package yesman.epicfight.api.event.instances;
 
 import net.minecraft.FieldsAreNonnullByDefault;
 import net.minecraft.MethodsReturnNonnullByDefault;

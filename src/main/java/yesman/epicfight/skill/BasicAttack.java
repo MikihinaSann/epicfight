@@ -33,11 +33,8 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 public class BasicAttack extends Skill {
 	private static final UUID EVENT_UUID = UUID.fromString("a42e0198-fdbc-11eb-9a03-0242ac130003");
-
-    private float dashAttackConsumption = 0f;
-    private float airAttackConsumption = 0f;
-
-	/** Decides if the animation used for combo attack **/
+	
+	/// Decides if the animation used for combo attack
 	public static final IndependentAnimationVariableKey<Boolean> COMBO = AnimationVariables.independent(animator -> false, false);
 	
 	public static SkillBuilder<BasicAttack> createBasicAttackBuilder() {
@@ -50,6 +47,10 @@ public class BasicAttack extends Skill {
 		container.getExecutor().getEventListener().triggerEvents(EventType.COMBO_COUNTER_HANDLE_EVENT, comboResetEvent);
 		container.getDataManager().setData(SkillDataKeys.COMBO_COUNTER.get(), comboResetEvent.getNextValue());
 	}
+	
+	/// Consumption amount when basic attacks set to use stamina
+    private float dashAttackConsumption = 0f;
+    private float airAttackConsumption = 0f;
 	
 	public BasicAttack(SkillBuilder<? extends BasicAttack> builder) {
 		super(builder);
@@ -74,23 +75,6 @@ public class BasicAttack extends Skill {
 			}
 		});
 	}
-
-    protected boolean checkConsumption(SkillContainer container, boolean dash, boolean air) {
-        if (air) {
-            if (resource == Resource.STAMINA) {
-                return container.getExecutor().consumeForSkill(this, resource, container.getExecutor().getModifiedStaminaConsume(airAttackConsumption));
-            }
-            return container.getExecutor().consumeForSkill(this, resource, airAttackConsumption);
-        }
-        if (dash) {
-            if (resource == Resource.STAMINA) {
-                return container.getExecutor().consumeForSkill(this, resource, container.getExecutor().getModifiedStaminaConsume(dashAttackConsumption));
-            }
-            return container.getExecutor().consumeForSkill(this, resource, dashAttackConsumption);
-
-        }
-        return container.getExecutor().consumeForSkill(this, resource);
-    }
 	
 	@Override
 	public void onRemoved(SkillContainer container) {
@@ -100,8 +84,8 @@ public class BasicAttack extends Skill {
     @Override
     public void setParams(CompoundTag parameters) {
         super.setParams(parameters);
-        dashAttackConsumption = parameters.getFloat("dash_attack_consumption");
-        airAttackConsumption = parameters.getFloat("air_attack_consumption");
+        this.dashAttackConsumption = parameters.getFloat("dash_attack_consumption");
+        this.airAttackConsumption = parameters.getFloat("air_attack_consumption");
     }
 
     @Override
@@ -165,7 +149,7 @@ public class BasicAttack extends Skill {
 		
 		setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
 		
-		if (attackMotion != null && checkConsumption(skillContainer, dashAttack, airAttack)) {
+		if (attackMotion != null && this.checkConsumption(skillContainer, dashAttack, airAttack)) {
 			executor.getAnimator().getVariables().put(COMBO, attackMotion, true);
 			executor.getAnimator().playAnimation(attackMotion, 0.0F);
 			
@@ -190,4 +174,21 @@ public class BasicAttack extends Skill {
 			setComboCounterWithEvent(ComboCounterHandleEvent.Causal.TIME_EXPIRED, container.getServerExecutor(), container, null, 0);
 		}
 	}
+	
+	/**
+	 * Checks the consumption of the skill based on dash, air attack states
+	 */
+    protected boolean checkConsumption(SkillContainer container, boolean dash, boolean air) {
+    	float finalConsumption = air ? this.airAttackConsumption : this.dashAttackConsumption;
+    	
+    	if (this.resource == Resource.STAMINA) {
+    		finalConsumption = container.getExecutor().getModifiedStaminaConsume(finalConsumption);
+    	}
+    	
+    	if (air || dash) {
+    		return container.getExecutor().consumeForSkill(this, this.resource, finalConsumption);
+    	} else {
+    		return container.getExecutor().consumeForSkill(this, this.resource);
+    	}
+    }
 }

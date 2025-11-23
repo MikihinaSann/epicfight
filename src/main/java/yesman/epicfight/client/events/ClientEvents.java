@@ -129,7 +129,7 @@ public class ClientEvents {
 			}
 			
 			if (!event.isCanceled()) {
-				EpicFightCameraAPI.getInstance().onItemUseHook(event.getEntity(), playerpatch, event.getItemStack(), event.getHand());
+				EpicFightCameraAPI.getInstance().onItemUseEvent(event.getEntity(), playerpatch, event.getItemStack(), event.getHand());
 			}
 		});
 	}

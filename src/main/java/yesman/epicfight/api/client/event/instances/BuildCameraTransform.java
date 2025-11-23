@@ -1,9 +1,9 @@
-package yesman.epicfight.api.client.hook.instances;
+package yesman.epicfight.api.client.event.instances;
 
 import net.minecraft.client.Camera;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.hook.CancelableEventInstance;
-import yesman.epicfight.api.hook.EventInstance;
+import yesman.epicfight.api.event.CancelableEventInstance;
+import yesman.epicfight.api.event.EventInstance;
 
 public abstract class BuildCameraTransform extends EventInstance {
 	private final EpicFightCameraAPI cameraApi;

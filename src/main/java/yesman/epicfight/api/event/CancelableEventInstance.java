@@ -1,17 +1,17 @@
-package yesman.epicfight.api.hook;
+package yesman.epicfight.api.event;
 
 /**
  * An interface for event instances that represents
- * {@link CancelableHook}
+ * {@link CancelableEvent}
  */
 public interface CancelableEventInstance {
 	/**
-	 * Returns whether the hook is cancelled
+	 * Returns whether the event is cancelled
 	 */
 	boolean hasCanceled();
 	
 	/**
-	 * Cancel the hook
+	 * Cancel the event
 	 */
 	void cancel();
 }
