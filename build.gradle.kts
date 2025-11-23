@@ -1,3 +1,5 @@
+import com.google.gson.JsonParser
+
 plugins {
     `java-library`
     id("net.neoforged.moddev").version("2.0.120")
@@ -14,9 +16,10 @@ val mcVersion = providers.gradleProperty("minecraft_version").get()
 val neoforgeVersion = providers.gradleProperty("neo_version").get()
 val modId = providers.gradleProperty("mod_id").get()
 val modLoader = "neoforge"
+val modGroupId = providers.gradleProperty("mod_group_id").get()
 
 version = modVersion
-group = providers.gradleProperty("mod_group_id").get()
+group = modGroupId
 
 repositories {
     fun strictMaven(url: String, includeGroup: String, name: String? = null) {
@@ -119,29 +122,29 @@ configurations {
 dependencies {
     val localRuntime by configurations.getting
 
-    // JEI compatibility (optional)
+    // JEI compatibility
     val jeiVersion = providers.gradleProperty("jei_version").get()
     compileOnly("mezz.jei:jei-${mcVersion}-common-api:${jeiVersion}")
     compileOnly("mezz.jei:jei-${mcVersion}-neoforge-api:${jeiVersion}")
     localRuntime("mezz.jei:jei-${mcVersion}-neoforge:${jeiVersion}")
 
-    // Azurelib, Azurelib armor, Geckolib compatibility (optional)
+    // Azurelib, Azurelib armor, Geckolib compatibility
     compileOnly("curse.maven:azurelib-817423:7084472")
     compileOnly("curse.maven:azurelib-armor-912767:7084466")
     compileOnly("curse.maven:geckolib-388172:6304958")
 
-    // Iris, Sodium compatibility, compute shader compat (optional)
+    // Iris, Sodium, and compute shader compatibility
     compileOnly("curse.maven:irisshaders-455508:6661598")
     compileOnly("curse.maven:sodium-394468:6382651")
 
-    // Werewolves, Vampirism compatibility, baking layer model for vampire and visibility fix when transform to the wolf (optional)
+    // Werewolves, Vampirism compatibility, baking layer model for vampire and visibility fix when transform to the wolf
     compileOnly("curse.maven:werewolves-become-a-beast-417851:6538693")
     compileOnly("curse.maven:vampirism-become-a-vampire-233029:6544569")
 
-    // Curios compatibility, baking curio models from curio slots (optional)
+    // Curios compatibility, baking curio models from curio slots
     compileOnly("curse.maven:curios-309927:6529130")
 
-    // Player animator compatibility, emote fix (optional)
+    // Player animator compatibility, emote fix
     compileOnly("curse.maven:playeranimator-658587:6024462")
 
     // KubeJS compatibility
@@ -149,27 +152,27 @@ dependencies {
     compileOnly("dev.latvian.mods:rhino-neoforge:${providers.gradleProperty("rhino_version").get()}")
     compileOnly("dev.architectury:architectury-neoforge:${providers.gradleProperty("architectury_version").get()}")
 
-    // Libraries for tr7zw featured mods (optional, when you dependent your project on 3D Skin Layers or First-person)
+    // Libraries for tr7zw featured mods (when you dependent your project on 3D Skin Layers or First-person)
     compileOnly("libs:TRansition:1.0.6")
     compileOnly("libs:TRender:1.0.7")
 
-    // Skinlayer3d compatibility (optional)
+    // Skinlayer3d compatibility
     compileOnly("maven.modrinth:3dskinlayers:B7MZQ4xS")
 
-    // First-person compatibility (optional)
+    // First-person compatibility
     compileOnly("maven.modrinth:first-person-model:QWJDSZiH") // 2.5.0
 
-    // Shoulder Surfing Reloaded compatibility (optional, uncomment the runtimeOnly to test the mod)
+    // Shoulder Surfing Reloaded compatibility (uncomment the runtimeOnly to test the mod)
     compileOnly("curse.maven:shoulder-surfing-reloaded-243190:6993797") // API only
     //runtimeOnly "curse.maven:shoulder-surfing-reloaded-243190:6993795" // Full mod JAR file
 
+    // Controlify (controller support) compatibility.
     // Change "compileOnly" to "implementation" for testing in-game.
     compileOnly("dev.isxander:controlify:${providers.gradleProperty("controlify_version").get()}") {
         // Only need Controlify API, ignore the transitive dependencies (e.g, QuiltMC parsers)
         isTransitive = false
     }
 }
-
 
 val generationTaskGroup = "generation"
 
@@ -209,13 +212,126 @@ idea {
     }
 }
 
+fun getGeneratedPackageName() = "$group.generated"
+
+fun getModAssetsDirPath() = "src/main/resources/assets/$modId"
+fun getGenOutputDirPath(taskName: String) = "generated/$taskName/src/main/java"
+
+val enUsResourcePath = "${getModAssetsDirPath()}/lang/en_us.json"
+
+val generateLangKeys = registerKeyConstantsFromJsonFileTask(
+    name = "generateLangKeys",
+    inputFilePath = enUsResourcePath,
+    outputClassName = "LangKeys",
+    taskDescription = buildString {
+        append("A generated object that represents the keys in `$enUsResourcePath` resource file,")
+        appendLine()
+        append("to avoid hardcoding the keys across the codebase, which is error-prone, inefficient, and less type-safe.")
+        appendLine(); appendLine();
+        append("**Note:** Breaking changes may occur. This approach is preferred over hardcoding keys, which can lead to runtime errors or crashes.")
+    }
+)
+
+fun registerKeyConstantsFromJsonFileTask(
+    name: String,
+    inputFilePath: String,
+    outputClassName: String,
+    taskDescription: String
+): TaskProvider<Task> {
+    val task = tasks.register(name) {
+        group = generationTaskGroup
+        description = taskDescription
+
+        val taskName = name
+
+        val inputFile = layout.projectDirectory.file(inputFilePath)
+        val outputDir = layout.buildDirectory.dir(getGenOutputDirPath(taskName))
+
+        inputs.file(inputFile)
+        outputs.dir(outputDir)
+
+        val generatedPackageName = getGeneratedPackageName()
+
+        // Required for Gradle configuration caching; using `modId`
+        // directly inside `doLast` can cause the build to fail.
+        // Required to fix "Configuration cache problems found in this build."
+        val cachedModId = modId
+
+        doLast {
+            val file = inputFile.asFile
+            if (!file.exists()) return@doLast
+
+            fun parseKeys(file: File): Map<String, String> {
+                val parser = JsonParser.parseString(file.readText())
+                return parser.asJsonObject.entrySet().associate { (key, _) ->
+                    val constName = key
+                        // Remove mod id if present
+                        .replace(".$cachedModId", "", ignoreCase = true)
+                        // Convert camelCase to snake_case
+                        .replace(Regex("([a-z])([A-Z])"), "$1_$2")
+                        .replace(".", "_")
+                        .uppercase()
+
+                    constName to key
+                }
+            }
+
+            val constants = parseKeys(file)
+
+            val generatedConstVals = constants.map { (constName, key) ->
+                "    public static final String $constName = \"$key\";"
+            }
+
+            val classFile = outputDir.get().asFile
+                .resolve(generatedPackageName.replace('.', '/'))
+                .apply { mkdirs() }
+                .resolve("$outputClassName.java")
+            classFile.parentFile.mkdirs()
+
+            classFile.writeText(
+                """
+                |package $generatedPackageName;
+                |
+                |import org.jetbrains.annotations.ApiStatus;
+                |
+                |${
+                    taskDescription
+                        .lines()
+                        .joinToString(separator = "\n/// ", prefix = "/// ")
+                }
+                |///
+                |/// This file is fully generated by Gradle scripts. Do not modify directly, as all changes will be reverted.
+                |/// Update the task `$taskName` in `build.gradle.kts` if needed.
+                |@ApiStatus.Internal
+                |public final class $outputClassName {
+                |    private $outputClassName() {
+                |    }
+                |
+                |${generatedConstVals.joinToString("\n")}
+                |}
+            """.trimMargin()
+            )
+
+            println("Generated `$outputClassName`: ${classFile.path}")
+        }
+    }
+    return task
+}
+
+java.sourceSets.main.get().apply {
+    java.srcDir(generateLangKeys.map { it.outputs.files.singleFile })
+}
+
+tasks.compileJava {
+    dependsOn(generateLangKeys)
+}
+
 publishMods {
     val readme = project.file("RELEASE_NOTES.md")
     val readmeContent = readme.readText()
     val pattern = "(?s)## \\[$modVersion\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"
     val matcher = Regex(pattern).find(readmeContent)
 
-    // No publishing without matching changelog
     if (matcher == null) {
         println("No matching changelog found for version $modVersion in RELEASE_NOTES.md. Publishing is skipped.")
         return@publishMods
@@ -224,7 +340,7 @@ publishMods {
     // Extract the latest changelog without the header and API change part
     val latestChangelog = matcher.groupValues[1]
 
-    // Test run to see the notification works well in discord
+    // Test run to see the notification works well in Discord
     dryRun.set(true)
 
     changelog.set(
@@ -235,22 +351,17 @@ publishMods {
     """.trimIndent()
     )
 
-    // The name of the mod loader
     modLoaders.add("neoforge")
-
     type.set(STABLE)
-
     displayName.set(getFullModVersion())
-
     file.set(tasks.jar.get().archiveFile)
     additionalFiles.from(sourcesJar)
-
 
     curseforge {
         accessToken.set(providers.environmentVariable("CURSEFORGE_TOKEN"))
         projectId.set("405076")
         minecraftVersions.add(mcVersion)
-        projectSlug.set("epic-fight-mod")
+        projectSlug.set("epic-fight-mod") // Required for Discord notification
     }
 
     modrinth {
@@ -263,6 +374,7 @@ publishMods {
             providers.fileContents(layout.projectDirectory.file("README.md")).asText
         )
     }
+
     // Discord webhook and notification settings
     discord {
         webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
