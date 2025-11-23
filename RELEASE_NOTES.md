@@ -30,10 +30,12 @@
 
 ### For Devs
 
-- New API feature: Hooks
+- New API feature: Events
     - Replaces the mod-loader event system into Epic Fight API, as we planning to support multi-loader developer environment
     - The feautre is still WIP, supporting only events for EpicFightCameraAPI
-    - We will eventually replace all Forge/Neoforge events owned by Epic Fight into Hooks
+    - We will eventually replace all Forge/Neoforge events owned by Epic Fight into Events
+- Rename the experimental enum `EpicFightInputActions` to `EpicFightInputAction` to follow Java naming
+  conventions. [#2194](https://github.com/Epic-Fight/epicfight/issues/2194)
 
 ## [20.13.6] - 2025-11-12
 
