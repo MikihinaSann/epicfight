@@ -1,7 +1,5 @@
 package yesman.epicfight.events;
 
-import java.io.File;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
@@ -29,6 +27,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import java.io.File;
 
 @EventBusSubscriber(modid = EpicFightMod.MODID)
 public final class PlayerEvents {
@@ -83,7 +83,7 @@ public final class PlayerEvents {
 	@SubscribeEvent
 	public static void cloneEvent(PlayerEvent.Clone event) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getOriginal(), ServerPlayerPatch.class).ifPresent(oldCap -> {
-			EpicFightCapabilities.<ServerPlayer, ServerPlayerPatch>getParameterizedEntityPatch(event.getEntity(), ServerPlayer.class, ServerPlayerPatch.class).ifPresent(newCap -> {
+            EpicFightCapabilities.getPlayerPatch(event.getEntity()).ifPresent(newCap -> {
 				if ((!event.isWasDeath() || EpicFightGameRules.KEEP_SKILLS.getRuleValue(event.getOriginal().level()))) {
 					newCap.copyOldData(oldCap, event.isWasDeath());
 				}
@@ -139,7 +139,7 @@ public final class PlayerEvents {
 	
 	@SubscribeEvent
 	public static void itemUseStartEvent(LivingEntityUseItemEvent.Start event) {
-		EpicFightCapabilities.<Player, PlayerPatch<Player>>getParameterizedEntityPatch(event.getEntity(), Player.class, PlayerPatch.class).ifPresent(playerpatch -> {
+        EpicFightCapabilities.getPlayerPatch(event.getEntity()).ifPresent(playerpatch -> {
 			InteractionHand hand = playerpatch.getOriginal().getItemInHand(InteractionHand.MAIN_HAND).equals(event.getItem()) ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 			CapabilityItem itemCap = playerpatch.getHoldingItemCapability(hand);
 			

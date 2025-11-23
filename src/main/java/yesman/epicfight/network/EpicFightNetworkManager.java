@@ -1,9 +1,5 @@
 package yesman.epicfight.network;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,41 +16,14 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.DirectionalPayloadHandler;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import yesman.epicfight.main.EpicFightMod;
-import yesman.epicfight.network.client.CPAnimatorControl;
-import yesman.epicfight.network.client.CPChangePlayerMode;
-import yesman.epicfight.network.client.CPChangeSkill;
-import yesman.epicfight.network.client.CPHandleSkillData;
-import yesman.epicfight.network.client.CPModifyEntityModelYRot;
-import yesman.epicfight.network.client.CPPairingAnimationRegistry;
-import yesman.epicfight.network.client.CPSetPlayerTarget;
-import yesman.epicfight.network.client.CPSetStamina;
-import yesman.epicfight.network.client.CPSkillRequest;
-import yesman.epicfight.network.client.CPUpdatePlayerInput;
+import yesman.epicfight.network.client.*;
 import yesman.epicfight.network.common.BiDirectionalAnimationVariable;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;
-import yesman.epicfight.network.server.SPAbsorption;
-import yesman.epicfight.network.server.SPAddLearnedSkill;
-import yesman.epicfight.network.server.SPAnimatorControl;
-import yesman.epicfight.network.server.SPChangeGamerule;
-import yesman.epicfight.network.server.SPChangeLivingMotion;
-import yesman.epicfight.network.server.SPChangePlayerMode;
-import yesman.epicfight.network.server.SPChangeSkill;
-import yesman.epicfight.network.server.SPClearSkills;
-import yesman.epicfight.network.server.SPCreateTerrainFracture;
-import yesman.epicfight.network.server.SPDatapackSync;
-import yesman.epicfight.network.server.SPEntityPairingPacket;
-import yesman.epicfight.network.server.SPHandleSkillData;
-import yesman.epicfight.network.server.SPInitSkills;
-import yesman.epicfight.network.server.SPMobEffectControl;
-import yesman.epicfight.network.server.SPModifyExpandedEntityData;
-import yesman.epicfight.network.server.SPModifyPlayerData;
-import yesman.epicfight.network.server.SPPlayUISound;
-import yesman.epicfight.network.server.SPRemoveSkillAndLearn;
-import yesman.epicfight.network.server.SPSetAttackTarget;
-import yesman.epicfight.network.server.SPSetRemotePlayerSkill;
-import yesman.epicfight.network.server.SPSetSkillContainerValue;
-import yesman.epicfight.network.server.SPSkillFeedback;
-import yesman.epicfight.network.server.SPUpdatePlayerInput;
+import yesman.epicfight.network.server.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
 
 @EventBusSubscriber(modid = EpicFightMod.MODID)
 public class EpicFightNetworkManager {
@@ -323,12 +292,10 @@ public class EpicFightNetworkManager {
 		}
 		
 		public void send(BiConsumer<CustomPacketPayload, CustomPacketPayload[]> sendTo) {
-			if (this.payloads.size() == 0) {
-				// Do nothing
-			} else if (this.payloads.size() == 1) {
-				sendTo.accept(this.payloads.get(0), new CustomPacketPayload[0]);
-			} else {
-				sendTo.accept(this.payloads.get(0), this.payloads.subList(1, this.payloads.size()).toArray(new CustomPacketPayload[0]));
+			if (this.payloads.size() == 1) {
+				sendTo.accept(this.payloads.getFirst(), new CustomPacketPayload[0]);
+			} else if (!this.payloads.isEmpty()) {
+				sendTo.accept(this.payloads.getFirst(), this.payloads.subList(1, this.payloads.size()).toArray(new CustomPacketPayload[0]));
 			}
 		}
 	}

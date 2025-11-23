@@ -296,9 +296,9 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 
         if (cameraApi.isTPSMode()) {
             if (cameraApi.getFocusingEntity() != null && animation instanceof AttackAnimation) {
-                this.original.setYRot((float)MathUtils.getYRotOfVector(cameraApi.getFocusingEntity().getEyePosition().subtract(this.original.getEyePosition())));
+                cameraApi.alignPlayerLookToCrosshair(false);
             } else {
-                cameraApi.alignPlayerLookToCamera();
+                cameraApi.alignPlayerLookToCameraRotation(false);
             }
         }
 

@@ -206,16 +206,14 @@ public class ControlEngine implements IEventBasedEngine {
 		}
 		
 		if (this.attackLightPressToggle) {
-			SkillContainer airSlash = this.playerpatch.getSkill(SkillSlots.AIR_SLASH);
-			SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_SLASH : SkillSlots.COMBO_ATTACKS;
-			SkillCastEvent skillCastEvent = this.playerpatch.getSkill(slot).sendCastRequest(this.playerpatch, this);
+			SkillCastEvent skillCastEvent = this.playerpatch.getSkill(SkillSlots.COMBO_ATTACKS).sendCastRequest(this.playerpatch, this);
 			
 			if (skillCastEvent.isExecutable()) {
 				this.player.resetAttackStrengthTicker();
 				this.releaseAllServedKeys();
 			} else {
-				if (!this.player.isSpectator() && slot == SkillSlots.COMBO_ATTACKS) {
-					this.reserveKey(slot, EpicFightInputAction.ATTACK);
+				if (!this.player.isSpectator()) {
+					this.reserveKey(SkillSlots.COMBO_ATTACKS, EpicFightInputAction.ATTACK);
 				}
 			}
 			
@@ -355,17 +353,15 @@ public class ControlEngine implements IEventBasedEngine {
 
         if (shouldPlayAttackAnimation) {
             if (!InputManager.isBoundToSamePhysicalInput(epicFightAttack, EpicFightInputAction.WEAPON_INNATE_SKILL)) {
-                SkillContainer airSlash = this.playerpatch.getSkill(SkillSlots.AIR_SLASH);
-                SkillSlot slot = (this.tickSinceLastJump > 0 && airSlash.getSkill() != null && airSlash.getSkill().canExecute(airSlash)) ? SkillSlots.AIR_SLASH : SkillSlots.COMBO_ATTACKS;
-                SkillCastEvent skillCastEvent = this.playerpatch.getSkill(slot).sendCastRequest(this.playerpatch, this);
+                SkillCastEvent skillCastEvent = this.playerpatch.getSkill(SkillSlots.COMBO_ATTACKS).sendCastRequest(this.playerpatch, this);
 
                 if (skillCastEvent.isExecutable()) {
                     this.player.resetAttackStrengthTicker();
                     this.attackLightPressToggle = false;
                     this.releaseAllServedKeys();
                 } else {
-                    if (!this.player.isSpectator() && slot == SkillSlots.COMBO_ATTACKS) {
-                        this.reserveKey(slot, epicFightAttack);
+                    if (!this.player.isSpectator()) {
+                        this.reserveKey(SkillSlots.COMBO_ATTACKS, epicFightAttack);
                     }
                 }
 

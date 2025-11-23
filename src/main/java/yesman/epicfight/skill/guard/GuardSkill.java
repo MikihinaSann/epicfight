@@ -1,13 +1,5 @@
 package yesman.epicfight.skill.guard;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
@@ -50,11 +42,7 @@ import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.registry.entries.EpicFightSounds;
-import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillBuilder;
-import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillEvent;
+import yesman.epicfight.skill.*;
 import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -66,6 +54,13 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class GuardSkill extends Skill implements HoldableSkill {
 	public static class Builder extends SkillBuilder<GuardSkill.Builder> {
@@ -303,20 +298,15 @@ public class GuardSkill extends Skill implements HoldableSkill {
 	protected float getPenalizer(CapabilityItem itemCapability) {
 		return this.penalizer;
 	}
-	
-	protected Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> getGuardMotionMap(BlockType blockType) {
-		switch (blockType) {
-		case GUARD_BREAK:
-			return this.guardBreakMotions;
-		case GUARD:
-			return this.guardMotions;
-		case ADVANCED_GUARD:
-			return this.advancedGuardMotions;
-		default:
-			throw new IllegalArgumentException("unsupported block type " + blockType);
-		}
-	}
-	
+
+    protected Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> getGuardMotionMap(BlockType blockType) {
+        return switch (blockType) {
+            case GUARD_BREAK -> this.guardBreakMotions;
+            case GUARD -> this.guardMotions;
+            case ADVANCED_GUARD -> this.advancedGuardMotions;
+        };
+    }
+
 	public boolean isHoldingWeaponAvailable(PlayerPatch<?> playerpatch, CapabilityItem itemCapability, BlockType blockType) {
 		AnimationAccessor<? extends StaticAnimation> anim = itemCapability.getGuardMotion(this, blockType, playerpatch);
 		

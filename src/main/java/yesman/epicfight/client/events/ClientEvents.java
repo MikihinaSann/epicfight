@@ -1,7 +1,6 @@
 package yesman.epicfight.client.events;
 
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
@@ -17,6 +16,7 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ScreenEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.neoevent.playerpatch.StartActionEvent;
 import yesman.epicfight.client.events.engine.ControlEngine;
@@ -126,6 +126,10 @@ public final class ClientEvents {
 				
 				event.setCanceled(canceled);
 			}
+
+            if (!event.isCanceled()) {
+                EpicFightCameraAPI.getInstance().onItemUseEvent(event.getEntity(), playerpatch, event.getItemStack(), event.getHand());
+            }
 		});
 	}
 	

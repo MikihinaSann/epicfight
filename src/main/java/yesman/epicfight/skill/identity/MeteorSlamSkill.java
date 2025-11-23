@@ -1,12 +1,6 @@
 package yesman.epicfight.skill.identity;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 import com.google.common.collect.Maps;
-
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.InteractionHand;
@@ -26,16 +20,17 @@ import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
-import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillBuilder;
-import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillEvent;
+import yesman.epicfight.skill.*;
 import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
+
+import java.util.Map;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class MeteorSlamSkill extends Skill {
 	public static class Builder extends SkillBuilder<MeteorSlamSkill.Builder> {
@@ -79,7 +74,7 @@ public class MeteorSlamSkill extends Skill {
 		if (!container.getExecutor().isLogicalClient()) {
 			Skill skill = event.getSkillContainer().getSkill();
 			
-			if (skill.getCategory() != SkillCategories.BASIC_ATTACK && skill.getCategory() != SkillCategories.AIR_ATTACK) {
+			if (skill.getCategory() != SkillCategories.BASIC_ATTACK) {
 				return;
 			}
 			

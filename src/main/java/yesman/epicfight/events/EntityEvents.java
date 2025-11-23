@@ -583,9 +583,9 @@ public final class EntityEvents {
 	
 	@SubscribeEvent
 	public static void epicfight$flyablePlayerFall(PlayerFlyableFallEvent event) {
-		EpicFightCapabilities.<Player, PlayerPatch<Player>>getParameterizedEntityPatch(event.getEntity(), Player.class, PlayerPatch.class).ifPresent(entitypatch -> {
-			entitypatch.onFall(new LivingFallEvent(event.getEntity(), event.getDistance(), event.getMultiplier()));
-		});
+        EpicFightCapabilities.getPlayerPatch(event.getEntity()).ifPresent(entitypatch -> {
+            entitypatch.onFall(new LivingFallEvent(event.getEntity(), event.getDistance(), event.getMultiplier()));
+        });
 	}
 	
 	@SubscribeEvent

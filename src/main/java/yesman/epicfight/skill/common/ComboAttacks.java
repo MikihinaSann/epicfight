@@ -1,9 +1,6 @@
 package yesman.epicfight.skill.common;
 
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.common.collect.Sets;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -17,30 +14,24 @@ import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimation
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.neoevent.playerpatch.ComboAttackEvent;
-import yesman.epicfight.api.neoevent.playerpatch.ComboCounterHandleEvent;
-import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SkillConsumeEvent;
-import yesman.epicfight.api.neoevent.playerpatch.StartActionEvent;
+import yesman.epicfight.api.neoevent.playerpatch.*;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
-import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillBuilder;
-import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillDataManager;
-import yesman.epicfight.skill.SkillEvent;
+import yesman.epicfight.skill.*;
 import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
+import java.util.List;
+import java.util.Set;
+
 public class ComboAttacks extends Skill {
-	/** Decides if the animation used for combo attack **/
+	/// Decides if the animation used for combo attack
 	public static final IndependentVariableKey<Boolean> COMBO = AnimationVariables.unsyncIndependent(animator -> false, false);
 	
 	public static SkillBuilder<?> createComboAttackBuilder() {
@@ -53,11 +44,22 @@ public class ComboAttacks extends Skill {
 		PlayerPatchEvent.postAndFireSkillListeners(comboResetEvent);
 		container.getDataManager().setData(EpicFightSkillDataKeys.COMBO_COUNTER, comboResetEvent.getNextValue());
 	}
-	
+
+    /// Consumption amount when basic attacks set to use stamina
+    private float dashAttackConsumption = 0f;
+    private float airAttackConsumption = 0f;
+
 	public ComboAttacks(SkillBuilder<?> builder) {
 		super(builder);
 	}
-	
+
+    @Override
+    public void loadDatapackParameters(CompoundTag parameters) {
+        super.loadDatapackParameters(parameters);
+        this.dashAttackConsumption = parameters.getFloat("dash_attack_consumption");
+        this.airAttackConsumption = parameters.getFloat("air_attack_consumption");
+    }
+
 	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER)
 	public void actionEvent(StartActionEvent event, SkillContainer skillContainer) {
 		event.runOnServer(serverplayerpatch -> {
@@ -68,23 +70,23 @@ public class ComboAttacks extends Skill {
 				if (comboAnimations == null) {
 					return;
 				}
-				
-				Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Set.copyOf(comboAnimations.stream().collect(Collectors.toSet()));
-				
-				if (!attackMotionSet.contains(event.getAnimation()) && itemCapability.shouldCancelCombo(serverplayerpatch)) {
+
+                Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Set.copyOf(Sets.newHashSet(comboAnimations));
+
+                if (!attackMotionSet.contains(event.getAnimation()) && itemCapability.shouldCancelCombo(serverplayerpatch)) {
 					setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, serverplayerpatch, skillContainer, event.getAnimation(), 0);
 				}
 			}
 		});
 	}
-	
+
 	@Override
 	public boolean isExecutableState(PlayerPatch<?> executor) {
 		EntityState playerState = executor.getEntityState();
 		Player player = executor.getOriginal();
 		return !(player.isSpectator() || executor.isInAir() || !playerState.canBasicAttack());
 	}
-	
+
 	@Override
 	public void executeOnServer(SkillContainer skillContainer, CompoundTag args) {
 		ServerPlayerPatch executor = skillContainer.getServerExecutor();
@@ -103,11 +105,13 @@ public class ComboAttacks extends Skill {
 		ServerPlayer player = executor.getOriginal();
 		SkillDataManager dataManager = skillContainer.getDataManager();
 		int comboCounter = dataManager.getDataValue(EpicFightSkillDataKeys.COMBO_COUNTER);
-		
-		if (player.isPassenger()) {
+        boolean dashAttack = player.isSprinting();
+        boolean airAttack = !skillContainer.getExecutor().getOriginal().onGround() && !skillContainer.getExecutor().getOriginal().isInWater();
+
+        if (player.isPassenger()) {
 			Entity entity = player.getVehicle();
 			
-			if ((entity instanceof PlayerRideableJumping ridable && ridable.canJump()) && cap.availableOnHorse() && cap.getMountAttackMotion() != null) {
+			if ((entity instanceof PlayerRideableJumping rideable && rideable.canJump()) && cap.availableOnHorse() && cap.getMountAttackMotion() != null) {
 				comboCounter %= cap.getMountAttackMotion().size();
 				attackMotion = cap.getMountAttackMotion().get(comboCounter);
 				comboCounter++;
@@ -118,23 +122,24 @@ public class ComboAttacks extends Skill {
 			if (combo == null) {
 				return;
 			}
-			
-			int comboSize = combo.size();
-			boolean dashAttack = player.isSprinting();
-			
-			if (dashAttack) {
-				comboCounter = comboSize - 2;
-			} else {
-				comboCounter %= comboSize - 2;
-			}
-			
-			attackMotion = combo.get(comboCounter);
-			comboCounter = dashAttack ? 0 : comboCounter + 1;
+
+            int comboSize = combo.size();
+
+            if (airAttack) {
+                comboCounter = comboSize - 1;
+            } else if (dashAttack) {
+                comboCounter = comboSize - 2;
+            } else {
+                comboCounter %= comboSize - 2;
+            }
+
+            attackMotion = combo.get(comboCounter);
+            comboCounter = (dashAttack || airAttack) ? 0 : comboCounter + 1;
 		}
 		
 		setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
-		
-		if (attackMotion != null) {
+
+        if (attackMotion != null && this.checkConsumption(skillContainer, dashAttack, airAttack)) {
 			executor.getAnimator().getVariables().put(COMBO, attackMotion, true);
 			executor.getAnimator().playAnimation(attackMotion, 0.0F);
 			
@@ -152,7 +157,7 @@ public class ComboAttacks extends Skill {
 		
 		executor.updateEntityState();
 	}
-	
+
 	@Override
 	public void updateContainer(SkillContainer container) {
 		container.runOnServer(serverplayerpatch -> {
@@ -161,4 +166,21 @@ public class ComboAttacks extends Skill {
 			}
 		});
 	}
+
+    /**
+     * Checks the consumption of the skill based on dash, air attack states
+     */
+    protected boolean checkConsumption(SkillContainer container, boolean dash, boolean air) {
+        float finalConsumption = air ? this.airAttackConsumption : this.dashAttackConsumption;
+
+        if (this.resource == Resource.STAMINA) {
+            finalConsumption = container.getExecutor().getModifiedStaminaConsume(finalConsumption);
+        }
+
+        if (air || dash) {
+            return container.getExecutor().consumeForSkill(this, this.resource, finalConsumption);
+        } else {
+            return container.getExecutor().consumeForSkill(this, this.resource);
+        }
+    }
 }

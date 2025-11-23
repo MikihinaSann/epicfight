@@ -1,7 +1,5 @@
 package yesman.epicfight.registry.entries;
 
-import java.util.Set;
-
 import net.minecraft.tags.DamageTypeTags;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -14,7 +12,6 @@ import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.Skill.ActivateType;
 import yesman.epicfight.skill.Skill.Resource;
 import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.common.AirSlash;
 import yesman.epicfight.skill.common.ComboAttacks;
 import yesman.epicfight.skill.dodge.DodgeSkill;
 import yesman.epicfight.skill.dodge.KnockdownWakeupSkill;
@@ -25,39 +22,15 @@ import yesman.epicfight.skill.identity.MeteorSlamSkill;
 import yesman.epicfight.skill.identity.RevelationSkill;
 import yesman.epicfight.skill.mover.DemolitionLeapSkill;
 import yesman.epicfight.skill.mover.PhantomAscentSkill;
-import yesman.epicfight.skill.passive.AdaptiveSkinSkill;
-import yesman.epicfight.skill.passive.AdrenalineFiendSkill;
-import yesman.epicfight.skill.passive.BerserkerSkill;
-import yesman.epicfight.skill.passive.BonebreakerSkill;
-import yesman.epicfight.skill.passive.CatharsisSkill;
-import yesman.epicfight.skill.passive.DeathHarvestSkill;
-import yesman.epicfight.skill.passive.EmergencyEscapeSkill;
-import yesman.epicfight.skill.passive.EnduranceSkill;
-import yesman.epicfight.skill.passive.ForbiddenStrengthSkill;
-import yesman.epicfight.skill.passive.HyperVitalitySkill;
-import yesman.epicfight.skill.passive.PassiveSkill;
-import yesman.epicfight.skill.passive.StaminaPillagerSkill;
-import yesman.epicfight.skill.passive.SwordmasterSkill;
-import yesman.epicfight.skill.passive.TechnicianSkill;
-import yesman.epicfight.skill.passive.VengeanceSkill;
+import yesman.epicfight.skill.passive.*;
 import yesman.epicfight.skill.weapon_passive.BattojutsuPassive;
-import yesman.epicfight.skill.weaponinnate.BattojutsuSkill;
-import yesman.epicfight.skill.weaponinnate.BladeRushSkill;
-import yesman.epicfight.skill.weaponinnate.ConditionalWeaponInnateSkill;
-import yesman.epicfight.skill.weaponinnate.EverlastingAllegiance;
-import yesman.epicfight.skill.weaponinnate.EviscerateSkill;
-import yesman.epicfight.skill.weaponinnate.GraspingSpireSkill;
-import yesman.epicfight.skill.weaponinnate.GuillotineAxeSkill;
-import yesman.epicfight.skill.weaponinnate.LiechtenauerSkill;
-import yesman.epicfight.skill.weaponinnate.RushingTempoSkill;
-import yesman.epicfight.skill.weaponinnate.SimpleWeaponInnateSkill;
-import yesman.epicfight.skill.weaponinnate.SteelWhirlwindSkill;
-import yesman.epicfight.skill.weaponinnate.WeaponInnateSkill;
-import yesman.epicfight.skill.weaponinnate.WrathfulLightingSkill;
+import yesman.epicfight.skill.weaponinnate.*;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 import yesman.epicfight.world.damagesource.ExtraDamageInstance;
 import yesman.epicfight.world.damagesource.StunType;
+
+import java.util.Set;
 
 public final class EpicFightSkills {
 	private EpicFightSkills() {}
@@ -71,11 +44,7 @@ public final class EpicFightSkills {
 	public static final DeferredHolder<Skill, ComboAttacks> COMBO_ATTACKS = REGISTRY.register("combo_attacks", key -> 
 		ComboAttacks.createComboAttackBuilder().build(key, ComboAttacks.class)
 	);
-	
-	public static final DeferredHolder<Skill, AirSlash> AIR_SLASH = REGISTRY.register("air_slash", key -> 
-		AirSlash.createAirSlashBuilder().build(key, AirSlash.class)
-	);
-	
+
 	public static final DeferredHolder<Skill, DodgeSkill> ROLL = REGISTRY.register("roll", key -> 
 		DodgeSkill.createDodgeBuilder(DodgeSkill::new)
 			.setAnimations(Animations.BIPED_ROLL_FORWARD, Animations.BIPED_ROLL_BACKWARD)

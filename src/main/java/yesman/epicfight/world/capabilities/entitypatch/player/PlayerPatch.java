@@ -1,14 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.player;
 
-import java.util.Collection;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.jetbrains.annotations.ApiStatus;
-
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
@@ -26,6 +17,7 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
@@ -65,6 +57,12 @@ import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.data.ExpandedSyncedData;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T> {
 	protected static final float PLAYER_SCALE = 0.9375F;
 	
@@ -100,7 +98,6 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		
 		PlayerSkills skillCapability = this.getPlayerSkills();
 		skillCapability.skillContainers[SkillSlots.COMBO_ATTACKS.universalOrdinal()].setSkill(EpicFightSkills.COMBO_ATTACKS.get());
-		skillCapability.skillContainers[SkillSlots.AIR_SLASH.universalOrdinal()].setSkill(EpicFightSkills.AIR_SLASH.get());
 		skillCapability.skillContainers[SkillSlots.KNOCKDOWN_WAKEUP.universalOrdinal()].setSkill(EpicFightSkills.KNOCKDOWN_WAKEUP.get());
 		this.tickSinceLastAction = 0;
 		this.staminaRegenAwaitTicks = 30;

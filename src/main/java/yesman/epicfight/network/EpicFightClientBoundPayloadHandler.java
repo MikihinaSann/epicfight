@@ -1,9 +1,6 @@
 package yesman.epicfight.network;
 
-import java.util.function.BiConsumer;
-
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -25,29 +22,7 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClie
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.common.BiDirectionalAnimationVariable;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;
-import yesman.epicfight.network.server.SPAbsorption;
-import yesman.epicfight.network.server.SPAddLearnedSkill;
-import yesman.epicfight.network.server.SPAnimatorControl;
-import yesman.epicfight.network.server.SPChangeGamerule;
-import yesman.epicfight.network.server.SPChangeLivingMotion;
-import yesman.epicfight.network.server.SPChangePlayerMode;
-import yesman.epicfight.network.server.SPChangeSkill;
-import yesman.epicfight.network.server.SPClearSkills;
-import yesman.epicfight.network.server.SPCreateTerrainFracture;
-import yesman.epicfight.network.server.SPDatapackSync;
-import yesman.epicfight.network.server.SPEntityPairingPacket;
-import yesman.epicfight.network.server.SPHandleSkillData;
-import yesman.epicfight.network.server.SPInitSkills;
-import yesman.epicfight.network.server.SPMobEffectControl;
-import yesman.epicfight.network.server.SPModifyExpandedEntityData;
-import yesman.epicfight.network.server.SPModifyPlayerData;
-import yesman.epicfight.network.server.SPPlayUISound;
-import yesman.epicfight.network.server.SPRemoveSkillAndLearn;
-import yesman.epicfight.network.server.SPSetAttackTarget;
-import yesman.epicfight.network.server.SPSetRemotePlayerSkill;
-import yesman.epicfight.network.server.SPSetSkillContainerValue;
-import yesman.epicfight.network.server.SPSkillFeedback;
-import yesman.epicfight.network.server.SPUpdatePlayerInput;
+import yesman.epicfight.network.server.*;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillDataManager;
@@ -59,6 +34,8 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.ItemKeywordReloadListener;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
 import yesman.epicfight.world.capabilities.skill.PlayerSkills;
+
+import java.util.function.BiConsumer;
 
 public interface EpicFightClientBoundPayloadHandler {
 	public static void handleAbsorption(final SPAbsorption data, final IPayloadContext context) {
@@ -164,8 +141,8 @@ public interface EpicFightClientBoundPayloadHandler {
 	
 	public static void handleClearSkills(final SPClearSkills data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
-		
-		EpicFightCapabilities.<AbstractClientPlayer, AbstractClientPlayerPatch<AbstractClientPlayer>>getParameterizedEntityPatch(entity, AbstractClientPlayer.class, AbstractClientPlayerPatch.class).ifPresent(playerpatch -> {
+
+        EpicFightCapabilities.getPlayerPatch(entity).ifPresent(playerpatch -> {
 			playerpatch.getPlayerSkills().clearContainersAndLearnedSkills(playerpatch.getOriginal().isLocalPlayer());
 		});
 	}

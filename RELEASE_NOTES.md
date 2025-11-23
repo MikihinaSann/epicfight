@@ -34,6 +34,14 @@
 
 - Rename the experimental enum `EpicFightInputActions` to `EpicFightInputAction` to follow Java naming
   conventions. [#2194](https://github.com/Epic-Fight/epicfight/issues/2194)
+- Removed AirSlash and its related fields (SkillCategory, SkillSlot) to merge air slash and combo attacks as one skill
+
+### For Devs
+
+- New API feature: Hooks
+    - Replaces the mod-loader event system into Epic Fight API, as we planning to support multi-loader developer environment
+    - The feautre is still WIP, supporting only events for EpicFightCameraAPI
+    - We will eventually replace all Forge/Neoforge events owned by Epic Fight into Hooks
 
 ## [21.13.5] - 2025-11-12
 
