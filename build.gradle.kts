@@ -41,6 +41,8 @@ repositories {
 
     // Controlify, YACL
     strictMaven("https://maven.isxander.dev/releases", "dev.isxander", "IsXander")
+
+    strictMaven("https://code.redspace.io/releases", "io.redspace", "Iron's Maven - Release")
 }
 
 base {
@@ -172,6 +174,8 @@ dependencies {
         // Only need Controlify API, ignore the transitive dependencies (e.g, QuiltMC parsers)
         isTransitive = false
     }
+
+    compileOnly("io.redspace:irons_spellbooks:${providers.gradleProperty("irons_spells_version").get()}")
 }
 
 val generationTaskGroup = "generation"
