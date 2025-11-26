@@ -35,13 +35,14 @@ import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
-import yesman.epicfight.api.client.input.handlers.InputManager;
+import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.neoevent.MappedMovementInputUpdateEvent;
 import yesman.epicfight.api.neoevent.playerpatch.SkillCastEvent;
 import yesman.epicfight.api.utils.FakeLevel;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
+import yesman.epicfight.client.input.InputUtils;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.main.EpicFightMod;
@@ -144,30 +145,46 @@ public class ControlEngine implements IEventBasedEngine {
 		if (this.playerpatch == null) {
 			return;
 		}
-		
-        InputManager.triggerOnPress(EpicFightInputAction.OPEN_SKILL_SCREEN, false, this::openSkillEditor);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.OPEN_CONFIG_SCREEN, false, this::openConfig);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.SWITCH_VANILLA_MODEL_DEBUGGING, false, this::switchVanillaModelDebugging);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.ATTACK, true, this::maybeAttack);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.DODGE, true, this::maybeDodge);
-        
+
+        InputManager.triggerOnPress(EpicFightInputAction.OPEN_SKILL_SCREEN, this::openSkillEditor);
+
+        InputManager.triggerOnPress(EpicFightInputAction.OPEN_CONFIG_SCREEN, this::openConfig);
+
+        InputManager.triggerOnPress(EpicFightInputAction.SWITCH_VANILLA_MODEL_DEBUGGING, this::switchVanillaModelDebugging);
+
+        // The "runKeyboardMouseEvent" is used as a workaround to this issue:
+        // * https://github.com/Epic-Fight/epicfight/issues/1771
+        // * https://github.com/Creators-of-Create/Create/issues/6901
+
+        InputManager.triggerOnPress(
+                EpicFightInputAction.ATTACK,
+                () -> InputUtils.runKeyboardMouseEvent(EpicFightInputAction.ATTACK, this::maybeAttack)
+        );
+
+        InputManager.triggerOnPress(
+                EpicFightInputAction.DODGE,
+                () -> InputUtils.runKeyboardMouseEvent(EpicFightInputAction.DODGE, this::maybeDodge)
+        );
+
         if (InputManager.isActionActive(EpicFightInputAction.GUARD)) this.maybeGuard();
-        
-        InputManager.triggerOnPress(EpicFightInputAction.WEAPON_INNATE_SKILL, true, this::handleSeparateWeaponInnateSkill);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.MOBILITY, true, this::maybePerformMoverSkill);
-        
-        InputManager.triggerOnPress(EpicFightInputAction.SWITCH_MODE, false, this::switchMode);
 
-        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON, false, this::toggleLockOnState);
+        InputManager.triggerOnPress(
+                EpicFightInputAction.WEAPON_INNATE_SKILL,
+                () -> InputUtils.runKeyboardMouseEvent(EpicFightInputAction.WEAPON_INNATE_SKILL, this::handleSeparateWeaponInnateSkill)
+        );
 
-        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON_SHIFT_LEFT, false, this::searchNewTargetFromLeft);
+        InputManager.triggerOnPress(
+                EpicFightInputAction.MOBILITY,
+                () -> InputUtils.runKeyboardMouseEvent(EpicFightInputAction.MOBILITY, this::maybePerformMoverSkill)
+        );
 
-        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON_SHIFT_RIGHT, false, this::searchNewTargetFromRight);
+        InputManager.triggerOnPress(EpicFightInputAction.SWITCH_MODE, this::switchMode);
+
+        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON, this::toggleLockOnState);
+
+        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON_SHIFT_LEFT, this::searchNewTargetFromLeft);
+
+        InputManager.triggerOnPress(EpicFightInputAction.LOCK_ON_SHIFT_RIGHT, this::searchNewTargetFromRight);
 
         if (shouldDisableSwapHandItems()) consumeSwapOffhandKeyClicks();
 		
