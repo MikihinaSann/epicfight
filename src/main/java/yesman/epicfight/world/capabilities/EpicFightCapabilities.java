@@ -164,7 +164,7 @@ public class EpicFightCapabilities {
 	 * A compact version of entity patch getter to get {@link PlayerPatch} for @param entity
 	 * It conducts both null-checking and type-checking
 	 */
-	public static Optional<PlayerPatch<?>> getPlayerPatch(@Nullable Entity entity) {
+	public static Optional<PlayerPatch<?>> getPlayerPatchAsOptional(@Nullable Entity entity) {
 		if (entity == null) {
 			return Optional.empty();
 		}
@@ -182,7 +182,7 @@ public class EpicFightCapabilities {
 	 * A compact version of entity patch getter to get {@link ServerPlayerPatch} from @param entity
 	 * It conducts both null-checking and type-checking
 	 */
-	public static Optional<ServerPlayerPatch> getServerPlayerPatch(@Nullable Entity entity) {
+	public static Optional<ServerPlayerPatch> getServerPlayerPatchAsOptional(@Nullable Entity entity) {
 		if (entity == null) {
 			return Optional.empty();
 		}
@@ -200,7 +200,7 @@ public class EpicFightCapabilities {
 	 * A compact version of entity patch getter to get {@link LocalPlayerPatch} for @param entity
 	 * It conducts both null-checking and type-checking
 	 */
-	public static Optional<LocalPlayerPatch> getLocalPlayerPatch(@Nullable Entity entity) {
+	public static Optional<LocalPlayerPatch> getLocalPlayerPatchAsOptional(@Nullable Entity entity) {
 		if (entity == null) {
 			return Optional.empty();
 		}
