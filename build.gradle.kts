@@ -326,32 +326,42 @@ tasks.compileJava {
     dependsOn(generateLangKeys)
 }
 
-publishMods {
+fun extractCurrentVersionChangelog(): String? {
     val readme = project.file("RELEASE_NOTES.md")
     val readmeContent = readme.readText()
     val pattern = "(?s)## \\[$modVersion\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"
-    val matcher = Regex(pattern).find(readmeContent)
-
-    if (matcher == null) {
-        println("No matching changelog found for version $modVersion in RELEASE_NOTES.md. Publishing is skipped.")
-        return@publishMods
-    }
+    val matcher = Regex(pattern).find(readmeContent) ?: return null
 
     // Extract the latest changelog without the header and API change part
     val latestChangelog = matcher.groupValues[1]
+    return latestChangelog
+}
 
-    // Test run to see the notification works well in Discord
-    dryRun.set(true)
-
-    changelog.set(
-        """
-    **Tested against:**
+fun buildReleaseChangelog(currentVersionChangelog: String): String {
+    return buildString {
+        append(currentVersionChangelog)
+        appendLine(); appendLine();
+        append(
+            """
+    ### **Tested against:**
     - **NeoForge:** $neoforgeVersion
     - **Minecraft:** $mcVersion
     """.trimIndent()
-    )
+        )
+    }
+}
 
-    modLoaders.add("neoforge")
+publishMods {
+    dryRun.set(false)
+
+    val latestChangelog = extractCurrentVersionChangelog() ?: run {
+        println("No matching changelog found for version $modVersion in RELEASE_NOTES.md. Publishing is skipped.")
+        return@publishMods
+    }
+    val releaseChangelog = buildReleaseChangelog(latestChangelog)
+    changelog.set(releaseChangelog)
+
+    modLoaders.add(modLoader)
     type.set(STABLE)
     displayName.set(getFullModVersion())
     file.set(tasks.jar.get().archiveFile)
