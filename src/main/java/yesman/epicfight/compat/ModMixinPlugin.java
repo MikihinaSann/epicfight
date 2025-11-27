@@ -30,6 +30,8 @@ public abstract class ModMixinPlugin implements IMixinConfigPlugin {
         isModInstalled = LoadingModList.get().getModFileById(this.getModId()) != null;
     }
 
+    // TODO: Require MinecraftMod instead of hardcoding the mod ID string
+    // TODO: Rename SkinLayer3DPlugin to SkinLayer3DMixinPlugin
     public abstract @NotNull String getModId();
 
     @Override

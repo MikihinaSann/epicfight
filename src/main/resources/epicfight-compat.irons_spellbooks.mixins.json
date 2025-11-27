@@ -1,0 +1,15 @@
+{
+  "required": false,
+  "minVersion": "0.8",
+  "compatibilityLevel": "JAVA_21",
+  "package": "yesman.epicfight.compat.irons_spellbooks.mixin",
+  "plugin": "yesman.epicfight.compat.irons_spellbooks.IronsSpellbooksMixinPlugin",
+  "client": [
+    "ScrollMixin",
+    "QuickCastPacketMixin",
+    "CastPacketMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
