@@ -327,20 +327,22 @@ tasks.compileJava {
 }
 
 fun extractCurrentVersionChangelog(): String? {
-    val readme = project.file("RELEASE_NOTES.md")
-    val readmeContent = readme.readText()
-    val pattern = "(?s)## \\[$modVersion\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"
-    val matcher = Regex(pattern).find(readmeContent) ?: return null
+    val changelogFile = project.file("RELEASE_NOTES.md")
+    val fullChangelogText = changelogFile.readText()
 
-    // Extract the latest changelog without the header and API change part
-    val latestChangelog = matcher.groupValues[1]
-    return latestChangelog
+    // Extracts the current version changelog without the version heading 2 and "For Devs" heading 3.
+    val versionSectionRegex =
+        "(?s)## \\[$modVersion\\] - \\d{4}-\\d{2}-\\d{2}\\R(.*?)(?=\\R### For Devs|\\R## \\[.*?\\] |\\Z)"
+    val matcher = Regex(versionSectionRegex).find(fullChangelogText) ?: return null
+
+    val versionChangelog = matcher.groupValues[1]
+    return versionChangelog
 }
 
 fun buildReleaseChangelog(currentVersionChangelog: String): String {
     return buildString {
         append(currentVersionChangelog)
-        appendLine(); appendLine();
+        appendLine(); appendLine()
         append(
             """
     ### **Tested against:**
@@ -385,7 +387,6 @@ publishMods {
         )
     }
 
-    // Discord webhook and notification settings
     discord {
         webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
         dryRunWebhookUrl.set(providers.environmentVariable("DRY_RUN_DISCORD_WEBHOOK"))
@@ -393,7 +394,7 @@ publishMods {
         avatarUrl.set("https://i.imgur.com/FrxDviN.png")
         content.set(
             changelog.map {
-                "<@&1074034800849059930>\n# Epic Fight $modVersion is out!\nMinecraft version: ${mcVersion}\nNeoForge version: ${neoforgeVersion}\n$latestChangelog"
+                "<@&1074034800849059930>\n# Epic Fight $modVersion is out!\n- **Minecraft version:** ${mcVersion}\n- **NeoForge version:** ${neoforgeVersion}\n$latestChangelog"
             }
         )
 
