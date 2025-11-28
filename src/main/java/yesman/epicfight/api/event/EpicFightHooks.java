@@ -1,6 +1,6 @@
 package yesman.epicfight.api.event;
 
-public final class EpicFightEvents {
+public final class EpicFightHooks {
 	
 	/// we will eventually put all epic fight neoforge events here to decouple the event handling system originally
     /// conducted by mod-loaders (Forge, Neoforge, Fabric)
@@ -14,5 +14,5 @@ public final class EpicFightEvents {
     ///
     /// See also with {@link EpicFightClientEvents}
     ///
-	private EpicFightEvents() {}
+	private EpicFightHooks() {}
 }

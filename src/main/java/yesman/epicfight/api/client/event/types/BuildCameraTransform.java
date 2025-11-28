@@ -1,23 +1,17 @@
-package yesman.epicfight.api.client.event.instances;
+package yesman.epicfight.api.client.event.types;
 
 import net.minecraft.client.Camera;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.event.CancelableEventInstance;
-import yesman.epicfight.api.event.EventInstance;
+import yesman.epicfight.api.event.CancelableEvent;
 
-public abstract class BuildCameraTransform extends EventInstance {
-	private final EpicFightCameraAPI cameraApi;
+public abstract class BuildCameraTransform extends CameraAPIEvent {
 	private final Camera camera;
 	private final float partialTick;
 	
 	public BuildCameraTransform(EpicFightCameraAPI cameraApi, Camera camera, float partialTick) {
-		this.cameraApi = cameraApi;
+		super(cameraApi);
 		this.camera = camera;
 		this.partialTick = partialTick;
-	}
-	
-	public EpicFightCameraAPI getEpicFightCameraAPI() {
-		return this.cameraApi;
 	}
 	
 	public Camera getCamera() {
@@ -28,7 +22,7 @@ public abstract class BuildCameraTransform extends EventInstance {
 		return this.partialTick;
 	}
 	
-	public static final class Pre extends BuildCameraTransform implements CancelableEventInstance {
+	public static final class Pre extends BuildCameraTransform implements CancelableEvent {
 		public Pre(EpicFightCameraAPI cameraApi, Camera camera, float partialTick) {
 			super(cameraApi, camera, partialTick);
 		}
