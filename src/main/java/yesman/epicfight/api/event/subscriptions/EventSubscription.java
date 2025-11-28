@@ -1,6 +1,6 @@
 package yesman.epicfight.api.event.subscriptions;
 
-import yesman.epicfight.api.event.EventInstance;
+import yesman.epicfight.api.event.Event;
 
-public interface EventSubscription<T extends EventInstance> {
+public interface EventSubscription<T extends Event> {
 }

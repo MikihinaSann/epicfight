@@ -28,11 +28,12 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
-import yesman.epicfight.api.client.input.action.EpicFightInputAction;
-import yesman.epicfight.api.client.event.EpicFightClientEvents;
-import yesman.epicfight.api.client.event.instances.BuildCameraTransform;
-import yesman.epicfight.api.client.event.instances.ItemUsedInDecoupledCamera;
+import yesman.epicfight.api.client.event.EpicFightClientHooks;
+import yesman.epicfight.api.client.event.types.BuildCameraTransform;
+import yesman.epicfight.api.client.event.types.CoupleTPSCamera;
+import yesman.epicfight.api.client.event.types.ItemUsedInDecoupledCamera;
 import yesman.epicfight.api.client.input.InputManager;
+import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -192,7 +193,7 @@ public final class EpicFightCameraAPI {
      * will look at the crosshair forever.
      * <p>
      * Alternatively, if you want to focus the player to crosshair for specific item use, you can
-     * consider registering {@link EpicFightClientEvents.Camera#ITEM_USED_WHEN_DECOUPLED} for better maintenance
+     * consider registering {@link EpicFightClientHooks.Camera#ITEM_USED_WHEN_DECOUPLED} for better maintenance
      * <p>
      * @param flag 	whether the player should follow the camera view
      */
@@ -363,11 +364,13 @@ public final class EpicFightCameraAPI {
         this.minecraft.player.setXRot(this.cameraXRot);
         this.minecraft.player.setYRot(this.cameraYRot);
         this.minecraft.player.setYHeadRot(this.cameraYRot);
+        this.minecraft.player.setYBodyRot(this.cameraYRot);
 
         if (noInterpolation) {
             this.minecraft.player.xRotO = this.cameraXRot;
             this.minecraft.player.yRotO = this.cameraYRot;
             this.minecraft.player.yHeadRotO = this.cameraYRot;
+            this.minecraft.player.yBodyRotO = this.cameraYRot;
         }
     }
 
@@ -388,11 +391,13 @@ public final class EpicFightCameraAPI {
         this.minecraft.player.setXRot(xRot);
         this.minecraft.player.setYRot(yRot);
         this.minecraft.player.setYHeadRot(yRot);
+        this.minecraft.player.setYBodyRot(yRot);
 
         if (noInterpolation) {
             this.minecraft.player.xRotO = xRot;
             this.minecraft.player.yRotO = yRot;
             this.minecraft.player.yHeadRotO = yRot;
+            this.minecraft.player.yBodyRotO = yRot;
         }
     }
 
@@ -731,7 +736,7 @@ public final class EpicFightCameraAPI {
         }
 
         BuildCameraTransform.Pre hook = new BuildCameraTransform.Pre(this, camera, partialTick);
-        EpicFightClientEvents.Camera.BUILD_TRANSFORM_PRE.post(hook);
+        EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.post(hook);
 
         if (hook.hasCanceled()) {
             return true;
@@ -846,7 +851,7 @@ public final class EpicFightCameraAPI {
      */
     @ApiStatus.Internal
     public void fireCameraBuildPost(Camera camera, float partialTick) {
-        EpicFightClientEvents.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
+        EpicFightClientHooks.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
     }
 
     /**
@@ -866,16 +871,23 @@ public final class EpicFightCameraAPI {
         @Nullable
         LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
 
-        return InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F ||							// When moving
-            this.minecraft.options.keyAttack.isDown() ||																					// When pressing left button
-            this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
-            this.isZooming() ||																												// when zooming
-            (playerpatch == null || playerpatch.isHoldingAny()) ||																			// When holding a skill
-            this.couplingYRot;																												// When the player rotation is manually coupled
+        CoupleTPSCamera coupleTPSCameraEvent = new CoupleTPSCamera(
+            this,
+            InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F,                             // When moving
+            this.minecraft.options.keyAttack.isDown(),                                                                                  // When pressing left button
+            this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()),    // When using an item with pre-defined use animations
+            this.isZooming(),                                                                                                           // When zooming
+            (playerpatch == null || playerpatch.isHoldingAny()),                                                                        // When holding a skill
+            this.couplingYRot                                                                                                           // When the player rotation is manually coupled
+        );
+
+        EpicFightClientHooks.Camera.COUPLE_CAMERA.post(coupleTPSCameraEvent);
+
+        return coupleTPSCameraEvent.shouldCoupleCamera();
     }
 
     @ApiStatus.Internal
     public void onItemUseEvent(Player player, PlayerPatch<?> playerpatch, ItemStack itemstack, InteractionHand hand) {
-        if (this.isTPSMode()) EpicFightClientEvents.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
+        if (this.isTPSMode()) EpicFightClientHooks.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
     }
 }

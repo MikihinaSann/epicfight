@@ -45,7 +45,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
+	 * Only used by {@link EventHook#post} and {@link CancelableEventHook#post}
 	 */
 	@ApiStatus.Internal
 	public void onCalled() {
@@ -53,7 +53,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link EventInstance#cancel}
+	 * Only used by {@link Event#cancel}
 	 */
 	@ApiStatus.Internal
 	public void onCanceled() {
@@ -61,7 +61,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
+	 * Only used by {@link EventHook#post} and {@link CancelableEventHook#post}
 	 */
 	@ApiStatus.Internal
 	public void subscriptionStart(String name) {
@@ -69,7 +69,7 @@ public class EventContext {
 	}
 	
 	/**
-	 * Only used by {@link Event#post} and {@link CancelableEvent#post}
+	 * Only used by {@link EventHook#post} and {@link CancelableEventHook#post}
 	 */
 	@ApiStatus.Internal
 	public void subscriptionEnd() {

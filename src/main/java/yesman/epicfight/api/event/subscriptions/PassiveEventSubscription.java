@@ -1,6 +1,6 @@
 package yesman.epicfight.api.event.subscriptions;
 
-import yesman.epicfight.api.event.EventInstance;
+import yesman.epicfight.api.event.Event;
 
 /**
  * A default event subscription type
@@ -8,6 +8,6 @@ import yesman.epicfight.api.event.EventInstance;
  * If you want to fire the event with custom validation, {@link ContextAwareEventSubscription}
  */
 @FunctionalInterface
-public interface PassiveEventSubscription<T extends EventInstance> extends EventSubscription<T> {
+public interface PassiveEventSubscription<T extends Event> extends EventSubscription<T> {
 	void fire(T event);
 }
