@@ -1,7 +1,5 @@
 package yesman.epicfight.world.item;
 
-import java.util.List;
-
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
@@ -12,7 +10,9 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.block.Blocks;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.generated.LangKeys;
+
+import java.util.List;
 
 public class UchigatanaItem extends WeaponItem {
 	public static ItemAttributeModifiers createUchigatanaAttributes() {
@@ -40,6 +40,6 @@ public class UchigatanaItem extends WeaponItem {
 	@Override
 	public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
 		tooltipComponents.add(Component.literal(""));
-		tooltipComponents.add(Component.translatable(EpicFightMod.format("item.%s.uchigatana.tooltip")));
+		tooltipComponents.add(Component.translatable(LangKeys.ITEM_UCHIGATANA_TOOLTIP));
 	}
 }

@@ -369,23 +369,6 @@ public class RenderEngine implements IEventBasedEngine {
 	public static boolean hitResultNotEquals(@Nullable HitResult hitResult, HitResult.Type hitType) {
 		return hitResult == null ? true : !hitType.equals(hitResult.getType());
 	}
-
-    /**
-     * @deprecated Left for Shoulder Surfing Backward-Compatibility.
-     * <a href="https://github.com/Exopandora/ShoulderSurfing/issues/359#issuecomment-3551814165">Related issue</a>
-     */
-    @Deprecated(forRemoval = true)
-    public void correctCamera(ViewportEvent.ComputeCameraAngles event, float partialTicks) {
-        event.getCamera().setRotation(1.0F, 1.0F);
-    }
-
-    /**
-     * @deprecated Left for Shoulder Surfing Backward-Compatibility.
-     * <a href="https://github.com/Exopandora/ShoulderSurfing/issues/359#issuecomment-3551814165">Related issue</a>
-     */
-    @Deprecated(forRemoval = true)
-    public void setRangedWeaponThirdPerson(ViewportEvent.ComputeCameraAngles event, CameraType pov, double partialTicks) {
-    }
 	
 	/******************
 	 * Forge Event listeners
@@ -511,7 +494,7 @@ public class RenderEngine implements IEventBasedEngine {
 	private void epicfight$computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
             // First person camera correction
-            if (ClientConfig.enablePovAction && this.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
+            if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
                 float partialTick = (float)event.getPartialTick();
                 EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
 
@@ -566,7 +549,7 @@ public class RenderEngine implements IEventBasedEngine {
 	
 	private void epicfight$renderGuiPre(RenderGuiEvent.Pre event) {
 		Window window = Minecraft.getInstance().getWindow();
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch != null) {
 			playerpatch.getPlayerSkills().listSkillContainers().filter(skillContainer -> skillContainer.getSkill() != null).forEach(skillContainer -> {
@@ -605,7 +588,7 @@ public class RenderEngine implements IEventBasedEngine {
 	
 	@SuppressWarnings("unchecked")
 	private void epicfight$renderHand(RenderHandEvent event) {
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch != null) {
 			if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
@@ -634,7 +617,7 @@ public class RenderEngine implements IEventBasedEngine {
 
 	private void epicfight$renderAfterLevel(RenderLevelStageEvent event) {
 		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
-			if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+			if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
 				EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 					if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
 						this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, ((BlockHitResult)this.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
@@ -720,7 +703,7 @@ public class RenderEngine implements IEventBasedEngine {
 
                 if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
                     EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-                        itemAction.setValue(playerpatch.canPlayAttackAnimation() || playerpatch.isVanillaMode());
+                        itemAction.setValue(playerpatch.canPlayAttackAnimation());
                     });
                 }
 

@@ -17,10 +17,10 @@ import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.camera.EpicFightTpsCameraDisableState;
 import yesman.epicfight.client.camera.EpicFightTpsCameraDisabledReason;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 /// Adds compatibility for Shoulder Surfing Reloaded mod.
 ///
@@ -81,7 +81,7 @@ public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
     private static class CameraCouplingOnChargingSkill implements ICameraCouplingCallback {
         @Override
         public boolean isForcingCameraCoupling(Minecraft minecraft) {
-            final LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
+            final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
             if (localPlayerPatch == null) {
                 return false;
             }

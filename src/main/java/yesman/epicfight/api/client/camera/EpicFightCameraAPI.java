@@ -115,7 +115,7 @@ public final class EpicFightCameraAPI {
     /// Returns if the camera is TPS mode
     /// When zooming ranged weapons or TPS mode is turned on by config
     public boolean isTPSMode() {
-        if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.cameraMode.shouldSwitch(this)) {
+        if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.tpsType.shouldSwitch(this)) {
             ActivateTPSCamera event = new ActivateTPSCamera(this);
             EpicFightClientHooks.Camera.ACTIVATE_TPS_CAMERA.post(event);
             return !event.hasCanceled();
@@ -317,7 +317,7 @@ public final class EpicFightCameraAPI {
     public int getFocusingEntityPickRange() {
         if (this.minecraft.player == null) return 0;
 
-        return ClientConfig.lockOnRange;
+        return ClientConfig.entityFocusingRange;
     }
 
     public boolean setNextLockOnTarget(int direction) {
@@ -369,7 +369,6 @@ public final class EpicFightCameraAPI {
 
         next.ifPresent(pair -> {
             this.focusingEntity = pair.getFirst();
-            if (sendChange) this.sendTargeting(this.focusingEntity);
         });
 
         return next.isPresent();
@@ -483,7 +482,7 @@ public final class EpicFightCameraAPI {
             return true;
         }
 
-        if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
+        if (ClientConfig.combatCategorizedItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
             // For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
             if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
                 BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
@@ -508,10 +507,10 @@ public final class EpicFightCameraAPI {
             cancel.setValue(this.isTPSMode() || this.lockingOnTarget);
 
             if (cancel.booleanValue()) {
-                float modifier = !this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY) ? 0.15F : (ClientConfig.lockOnQuickShift ? 0.005F : 0.0F);
+                float modifier = !this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY) ? 0.15F : (ClientConfig.lockOnSnapping ? 0.005F : 0.0F);
                 this.setCameraRotations(Mth.clamp(this.cameraXRot + (float)dx * modifier, -90.0F, 90.0F), this.cameraYRot + (float)dy * modifier, false);
 
-                if (ClientConfig.lockOnQuickShift && this.quickShiftDelay <= 0) {
+                if (ClientConfig.lockOnSnapping && this.quickShiftDelay <= 0) {
                     this.accumulatedX += -dy * 0.15F;
 
                     if (Math.abs(this.accumulatedX) > 20.0D && this.lockingOnTarget) {
@@ -654,7 +653,7 @@ public final class EpicFightCameraAPI {
         // Tick the target entity
         if (this.focusingEntity != null) {
             if (this.lockingOnTarget && !this.focusingEntity.isAlive()) {
-                boolean releaseLockOn = !ClientConfig.lockOnQuickShift || !this.setNextLockOnTarget(0, true, true);
+                boolean releaseLockOn = !ClientConfig.lockOnSnapping || !this.setNextLockOnTarget(0, true, true);
 
                 // Searches a new lock-on target when current target is dead
                 if (releaseLockOn) {
@@ -816,7 +815,7 @@ public final class EpicFightCameraAPI {
 
         if (this.isTPSMode()) {
             float partialZoomTick = this.zoomTick == 0 ? 0.0F : Math.min(this.zoomTick + (this.zoomingIn ? partialTick : -partialTick), MAX_ZOOM_TICK - 1);
-            float delta = ClientConfig.cameraMode == ClientConfig.TPSType.WHEN_AIMING ? partialZoomTick / (float)(MAX_ZOOM_TICK - 1) : 1.0F;
+            float delta = ClientConfig.tpsType == ClientConfig.TPSActivationType.ON_AIMING ? partialZoomTick / (float)(MAX_ZOOM_TICK - 1) : 1.0F;
             float xRot = Mth.rotLerp(delta, this.minecraft.player.getXRot(), Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
             float yRot = Mth.rotLerp(delta, this.minecraft.player.getYRot(), Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot));
             camera.setRotation(yRot, xRot);

@@ -72,10 +72,8 @@ public abstract class MixinEntity {
 		return xRot;
 	}
 	
-	/**
-	 * Maintain this mixin until neoforge provides an event hook when entity is removed
-	 * {@link Entity#remove(net.minecraft.world.entity.Entity.RemovalReason)
-	 */
+	/// Maintain this mixin until neoforge provides an event hook when entity is removed
+    /// [Entity#remove(net.minecraft.world.entity.Entity.RemovalReason)]
 	@Inject(at = @At(value = "HEAD"), method = "remove(Lnet/minecraft/world/entity/Entity$RemovalReason;)V")
 	public void epicfight$remove(Entity.RemovalReason reason, CallbackInfo callback) {
 		Entity self = (Entity)(Object)this;
@@ -112,7 +110,7 @@ public abstract class MixinEntity {
 		});
 	}
 
-    /**
+    /*
      * Useful mixin to debug y rotation, especially for action animations
      @Inject(at = @At(value = "HEAD"), method = "setYRot()V")
      private void epicfight$setYRot(float pYRot, CallbackInfo callbackInfo) {
@@ -123,5 +121,5 @@ public abstract class MixinEntity {
              }
          }
      }
-     **/
+     */
 }

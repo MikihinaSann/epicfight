@@ -22,6 +22,7 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClie
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.common.BiDirectionalAnimationVariable;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;
+import yesman.epicfight.network.common.BiDirectionalSyncEmoteSlots;
 import yesman.epicfight.network.server.*;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillContainer;
@@ -38,7 +39,7 @@ import yesman.epicfight.world.capabilities.skill.PlayerSkills;
 import java.util.function.BiConsumer;
 
 public interface EpicFightClientBoundPayloadHandler {
-	public static void handleAbsorption(final SPAbsorption data, final IPayloadContext context) {
+	static void handleAbsorption(final SPAbsorption data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		if (entity instanceof LivingEntity livingentity && !(entity instanceof Player)) {
@@ -46,14 +47,14 @@ public interface EpicFightClientBoundPayloadHandler {
 		}
 	}
 	
-	public static void handleAddLearnedSkill(final SPAddLearnedSkill data, final IPayloadContext context) {
+	static void handleAddLearnedSkill(final SPAddLearnedSkill data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
 			PlayerSkills skillCapability = playerpatch.getPlayerSkills();
 			data.skills().stream().map(Holder::value).forEach(skillCapability::addLearnedSkill);
 		});
 	}
 	
-	public static void handleSkillData(final SPHandleSkillData data, final IPayloadContext context) {
+	static void handleSkillData(final SPHandleSkillData data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -76,11 +77,11 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleAnimationVariablePacket(final BiDirectionalAnimationVariable data, final IPayloadContext context) {
+	static void handleAnimationVariablePacket(final BiDirectionalAnimationVariable data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player().level().getEntity(data.entityId()), LivingEntityPatch.class).ifPresent(data::commonProcess);
 	}
 	
-	public static void handleAnimatorControl(final SPAnimatorControl data, final IPayloadContext context) {
+	static void handleAnimatorControl(final SPAnimatorControl data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player().level().getEntity(data.entityId()), LivingEntityPatch.class).ifPresent(entitypatch -> {
 			data.animationVariables().forEach(animationVariable -> handleAnimationVariablePacket(animationVariable, context));
 			
@@ -93,12 +94,12 @@ public interface EpicFightClientBoundPayloadHandler {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static void handleChangeGameRule(final SPChangeGamerule data, final IPayloadContext context) {
+	static void handleChangeGameRule(final SPChangeGamerule data, final IPayloadContext context) {
 		GameRules.Value<?> ruleValue = context.player().level().getGameRules().getRule(data.keyValuePair().gamerule().getRuleKey());
 		((BiConsumer<GameRules.Value<?>, Object>)data.keyValuePair().gamerule().getRuleType().setRule()).accept(ruleValue, data.keyValuePair().value());
 	}
 	
-	public static void handleChangeLivingMotion(final SPChangeLivingMotion data, final IPayloadContext context) {
+	static void handleChangeLivingMotion(final SPChangeLivingMotion data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, LivingEntityPatch.class).ifPresent(entitypatch -> {
@@ -118,7 +119,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleChangePlayerMode(final SPChangePlayerMode data, final IPayloadContext context) {
+	static void handleChangePlayerMode(final SPChangePlayerMode data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -126,7 +127,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleChangeSkill(final SPChangeSkill data, final IPayloadContext context) {
+	static void handleChangeSkill(final SPChangeSkill data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player().level().getEntity(data.entityId()), PlayerPatch.class).ifPresent(playerpatch -> {
 			Skill skill = Skill.skillOrNull(data.skill());
 			playerpatch.getSkill(data.skillSlot()).setSkill(skill);
@@ -139,7 +140,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleClearSkills(final SPClearSkills data, final IPayloadContext context) {
+	static void handleClearSkills(final SPClearSkills data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 
         EpicFightCapabilities.getPlayerPatch(entity).ifPresent(playerpatch -> {
@@ -147,7 +148,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleDataPack(final SPDatapackSync data, final IPayloadContext context) {
+	static void handleDataPack(final SPDatapackSync data, final IPayloadContext context) {
 		try {
 			switch (data.packetType()) {
 			case MOB -> MobPatchReloadListener.processServerPacket(data);
@@ -164,7 +165,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		}
 	}
 	
-	public static void handleEntityPairing(final SPEntityPairingPacket data, final IPayloadContext context) {
+	static void handleEntityPairing(final SPEntityPairingPacket data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).ifPresent(entitypatch -> {
@@ -172,11 +173,11 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleFracture(final SPCreateTerrainFracture data, final IPayloadContext context) {
+	static void handleFracture(final SPCreateTerrainFracture data, final IPayloadContext context) {
 		LevelUtil.circleSlamFracture(null, context.player().level(), data.location(), data.radius(), data.noSound(), data.noParticle());
 	}
 	
-	public static void handleModelYRot(final SPModifyPlayerData.SetPlayerYRot data, final IPayloadContext context) {
+	static void handleModelYRot(final SPModifyPlayerData.SetPlayerYRot data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -184,7 +185,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleDisableModelYRot(final SPModifyPlayerData.DisablePlayerYRot data, final IPayloadContext context) {
+	static void handleDisableModelYRot(final SPModifyPlayerData.DisablePlayerYRot data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -192,7 +193,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSetLastAttackResult(final SPModifyPlayerData.SetLastAttackResult data, final IPayloadContext context) {
+	static void handleSetLastAttackResult(final SPModifyPlayerData.SetLastAttackResult data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -200,7 +201,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSetPlayerMode(final SPModifyPlayerData.SetPlayerMode data, final IPayloadContext context) {
+	static void handleSetPlayerMode(final SPModifyPlayerData.SetPlayerMode data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -208,7 +209,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSetGrapplingTarget(final SPModifyPlayerData.SetGrapplingTarget data, final IPayloadContext context) {
+	static void handleSetGrapplingTarget(final SPModifyPlayerData.SetGrapplingTarget data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
@@ -222,7 +223,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleMobEffect(final SPMobEffectControl data, final IPayloadContext context) {
+	static void handleMobEffect(final SPMobEffectControl data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		if (entity != null && entity instanceof LivingEntity livingEntity) {
@@ -237,7 +238,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		}
 	}
 	
-	public static void handleModifyExpandedEntityData(final SPModifyExpandedEntityData data, final IPayloadContext context) {
+	static void handleModifyExpandedEntityData(final SPModifyExpandedEntityData data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, LivingEntityPatch.class).ifPresent(entitypatch -> {
@@ -246,11 +247,11 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handlePlayUiSound(final SPPlayUISound data, final IPayloadContext context) {
+	static void handlePlayUiSound(final SPPlayUISound data, final IPayloadContext context) {
 		ClientEngine.getInstance().playUISound(data);
 	}
 	
-	public static void handleRemoveSkill(final SPRemoveSkillAndLearn data, final IPayloadContext context) {
+	static void handleRemoveSkill(final SPRemoveSkillAndLearn data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
 			Skill skill = data.skill().value();
 			playerpatch.getPlayerSkills().removeLearnedSkill(skill);
@@ -262,7 +263,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSetAttackTarget(final SPSetAttackTarget data, final IPayloadContext context) {
+	static void handleSetAttackTarget(final SPSetAttackTarget data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		Entity targetEntity = context.player().level().getEntity(data.targetEntityId());
 		
@@ -275,7 +276,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		}
 	}
 	
-	public static void handleSetRemotePlayerSkill(final SPSetRemotePlayerSkill data, final IPayloadContext context) {
+	static void handleSetRemotePlayerSkill(final SPSetRemotePlayerSkill data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, AbstractClientPlayerPatch.class).ifPresent(playerpatch -> {
@@ -283,7 +284,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSetSkillContainerValue(final SPSetSkillContainerValue data, final IPayloadContext context) {
+	static void handleSetSkillContainerValue(final SPSetSkillContainerValue data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
 			SkillContainer container = playerpatch.getSkill(data.skillSlot());
 			
@@ -300,7 +301,7 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	public static void handleSkillFeedback(final SPSkillFeedback data, final IPayloadContext context) {
+	static void handleSkillFeedback(final SPSkillFeedback data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
 			switch(data.feedbackType()) {
 			case EXECUTED -> {
@@ -324,18 +325,17 @@ public interface EpicFightClientBoundPayloadHandler {
 		});
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static void handleUpdatePlayerInput(final SPUpdatePlayerInput data, final IPayloadContext context) {
+	static void handleUpdatePlayerInput(final SPUpdatePlayerInput data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(Minecraft.getInstance().player.level().getEntity(data.entityId()), PlayerPatch.class).ifPresent(playerpatch -> {
 			playerpatch.dx = data.strafe();
 			playerpatch.dz = data.forward();
 		});
 	}
 	
-	public static void handleSyncAnimationPosition(final BiDirectionalSyncAnimationPositionPacket data, final IPayloadContext context) {
+	static void handleSyncAnimationPosition(final BiDirectionalSyncAnimationPositionPacket data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 		
-		if (entity != null && entity instanceof LivingEntity livingentity) {
+		if (entity instanceof LivingEntity livingentity) {
 			livingentity.lerpX = data.position().x;
 			livingentity.lerpY = data.position().y;
 			livingentity.lerpZ = data.position().z;
@@ -343,9 +343,15 @@ public interface EpicFightClientBoundPayloadHandler {
 		}
 	}
 	
-	public static void handleInitSkills(final SPInitSkills data, final IPayloadContext context) {
+	static void handleInitSkills(final SPInitSkills data, final IPayloadContext context) {
 		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
 			playerpatch.getPlayerSkills().read(data.serializedSkill());
 		});
 	}
+
+    static void handleSyncEmoteSlot(final BiDirectionalSyncEmoteSlots data, final IPayloadContext context) {
+        EpicFightCapabilities.getLocalPlayerPatch(context.player().level().getEntity(data.playerId())).ifPresent(playerpatch -> {
+            playerpatch.getEmoteSlots().deserialize(data.compoundTag(), playerpatch.getOriginal().registryAccess());
+        });
+    }
 }

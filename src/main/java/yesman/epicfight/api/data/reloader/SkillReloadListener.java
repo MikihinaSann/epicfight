@@ -15,7 +15,6 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.server.SPDatapackSync;
@@ -24,6 +23,7 @@ import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.skill.PlayerSkills;
 
 import java.util.Collection;
@@ -80,7 +80,7 @@ public class SkillReloadListener extends SimpleJsonResourceReloadListener {
 			EpicFightRegistries.SKILL.get(ResourceLocation.parse(tag.getString("id"))).loadDatapackParameters(tag);
 		}
 		
-		LocalPlayerPatch localplayerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch localplayerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
 		
 		if (localplayerpatch != null) {
 			PlayerSkills skillCapability = localplayerpatch.getPlayerSkills();

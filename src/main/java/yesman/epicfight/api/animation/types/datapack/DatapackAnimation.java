@@ -8,14 +8,15 @@ import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 
 @OnlyIn(Dist.CLIENT)
 public interface DatapackAnimation<A extends StaticAnimation> extends AnimationAccessor<A> {
-	public void setAnimationClip(AnimationClip clip);
-	public void setRegistryName(ResourceLocation registryName);
-	public void setCreator(EditorAnimation fakeAnimation);
-	public EditorAnimation getCreator();
-	public EditorAnimation readAnimationFromJson(JsonArray rawAnimationJson);
+	void setAnimationClip(AnimationClip clip);
+	void setRegistryName(ResourceLocation registryName);
+	void setCreator(EditorAnimation fakeAnimation);
+	EditorAnimation getCreator();
+	EditorAnimation readAnimationFromJson(JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimationJson);
 	
 	@Override
 	default int id() {

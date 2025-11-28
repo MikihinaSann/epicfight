@@ -9,7 +9,13 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
 
+/**
+ * We're refactoring UI codes, use {@link yesman.epicfight.client.gui.widgets.Static} the advanced one
+ */
+@Deprecated
 public class Static extends AbstractWidget implements ResizableComponent {
 	private final Screen owner;
 	private final Font font;

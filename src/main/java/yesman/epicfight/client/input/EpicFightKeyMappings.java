@@ -40,6 +40,15 @@ public class EpicFightKeyMappings {
                     EpicFightInputCategories.GUI
             );
 
+    public static final KeyMapping OPEN_EMOTE_WHEEL =
+            new KeyMapping(
+                    LangKeys.KEY_EMOTE,
+                    KeyConflictContext.IN_GAME,
+                    InputConstants.Type.KEYSYM,
+                    InputConstants.KEY_Y,
+                    EpicFightInputCategories.GUI
+            );
+
     // In-game keymappings
     public static final KeyMapping DODGE =
             new CombatKeyMapping(
@@ -149,6 +158,7 @@ public class EpicFightKeyMappings {
         event.register(LOCK_ON_SHIFT_RIGHT);
         event.register(LOCK_ON_SHIFT_FREELY);
         event.register(OPEN_CONFIG_SCREEN);
+        event.register(OPEN_EMOTE_WHEEL);
         event.register(SWITCH_VANILLA_MODEL_DEBUGGING);
     }
 }

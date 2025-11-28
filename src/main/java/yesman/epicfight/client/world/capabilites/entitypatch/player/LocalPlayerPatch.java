@@ -4,6 +4,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -50,6 +51,7 @@ import yesman.epicfight.network.client.CPModifyEntityModelYRot;
 import yesman.epicfight.network.client.CPSetStamina;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.registry.entries.EpicFightDataComponentTypes;
+import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
@@ -141,7 +143,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		RenderEngine.getInstance().battleModeHUD.slideDown();
 		
 		if (this.playerMode != PlayerMode.VANILLA) {
-			if (ClientConfig.autoSwitchCamera) {
+			if (ClientConfig.autoPerspectiveSwithing) {
 				this.minecraft.options.setCameraType(CameraType.FIRST_PERSON);
 			}
 			
@@ -158,7 +160,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		RenderEngine.getInstance().battleModeHUD.slideUp();
 		
 		if (this.playerMode != PlayerMode.EPICFIGHT) {
-			if (ClientConfig.autoSwitchCamera) {
+			if (ClientConfig.autoPerspectiveSwithing) {
 				this.minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK);
 			}
 			
@@ -248,7 +250,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			return xRot;
 		}
 		
-		if (ClientConfig.enablePovAction && this.minecraft.options.getCameraType().isFirstPerson() && this.isEpicFightMode() && !this.getFirstPersonLayer().isOff()) {
+		if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson() && this.isEpicFightMode() && !this.getFirstPersonLayer().isOff()) {
 			ViewLimit viewLimit = this.getPovSettings().viewLimit();
 			
 			if (viewLimit != null) {
@@ -269,7 +271,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			return yRot;
 		}
 		
-		if (ClientConfig.enablePovAction && this.minecraft.options.getCameraType().isFirstPerson() && this.isEpicFightMode() && !this.getFirstPersonLayer().isOff()) {
+		if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson() && this.isEpicFightMode() && !this.getFirstPersonLayer().isOff()) {
 			ViewLimit viewLimit = this.getPovSettings().viewLimit();
 			
 			if (viewLimit != null) {
@@ -389,7 +391,8 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	@Override
 	public void openSkillBook(ItemStack itemstack, InteractionHand hand) {
 		if (itemstack.has(EpicFightDataComponentTypes.SKILL)) {
-			Minecraft.getInstance().setScreen(new SkillBookScreen(this.original, itemstack, hand));
+            Holder<Skill> skill = itemstack.get(EpicFightDataComponentTypes.SKILL);
+			Minecraft.getInstance().setScreen(new SkillBookScreen(this.original, skill.value(), hand, null));
 		}
 	}
 	
@@ -406,10 +409,10 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void updateHeldItem(CapabilityItem mainHandCap, CapabilityItem offHandCap) {
 		super.updateHeldItem(mainHandCap, offHandCap);
 		
-		if (ClientConfig.preferenceWork == ClientConfig.PreferenceWork.SWITCH_MODE) {
-			if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
+		if (ClientConfig.playerBehaviorStrategy == ClientConfig.PlayerBehaviorStrategy.SWITCHING_MODE) {
+			if (ClientConfig.combatCategorizedItems.contains(this.original.getMainHandItem().getItem())) {
 				this.toEpicFightMode(true); 
-			} else if (ClientConfig.miningPreferredItems.contains(this.original.getMainHandItem().getItem())) {
+			} else if (ClientConfig.miningCategorizedItems.contains(this.original.getMainHandItem().getItem())) {
 				this.toVanillaMode(true);
 			}
 		}
@@ -446,8 +449,8 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
             return true;
         }
 
-        if (ClientConfig.preferenceWork.checkHitResult()) {
-            if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
+        if (ClientConfig.playerBehaviorStrategy.checkHitResult()) {
+            if (ClientConfig.combatCategorizedItems.contains(this.original.getMainHandItem().getItem())) {
                 if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
                     BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
                     BlockState bs = this.minecraft.level.getBlockState(bp);

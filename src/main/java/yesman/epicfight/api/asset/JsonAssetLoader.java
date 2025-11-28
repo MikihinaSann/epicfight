@@ -595,7 +595,7 @@ public class JsonAssetLoader {
 	}
 	
 	public AnimationClip loadAllJointsClipForAnimation(StaticAnimation animation) {
-		TransformFormat format = this.rootJson.has("format") ? ParseUtil.enumValueOfOrNull(TransformFormat.class, GsonHelper.getAsString(this.rootJson, "format")) : TransformFormat.MATRIX;
+		TransformFormat format = this.getTransformFormat();
 		JsonArray array = this.rootJson.get("animation").getAsJsonArray();
 		boolean root = true;
 		
@@ -640,9 +640,13 @@ public class JsonAssetLoader {
 	public String getFileHash() {
 		return this.filehash;
 	}
-	
+
+    public TransformFormat getTransformFormat() {
+        return this.rootJson.has("format") ? ParseUtil.enumValueOfOrNull(TransformFormat.class, GsonHelper.getAsString(this.rootJson, "format")) : TransformFormat.MATRIX;
+    }
+
 	public AnimationClip loadAnimationClip(Armature armature) {
-		TransformFormat format = this.rootJson.has("format") ? ParseUtil.enumValueOfOrNull(TransformFormat.class, GsonHelper.getAsString(this.rootJson, "format")) : TransformFormat.MATRIX;
+		TransformFormat format = this.getTransformFormat();
 		JsonArray array = this.rootJson.get("animation").getAsJsonArray();
 		AnimationClip clip = new AnimationClip();
 		boolean root = true;

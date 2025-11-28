@@ -1,7 +1,5 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.function.Consumer;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -9,6 +7,10 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
+
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.CheckBox] instead
+@Deprecated
 public class CheckBox extends AbstractWidget implements DataBindingComponent<Boolean, Boolean> {
 	private final Font font;
 	private final boolean defaultVal;

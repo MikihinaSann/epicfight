@@ -6,13 +6,12 @@ import net.minecraft.world.entity.LivingEntity;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
-import yesman.epicfight.compat.azurelib.client.AzureModelTransformer;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.EntityUI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.compat.ICompatModule;
+import yesman.epicfight.compat.azurelib.client.AzureModelTransformer;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
@@ -67,10 +66,10 @@ public class AzureLibCompat implements ICompatModule {
 					event.setCanceled(true);
 					renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
 					
-					if (ClientEngine.getInstance().getPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+					if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
 						for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
-							if (entityIndicator.shouldDraw(livingentity, entitypatch, ClientEngine.getInstance().getPlayerPatch(), event.getPartialTick())) {
-								entityIndicator.draw(livingentity, entitypatch, ClientEngine.getInstance().getPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
+							if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPartialTick())) {
+								entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
 							}
 						}
 					}
@@ -94,12 +93,12 @@ public class AzureLibCompat implements ICompatModule {
 		if (entity instanceof LivingEntity livingentity) {
 			RenderEngine renderEngine = RenderEngine.getInstance();
 			
-			if (ClientEngine.getInstance().getPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+			if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
 				LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
 				
 				for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
-					if (entityIndicator.shouldDraw(livingentity, entitypatch, ClientEngine.getInstance().getPlayerPatch(), event.getPartialTick())) {
-						entityIndicator.draw(livingentity, entitypatch, ClientEngine.getInstance().getPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
+					if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPartialTick())) {
+						entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
 					}
 				}
 			}

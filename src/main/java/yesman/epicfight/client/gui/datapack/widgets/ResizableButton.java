@@ -4,6 +4,8 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.common.AnchoredWidget] instead
+@Deprecated
 public class ResizableButton extends Button implements ResizableComponent {
 	public ResizableButton(ResizableButton.Builder builder) {
 		super(builder);

@@ -19,6 +19,7 @@ import yesman.epicfight.api.neoevent.playerpatch.DealDamageEvent;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Animations;
+import yesman.epicfight.generated.LangKeys;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.entries.EpicFightMobEffects;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
@@ -130,7 +131,7 @@ public class BladeRushSkill extends WeaponInnateSkill {
 	@Override
 	public List<Component> getTooltipOnItem(ItemStack itemStack, CapabilityItem cap, PlayerPatch<?> playerCap) {
 		List<Component> list = super.getTooltipOnItem(itemStack, cap, playerCap);
-		this.generateTooltipforPhase(list, itemStack, cap, playerCap, this.properties.get(0), "Each Strike:");
+		this.generateTooltipforPhase(list, itemStack, cap, playerCap, this.properties.getFirst(), "Each Strike:");
 		this.generateTooltipforPhase(list, itemStack, cap, playerCap, this.properties.get(1), "Execution:");
 		
 		return list;
@@ -138,11 +139,10 @@ public class BladeRushSkill extends WeaponInnateSkill {
 	
 	@Override
 	public WeaponInnateSkill registerPropertiesToAnimation() {
-		Animations.BLADE_RUSH_COMBO1.get().phases[0].addProperties(this.properties.get(0).entrySet());
-		Animations.BLADE_RUSH_COMBO2.get().phases[0].addProperties(this.properties.get(0).entrySet());
-		Animations.BLADE_RUSH_COMBO3.get().phases[0].addProperties(this.properties.get(0).entrySet());
+		Animations.BLADE_RUSH_COMBO1.get().phases[0].addProperties(this.properties.getFirst().entrySet());
+		Animations.BLADE_RUSH_COMBO2.get().phases[0].addProperties(this.properties.getFirst().entrySet());
+		Animations.BLADE_RUSH_COMBO3.get().phases[0].addProperties(this.properties.getFirst().entrySet());
 		Animations.BLADE_RUSH_EXECUTE_BIPED.get().phases[0].addProperties(this.properties.get(1).entrySet());
-		
 		return this;
 	}
 	
@@ -163,9 +163,9 @@ public class BladeRushSkill extends WeaponInnateSkill {
 
         if (this.equals(skill) && !this.checkExecuteCondition(container)) {
             if (container.getExecutor().getTarget() == null || !container.getExecutor().getTarget().isAlive()) {
-                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.no_target")), false);
+                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(LangKeys.GUI_MESSAGE_INGAME_NO_TARGET_WARNING), false);
             } else {
-                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(EpicFightMod.format("gui.%s.warn.target_too_far")), false);
+                Minecraft.getInstance().gui.setOverlayMessage(Component.translatable(LangKeys.GUI_MESSAGE_INGAME_TOO_FAR_TARGET_WARNING), false);
             }
         }
 	}

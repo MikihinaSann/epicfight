@@ -1,16 +1,17 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
 import com.google.common.collect.Lists;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
+
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.WidgetTable] instead
+@Deprecated
 public abstract class InputComponentList<T> extends ContainerObjectSelectionList<InputComponentList<T>.InputComponentEntry> {
 	private final Screen owner;
 	private final List<DataBindingComponent<?, ?>> dataBindingComponent = Lists.newArrayList();

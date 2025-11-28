@@ -9,6 +9,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.client.animation.property.TrailInfo;
 import yesman.epicfight.api.model.Armature;
@@ -24,8 +25,8 @@ public class DatapackAirSlashAnimation extends DatapackAttackAnimation {
 	}
 	
 	@Override
-	public EditorAnimation readAnimationFromJson(JsonArray rawAnimationJson) {
-		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, rawAnimationJson);
+	public EditorAnimation readAnimationFromJson(JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimationJson) {
+		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, transformFormat, rawAnimationJson);
 		fakeAnimation.setAnimationClass(EditorAnimation.AnimationType.AIR_SLASH);
 		fakeAnimation.setParameter("convertTime", this.transitionTime);
 		fakeAnimation.setParameter("path", this.registryName().toString());

@@ -1,11 +1,7 @@
 package yesman.epicfight.world.capabilities.entitypatch.player;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
@@ -35,6 +31,7 @@ import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.EpicFightNetworkManager.PayloadBundleBuilder;
+import yesman.epicfight.network.common.BiDirectionalSyncEmoteSlots;
 import yesman.epicfight.network.server.SPChangeLivingMotion;
 import yesman.epicfight.network.server.SPInitSkills;
 import yesman.epicfight.network.server.SPModifyPlayerData;
@@ -42,6 +39,9 @@ import yesman.epicfight.network.server.SPSkillFeedback;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	private LivingEntity attackTarget;
@@ -54,7 +54,10 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	@Override
 	public void onJoinWorld(ServerPlayer player, EntityJoinLevelEvent event) {
 		super.onJoinWorld(player, event);
-		EpicFightNetworkManager.sendToPlayer(new SPInitSkills(this.getPlayerSkills()), player);
+
+        PayloadBundleBuilder payloadBundleBuilder = PayloadBundleBuilder.beginWith(new SPInitSkills(this.getPlayerSkills()));
+        payloadBundleBuilder.and(new BiDirectionalSyncEmoteSlots(this));
+        payloadBundleBuilder.send((first, others) -> EpicFightNetworkManager.sendToPlayer(first, player, others));
 	}
 	
 	@Override
@@ -62,7 +65,6 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		PayloadBundleBuilder payloadBundleBuilder = PayloadBundleBuilder.create();
 		SPChangeLivingMotion msg = new SPChangeLivingMotion(this.getOriginal().getId());
 		msg.putEntries(this.getAnimator().getLivingAnimations().entrySet());
-		
 		payloadBundleBuilder.and(msg);
 		
 		this.getPlayerSkills().listSkillContainers().filter(skillContainer -> !skillContainer.isEmpty() && skillContainer.getSkill().getCategory().shouldSynchronize()).forEach(skillContainer -> {

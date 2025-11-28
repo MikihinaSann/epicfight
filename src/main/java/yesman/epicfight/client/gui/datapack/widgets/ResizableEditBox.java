@@ -1,12 +1,14 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.function.Consumer;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 
+import java.util.function.Consumer;
+
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.AnchoredEditBox] instead
+@Deprecated
 public class ResizableEditBox extends EditBox implements DataBindingComponent<String, String> {
 	public ResizableEditBox(Font font, int x1, int x2, int y1, int y2, Component title, HorizontalSizing horizontalSizingOption, VerticalSizing verticalSizingOption) {
 		super(font, x1, y1, x2, y2, title);

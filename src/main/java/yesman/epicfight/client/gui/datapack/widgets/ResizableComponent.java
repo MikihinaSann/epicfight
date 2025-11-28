@@ -6,7 +6,14 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.network.chat.Component;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.client.gui.widgets.common.AnchoredWidget;
 
+/**
+ * @Deprecated We're refactoring ui code use {@link AnchoredWidget} the advanced one
+ */
+@Deprecated
 public interface ResizableComponent extends GuiEventListener, NarratableEntry {
 	default void resize(ScreenRectangle screenRectangle) {
 		if (this.getHorizontalSizingOption() != null) {
@@ -52,7 +59,7 @@ public interface ResizableComponent extends GuiEventListener, NarratableEntry {
 	void setY2(int y2);
 	HorizontalSizing getHorizontalSizingOption();
 	VerticalSizing getVerticalSizingOption();
-	
+
 	public static enum HorizontalSizing {
 		LEFT_WIDTH((component, screenRectangle, v1, v2) -> {
 			component._setX(screenRectangle.left() + v1);
@@ -75,7 +82,7 @@ public interface ResizableComponent extends GuiEventListener, NarratableEntry {
 			this.resizeFunction = resizeFunction;
 		}
 	}
-	
+
 	public static enum VerticalSizing {
 		TOP_HEIGHT((component, screenRectangle, v1, v2) -> {
 			component._setY(v1);
@@ -98,7 +105,7 @@ public interface ResizableComponent extends GuiEventListener, NarratableEntry {
 			this.resizeFunction = resizeFunction;
 		}
 	}
-	
+
 	@FunctionalInterface
 	interface ResizeFunction {
 		public void resize(ResizableComponent component, ScreenRectangle screenRectangle, int v1, int v2);

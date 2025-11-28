@@ -33,7 +33,6 @@ import yesman.epicfight.api.client.input.InputMode;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.client.input.controller.EpicFightControllerModProvider;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.input.EpicFightInputCategories;
@@ -86,6 +85,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     private static InputBindingSupplier weaponInnateSkillTooltip;
     private static InputBindingSupplier openSkillEditorScreen;
     private static InputBindingSupplier openConfigScreen;
+    private static InputBindingSupplier openEmoteWheelScreen;
     private static InputBindingSupplier switchVanillaModeDebugging;
 
     private static InputBindingSupplier lockOn;
@@ -126,6 +126,8 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
                 case OPEN_SKILL_SCREEN ->
                         new TranslationKeys(LangKeys.KEY_SKILL_GUI, LangKeys.KEY_SKILL_GUI_DESCRIPTION);
                 case OPEN_CONFIG_SCREEN -> new TranslationKeys(LangKeys.KEY_CONFIG, LangKeys.KEY_CONFIG_DESCRIPTION);
+                case OPEN_EMOTE_WHEEL_SCREEN ->
+                    new TranslationKeys(LangKeys.KEY_EMOTE, LangKeys.KEY_EMOTE_DESCRIPTION);
                 case SWITCH_VANILLA_MODEL_DEBUGGING ->
                         new TranslationKeys(LangKeys.KEY_SWITCH_VANILLA_MODEL_DEBUG, LangKeys.KEY_SWITCH_VANILLA_MODEL_DEBUG_DESCRIPTION);
                 case MOBILITY -> new TranslationKeys(LangKeys.KEY_MOVER_SKILL, LangKeys.KEY_MOVER_SKILL_DESCRIPTION);
@@ -267,11 +269,15 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
                             .allowedContexts(EpicFightControlifyBindContexts.IN_GAME)
                             .radialCandidate(RadialIcons.getItem(Items.REDSTONE))
             );
+            case OPEN_EMOTE_WHEEL_SCREEN -> openEmoteWheelScreen = registrar.registerBinding(
+                    builder -> applyCommonBindingProperties(action, builder)
+                            .category(guiCategory)
+                            .allowedContexts(EpicFightControlifyBindContexts.IN_GAME)
+            );
             case SWITCH_VANILLA_MODEL_DEBUGGING -> switchVanillaModeDebugging = registrar.registerBinding(
-                    builder ->
-                            applyCommonBindingProperties(action, builder)
-                                    .category(systemCategory)
-                                    .allowedContexts(EpicFightControlifyBindContexts.IN_GAME)
+                    builder -> applyCommonBindingProperties(action, builder)
+                            .category(systemCategory)
+                            .allowedContexts(EpicFightControlifyBindContexts.IN_GAME)
             );
         };
     }
@@ -307,6 +313,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
             case WEAPON_INNATE_SKILL_TOOLTIP -> "weapon_innate_skill_tooltip";
             case OPEN_SKILL_SCREEN -> "open_skill_editor_screen";
             case OPEN_CONFIG_SCREEN -> "open_config_screen";
+            case OPEN_EMOTE_WHEEL_SCREEN -> "open_emote_wheel_screen";
             case SWITCH_VANILLA_MODEL_DEBUGGING -> "switch_vanilla_mode_debugging";
         };
         return EpicFightMod.identifier(path);
@@ -337,7 +344,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     private static void registerGuides(GuideDomainRegistry<InGameCtx> inGameRegistry, GuideDomainRegistry<ContainerCtx> containerRegistry) {
         // Facts are registered here; rules in "assets/controlify/guides/in_game.json" reference these facts.
         inGameRegistry.registerFact(new Fact<>(EpicFightMod.identifier("can_perform_dodge"), ctx -> {
-            final LocalPlayerPatch localPlayerPatch = ClientEngine.getInstance().getPlayerPatch();
+            final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
             if (localPlayerPatch == null || !localPlayerPatch.isEpicFightMode()) {
                 return false;
             }
@@ -368,6 +375,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
             case WEAPON_INNATE_SKILL_TOOLTIP -> weaponInnateSkillTooltip;
             case OPEN_SKILL_SCREEN -> openSkillEditorScreen;
             case OPEN_CONFIG_SCREEN -> openConfigScreen;
+            case OPEN_EMOTE_WHEEL_SCREEN -> openEmoteWheelScreen;
             case SWITCH_VANILLA_MODEL_DEBUGGING -> switchVanillaModeDebugging;
         };
         final @Nullable InputBinding binding = bindingSupplier.onOrNull(requireControllerEntity());

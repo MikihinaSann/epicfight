@@ -1,22 +1,5 @@
 package yesman.epicfight.api.utils;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.apache.commons.lang3.mutable.MutableInt;
-
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -24,7 +7,6 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
-
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -37,7 +19,16 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableInt;
 import yesman.epicfight.api.utils.math.Vec3f;
+
+import javax.annotation.Nullable;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 public abstract class ParseUtil {
 	public static Integer[] toIntArray(JsonArray array) {
@@ -360,7 +351,7 @@ public abstract class ParseUtil {
 		
 		return c - '0';
 	}
-	
+
 	public static <T> T orElse(T value, Supplier<T> defaultVal) {
 		Objects.requireNonNull(defaultVal);
 		
@@ -387,6 +378,6 @@ public abstract class ParseUtil {
 		
 		return sb.toString();
 	}
-	
+
 	private ParseUtil() {}
 }

@@ -1,18 +1,18 @@
 package yesman.epicfight.api.animation.types.datapack;
 
-import java.util.Map;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.client.animation.property.JointMask.JointMaskSet;
 import yesman.epicfight.api.client.animation.property.JointMaskReloadListener;
 import yesman.epicfight.api.model.Armature;
+
+import java.util.Map;
 
 @OnlyIn(Dist.CLIENT)
 public class DatapackMovementAnimation extends DatapackStaticAnimation {
@@ -21,8 +21,8 @@ public class DatapackMovementAnimation extends DatapackStaticAnimation {
 	}
 	
 	@Override
-	public EditorAnimation readAnimationFromJson(JsonArray rawAnimationJson) {
-		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.animationClip, rawAnimationJson);
+	public EditorAnimation readAnimationFromJson(JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimationJson) {
+		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.animationClip, transformFormat, rawAnimationJson);
 		fakeAnimation.setAnimationClass(EditorAnimation.AnimationType.MOVEMENT);
 		fakeAnimation.setParameter("convertTime", this.transitionTime);
 		fakeAnimation.setParameter("isRepeat", this.isRepeat());

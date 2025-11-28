@@ -1,14 +1,8 @@
 package yesman.epicfight.api.animation.types.datapack;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -19,17 +13,9 @@ import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.Joint;
-import yesman.epicfight.api.animation.types.AirSlashAnimation;
-import yesman.epicfight.api.animation.types.AttackAnimation;
-import yesman.epicfight.api.animation.types.ComboAttackAnimation;
-import yesman.epicfight.api.animation.types.DashAttackAnimation;
-import yesman.epicfight.api.animation.types.DynamicAnimation;
-import yesman.epicfight.api.animation.types.HitAnimation;
-import yesman.epicfight.api.animation.types.KnockdownAnimation;
-import yesman.epicfight.api.animation.types.LongHitAnimation;
-import yesman.epicfight.api.animation.types.MovementAnimation;
-import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.animation.types.*;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.collider.MultiOBBCollider;
@@ -38,18 +24,25 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
+import java.util.Map;
+
 @OnlyIn(Dist.CLIENT)
 public class EditorAnimation extends StaticAnimation implements AnimationAccessor<EditorAnimation> {
 	private AnimationType animationType;
 	private AnimationClip animationClip;
 	private Map<String, Object> constructorParams = Maps.newLinkedHashMap();
+    private JsonAssetLoader.TransformFormat transformFormat;
 	private JsonArray rawAnimation;
 	private JsonObject properties = new JsonObject();
 	
-	public EditorAnimation(String path, AssetAccessor<? extends Armature> armature, AnimationClip clip, JsonArray rawAnimation) {
+	public EditorAnimation(String path, AssetAccessor<? extends Armature> armature, AnimationClip clip, JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimation) {
 		super(ResourceLocation.withDefaultNamespace(""), 0.0F, false, "", armature);
 		
 		this.animationClip = clip;
+        this.transformFormat = transformFormat;
 		this.rawAnimation = rawAnimation;
 		this.constructorParams.put("path", path);
 		this.constructorParams.put("armature", armature);
@@ -75,7 +68,11 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 	public JsonObject getPropertiesJson() {
 		return this.properties;
 	}
-	
+
+    public JsonAssetLoader.TransformFormat getTransformFormat() {
+        return this.transformFormat;
+    }
+
 	public void setAnimationClass(AnimationType animationClass) {
 		String prevPath = this.getParameter("path");
 		
@@ -124,7 +121,7 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 		}
 		
 		switch (this.animationType) {
-		case STATIC, MOVEMENT:
+		case STATIC, MOVEMENT, EMOTE:
 			return String.format("(%s#F,%b#Z,%s#java.lang.String,%s#" + Armature.class.getTypeName() + ")#%s", this.constructorParams.get("convertTime"), this.constructorParams.get("isRepeat"), this.constructorParams.get("path"), this.constructorParams.get("armature"), this.animationType.animCls.getTypeName());
 		case SHORT_HIT, LONG_HIT, KNOCK_DOWN:
 			return String.format("(%s#F,%s#java.lang.String,%s#" + Armature.class.getTypeName() + ")#%s", this.constructorParams.get("convertTime"), this.constructorParams.get("path"), this.constructorParams.get("armature"), this.animationType.animCls.getTypeName());
@@ -190,7 +187,7 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 	}
 	
 	public EditorAnimation deepCopy() {
-		EditorAnimation fakeAnimation = new EditorAnimation(this.getParameter("path"), this.armature, this.animationClip, this.rawAnimation);
+		EditorAnimation fakeAnimation = new EditorAnimation(this.getParameter("path"), this.armature, this.animationClip, this.transformFormat, this.rawAnimation);
 		fakeAnimation.animationType = this.animationType;
 		fakeAnimation.constructorParams.clear();
 		fakeAnimation.constructorParams.putAll(this.constructorParams);
@@ -263,6 +260,7 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 		
 		PARAMETERS.put(AnimationType.STATIC, staticAnimationParameters);
 		PARAMETERS.put(AnimationType.MOVEMENT, staticAnimationParameters);
+        PARAMETERS.put(AnimationType.EMOTE, staticAnimationParameters);
 		PARAMETERS.put(AnimationType.ATTACK, attackAnimationParameters);
 		PARAMETERS.put(AnimationType.BASIC_ATTACK, attackAnimationParameters);
 		PARAMETERS.put(AnimationType.DASH_ATTACK, attackAnimationParameters);
@@ -273,6 +271,7 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 		
 		FAKE_ANIMATIONS.put(AnimationType.STATIC, DatapackStaticAnimation.class);
 		FAKE_ANIMATIONS.put(AnimationType.MOVEMENT, DatapackMovementAnimation.class);
+        FAKE_ANIMATIONS.put(AnimationType.EMOTE, DatapackEmoteAnimation.class);
 		FAKE_ANIMATIONS.put(AnimationType.ATTACK, DatapackAttackAnimation.class);
 		FAKE_ANIMATIONS.put(AnimationType.BASIC_ATTACK, DatapackBasicAttackAnimation.class);
 		FAKE_ANIMATIONS.put(AnimationType.DASH_ATTACK, DatapackDashAttackAnimation.class);
@@ -297,9 +296,10 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 	}
 	
 	@OnlyIn(Dist.CLIENT)
-	public static enum AnimationType {
+	public enum AnimationType {
 		STATIC(StaticAnimation.class),
 		MOVEMENT(MovementAnimation.class),
+        EMOTE(EmoteAnimation.class),
 		ATTACK(AttackAnimation.class),
 		BASIC_ATTACK(ComboAttackAnimation.class),
 		DASH_ATTACK(DashAttackAnimation.class),

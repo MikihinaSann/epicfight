@@ -1,30 +1,13 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.Function;
-
-import org.joml.Matrix4f;
-import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
-
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.blaze3d.vertex.VertexFormat;
-import com.mojang.blaze3d.vertex.VertexSorting;
+import com.mojang.blaze3d.vertex.*;
 import com.mojang.math.Axis;
-
 import net.minecraft.client.Camera;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -37,11 +20,7 @@ import net.minecraft.client.renderer.MultiBufferSource.BufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
-import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.renderer.texture.*;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -52,19 +31,13 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import yesman.epicfight.api.animation.AnimationPlayer;
-import yesman.epicfight.api.animation.Animator;
-import yesman.epicfight.api.animation.Joint;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.Keyframe;
-import yesman.epicfight.api.animation.Pose;
-import yesman.epicfight.api.animation.TransformSheet;
-import yesman.epicfight.api.animation.types.AttackAnimation;
+import org.joml.Matrix4f;
+import org.joml.Vector4f;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
+import yesman.epicfight.api.animation.*;
+import yesman.epicfight.api.animation.types.*;
 import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
-import yesman.epicfight.api.animation.types.DynamicAnimation;
-import yesman.epicfight.api.animation.types.LayerOffAnimation;
-import yesman.epicfight.api.animation.types.LinkAnimation;
-import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.ClientAnimator;
 import yesman.epicfight.api.client.animation.Layer;
@@ -81,11 +54,7 @@ import yesman.epicfight.api.physics.PhysicsSimulator;
 import yesman.epicfight.api.physics.SimulatableObject;
 import yesman.epicfight.api.physics.SimulationTypes;
 import yesman.epicfight.api.physics.bezier.CubicBezierCurve;
-import yesman.epicfight.api.utils.math.MathUtils;
-import yesman.epicfight.api.utils.math.OpenMatrix4f;
-import yesman.epicfight.api.utils.math.QuaternionUtils;
-import yesman.epicfight.api.utils.math.Vec3f;
-import yesman.epicfight.api.utils.math.Vec4f;
+import yesman.epicfight.api.utils.math.*;
 import yesman.epicfight.client.particle.AnimationTrailParticle;
 import yesman.epicfight.client.renderer.EpicFightShaders;
 import yesman.epicfight.gameasset.Animations;
@@ -94,6 +63,13 @@ import yesman.epicfight.world.capabilities.entitypatch.Faction;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.damagesource.StunType;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
+
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.ModelPreviewer] instead
+@Deprecated
 public class ModelPreviewer extends AbstractWidget implements ResizableComponent, TickableComponent {
 	private final ModelRenderTarget modelRenderTarget;
 	private final List<AssetAccessor<? extends StaticAnimation>> animationsToPlay = Lists.newArrayList();
@@ -410,11 +386,12 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 		return false;
 	}
 	
-	protected void renderFigure(GuiGraphics guiGraphics, Tesselator tesselator, float partialTicks) {
+	protected void renderFigure(GuiGraphics guiGraphics, Tesselator tesselator) {
 		BufferBuilder bufferbuilder = null;
-		
 		RenderSystem.enableDepthTest();
-		
+
+        final float partialTicks =((DeltaTracker.Timer)Minecraft.getInstance().getTimer()).deltaTickResidual;
+
 		if (this.mesh != null && this.mesh.get() != null) {
 			if (this.animator != null) {
 				Pose pose = this.animator.getPose(partialTicks);
@@ -606,7 +583,7 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 		guiGraphics.pose().mulPose(Axis.XP.rotationDegrees(this.xRot));
 		guiGraphics.pose().mulPose(Axis.YP.rotationDegrees(this.yRot));
 		
-		this.renderFigure(guiGraphics, tesselator, partialTicks);
+		this.renderFigure(guiGraphics, tesselator);
 		
 		guiGraphics.pose().popPose();
 		
@@ -674,8 +651,7 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 		}
 		
 		double guiScale = Minecraft.getInstance().getWindow().getGuiScale();
-		
-		this.modelRenderTarget.resize(this._getWidth() * (int)guiScale, this._getHeight() * (int)guiScale, true);
+		this.modelRenderTarget.resize(Math.max(8, this._getWidth() * (int)guiScale), Math.max(8, this._getHeight() * (int)guiScale), true);
 	}
 	
 	public void onDestroy() {

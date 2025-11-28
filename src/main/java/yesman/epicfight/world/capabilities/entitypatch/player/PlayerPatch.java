@@ -46,6 +46,7 @@ import yesman.epicfight.skill.common.ComboAttacks;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.emote.PlayerEmoteSlots;
 import yesman.epicfight.world.capabilities.entitypatch.Faction;
 import yesman.epicfight.world.capabilities.entitypatch.Factions;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -67,6 +68,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	protected static final float PLAYER_SCALE = 0.9375F;
 	
 	protected final PlayerSkills playerSkills = new PlayerSkills(this);
+    protected final PlayerEmoteSlots emoteSlots = new PlayerEmoteSlots();
 	protected PlayerMode playerMode = PlayerMode.EPICFIGHT;
 	protected boolean battleModeRestricted;
 	
@@ -143,6 +145,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	public void copyOldData(PlayerPatch<?> old, boolean isDeath) {
 		this.getPlayerSkills().copyFrom(old.getPlayerSkills());
+        this.getEmoteSlots().copyFrom(old.getEmoteSlots());
 		
 		if (!isDeath) {
 			old.getPlayerSkills().listSkillContainers().forEach(skillContainer -> {
@@ -299,17 +302,23 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public PlayerSkills getPlayerSkills() {
 		return this.playerSkills;
 	}
-	
+
+    public PlayerEmoteSlots getEmoteSlots() {
+        return this.emoteSlots;
+    }
+
 	@Override
 	public void writeData(CompoundTag compound) {
 		super.writeData(compound);
 		this.playerSkills.write(compound);
+        this.emoteSlots.serialize(compound);
 	}
 	
 	@Override
 	public void readData(CompoundTag compound) {
 		super.readData(compound);
 		this.playerSkills.read(compound);
+        this.emoteSlots.deserialize(compound, this.getLevel().registryAccess());
 	}
 	
 	@Override

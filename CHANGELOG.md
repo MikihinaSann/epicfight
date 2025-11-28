@@ -5,13 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [21.15.0.1] - 2025-12-28
+
+### Added
+
+- Emote System added
+    - Holding emote wheel key (default 'Y') will open Emote screen, where you can select a emote to play
+    - Emote system is data-driven. Meaning that users can add custom emotes
+    - Similar to other datapack systems, it requires each client to load emote animation provided as resource pack
+
+### Changed
+
+- Configuration screen reboot
+    - The design of configuration screen is clean and modernized
+    - Splitted configurations with more specific categories, Ui, Graphics, Model, Controls, and Camera
+    - Some configurations' names have been changed to more standard and in common use terminologies
+    - Added a side bar to switch Settings, Data Pack Editor, Cosemtics screen
 
 ### For Devs
 
 - Renamed the JAR file to be consistent with the Modrinth project slug URL, to support automatic sources download.
 - Added `EntityPatchRegistryEvent#registerEntityPatch` and `EntityPatchRegistryEvent#registerEntityPatchUnsafe`, which
   are more type-safe and recommended over `EntityPatchRegistryEvent#getTypeEntry`. 
+- Deprecated `EpicFight.format` since we added `LangKeys` for words translation
 
 ## [21.14.4] - 2025-12-17
 

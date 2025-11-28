@@ -1,11 +1,6 @@
 package yesman.epicfight.client.gui.screen.config;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.function.Supplier;
-
 import com.google.common.collect.Sets;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -17,24 +12,19 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.BowItem;
-import net.minecraft.world.item.CrossbowItem;
-import net.minecraft.world.item.HoeItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.PickaxeItem;
-import net.minecraft.world.item.ShovelItem;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.*;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.client.gui.screen.config.ItemsPreferenceScreen.ItemList.ItemEntry;
 import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.generated.LangKeys;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.item.WeaponItem;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Supplier;
 
 public class ItemsPreferenceScreen extends Screen {
 	private static final Set<Class<? extends Item>> WEAPON_CATEGORIZED_ITEM_CLASSES = new HashSet<> ();
@@ -76,7 +66,6 @@ public class ItemsPreferenceScreen extends Screen {
 			}
 			
 			if (TOOL_CATEGORIZED_ITEM_CLASSES.contains(itemClass)) {
-				isweapon = false;
 				foundMatchingClass = true;
 				break;
 			}
@@ -87,7 +76,7 @@ public class ItemsPreferenceScreen extends Screen {
 		if (!foundMatchingClass) {
 			CapabilityItem itemCapability = EpicFightCapabilities.getItemStackCapability(item.getDefaultInstance());
 			
-			if (itemCapability != null && itemCapability instanceof WeaponCapability) {
+			if (itemCapability instanceof WeaponCapability) {
 				isweapon = true;
 			}
 		}
@@ -96,14 +85,14 @@ public class ItemsPreferenceScreen extends Screen {
 	}
 	
 	public static void resetItems() {
-		ClientConfig.combatPreferredItems.clear();
-		ClientConfig.miningPreferredItems.clear();
+		ClientConfig.combatCategorizedItems.clear();
+		ClientConfig.miningCategorizedItems.clear();
 		
 		BuiltInRegistries.ITEM.forEach(item -> {
 			if (judgeItemPreference(item)) {
-				ClientConfig.combatPreferredItems.add(item);
+				ClientConfig.combatCategorizedItems.add(item);
 			} else {
-				ClientConfig.miningPreferredItems.add(item);
+				ClientConfig.miningCategorizedItems.add(item);
 			}
 		});
 	}
@@ -112,27 +101,25 @@ public class ItemsPreferenceScreen extends Screen {
 		WEAPON_CATEGORIZED_ITEM_CLASSES.add(cls);
 	}
 	
-	private static final Component RESET_TOOLTIP = Component.translatable(EpicFightMod.format("gui.%s.item_preferences.tooltip.find_weapon"));
-	private static final Component SWAP_ALL = Component.translatable(EpicFightMod.format("%s.gui.item_preferences.swap_all"));
-	
-	public static final Component GUI_FIND_WEAPONS = Component.translatable(EpicFightMod.format("gui.%s.find_weapon"));
+	private static final Component SWAP_ALL = Component.translatable(LangKeys.GUI_MESSAGE_SETTINGS_CONTROLS_ITEM_CATEGORY_SWAP_BY_NAME);
+	public static final Component GUI_FIND_WEAPONS = Component.translatable(LangKeys.GUI_MESSAGE_SETTINGS_CONTROLS_ITEM_CATEGORY_FIND_WEAPONS);
 	
 	protected final Screen parentScreen;
-	private ItemsPreferenceScreen.ItemList combatPreferredItems;
-	private ItemsPreferenceScreen.ItemList miningPreferredItems;
-	
-	private Set<Item> combatItems = new HashSet<> ();
-	private Set<Item> miningItems = new HashSet<> ();
+	private final ItemsPreferenceScreen.ItemList combatPreferredItems;
+	private final ItemsPreferenceScreen.ItemList miningPreferredItems;
+	private final Set<Item> combatItems = new HashSet<> ();
+	private final Set<Item> miningItems = new HashSet<> ();
 	
 	public ItemsPreferenceScreen(Screen parentScreen) {
-		super(Component.translatable(EpicFightMod.MODID + ".gui.configuration.item_preferences"));
+		super(Component.translatable(LangKeys.GUI_TITLE_SETTINGS_CONTROL_ITEM_CATEGORY));
 		
 		this.parentScreen = parentScreen;
-		
+		this.minecraft = parentScreen.getMinecraft();
+
 		BuiltInRegistries.ITEM.forEach(item -> {
-			if (ClientConfig.combatPreferredItems.contains(item)) {
+			if (ClientConfig.combatCategorizedItems.contains(item)) {
 				this.combatItems.add(item);
-			} else if (ClientConfig.miningPreferredItems.contains(item)) {
+			} else if (ClientConfig.miningCategorizedItems.contains(item)) {
 				this.miningItems.add(item);
 			} else {
 				if (judgeItemPreference(item)) {
@@ -142,28 +129,50 @@ public class ItemsPreferenceScreen extends Screen {
 				}
 			}
 		});
+
+        this.combatPreferredItems =
+            new ItemsPreferenceScreen.ItemList(
+                200,
+                this.height,
+                true,
+                Component.translatable(LangKeys.GUI_WIDGET_SETTINGS_CONTROLS_ITEM_CATEGORY_COMBAT_CATEGORY),
+                Component.translatable(LangKeys.GUI_TOOLTIP_SETTINGS_CONTROLS_ITEM_CATEGORY_COMBAT_CATEGORY),
+                this::miningPreferredList
+            );
+
+        this.combatItems.stream().sorted(ItemEntry::compare).forEach(this.combatPreferredItems::addEntry);
+
+        this.miningPreferredItems =
+            new ItemsPreferenceScreen.ItemList(
+                200,
+                this.height,
+                false,
+                Component.translatable(LangKeys.GUI_WIDGET_SETTINGS_CONTROLS_ITEM_CATEGORY_MINING_CATEGORY),
+                Component.translatable(LangKeys.GUI_TOOLTIP_SETTINGS_CONTROLS_ITEM_CATEGORY_MINING_CATEGORY),
+                this::combatPreferredList
+            );
+
+        this.miningItems.stream().sorted(ItemEntry::compare).forEach(this.miningPreferredItems::addEntry);
 	}
-	
+
+    private ItemsPreferenceScreen.ItemList combatPreferredList() {
+        return this.combatPreferredItems;
+    }
+
+    private ItemsPreferenceScreen.ItemList miningPreferredList() {
+        return this.miningPreferredItems;
+    }
+
 	@Override
 	protected void init() {
-		if (this.combatPreferredItems == null) {
-			this.combatPreferredItems = new ItemsPreferenceScreen.ItemList(200, this.height, true, Component.translatable(EpicFightMod.MODID + ".gui.combat_perferred"), Component.translatable(EpicFightMod.MODID + ".gui.combat_perferred.tooltip"), () -> this.miningPreferredItems);
-			this.combatItems.stream().sorted(ItemEntry::compare).forEach((item) -> this.combatPreferredItems.addEntry(item));
-		} else {
-			this.combatPreferredItems.resize(200, this.height);
-			this.combatPreferredItems.setScrollAmount(this.combatPreferredItems.getScrollAmount());
-		}
-		
-		if (this.miningPreferredItems == null) {
-			this.miningPreferredItems = new ItemsPreferenceScreen.ItemList(200, this.height, false, Component.translatable(EpicFightMod.MODID + ".gui.mining_preferred"), Component.translatable(EpicFightMod.MODID + ".gui.mining_preferred.tooltip"), () -> this.combatPreferredItems);
-			this.miningItems.stream().sorted(ItemEntry::compare).forEach((item) -> this.miningPreferredItems.addEntry(item));
-		} else {
-			this.miningPreferredItems.resize(200, this.height);
-			this.combatPreferredItems.setScrollAmount(this.combatPreferredItems.getScrollAmount());
-		}
-		
-		this.combatPreferredItems.setX(this.width / 2 - 204);
+        this.combatPreferredItems.resize(200, this.height);
+        this.combatPreferredItems.setScrollAmount(this.combatPreferredItems.getScrollAmount());
+        this.combatPreferredItems.setX(this.width / 2 - 204);
+
+        this.miningPreferredItems.resize(200, this.height);
+        this.miningPreferredItems.setScrollAmount(this.miningPreferredItems.getScrollAmount());
 		this.miningPreferredItems.setX(this.width / 2 + 4);
+
 		this.addRenderableWidget(this.combatPreferredItems);
 		this.addRenderableWidget(this.miningPreferredItems);
 		
@@ -232,11 +241,10 @@ public class ItemsPreferenceScreen extends Screen {
 			Button.builder(
 				CommonComponents.GUI_DONE,
 				(button) -> {
-					ClientConfig.combatPreferredItems.clear();
-					ClientConfig.miningPreferredItems.clear();
-					ClientConfig.combatPreferredItems.addAll(this.combatItems);
-					ClientConfig.miningPreferredItems.addAll(this.miningItems);
-					ClientConfig.saveChanges();
+					ClientConfig.combatCategorizedItems.clear();
+					ClientConfig.miningCategorizedItems.clear();
+					ClientConfig.combatCategorizedItems.addAll(this.combatItems);
+					ClientConfig.miningCategorizedItems.addAll(this.miningItems);
 					this.onClose();
 				}
 			)
@@ -255,14 +263,14 @@ public class ItemsPreferenceScreen extends Screen {
 					this.combatItems.clear();
 					this.miningItems.clear();
 					
-					ClientConfig.combatPreferredItems.stream()
+					ClientConfig.combatCategorizedItems.stream()
 						.sorted(ItemEntry::compare)
 						.forEach(item -> {
 							this.combatItems.add(item);
 							this.combatPreferredItems.addEntry(item);
 						});
 					
-					ClientConfig.miningPreferredItems.stream()
+					ClientConfig.miningCategorizedItems.stream()
 						.sorted(ItemEntry::compare)
 						.forEach(item -> {
 							this.miningItems.add(item);
@@ -274,7 +282,7 @@ public class ItemsPreferenceScreen extends Screen {
 				}
 			)
 			.bounds(this.width / 2 + 2, this.height - 28, 100, 20)
-			.tooltip(Tooltip.create(RESET_TOOLTIP))
+			.tooltip(Tooltip.create(Component.translatable(LangKeys.GUI_TOOLTIP_SETTINGS_CONTROLS_ITEM_CATEGORY_FIND_WEAPONS)))
 			.build()
 		);
 	}
@@ -289,7 +297,7 @@ public class ItemsPreferenceScreen extends Screen {
 		super.render(guiGraphics, mouseX, mouseY, partialTick);
 		
 		guiGraphics.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
-		guiGraphics.drawCenteredString(this.font, SWAP_ALL, this.width / 2 - 120, this.height - 45, 16777215);
+		guiGraphics.drawCenteredString(this.font, SWAP_ALL, this.width / 2 - 130, this.height - 45, 16777215);
 	}
 
 	@Override
@@ -379,7 +387,7 @@ public class ItemsPreferenceScreen extends Screen {
 				return ParseUtil.toLowerCase(name).contains(ParseUtil.toLowerCase(keyword));
 			}).sorted(ItemEntry::compare).forEach(this::addEntry);
 		}
-		
+
 		class ItemEntry extends ObjectSelectionList.Entry<ItemsPreferenceScreen.ItemList.ItemEntry> {
 			private static final Set<Item> UNRENDERABLE_ITEMS = Sets.newHashSet();
 			

@@ -1,20 +1,9 @@
 package yesman.epicfight.client.gui.datapack.screen;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -41,19 +30,20 @@ import yesman.epicfight.api.collider.MultiOBBCollider;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.ParseUtil;
-import yesman.epicfight.client.gui.datapack.widgets.CheckBox;
-import yesman.epicfight.client.gui.datapack.widgets.ComboBox;
-import yesman.epicfight.client.gui.datapack.widgets.Grid;
+import yesman.epicfight.client.gui.datapack.widgets.*;
 import yesman.epicfight.client.gui.datapack.widgets.Grid.GridBuilder.RowEditButton;
-import yesman.epicfight.client.gui.datapack.widgets.InputComponentList;
-import yesman.epicfight.client.gui.datapack.widgets.ModelPreviewer;
-import yesman.epicfight.client.gui.datapack.widgets.PopupBox;
 import yesman.epicfight.client.gui.datapack.widgets.ResizableComponent.HorizontalSizing;
-import yesman.epicfight.client.gui.datapack.widgets.ResizableEditBox;
-import yesman.epicfight.client.gui.datapack.widgets.RowSpliter;
-import yesman.epicfight.client.gui.datapack.widgets.Static;
-import yesman.epicfight.client.gui.datapack.widgets.SubScreenOpenButton;
 import yesman.epicfight.gameasset.ColliderPreset;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public class ImportAnimationsScreen extends Screen {
 	private final SelectAnimationScreen parentScreen;
@@ -151,7 +141,7 @@ public class ImportAnimationsScreen extends Screen {
 				
 				if (fakeAnim.getAnimationClass() != null) {
 				switch (fakeAnim.getAnimationClass()) {
-				case STATIC, MOVEMENT:
+				case STATIC, MOVEMENT, EMOTE:
 					ImportAnimationsScreen.this.animationType._setResponder(null);
 					
 					this.setDataBindingComponenets(new Object[] {
@@ -289,7 +279,7 @@ public class ImportAnimationsScreen extends Screen {
 		
 		if (animationClass != null) {
 		switch (animationClass) {
-		case STATIC, MOVEMENT:
+		case STATIC, MOVEMENT, EMOTE:
 		{
 			final ResizableEditBox convertTime = new ResizableEditBox(this.font, 0, 35, 0, 15, Component.translatable("datapack_edit.import_animation.convert_time"), HorizontalSizing.LEFT_WIDTH, null);
 			Boolean isRepeat = this.fakeAnimations.get(this.animationGrid.getRowposition()).getParameter("isRepeat");
@@ -843,7 +833,7 @@ public class ImportAnimationsScreen extends Screen {
 						armatureName = armatureName.substring(armatureName.indexOf(":") + 1);
 						
 						String animationPath = modid + ":" + armatureName.substring(armatureName.lastIndexOf("/") + 1) + "/" + file.getName().replace(".json", "");
-						EditorAnimation animation = new EditorAnimation(animationPath, this.modelPreviewer.getArmature(), jsonLoader.loadAnimationClip(this.modelPreviewer.getArmature().get()), jsonLoader.getRootJson().getAsJsonArray("animation"));
+						EditorAnimation animation = new EditorAnimation(animationPath, this.modelPreviewer.getArmature(), jsonLoader.loadAnimationClip(this.modelPreviewer.getArmature().get()), jsonLoader.getTransformFormat(), jsonLoader.getRootJson().getAsJsonArray("animation"));
 						
 						this.fakeAnimations.add(animation);
 						this.animationGrid.addRowWithDefaultValues("animation_name", animationPath);

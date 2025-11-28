@@ -1,11 +1,7 @@
 package yesman.epicfight.api.animation.types.datapack;
 
-import java.util.Locale;
-import java.util.NoSuchElementException;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -18,12 +14,16 @@ import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.client.animation.property.TrailInfo;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.Locale;
+import java.util.NoSuchElementException;
 
 @OnlyIn(Dist.CLIENT)
 public class DatapackAttackAnimation extends AttackAnimation implements DatapackAnimation<DatapackAttackAnimation> {
@@ -129,8 +129,8 @@ public class DatapackAttackAnimation extends AttackAnimation implements Datapack
 	}
 	
 	@Override
-	public EditorAnimation readAnimationFromJson(JsonArray rawAnimationJson) {
-		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, rawAnimationJson);
+	public EditorAnimation readAnimationFromJson(JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimationJson) {
+		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, transformFormat, rawAnimationJson);
 		fakeAnimation.setAnimationClass(EditorAnimation.AnimationType.ATTACK);
 		fakeAnimation.setParameter("convertTime", this.transitionTime);
 		fakeAnimation.setParameter("path", this.registryName().toString());

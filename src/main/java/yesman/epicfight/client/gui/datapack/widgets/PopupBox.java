@@ -47,6 +47,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.PopupBox] instead
+@Deprecated
 public abstract class PopupBox<T> extends AbstractWidget implements DataBindingComponent<T, Pair<String, T>> {
     public static final ResourceLocation POPUP_ICON = EpicFightMod.identifier("textures/gui/widget/popup_icon.png");
 	

@@ -1,11 +1,13 @@
 package yesman.epicfight.client.gui.datapack.widgets;
 
-import java.util.function.Supplier;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 
+import java.util.function.Supplier;
+
+/// We're refactoring UI codes, use [yesman.epicfight.client.gui.widgets.SubscreenButton] instead
+@Deprecated
 public class SubScreenOpenButton extends ResizableButton {
 	protected final Supplier<Screen> subScreenProvider;
 	

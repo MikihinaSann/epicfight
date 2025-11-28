@@ -1,20 +1,6 @@
 package yesman.epicfight.world.capabilities.item;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-
+import com.google.common.collect.*;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
@@ -55,6 +41,16 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+
+import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Function;
+
+import static yesman.epicfight.generated.LangKeys.*;
 
 public class CapabilityItem {
 	public static CapabilityItem EMPTY = CapabilityItem.builder().build();
@@ -397,14 +393,37 @@ public class CapabilityItem {
 	}
 	
 	public enum WeaponCategories implements WeaponCategory {
-		NOT_WEAPON, AXE, FIST, GREATSWORD, HOE, PICKAXE, SHOVEL, SWORD, UCHIGATANA, SPEAR, TACHI, TRIDENT, LONGSWORD, DAGGER, SHIELD, RANGED;
-		
+		NOT_WEAPON(WEAPON_CATEGORY_NOT_WEAPON),
+        AXE(WEAPON_CATEGORY_AXE),
+        FIST(WEAPON_CATEGORY_FIST),
+        GREATSWORD(WEAPON_CATEGORY_GREATSWORD),
+        HOE(WEAPON_CATEGORY_HOE),
+        PICKAXE(WEAPON_CATEGORY_PICKAXE),
+        SHOVEL(WEAPON_CATEGORY_SHOVEL),
+        SWORD(WEAPON_CATEGORY_SWORD),
+        UCHIGATANA(WEAPON_CATEGORY_UCHIGATANA),
+        SPEAR(WEAPON_CATEGORY_SPEAR),
+        TACHI(WEAPON_CATEGORY_TACHI),
+        TRIDENT(WEAPON_CATEGORY_TRIDENT),
+        LONGSWORD(WEAPON_CATEGORY_LONGSWORD),
+        DAGGER(WEAPON_CATEGORY_DAGGER),
+        SHIELD(WEAPON_CATEGORY_SHIELD),
+        RANGED(WEAPON_CATEGORY_RANGED)
+        ;
+
+        final Component translationKey;
 		final int id;
 		
-		WeaponCategories() {
+		WeaponCategories(String translationKey) {
+            this.translationKey = Component.translatable(translationKey);
 			this.id = WeaponCategory.ENUM_MANAGER.assign(this);
 		}
-		
+
+        @Override
+        public Component getTranslatable() {
+            return this.translationKey;
+        }
+
 		@Override
 		public int universalOrdinal() {
 			return this.id;

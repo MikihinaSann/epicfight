@@ -1,11 +1,6 @@
 package yesman.epicfight.client.gui.widgets;
 
-import java.util.function.BiConsumer;
-
-import org.joml.Matrix4f;
-
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
@@ -13,10 +8,15 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
+import org.joml.Matrix4f;
 import yesman.epicfight.api.utils.ColorUtil;
 import yesman.epicfight.client.gui.datapack.widgets.ResizableComponent;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 
+import java.util.function.BiConsumer;
+
+/// We're refactoring UI codes, use [ColorDeterminator] the advanced one
+@Deprecated
 public class ColorSlider extends AbstractSliderButton implements ResizableComponent {
 	public static final int[] RGB_COMBINATIONS = { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF, 0xFF0000FF, 0xFFFF00FF, 0xFFFF0000 };
 	
@@ -149,22 +149,22 @@ public class ColorSlider extends AbstractSliderButton implements ResizableCompon
 		
 		guiGraphics.flush();
 	}
-	
+
 	@FunctionalInterface
 	interface Selector {
 		public void render(ColorSlider widget, GuiGraphics guiGraphics);
 	}
-	
+
 	@FunctionalInterface
 	interface Background {
 		public void render(ColorSlider widget, GuiGraphics guiGraphics);
 	}
-	
+
 	@FunctionalInterface
 	interface Title {
 		public void render(ColorSlider widget, GuiGraphics guiGraphics, Font font);
 	}
-	
+
 	public enum Style {
 		CLASSIC(
 			(ColorSlider widget, GuiGraphics guiGraphics) -> {

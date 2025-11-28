@@ -8,6 +8,7 @@ import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.types.KnockdownAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.model.Armature;
 
 @OnlyIn(Dist.CLIENT)
@@ -44,8 +45,8 @@ public class DatapackKnockdownAnimation extends KnockdownAnimation implements Da
 	}
 
 	@Override
-	public EditorAnimation readAnimationFromJson(JsonArray rawAnimationJson) {
-		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, rawAnimationJson);
+	public EditorAnimation readAnimationFromJson(JsonAssetLoader.TransformFormat transformFormat, JsonArray rawAnimationJson) {
+		EditorAnimation fakeAnimation = new EditorAnimation(this.registryName().toString(), this.armature, this.clip, transformFormat, rawAnimationJson);
 		fakeAnimation.setAnimationClass(EditorAnimation.AnimationType.KNOCK_DOWN);
 		fakeAnimation.setParameter("convertTime", this.transitionTime);
 		fakeAnimation.setParameter("path", this.registryName().toString());

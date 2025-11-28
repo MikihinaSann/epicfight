@@ -19,6 +19,7 @@ import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.client.*;
 import yesman.epicfight.network.common.BiDirectionalAnimationVariable;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;
+import yesman.epicfight.network.common.BiDirectionalSyncEmoteSlots;
 import yesman.epicfight.network.server.*;
 
 import java.util.ArrayList;
@@ -241,6 +242,14 @@ public class EpicFightNetworkManager {
   	    			, EpicFightServerBoundPayloadHandler::handleSyncAnimationPosition
   	    		)
 	    	)
+            .playBidirectional(
+                  ManagedCustomPacketPayload.BI_DIRECTIONAL_SYNC_EMOTE_SLOTS
+                , BiDirectionalSyncEmoteSlots.STREAM_CODEC
+                , new DirectionalPayloadHandler<> (
+                      EpicFightClientBoundPayloadHandler::handleSyncEmoteSlot
+                    , EpicFightServerBoundPayloadHandler::handleSyncEmoteSlot
+                )
+            )
 	    ;
 	}
 	

@@ -9,9 +9,9 @@ import yesman.epicfight.main.EpicFightMod;
 
 public final class EpicFightSounds {
 	private EpicFightSounds() {}
-	
+
 	public static final DeferredRegister<SoundEvent> REGISTRY = DeferredRegister.create(Registries.SOUND_EVENT, EpicFightMod.MODID);
-	
+
 	public static final DeferredHolder<SoundEvent, SoundEvent> BLADE_HIT = registerVariableRangeSound("entity.hit.blade");
 	public static final DeferredHolder<SoundEvent, SoundEvent> BLUNT_HIT = registerVariableRangeSound("entity.hit.blunt");
 	public static final DeferredHolder<SoundEvent, SoundEvent> BLUNT_HIT_HARD = registerVariableRangeSound("entity.hit.blunt_hard");
@@ -39,7 +39,7 @@ public final class EpicFightSounds {
 	public static final DeferredHolder<SoundEvent, SoundEvent> NETHER_STAR_GLITTER = registerVariableRangeSound("sfx.nether_star_glitter");
 	public static final DeferredHolder<SoundEvent, SoundEvent> ENTITY_MOVE = registerVariableRangeSound("sfx.entity_move");
 	public static final DeferredHolder<SoundEvent, SoundEvent> BIG_ENTITY_MOVE = registerVariableRangeSound("sfx.big_entity_move");
-	
+
 	// Skill sounds
 	public static final DeferredHolder<SoundEvent, SoundEvent> ADAPTIVE_SKIN_INCREASE = registerVariableRangeSound("skill.adaptive_skin_increase");
 	public static final DeferredHolder<SoundEvent, SoundEvent> ADAPTIVE_SKIN_DECREASE = registerVariableRangeSound("skill.adaptive_skin_decrease");
@@ -56,13 +56,16 @@ public final class EpicFightSounds {
 	public static final DeferredHolder<SoundEvent, SoundEvent> TECHNICIAN = registerVariableRangeSound("skill.technician");
 	public static final DeferredHolder<SoundEvent, SoundEvent> TUMBLE = registerVariableRangeSound("skill.tumble");
 	public static final DeferredHolder<SoundEvent, SoundEvent> VENGEANCE = registerVariableRangeSound("skill.vengeance");
-	
+
+    // UI Sounds
+    public static final DeferredHolder<SoundEvent, SoundEvent> HOVER_WIDGET = registerVariableRangeSound("ui.hover");
+
 	public static DeferredHolder<SoundEvent, SoundEvent> registerVariableRangeSound(String name) {
         ResourceLocation res = EpicFightMod.identifier(name);
 		
 		return REGISTRY.register(name, () -> SoundEvent.createVariableRangeEvent(res));
 	}
-	
+
 	public static DeferredHolder<SoundEvent, SoundEvent> registerFixedRangeSound(String name, float range) {
         ResourceLocation res = EpicFightMod.identifier(name);
 		

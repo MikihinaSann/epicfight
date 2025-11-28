@@ -32,6 +32,7 @@ public enum EpicFightInputAction implements InputAction {
     WEAPON_INNATE_SKILL_TOOLTIP,
     OPEN_SKILL_SCREEN,
     OPEN_CONFIG_SCREEN,
+    OPEN_EMOTE_WHEEL_SCREEN,
     SWITCH_VANILLA_MODEL_DEBUGGING;
 
     final private int id;
@@ -62,6 +63,7 @@ public enum EpicFightInputAction implements InputAction {
             case WEAPON_INNATE_SKILL_TOOLTIP -> EpicFightKeyMappings.WEAPON_INNATE_SKILL_TOOLTIP;
             case OPEN_SKILL_SCREEN -> EpicFightKeyMappings.SKILL_EDIT;
             case OPEN_CONFIG_SCREEN -> EpicFightKeyMappings.OPEN_CONFIG_SCREEN;
+            case OPEN_EMOTE_WHEEL_SCREEN -> EpicFightKeyMappings.OPEN_EMOTE_WHEEL;
             case SWITCH_VANILLA_MODEL_DEBUGGING -> EpicFightKeyMappings.SWITCH_VANILLA_MODEL_DEBUGGING;
         };
     }

@@ -1,14 +1,10 @@
 package yesman.epicfight.client.gui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.mojang.blaze3d.platform.GlStateManager.DestFactor;
 import com.mojang.blaze3d.platform.GlStateManager.SourceFactor;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -17,17 +13,20 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import yesman.epicfight.api.utils.math.Vec2i;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.ScreenCalculations.AlignDirection;
 import yesman.epicfight.client.gui.ScreenCalculations.HorizontalBasis;
 import yesman.epicfight.client.gui.ScreenCalculations.VerticalBasis;
-import yesman.epicfight.client.gui.screen.config.UISetupScreen;
+import yesman.epicfight.client.gui.screen.config.HUDLocationsScreen;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class BattleModeGui {
 	private final List<SkillContainer> skillIcons = new ArrayList<> ();
@@ -62,11 +61,11 @@ public class BattleModeGui {
 	}
 	
 	public void renderStaminaBar(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-		if (Minecraft.getInstance().screen instanceof UISetupScreen) {
+		if (Minecraft.getInstance().screen instanceof HUDLocationsScreen) {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -94,11 +93,11 @@ public class BattleModeGui {
 	}
 	
 	public void renderChargingBar(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-		if (Minecraft.getInstance().screen instanceof UISetupScreen) {
+		if (Minecraft.getInstance().screen instanceof HUDLocationsScreen) {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -124,11 +123,11 @@ public class BattleModeGui {
 	}
 	
 	public void renderNormalSkills(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-		if (Minecraft.getInstance().screen instanceof UISetupScreen) {
+		if (Minecraft.getInstance().screen instanceof HUDLocationsScreen) {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -185,11 +184,11 @@ public class BattleModeGui {
 	}
 	
 	public void renderWeaponInnateSkill(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
-		if (Minecraft.getInstance().screen instanceof UISetupScreen) {
+		if (Minecraft.getInstance().screen instanceof HUDLocationsScreen) {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = ClientEngine.getInstance().getPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;

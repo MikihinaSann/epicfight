@@ -9,7 +9,6 @@ import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.Items;
@@ -17,8 +16,8 @@ import yesman.epicfight.api.client.model.Meshes;
 import yesman.epicfight.api.client.model.SoftBodyTranslatable;
 import yesman.epicfight.api.client.physics.cloth.ClothColliderPresets;
 import yesman.epicfight.api.client.physics.cloth.ClothSimulator;
-import yesman.epicfight.api.utils.ParseUtil;
-import yesman.epicfight.client.gui.widgets.ColorSlider;
+import yesman.epicfight.client.gui.widgets.ColorDeterminator;
+import yesman.epicfight.client.online.cosmetics.Cape;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClientPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.gameasset.Armatures;
@@ -43,7 +42,7 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 					EpicFightMod.LOGGER.error("Failed at connecting Epic Fight web server: " + response.body());
 				}
 				
-				Map<Slot, Cosmetic> cosmetics = Maps.newHashMap();
+				Map<Slot, Cape> cosmetics = Maps.newHashMap();
 				
 				try {
 					JsonReader jsonReader = new JsonReader(new InputStreamReader(new ByteArrayInputStream(response.body().getBytes()), StandardCharsets.UTF_8));
@@ -53,7 +52,7 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 						JsonObject cosmeticObj = cosmeticJson.getAsJsonObject();
 						
 						try {
-							Cosmetic cosmetic = new Cosmetic(cosmeticObj);
+							Cape cosmetic = new Cape(cosmeticObj);
 							cosmetics.put(cosmetic.slot(), cosmetic);
 						} catch (JsonSyntaxException e) {
 							e.printStackTrace();
@@ -63,7 +62,7 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 				}
 				
 				if (cosmetics.containsKey(Slot.CAPE)) {
-					Cosmetic cosmetic = cosmetics.get(Slot.CAPE);
+					Cape cosmetic = cosmetics.get(Slot.CAPE);
 					Supplier<ResourceLocation> cloakTextureProvider = null;
 					
 					if (cosmetic.useBoolParam1() && cosmetic.boolParam1()) {
@@ -95,9 +94,9 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 							double brightness = (cosmetic.intParam1() & 255) / 255.0F;
 							double saturation = ((cosmetic.intParam1() & 65280) >> 8) / 255.0F;
 							double hue = ((cosmetic.intParam1() & 16711680) >> 16) / 255.0F;
-							int hueColor = ColorSlider.rgbColor(hue);
-							int saturationApplied = ColorSlider.sliderPositionToColor(saturation, new int[] { hueColor, 0xFFFFFFFF } );
-							int brightnessApplied = ColorSlider.sliderPositionToColor(brightness, new int[] { saturationApplied, 0xFF000000 } );
+							int hueColor = ColorDeterminator.positionToPackedRGBA(hue);
+							int saturationApplied = ColorDeterminator.positionToPackedRGBA(saturation, new int[] { hueColor, 0xFFFFFFFF } );
+							int brightnessApplied = ColorDeterminator.positionToPackedRGBA(brightness, new int[] { saturationApplied, 0xFF000000 } );
 							float r = ((brightnessApplied & 16711680) >> 16) / 255.0F;
 							float g = ((brightnessApplied & 65280) >> 8) / 255.0F;
 							float b = (brightnessApplied & 255) / 255.0F;
@@ -135,26 +134,7 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 		playerpatch.setEpicSkinsInformation(new EpicSkins(() -> playerpatch.getOriginal().getSkin().capeTexture(), 1.0F, 1.0F, 1.0F));
 	}
 
-	public record Cosmetic(int seq, Slot slot, int intParam1, boolean boolParam1, boolean useIntParam1, boolean useBoolParam1, String fileLocation, ResourceLocation textureLocation) {
-		/**
-		 * intParam1 is normally used to color
-		 * boolParam1 is normally used to decide cape's vanilla texture
-		 */
-		public Cosmetic(JsonObject json) throws JsonSyntaxException {
-			this(
-				  GsonHelper.getAsInt(json, "cosmeticSeq")
-				, Slot.valueOf(ParseUtil.toUpperCase(GsonHelper.getAsString(json, "slot")))
-				, GsonHelper.getAsInt(json, "intParam1")
-				, GsonHelper.getAsBoolean(json, "boolParam1")
-				, GsonHelper.getAsBoolean(json, "useIntParam1")
-				, GsonHelper.getAsBoolean(json, "useBoolParam1")
-				, GsonHelper.getAsString(json, "fileLocation")
-				, RemoteAssets.getInstance().getRemoteTexture(GsonHelper.getAsString(json, "textureLocation"))
-			);
-		}
-	}
-
-	public enum Slot {
+    public enum Slot {
 		CAPE
 	}
 }
