@@ -94,9 +94,6 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
         ///
         /// @param action the non-vanilla action to get the translation key for
         /// @return a [TranslationKeys] instance containing the translation keys for the name and description
-        /// @throws IllegalArgumentException if the action is a vanilla action,
-        ///                                                                   since getting the translation keys in this class is only relevant for Epic Fight custom input binds.
-        ///                                                                   Vanilla input binds are handled internally by Controlify.
         private static @NotNull TranslationKeys fromAction(@NotNull EpicFightInputAction action) {
             return switch (action) {
                 case ATTACK -> new TranslationKeys("key.epicfight.attack", "key.epicfight.attack.description");
@@ -124,10 +121,6 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
                 case MOBILITY ->
                         new TranslationKeys("key.epicfight.mover_skill", "key.epicfight.mover_skill.description");
             };
-        }
-
-        private static @NotNull Component getNameOf(@NotNull EpicFightInputAction action) {
-            return fromAction(action).getNameComponent();
         }
     }
 
@@ -172,7 +165,6 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     /// Registers a non-vanilla input binding with Controlify.
     ///
     /// Must **only** be called for non-vanilla [EpicFightInputAction].
-    /// Vanilla actions are already registered and calling this with one will throw [IllegalArgumentException].
     ///
     /// ### **Type-safety and exhaustive checking:**
     ///
@@ -184,7 +176,6 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     /// @param registrar the Controlify API used to register the binding
     /// @param action    the non-vanilla input action to register
     /// @return a dummy [InputBindingSupplier] for type-safety only
-    /// @throws IllegalArgumentException if called with a vanilla input action
     @SuppressWarnings("UnusedReturnValue") // Read Javadocs of this method before removing.
     private static @NotNull InputBindingSupplier registerInputBinding(
             @NotNull ControlifyBindApi registrar,
