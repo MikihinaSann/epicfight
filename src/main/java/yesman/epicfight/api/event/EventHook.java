@@ -3,7 +3,7 @@ package yesman.epicfight.api.event;
 import java.util.TreeMap;
 
 import yesman.epicfight.api.client.event.EpicFightClientHooks;
-import yesman.epicfight.api.event.subscriptions.PassiveEventSubscription;
+import yesman.epicfight.api.event.subscriptions.DefaultEventSubscription;
 
 /**
  * This class handles event subscription in Epic Fight API, inspired by
@@ -31,7 +31,7 @@ public class EventHook<T extends Event> {
 		for (EventListener<T> subscriber : this.subscriptions.values()) {
 			eventContext.subscriptionStart(subscriber.name());
 			
-			if (subscriber.subscription() instanceof PassiveEventSubscription<T> passiveSubscription) {
+			if (subscriber.subscription() instanceof DefaultEventSubscription<T> passiveSubscription) {
 				passiveSubscription.fire(eventInstance);
 				eventContext.onCalled();
 			}
@@ -45,7 +45,7 @@ public class EventHook<T extends Event> {
 	/**
 	 * Register an event with default name and priority
 	 */
-	public void registerPassiveEvent(PassiveEventSubscription<T> subscription) {
+	public void registerPassiveEvent(DefaultEventSubscription<T> subscription) {
 		this.registerPassiveEvent(subscription, getDefaultSubscriberName(), 0);
 	}
 	
@@ -53,7 +53,7 @@ public class EventHook<T extends Event> {
 	 * Register an event with default name
 	 * @param priority determines the order of the event in descending order
 	 */
-	public void registerPassiveEvent(PassiveEventSubscription<T> subscription, int priority) {
+	public void registerPassiveEvent(DefaultEventSubscription<T> subscription, int priority) {
 		this.registerPassiveEvent(subscription, getDefaultSubscriberName(), priority);
 	}
 	
@@ -62,14 +62,14 @@ public class EventHook<T extends Event> {
 	 * @param name you can specify the subscriber name to be referenced by other events, it will be stored
 	 * 			   at {@link EventContext}
 	 */
-	public void registerPassiveEvent(PassiveEventSubscription<T> subscription, String name) {
+	public void registerPassiveEvent(DefaultEventSubscription<T> subscription, String name) {
 		this.registerPassiveEvent(subscription, name, 0);
 	}
 	
 	/**
 	 * Register an event with full parameters
 	 */
-	public void registerPassiveEvent(PassiveEventSubscription<T> subscription, String name, int priority) {
+	public void registerPassiveEvent(DefaultEventSubscription<T> subscription, String name, int priority) {
 		this.subscriptions.put(priority, new EventListener<>(name, subscription));
 	}
 	
