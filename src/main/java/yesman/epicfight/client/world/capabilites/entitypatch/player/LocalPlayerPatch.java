@@ -320,9 +320,9 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		
 		if (cameraApi.isTPSMode()) {
 			if (cameraApi.getFocusingEntity() != null && animation instanceof AttackAnimation) {
-				cameraApi.alignPlayerLookToCrosshair(false);
+				cameraApi.alignPlayerLookToCrosshair(false, true, true);
 			} else {
-				cameraApi.alignPlayerLookToCameraRotation(false);
+				cameraApi.alignPlayerLookToCameraRotation(false, true, true);
 			}
 		}
 		

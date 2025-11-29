@@ -20,6 +20,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -42,8 +43,8 @@ import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.event.EpicFightClientHooks;
 import yesman.epicfight.api.client.event.types.BuildCameraTransform;
 import yesman.epicfight.api.client.event.types.ItemUsedInDecoupledCamera;
-import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.InputManager;
+import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -355,47 +356,87 @@ public final class EpicFightCameraAPI {
 	}
 	
 	/**
-	 * Aligns the player's look to have same rotations as camera
-	 * @param noInterpolation	resets old rotation values when true
-	 */
-	public void alignPlayerLookToCameraRotation(boolean noInterpolation) {
-		if (this.minecraft.player == null) return;
-		
-		this.minecraft.player.setXRot(this.cameraXRot);
+     * Aligns the player's look to have same rotations as camera
+     * @param noInterpolation	resets old rotation values to new rotations
+     * @param syncBodyRot       whether tosync body rotation too. if you want natural movement give it false
+     * @param syncToServer      whether to send a packet to synchronize rotations right away, consider not sending
+     *                          packets if you call this method in each tick for optimized networking
+     */
+    public void alignPlayerLookToCameraRotation(boolean noInterpolation, boolean syncBodyRot, boolean syncToServer) {
+        if (this.minecraft.player == null) return;
+
+        this.minecraft.player.setXRot(this.cameraXRot);
         this.minecraft.player.setYRot(this.cameraYRot);
         this.minecraft.player.setYHeadRot(this.cameraYRot);
-        
+        if (syncBodyRot) this.minecraft.player.setYBodyRot(this.cameraYRot);
+
         if (noInterpolation) {
-        	this.minecraft.player.xRotO = this.cameraXRot;
-        	this.minecraft.player.yRotO = this.cameraYRot;
-        	this.minecraft.player.yHeadRotO = this.cameraYRot;
+            this.minecraft.player.xRotO = this.cameraXRot;
+            this.minecraft.player.yRotO = this.cameraYRot;
+            this.minecraft.player.yHeadRotO = this.cameraYRot;
+            if (syncBodyRot) this.minecraft.player.yBodyRotO = this.cameraYRot;
         }
-	}
+
+        if (syncToServer) {
+            this.minecraft.player.connection.send(
+                new ServerboundMovePlayerPacket.Rot(
+                    this.cameraYRot,
+                    this.cameraXRot,
+                    this.minecraft.player.onGround()
+                )
+            );
+        }
+    }
 	
-	/**
-	 * Sets the player to look at the crosshair's destination
-	 * @param noInterpolation	resets old rotation values when true
-	 */
-	public void alignPlayerLookToCrosshair(boolean noInterpolation) {
-		if (this.minecraft.player == null) return;
-		
-		// If crosshairHitResult is null, aligns to camera rotation
-		if (this.crosshairHitResult == null) this.alignPlayerLookToCameraRotation(noInterpolation);
-		
-		Vec3 fromEyeToDest = this.crosshairHitResult.getLocation().subtract(this.minecraft.player.getEyePosition());
-		float xRot = (float)MathUtils.getXRotOfVector(fromEyeToDest);
-		float yRot = (float)MathUtils.getYRotOfVector(fromEyeToDest);
-		
-		this.minecraft.player.setXRot(xRot);
+    /**
+     * Sets the player to look at the crosshair's destination
+     * <p>
+     * Comapred to {@link #alignPlayerLookToCameraRotation}, this method makes the player to look at the crosshair so
+     * there will be a decouple if the desination of the camera is too close.
+     * <p>
+     * Consider using {@link #alignPlayerLookToCameraRotation} if you just want to couple the player rotation with the
+     * camera.
+     * <p>
+     * @param noInterpolation	resets old rotation values to new rotations
+     * @param syncBodyRot       whether tosync body rotation too. if you want natural movement give it false
+     * @param syncToServer      whether to send a packet to synchronize rotations right away, consider not sending
+     *                          packets if you call this method in each tick for optimized networking
+     */
+    public void alignPlayerLookToCrosshair(boolean noInterpolation, boolean syncBodyRot, boolean syncToServer) {
+        if (this.minecraft.player == null) return;
+
+        // If crosshairHitResult is null, aligns to camera rotation
+        if (this.crosshairHitResult == null) {
+            this.alignPlayerLookToCameraRotation(noInterpolation, syncBodyRot, syncToServer);
+            return;
+        }
+
+        Vec3 fromEyeToDest = this.crosshairHitResult.getLocation().subtract(this.minecraft.player.getEyePosition());
+        float xRot = (float)MathUtils.getXRotOfVector(fromEyeToDest);
+        float yRot = (float)MathUtils.getYRotOfVector(fromEyeToDest);
+
+        this.minecraft.player.setXRot(xRot);
         this.minecraft.player.setYRot(yRot);
         this.minecraft.player.setYHeadRot(yRot);
-        
+        if (syncBodyRot) this.minecraft.player.setYBodyRot(yRot);
+
         if (noInterpolation) {
-        	this.minecraft.player.xRotO = xRot;
-        	this.minecraft.player.yRotO = yRot;
-        	this.minecraft.player.yHeadRotO = yRot;
+            this.minecraft.player.xRotO = xRot;
+            this.minecraft.player.yRotO = yRot;
+            this.minecraft.player.yHeadRotO = yRot;
+            if (syncBodyRot) this.minecraft.player.yBodyRotO = yRot;
         }
-	}
+
+        if (syncToServer) {
+            this.minecraft.player.connection.send(
+                new ServerboundMovePlayerPacket.Rot(
+                    this.cameraYRot,
+                    this.cameraXRot,
+                    this.minecraft.player.onGround()
+                )
+            );
+        }
+    }
 	
 	/**
 	 * Returns a rotated movement vector for @param relative, scaled by @param magnitude
