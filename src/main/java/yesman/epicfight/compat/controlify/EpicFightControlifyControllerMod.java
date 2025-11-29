@@ -2,13 +2,13 @@ package yesman.epicfight.compat.controlify;
 
 import dev.isxander.controlify.api.bind.InputBinding;
 import dev.isxander.controlify.bindings.ControlifyBindings;
-import dev.isxander.controlify.bindings.input.Input;
 import dev.isxander.controlify.controller.ControllerEntity;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.input.InputMode;
 import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
+import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.client.input.controller.ControllerBinding;
 import yesman.epicfight.api.client.input.controller.IEpicFightControllerMod;
 
@@ -30,11 +30,11 @@ public class EpicFightControlifyControllerMod implements IEpicFightControllerMod
     }
 
     public static @NotNull ControllerBinding getBinding(@NotNull EpicFightInputAction action) {
-        return new ControlifyControllerBinding(getControlifyBinding(action));
+        return new ControlifyControllerBinding(EpicFightControlifyEntrypoint.getControlifyBinding(action));
     }
 
-    public static @NotNull InputBinding getControlifyBinding(@NotNull EpicFightInputAction action) {
-        return EpicFightControlifyEntrypoint.getControlifyBinding(action);
+    public static @NotNull ControllerBinding getBinding(@NotNull MinecraftInputAction action) {
+        return new ControlifyControllerBinding(EpicFightControlifyEntrypoint.getControlifyBinding(action));
     }
 
     @Override
@@ -57,12 +57,5 @@ public class EpicFightControlifyControllerMod implements IEpicFightControllerMod
                 leftBind.digitalNow(), rightBind.digitalNow(),
                 jumpBind.digitalNow(), sneakBind.digitalNow()
         );
-    }
-
-    @Override
-    public boolean isBoundToSamePhysicalInput(@NotNull EpicFightInputAction action, @NotNull EpicFightInputAction action2) {
-        final Input input1 = getControlifyBinding(action).boundInput();
-        final Input input2 = getControlifyBinding(action2).boundInput();
-        return input1.getRelevantInputs().equals(input2.getRelevantInputs());
     }
 }
