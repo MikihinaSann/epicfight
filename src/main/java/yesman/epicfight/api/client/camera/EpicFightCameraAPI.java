@@ -893,13 +893,15 @@ public final class EpicFightCameraAPI {
 
     /// Returns a new basis for [LivingEntity#yRotHead] instead of coupling it to [Entity#getYRot].
     ///
+    /// The `player` argument must be a [LocalPlayer].
+    ///
     /// This method takes a [Player] instead of [LocalPlayer] because casting
     /// to the client-only [LocalPlayer] inside a mixin (e.g., in [LivingEntity])
     /// would crash a dedicated server due to Forge's `@OnlyIn(Dist.CLIENT)`.
     @ApiStatus.Internal
     public float getYRotForHead(Player player) {
         if (!player.isLocalPlayer()) {
-            throw new IllegalArgumentException("Only LocalPlayer are allowed to this parameter");
+            throw new IllegalArgumentException("must pass a LocalPlayer to getYRotForHead(Player)");
         }
 
         return (this.isTPSMode() && (Mth.abs(Mth.wrapDegrees(this.cameraYRot - player.yBodyRot)) <= 51.0F || this.predicateCouplingPlayer())) ? this.cameraYRot : player.getYRot();
