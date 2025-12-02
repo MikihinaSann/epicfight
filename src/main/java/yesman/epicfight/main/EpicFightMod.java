@@ -191,9 +191,10 @@ public class EpicFightMod {
                     // Workaround AzureLib breaking changes: https://github.com/Epic-Fight/epicfight/issues/2269
                     if (mod == MinecraftMod.AZURE_LIB || mod == MinecraftMod.AZURE_LIB_ARMOR) {
                         final Integer major = mod.getVersionComponent(MinecraftMod.VersionComponent.MAJOR);
-                        if (major != null) {
-                            return major <= 2;
+                        if (major == null) {
+                            return false;
                         }
+                        return major <= 2;
                     }
                     return true;
                 })
