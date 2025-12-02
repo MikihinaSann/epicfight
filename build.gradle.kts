@@ -142,7 +142,7 @@ dependencies {
     // Azurelib, Azurelib armor, Geckolib compatibility
     compileOnly("mod.azure.azurelib:azurelib-neo-${mcVersion}:${gradleProperty("azurelib_version")}")
     compileOnly("mod.azure.azurelibarmor:azurelibarmor-common-${mcVersion}:${gradleProperty("azurelib_armor_version")}")
-    compileOnly("software.bernie.geckolib:geckolib-neoforge-${mcVersion}:${gradleProperty("geckolib_bersion")}")
+    compileOnly("software.bernie.geckolib:geckolib-neoforge-${mcVersion}:${gradleProperty("geckolib_version")}")
 
     // Iris, Sodium, and compute shader compatibility
     compileOnly("curse.maven:irisshaders-455508:6661598")
