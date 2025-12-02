@@ -66,6 +66,20 @@ public enum MinecraftMod {
         }
     }
 
+    /// Returns the parsed component version value or `null` if parsing fails.
+    ///
+    /// Example (version `"1.4.1"`):
+    /// - [VersionComponent#MAJOR] -> `1`
+    /// - [VersionComponent#MINOR] -> `4`
+    /// - [VersionComponent#PATCH] -> `1`
+    ///
+    /// ```java
+    /// MinecraftMod mod = MinecraftMod.AZURE_LIB; // Assuming the version is 3.4.11
+    ///
+    /// Integer major = mod.getVersionComponent(VersionComponent.MAJOR); // 3
+    /// Integer minor = mod.getVersionComponent(VersionComponent.MINOR); // 4
+    /// Integer patch = mod.getVersionComponent(VersionComponent.PATCH); // 11
+    ///```
     public @Nullable Integer getVersionComponent(@NotNull VersionComponent component) {
         final String version = versionString();
 
