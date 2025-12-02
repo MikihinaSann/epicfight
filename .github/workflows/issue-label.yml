@@ -10,22 +10,20 @@ jobs:
       issues: write
     steps:
 
-      - name: Check user permission
-        id: check
-        uses: scherermichael-oss/action-has-permission@master
-        with:
-          required-permission: write
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Set label
         id: setlabel
         run: |
-          if [ "${{ steps.check.outputs.has-permission }}" = "true" ]; then
-            echo "label=core contributor" >> "$GITHUB_OUTPUT"
-          else
-            echo "label=triage" >> "$GITHUB_OUTPUT"
-          fi
+          assoc="${{ github.event.issue.author_association }}"
+          echo "Author association: $assoc"
+          
+          case "$assoc" in
+            OWNER|MEMBER|COLLABORATOR)
+              echo "label=core contributor" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "label=triage" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - name: Apply label
         run: gh issue edit "$NUMBER" --add-label "$LABEL"
