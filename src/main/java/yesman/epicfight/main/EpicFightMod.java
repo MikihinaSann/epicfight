@@ -95,14 +95,14 @@ import java.util.function.Supplier;
 
 /**
  *  --- Future list ---
- *  
+ *
  *  Update language files (always)
  *  Add an alert function when an entity targeting the player tries grappling or execution attack
  *  Add UI for execution resistance
  *  Add functionality to blooming effect (resists wither effect)
  *  Add a screen for setting animation properties in datapack editor
  *  Enhance the stun system (maybe remove or barely leave knockback)
- *  
+ *
  *  @author yesman
  */
 @Mod(EpicFightMod.MODID)
@@ -110,7 +110,7 @@ public class EpicFightMod {
 	public static final String MODID = "epicfight";
 	public static final String EPICSKINS_MODID = "epicskins";
 	public static final Logger LOGGER = LogManager.getLogger(MODID);
-	
+
 	public static String prefix(String s) {
 		return String.format("%s:%s", MODID, s);
 	}
@@ -121,26 +121,26 @@ public class EpicFightMod {
 	public static String format(String s) {
 		return String.format(s, MODID);
 	}
-	
+
 	public static void logAndStacktraceIfDevSide(BiConsumer<Logger, String> logFunction, String message, Function<String, Throwable> exceptionProvider) {
 		logAndStacktraceIfDevSide(logFunction, message, exceptionProvider, message);
 	}
-	
+
 	public static void logAndStacktraceIfDevSide(BiConsumer<Logger, String> logFunction, String message, Function<String, Throwable> exceptionProvider, String stackTraceMessage) {
 		logFunction.accept(LOGGER, message);
 		stacktraceIfDevSide(message, exceptionProvider, stackTraceMessage);
 	}
-	
+
 	public static void stacktraceIfDevSide(String message, Function<String, Throwable> exceptionProvider) {
 		stacktraceIfDevSide(message, exceptionProvider, message);
 	}
-	
+
 	public static void stacktraceIfDevSide(String message, Function<String, Throwable> exceptionProvider, String stackTraceMessage) {
 		if (exceptionProvider != null && EpicFightSharedConstants.IS_DEV_ENV) {
 			exceptionProvider.apply(stackTraceMessage).printStackTrace();
 		}
 	}
-	
+
     public EpicFightMod(IEventBus modEventBus, ModContainer modContainer) {
     	if (EpicFightSharedConstants.isPhysicalClient()) {
     		modContainer.registerConfig(ModConfig.Type.CLIENT, ClientConfig.SPEC);
@@ -149,19 +149,19 @@ public class EpicFightMod {
     	} else {
     		modContainer.registerConfig(ModConfig.Type.SERVER, ServerConfig.SPEC);
     	}
-    	
+
     	modContainer.registerConfig(ModConfig.Type.COMMON, CommonConfig.SPEC);
     	modContainer.registerExtensionPoint(EpicFightExtensions.class, (Supplier<EpicFightExtensions>)() -> new EpicFightExtensions(EpicFightCreativeTabs.ITEMS));
-    	
+
 		modEventBus.addListener(this::constructMod);
 		modEventBus.addListener(this::doCommonStuff);
 		modEventBus.addListener(this::addPackFindersEvent);
 		modEventBus.addListener(this::buildCreativeTabWithSkillBooks);
 		modEventBus.addListener(EpicFightCapabilities::registerCapabilities);
-    	
+
     	NeoForge.EVENT_BUS.addListener(this::command);
         NeoForge.EVENT_BUS.addListener(this::addReloadListnerEvent);
-        
+
     	LivingMotion.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, LivingMotions.class);
     	SkillCategory.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, SkillCategories.class);
     	SkillSlot.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, SkillSlots.class);
@@ -173,7 +173,7 @@ public class EpicFightMod {
             InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EpicFightInputAction.class);
             InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, MinecraftInputAction.class);
         }
-    	
+
     	EpicFightRegistries.DEFERRED_REGISTRIES.forEach(deferredRegistry -> deferredRegistry.register(modEventBus));
 
         if (EpicFightSharedConstants.isPhysicalClient()) {
@@ -192,9 +192,18 @@ public class EpicFightMod {
                     if (mod == MinecraftMod.AZURE_LIB || mod == MinecraftMod.AZURE_LIB_ARMOR) {
                         final Integer major = mod.getVersionComponent(MinecraftMod.VersionComponent.MAJOR);
                         if (major == null) {
+                            EpicFightMod.LOGGER.error("{} support provided by Epic Fight has been disabled as the AzureLib mod version could not be parsed.", mod.name());
                             return false;
                         }
-                        return major <= 2;
+                        if (major >= 3) {
+                            EpicFightMod.LOGGER.info(
+                                    "'{}' support provided by Epic Fight has been disabled to prevent game load " +
+                                            "crash due to breaking changes in '3.0.0'. " +
+                                            "For more details: https://github.com/Epic-Fight/epicfight/issues/2279",
+                                    mod.name()
+                            );
+                            return false;
+                        }
                     }
                     return true;
                 })
@@ -222,7 +231,7 @@ public class EpicFightMod {
             }
         }
     }
-    
+
     /**
      * FML Lifecycle Events
      */
@@ -244,7 +253,7 @@ public class EpicFightMod {
     		animationregistryevent.getBuilders().stream().sorted((b1, b2) -> b1.namespace().compareTo(b2.namespace())).forEach((builder) -> builder.task().accept(builder));
     	});
     }
-    
+
 	private void doCommonStuff(final FMLCommonSetupEvent event) {
 		event.enqueueWork(Armatures::registerEntityTypes);
 		event.enqueueWork(EpicFightCommandArgumentTypes::registerArgumentTypes);
@@ -256,7 +265,7 @@ public class EpicFightMod {
 		event.enqueueWork(EpicFightMobEffects::addOffhandModifier);
 		event.enqueueWork(EpicFightExtensibleEnums::initExtensibleEnums);
     }
-	
+
 	/**
 	 * Register Commands
 	 */
@@ -266,22 +275,22 @@ public class EpicFightMod {
 		PlayerStaminaCommand.register(event.getDispatcher());
 		AnimatorCommand.register(event.getDispatcher());
     }
-	
+
 	public void addPackFindersEvent(AddPackFindersEvent event) {
 		if (event.getPackType() == PackType.CLIENT_RESOURCES) {
             Path resourcePath = ModList.get().getModFileById(EpicFightMod.MODID).getFile().findResource("packs/epicfight_legacy");
-            
+
             PackLocationInfo packLocation = new PackLocationInfo("epicfight_legacy", Component.translatable("pack.epicfight_legacy.title"), PackSource.BUILT_IN, Optional.empty());
             Pack.ResourcesSupplier resourcesSupplier = new PathPackResources.PathResourcesSupplier(resourcePath);
-            
+
             Pack pack = Pack.readMetaAndCreate(packLocation, resourcesSupplier, PackType.CLIENT_RESOURCES, new PackSelectionConfig(false, Pack.Position.TOP, false));
-            
+
             if (pack != null) {
                 event.addRepositorySource(source -> source.accept(pack));
             }
         }
     }
-	
+
 	private void addReloadListnerEvent(final AddReloadListenerEvent event) {
 		event.addListener(new ColliderPreset());
 		event.addListener(new SkillReloadListener());
@@ -290,7 +299,7 @@ public class EpicFightMod {
 		event.addListener(new ItemCapabilityReloadListener());
 		event.addListener(new MobPatchReloadListener());
 	}
-	
+
 	@EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
@@ -304,10 +313,10 @@ public class EpicFightMod {
     				ItemsPreferenceScreen.resetItems();
     			}
     		});
-    		
+
     		event.enqueueWork(RenderEngine.getInstance()::initialize);
         }
-        
+
         @SubscribeEvent
         public static void registerResourcepackReloadListnerEvent(final RegisterClientReloadListenersEvent event) {
     		event.registerReloadListener(new JointMaskReloadListener());
@@ -316,7 +325,7 @@ public class EpicFightMod {
     		event.registerReloadListener(ItemSkinsReloadListener.INSTANCE);
     	}
     }
-	
+
 	@EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.DEDICATED_SERVER)
     public static class ServerForgeEvents {
 		@SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -324,7 +333,7 @@ public class EpicFightMod {
 			event.addListener(AnimationManager.getInstance());
 		}
     }
-	
+
 	private void buildCreativeTabWithSkillBooks(final BuildCreativeModeTabContentsEvent event) {
 		/**
 		 * Accept learnable skills for each mod by {@link EpicFightExtensions#skillBookCreativeTab}.
@@ -359,9 +368,9 @@ public class EpicFightMod {
 				}
 			});
 		});
-		
+
 		EpicFightRegistries.SKILL.holders()
-			.filter(skill -> 
+			.filter(skill ->
 				skill.value().getCategory().learnable() &&
 				skill.value().getCreativeTab() == event.getTab()
 			).forEach(holder -> {
