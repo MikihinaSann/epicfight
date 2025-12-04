@@ -30,10 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.event.EpicFightClientHooks;
-import yesman.epicfight.api.client.event.types.BuildCameraTransform;
-import yesman.epicfight.api.client.event.types.CoupleTPSCamera;
-import yesman.epicfight.api.client.event.types.ItemUsedInDecoupledCamera;
-import yesman.epicfight.api.client.event.types.LockOnEvent;
+import yesman.epicfight.api.client.event.types.*;
 import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
@@ -125,7 +122,13 @@ public final class EpicFightCameraAPI {
      * When zooming ranged weapons or TPS mode is turned on by config
      */
     public boolean isTPSMode() {
-        return this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.cameraMode.shouldSwitch(this);
+        if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.cameraMode.shouldSwitch(this)) {
+            ActivateTPSCamera event = new ActivateTPSCamera(this);
+            EpicFightClientHooks.Camera.ACTIVATE_TPS_CAMERA.post(event);
+            return !event.hasCanceled();
+        }
+
+        return false;
     }
 
     public boolean isFirstPerson() {
@@ -267,6 +270,10 @@ public final class EpicFightCameraAPI {
         return this.focusingEntity;
     }
 
+    public Minecraft getMinecraft() {
+        return this.minecraft;
+    }
+
     /**
      * Activates or deactivates camera lock-on to the entity that is focused by crosshair scan.
      */
@@ -290,14 +297,14 @@ public final class EpicFightCameraAPI {
 
             if (!eventCanceled) {
                 this.lockingOnTarget = flag;
+            }
 
-                // Sycn the camera rotation according to the camera mode
-                if (!this.isTPSMode()) {
-                    if (!flag) {
-                        this.minecraft.player.setXRot(this.cameraXRot);
-                    } else {
-                        this.setCameraRotations(this.minecraft.player.getXRot(), this.minecraft.player.getYRot(), true);
-                    }
+            // Sycn the camera rotation according to the camera mode
+            if (!this.isTPSMode()) {
+                if (!flag) {
+                    this.minecraft.player.setXRot(this.cameraXRot);
+                } else {
+                    this.setCameraRotations(this.minecraft.player.getXRot(), this.minecraft.player.getYRot(), true);
                 }
             }
         }
@@ -800,16 +807,18 @@ public final class EpicFightCameraAPI {
      * @return true when vanilla camera calculation shouldn't be done
      */
     @ApiStatus.Internal
-    public boolean setupCamera(Camera camera, float partialTick) {
+    public BuildCameraTransform.Pre setupCamera(Camera camera, float partialTick) {
+        BuildCameraTransform.Pre buildCameraEventPre = new BuildCameraTransform.Pre(this, camera, partialTick);
+
         if (!camera.getEntity().is(this.minecraft.player)) {
-            return false;
+            buildCameraEventPre.cancel();
+            return buildCameraEventPre;
         }
 
-        BuildCameraTransform.Pre hook = new BuildCameraTransform.Pre(this, camera, partialTick);
-        EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.post(hook);
+        EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.post(buildCameraEventPre);
 
-        if (hook.hasCanceled()) {
-            return true;
+        if (buildCameraEventPre.hasCanceled()) {
+            return buildCameraEventPre;
         }
 
         if (this.isTPSMode()) {
@@ -881,7 +890,9 @@ public final class EpicFightCameraAPI {
                 );
             }
 
-            return true;
+            buildCameraEventPre.setVanillaCameraSetupCanceled(true);
+
+            return buildCameraEventPre;
         } else if (this.lockingOnTarget && this.focusingEntity != null) {
             if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK) {
                 float xRot = Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot);
@@ -901,7 +912,10 @@ public final class EpicFightCameraAPI {
                     camera.setRotation(direction != null ? direction.toYRot() - 180.0F : 0.0F, 0.0F);
                     camera.move(0.0F, 0.3F, 0.0F);
                 }
-                return true;
+
+                buildCameraEventPre.setVanillaCameraSetupCanceled(true);
+
+                return buildCameraEventPre;
             } else if (this.minecraft.options.getCameraType() == CameraType.FIRST_PERSON) {
                 if (!InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY)) {
                     camera.getEntity().setXRot(Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
@@ -913,7 +927,7 @@ public final class EpicFightCameraAPI {
             }
         }
 
-        return false;
+        return buildCameraEventPre;
     }
 
     /**
