@@ -47,6 +47,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   [#2194](https://github.com/Epic-Fight/epicfight/issues/2194)
 - Deprecated `ClientEngine#isBattleMode` and added `ClientEngine#isEpicFightMode` for a smoother migration when porting
   from MC 1.20.1 to 1.21.1
+- Added API JAR file, which includes classes under `yesman/epicfight/api/**` only, to allow consumers to compile against
+  Epic Fight public API only.
+    - **Note:** Keep in mind that Epic Fight public APIs are still being stabilized, and breaking changes may occur.
 
 ## [20.13.6] - 2025-11-12
 

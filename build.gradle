@@ -239,6 +239,34 @@ java {
     withSourcesJar()
 }
 
+// The API JAR file includes only classes from the API package.
+
+def apiPackage = "yesman/epicfight/api/**"
+def apiJarClassifier = "api"
+
+def apiJar = tasks.register('apiJar', Jar) {
+    group = 'build'
+    archiveClassifier.set(apiJarClassifier)
+
+    from(sourceSets.main.output) {
+        include apiPackage
+    }
+}
+
+def apiSourcesJar = tasks.register('apiSourcesJar', Jar) {
+    group = 'build'
+    archiveClassifier.set("${apiJarClassifier}-sources") // Important to use this suffix, to follow standards
+
+    from(sourceSets.main.allSource) {
+        include apiPackage
+    }
+}
+
+artifacts {
+    archives(apiJar)
+    archives(apiSourcesJar)
+}
+
 publishMods {
     def readme = project.file('CHANGELOG.md')
     def readmeContent = readme.getText()
@@ -270,7 +298,7 @@ publishMods {
 	displayName = "${mod_id}-forge-${mod_version}-${minecraft_version}"
 	
 	file = jar.archiveFile
-	additionalFiles.from(tasks.named("sourcesJar").flatMap { it.archiveFile })
+	additionalFiles.from(tasks.named("sourcesJar").flatMap { it.archiveFile }, apiJar, apiSourcesJar)
 	
 	// Curseforge publishing info
     curseforge {
