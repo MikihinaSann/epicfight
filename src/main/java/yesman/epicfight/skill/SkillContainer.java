@@ -1,10 +1,5 @@
 package yesman.epicfight.skill;
 
-import java.util.Set;
-import java.util.function.Consumer;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -26,6 +21,10 @@ import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import org.jetbrains.annotations.Nullable;
+import java.util.Set;
+import java.util.function.Consumer;
 
 public class SkillContainer {
 	protected Skill skill;
@@ -67,9 +66,7 @@ public class SkillContainer {
 	}
 	
 	public boolean setSkill(@Nullable Skill skill, boolean initialize) {
-		/**
-		 * For remote players, call setSkillRemote instead
-		 */
+        // For remote players, call setSkillRemote instead
 		if (this.executor.isLogicalClient() && !this.executor.getOriginal().isLocalPlayer()) {
 			return false;
 		}
@@ -128,9 +125,7 @@ public class SkillContainer {
 	
 	@OnlyIn(Dist.CLIENT)
 	public void setSkillRemote(@Nullable Skill skill) {
-		/**
-		 * For server players or a local player, call setSkill instead
-		 */
+        // For server players or a local player, call setSkill instead
 		if (!this.executor.isLogicalClient() || this.executor.getOriginal().isLocalPlayer()) {
 			return;
 		}
@@ -147,7 +142,7 @@ public class SkillContainer {
 			this.skill.onRemoveClient(this);
 			this.executor.getPlayerSkills().removeSkillFromContainer(this.skill);
 		}
-		
+
 		this.skill = skill;
 		this.resetValues();
 		
@@ -155,12 +150,12 @@ public class SkillContainer {
 		this.skillDataManager.clearData();
 		
 		if (skill != null) {
-			Set<Holder<SkillDataKey<?>>> datakeys = SkillDataKeyCallbacks.getSkillDataKeyMap().get(skill.getClass());
-			
-			if (datakeys != null && !datakeys.isEmpty()) {
-				datakeys.stream().filter(holder -> holder.value().syncronizeToRemotePlayers()).forEach(this.skillDataManager::registerData);
-			}
-			
+            Set<Holder<SkillDataKey<?>>> datakeys = SkillDataKeyCallbacks.getSkillDataKeyMap().get(skill.getClass());
+
+            if (datakeys != null && !datakeys.isEmpty()) {
+                datakeys.stream().filter(holder -> holder.value().syncronizeToRemotePlayers()).forEach(this.skillDataManager::registerData);
+            }
+
 			skill.onInitiateClient(this);
 			this.executor.getPlayerSkills().setSkillToContainer(skill, this);
 			
