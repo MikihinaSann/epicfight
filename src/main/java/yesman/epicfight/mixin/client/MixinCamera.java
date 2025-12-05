@@ -9,7 +9,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.client.event.types.BuildCameraTransform;
+import yesman.epicfight.api.client.event.types.camera.BuildCameraTransform;
 
 @Mixin(value = Camera.class)
 public abstract class MixinCamera {
@@ -36,7 +36,7 @@ public abstract class MixinCamera {
         Camera camera = (Camera)(Object)this;
         BuildCameraTransform.Pre buildEvent = cameraApi.setupCamera(camera, partialTick);
 
-        if (!buildEvent.hasCanceled()) {
+        if (!buildEvent.isCanceled()) {
             if (buildEvent.isVanillaCameraSetupCanceled()) {
                 callbackInfo.cancel();
             } else {

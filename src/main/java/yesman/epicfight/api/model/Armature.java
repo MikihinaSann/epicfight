@@ -242,7 +242,7 @@ public class Armature {
 	
 	private static void exportJoint(JsonArray parent, Joint joint, boolean root) {
 		JsonObject jointJson = new JsonObject();
-		jointJson.addProperty("name", joint.getName());
+		jointJson.addProperty("identifier", joint.getName());
 		
 		JsonArray transformMatrix = new JsonArray();
 		OpenMatrix4f localMatrixInBlender = new OpenMatrix4f(joint.getLocalTransform());

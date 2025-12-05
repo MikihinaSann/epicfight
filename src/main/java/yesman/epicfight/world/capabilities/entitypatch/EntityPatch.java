@@ -6,135 +6,134 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
-import yesman.epicfight.api.client.neoevent.ProcessEntityPairingPacketEvent;
-import yesman.epicfight.api.neoevent.HandleEntityDataEvent;
+import org.jetbrains.annotations.NotNull;
+import yesman.epicfight.api.utils.side.ClientOnly;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.entity.ProcessEntityPairingPacketEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.entity.HandleEntityDataEvent;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.network.server.SPEntityPairingPacket;
 
 public abstract class EntityPatch<T extends Entity> {
+    @NotNull
 	protected T original;
 	protected boolean initialized = false;
-	
-	public EntityPatch(T original) {
+
+	public EntityPatch(@NotNull T original) {
 		this.original = original;
 	}
-	
-	public void onConstructed(EntityEvent.EntityConstructing event) {
+
+	public void onConstructed(T original) {
 	}
-	
+
 	public void onAddedToLevel() {
 	}
-	
+
 	public abstract boolean overrideRender();
-	
+
 	public void onStartTracking(ServerPlayer trackingPlayer) {
 	}
-	
+
 	public void onStopTracking(ServerPlayer trackingPlayer) {
 	}
-	
-	public void onJoinWorld(T entity, EntityJoinLevelEvent event) {
+
+	public void onJoinWorld(T original, Level level, boolean worldgenSpawn) {
 		this.initialized = true;
 	}
-	
-	public void preTick(EntityTickEvent.Pre event) {
+
+	public void preTick() {
 	}
-	
-	public void preTickClient(EntityTickEvent.Pre event) {
+
+	public void preTickClient() {
 	}
-	
-	public void preTickServer(EntityTickEvent.Pre event) {
+
+	public void preTickServer() {
 	}
-	
-	public void postTick(EntityTickEvent.Post event) {
+
+	public void postTick() {
 	}
-	
-	public void postTickClient(EntityTickEvent.Post event) {
+
+	public void postTickClient() {
 	}
-	
-	public void postTickServer(EntityTickEvent.Post event) {
+
+	public void postTickServer() {
 	}
-	
+
 	public void writeData(CompoundTag compound) {
-		NeoForge.EVENT_BUS.post(new HandleEntityDataEvent.Save(this, compound));
+        EpicFightEventHooks.Entity.NBT_SAVE.post(new HandleEntityDataEvent.Save(this, compound));
 	}
-	
+
 	public void readData(CompoundTag compound) {
-		NeoForge.EVENT_BUS.post(new HandleEntityDataEvent.Load(this, compound));
+        EpicFightEventHooks.Entity.NBT_LOAD.post(new HandleEntityDataEvent.Load(this, compound));
 	}
-	
+
 	public final T getOriginal() {
 		return this.original;
 	}
-	
+
 	public final Level getLevel() {
 		return this.original.level();
 	}
-	
+
 	public final int getId() {
 		return this.original.getId();
 	}
-	
+
 	public boolean uninitialized() {
 		return !this.initialized;
 	}
-	
+
 	public boolean isLogicalClient() {
 		return this.original.level().isClientSide();
 	}
-	
+
 	public boolean isFakeEntity() {
 		return false;
 	}
-	
+
 	public OpenMatrix4f getMatrix(float partialTicks) {
 		return MathUtils.getModelMatrixIntegral(0, 0, 0, 0, 0, 0, this.original.xRotO, this.original.getXRot(), this.original.yRotO, this.original.getYRot(), partialTicks, 1, 1, 1);
 	}
-	
+
 	public abstract OpenMatrix4f getModelMatrix(float partialTicks);
-	
+
 	public double getAngleTo(Entity entity) {
 		Vec3 a = this.original.getLookAngle();
 		Vec3 b = new Vec3(entity.getX() - this.original.getX(), entity.getY() - this.original.getY(), entity.getZ() - this.original.getZ()).normalize();
 		double cos = (a.x * b.x + a.y * b.y + a.z * b.z);
-		
+
 		return Math.toDegrees(Math.acos(cos));
 	}
-	
+
 	public double getAngleToHorizontal(Entity entity) {
 		Vec3 a = this.original.getLookAngle();
 		Vec3 b = new Vec3(entity.getX() - this.original.getX(), 0.0D, entity.getZ() - this.original.getZ()).normalize();
 		double cos = (a.x * b.x + a.y * b.y + a.z * b.z);
-		
+
 		return Math.toDegrees(Math.acos(cos));
 	}
-	
+
 	public Vec3 getViewVector(float partialTick) {
 		return this.original.getViewVector(partialTick);
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	public void fireEntityPairingEvent(SPEntityPairingPacket msg) {
-		ProcessEntityPairingPacketEvent pairingPacketEvent = new ProcessEntityPairingPacketEvent(this, msg);
-		NeoForge.EVENT_BUS.post(pairingPacketEvent);
-		
+
+	@ClientOnly
+	public void fireEntityPairingEvent(SPEntityPairingPacket packet) {
+        ProcessEntityPairingPacketEvent pairingPacketEvent = new ProcessEntityPairingPacketEvent(this, packet);
+        EpicFightClientEventHooks.Entity.HANDLE_ENTITY_PAIRING_PACKET.post(pairingPacketEvent);
+
 		if (!pairingPacketEvent.isCanceled()) {
-			this.entityPairing(msg);
+			this.entityPairing(packet);
 		}
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public boolean isOutlineVisible(LocalPlayer player) {
 		return true;
 	}

@@ -11,8 +11,6 @@ import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.client.gui.widgets.common.AnchoredWidget;
 import yesman.epicfight.client.gui.widgets.common.DataBoundWidget;
@@ -38,7 +36,7 @@ public class ComboBox<T> extends AbstractWidget implements AnchoredWidget, DataB
         int y1,
         int y2,
         AnchoredWidget.HorizontalAnchorType horizontalAnchor,
-        VerticalAnchorType verticalAnchor,
+        AnchoredWidget.VerticalAnchorType verticalAnchor,
         Callable<T> dataProvider,
         Consumer<T> onWidgetChanged,
         int maxRows,
@@ -275,7 +273,6 @@ public class ComboBox<T> extends AbstractWidget implements AnchoredWidget, DataB
         narrationElementInput.add(NarratedElementType.TITLE, this.createNarrationMessage());
     }
 
-    @OnlyIn(Dist.CLIENT)
     class ComboItemList extends ObjectSelectionList<ComboItemList.ComboItemEntry> {
         private final Map<T, ComboItemEntry> entryMap = new HashMap<>();
 
@@ -332,7 +329,6 @@ public class ComboBox<T> extends AbstractWidget implements AnchoredWidget, DataB
             }
         }
 
-        @OnlyIn(Dist.CLIENT)
         class ComboItemEntry extends ObjectSelectionList.Entry<ComboItemList.ComboItemEntry> {
             private final T item;
             private final String displayName;
@@ -377,7 +373,7 @@ public class ComboBox<T> extends AbstractWidget implements AnchoredWidget, DataB
     private int y1;
     private int y2;
     private final AnchoredWidget.HorizontalAnchorType horizontalAnchorType;
-    private final VerticalAnchorType verticalAnchorType;
+    private final AnchoredWidget.VerticalAnchorType verticalAnchorType;
 
     @Override
     public int getX1() {

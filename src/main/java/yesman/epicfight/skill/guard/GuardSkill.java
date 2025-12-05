@@ -14,26 +14,23 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.client.input.PlayerInputState;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.input.InputManager;
-import yesman.epicfight.api.client.neoevent.MappedMovementInputUpdateEvent;
-import yesman.epicfight.api.client.neoevent.UpdatePlayerMotionEvent;
-import yesman.epicfight.api.neoevent.playerpatch.DealDamageEvent;
-import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SkillCancelEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
+import yesman.epicfight.api.client.input.PlayerInputState;
+import yesman.epicfight.api.event.EntityEventListener;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.entity.TakeDamageEvent;
+import yesman.epicfight.api.event.types.player.SkillCancelEvent;
 import yesman.epicfight.api.utils.AttackResult;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.gui.BattleModeGui;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.gameasset.Animations;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPSetSkillContainerValue;
 import yesman.epicfight.network.server.SPSkillFeedback;
@@ -42,12 +39,15 @@ import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.registry.entries.EpicFightSounds;
-import yesman.epicfight.skill.*;
-import yesman.epicfight.skill.SkillEvent.Side;
+import yesman.epicfight.skill.Skill;
+import yesman.epicfight.skill.SkillBuilder;
+import yesman.epicfight.skill.SkillCategories;
+import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
@@ -67,27 +67,27 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardMotions = new HashMap<> ();
 		protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> advancedGuardMotions = new HashMap<> ();
 		protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardBreakMotions = new HashMap<> ();
-		
+
 		public Builder(Function<Builder, ? extends GuardSkill> constructor) {
 			super(constructor);
 		}
-		
+
 		public Builder addGuardMotion(WeaponCategory weaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>> function) {
 			this.guardMotions.put(weaponCategory, function);
 			return this;
 		}
-		
+
 		public Builder addAdvancedGuardMotion(WeaponCategory weaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?> function) {
 			this.advancedGuardMotions.put(weaponCategory, function);
 			return this;
 		}
-		
+
 		public Builder addGuardBreakMotion(WeaponCategory weaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>> function) {
 			this.guardBreakMotions.put(weaponCategory, function);
 			return this;
 		}
 	}
-	
+
 	public static GuardSkill.Builder createGuardBuilder(Function<GuardSkill.Builder, GuardSkill> constructor) {
 		return new GuardSkill.Builder(constructor)
 				.addGuardMotion(WeaponCategories.AXE, (item, player) -> Animations.SWORD_GUARD_HIT)
@@ -109,98 +109,116 @@ public class GuardSkill extends Skill implements HoldableSkill {
 				.setResource(Resource.STAMINA)
 				;
 	}
-	
+
 	protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardMotions;
 	protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> advancedGuardMotions;
 	protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, ?>> guardBreakMotions;
 	protected float penalizer;
-	
+
 	public GuardSkill(GuardSkill.Builder builder) {
 		super(builder);
 		this.guardMotions = builder.guardMotions;
 		this.advancedGuardMotions = builder.advancedGuardMotions;
 		this.guardBreakMotions = builder.guardBreakMotions;
 	}
-	
+
 	@Override
 	public void loadDatapackParameters(CompoundTag parameters) {
 		super.loadDatapackParameters(parameters);
 		this.penalizer = parameters.getFloat("penalizer");
 	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.CLIENT)
-	@OnlyIn(Dist.CLIENT)
-	public void updatePlayerMotionEvent(UpdatePlayerMotionEvent.CompositeLayer event, SkillContainer container) {
-		if (container.isActivated() && this.isHoldingWeaponAvailable(container.getExecutor(), container.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND), GuardSkill.BlockType.GUARD)) {
-			event.setMotion(LivingMotions.BLOCK);
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER)
-	public void dealDamageEvent(DealDamageEvent.Post event, SkillContainer skillContainer) {
-		skillContainer.getDataManager().setDataSync(EpicFightSkillDataKeys.PENALTY, 0.0F);
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.CLIENT)
-	public void mappedInputUpdateEvent(MappedMovementInputUpdateEvent event, SkillContainer container) {
-		if (container.isActivated() && container.getExecutor().getHoldingSkill() == this) {
-			container.getExecutor().getOriginal().setSprinting(false);
-			container.getClientExecutor().getOriginal().sprintTriggerTime = -1;
-			
-			ControlEngine.setSprintingKeyStateNotDown();
-			final PlayerInputState current = event.getInputState();
-            final PlayerInputState updated = current
-                    .withForwardImpulse(current.forwardImpulse() * 0.5f)
-                    .withLeftImpulse(current.leftImpulse() * 0.5f);
-            InputManager.setInputState(updated);
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER, priority = 1)
-	public void hurtEventPreEvent(TakeDamageEvent.Income event, SkillContainer container) {
-		CapabilityItem itemCapability = event.getPlayerPatch().getHoldingItemCapability(InteractionHand.MAIN_HAND);
-		
-		if (container.isActivated() && event.getPlayerPatch().getHoldingSkill() == this) {
-			DamageSource damageSource = event.getDamageSource();
-			boolean isFront = false;
-			Vec3 sourceLocation = damageSource.getSourcePosition();
-			
-			if (sourceLocation != null) {
-				Vec3 viewVector = event.getPlayerPatch().getOriginal().getViewVector(1.0F);
-				viewVector = viewVector.subtract(0, viewVector.y, 0).normalize();
-				
-				Vec3 toSourceLocation = sourceLocation.subtract(event.getPlayerPatch().getOriginal().position()).normalize();
-				
-				if (toSourceLocation.dot(viewVector) > 0.0D) {
-					isFront = true;
-				}
-			}
-			
-			if (isFront) {
-				float impact = 0.5F;
-				float knockback = 0.25F;
-				
-				if (event.getDamageSource() instanceof EpicFightDamageSource epicfightDamageSource) {
-					if (epicfightDamageSource.is(EpicFightDamageTypeTags.GUARD_PUNCTURE)) {
-						return;
-					}
 
-					impact = epicfightDamageSource.calculateImpact();
-					knockback += Math.min(impact * 0.1F, 1.0F);
-				}
-				
-				this.guard(container, itemCapability, event, knockback, impact, false);
-			}
-		}
-	}
-	
-	public void guard(SkillContainer container, CapabilityItem itemCapability, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
+    @Override
+    public void onInitiate(SkillContainer skillContainer, EntityEventListener eventListener) {
+        eventListener.registerEvent(
+            EpicFightClientEventHooks.Entity.MODIFY_PLAYER_LIVING_MOTION_COMPOSITE,
+            event -> {
+                if (
+                    skillContainer.isActivated() &&
+                    this.isHoldingWeaponAvailable(skillContainer.getExecutor(), skillContainer.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND), GuardSkill.BlockType.GUARD)
+                ) {
+                    event.setMotion(LivingMotions.BLOCK);
+                }
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightClientEventHooks.Control.MAPPED_MOVEMENT_INPUT_UPDATE,
+            event -> {
+                if (skillContainer.isActivated() && skillContainer.getExecutor().getHoldingSkill() == this) {
+                    skillContainer.getExecutor().getOriginal().setSprinting(false);
+                    skillContainer.getClientExecutor().getOriginal().sprintTriggerTime = -1;
+
+                    ControlEngine.setSprintingKeyStateNotDown();
+                    final PlayerInputState current = event.getInputState();
+                    final PlayerInputState updated = current
+                        .withForwardImpulse(current.forwardImpulse() * 0.5f)
+                        .withLeftImpulse(current.leftImpulse() * 0.5f);
+                    InputManager.setInputState(updated);
+                }
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Entity.TAKE_DAMAGE_INCOME,
+            event -> {
+                CapabilityItem itemCapability = skillContainer.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND);
+
+                if (skillContainer.isActivated() && skillContainer.getExecutor().getHoldingSkill() == this) {
+                    DamageSource damageSource = event.getDamageSource();
+                    boolean isFront = false;
+                    Vec3 sourceLocation = damageSource.getSourcePosition();
+
+                    if (sourceLocation != null) {
+                        Vec3 viewVector = skillContainer.getExecutor().getOriginal().getViewVector(1.0F);
+                        viewVector = viewVector.subtract(0, viewVector.y, 0).normalize();
+                        Vec3 toSourceLocation = sourceLocation.subtract(skillContainer.getExecutor().getOriginal().position()).normalize();
+
+                        if (toSourceLocation.dot(viewVector) > 0.0D) {
+                            isFront = true;
+                        }
+                    }
+
+                    if (isFront) {
+                        float impact = 0.5F;
+                        float knockback = 0.25F;
+
+                        if (event.getDamageSource() instanceof EpicFightDamageSource epicfightDamageSource) {
+                            if (epicfightDamageSource.is(EpicFightDamageTypeTags.GUARD_PUNCTURE)) {
+                                return;
+                            }
+
+                            impact = epicfightDamageSource.calculateImpact();
+                            knockback += Math.min(impact * 0.1F, 1.0F);
+                        }
+
+                        this.guard(skillContainer, itemCapability, skillContainer.getServerExecutor(), event, knockback, impact, false);
+                    }
+                }
+            },
+            this,
+            1
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Entity.DELIEVER_DAMAGE_POST,
+            event -> {
+                // clears penalty multiplier on hit
+                skillContainer.getDataManager().setDataSync(EpicFightSkillDataKeys.PENALTY, 0.0F);
+            },
+            this
+        );
+    }
+
+	public void guard(SkillContainer container, CapabilityItem itemCapability, ServerPlayerPatch playerPatch, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
 		DamageSource damageSource = event.getDamageSource();
 		Entity offender = getOffender(damageSource);
 		
 		if (offender != null && this.isBlockableSource(damageSource, advanced)) {
-			event.getPlayerPatch().playSound(EpicFightSounds.CLASH.get(), -0.05F, 0.1F);
-			ServerPlayer serverPlayer = event.getPlayerPatch().getOriginal();
+			playerPatch.playSound(EpicFightSounds.CLASH.get(), -0.05F, 0.1F);
+			ServerPlayer serverPlayer = playerPatch.getOriginal();
 			EpicFightParticles.HIT_BLUNT.get().spawnParticleWithArgument(serverPlayer.serverLevel(), HitParticleType.FRONT_OF_EYES, HitParticleType.ZERO, serverPlayer, offender);
 			
 			if (offender instanceof LivingEntity livingEntity) {
@@ -210,48 +228,49 @@ public class GuardSkill extends Skill implements HoldableSkill {
 			
 			float penalty = container.getDataManager().getDataValue(EpicFightSkillDataKeys.PENALTY) + this.getPenalizer(itemCapability);
 			float consumeAmount = penalty * impact;
-			boolean canAfford = event.getPlayerPatch().consumeForSkill(this, Skill.Resource.STAMINA, consumeAmount);
+			boolean canAfford = playerPatch.consumeForSkill(this, Skill.Resource.STAMINA, consumeAmount);
 			
-			event.getPlayerPatch().knockBackEntity(offender.position(), knockback);
+			playerPatch.knockBackEntity(offender.position(), knockback);
 			container.getDataManager().setDataSync(EpicFightSkillDataKeys.PENALTY, penalty);
 			container.getDataManager().setDataSync(EpicFightSkillDataKeys.PENALTY_RESTORE_COUNTER, container.getServerExecutor().getOriginal().tickCount);
 			
 			BlockType blockType = canAfford ? BlockType.GUARD : BlockType.GUARD_BREAK;
-			AnimationAccessor<? extends StaticAnimation> animation = this.getGuardMotion(container, event.getPlayerPatch(), itemCapability, blockType);
+			AnimationAccessor<? extends StaticAnimation> animation = this.getGuardMotion(container, playerPatch, itemCapability, blockType);
 			
 			if (animation != null) {
-				event.getPlayerPatch().playAnimationSynchronized(animation, 0.0F);
+				playerPatch.playAnimationSynchronized(animation, 0.0F);
 			}
 			
 			if (blockType == BlockType.GUARD_BREAK) {
-				event.getPlayerPatch().playSound(EpicFightSounds.NEUTRALIZE_MOBS.get(), 3.0F, 0.0F, 0.1F);
+				playerPatch.playSound(EpicFightSounds.NEUTRALIZE_MOBS.get(), 3.0F, 0.0F, 0.1F);
 			}
 			
-			this.dealEvent(event.getPlayerPatch(), event, advanced);
+			this.dealEvent(playerPatch, event, advanced);
 		}
 	}
-	
-	public void dealEvent(PlayerPatch<?> playerpatch, TakeDamageEvent.Income event, boolean advanced) {
-		event.setCanceled(true);
+
+	public void dealEvent(PlayerPatch<?> playerPatch, TakeDamageEvent.Income event, boolean advanced) {
+		event.cancel();
 		event.setResult(AttackResult.ResultType.BLOCKED);
-		playerpatch.countHurtTime(event.getDamage());
+		playerPatch.countHurtTime(event.getDamage());
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(event.getDamageSource().getEntity(), LivingEntityPatch.class)
-			.ifPresent(attackerpatch -> attackerpatch.setLastAttackEntity(playerpatch.getOriginal()));
+			.ifPresent(attackerpatch -> attackerpatch.setLastAttackEntity(playerPatch.getOriginal()));
 		
 		EpicFightCapabilities.<LivingEntity, LivingEntityPatch<LivingEntity>>getParameterizedEntityPatch(event.getDamageSource().getDirectEntity(), LivingEntity.class, LivingEntityPatch.class)
-			.ifPresent(entitypatch -> entitypatch.onAttackBlocked(event.getDamageSource(), playerpatch));
+			.ifPresent(entitypatch -> entitypatch.onAttackBlocked(event.getDamageSource(), playerPatch));
 	}
 	
 	@Override
-	public void cancelOnServer(SkillContainer container, CompoundTag arguments) {
-		container.deactivate();
-		container.getExecutor().resetHolding();
-		PlayerPatchEvent.postAndFireSkillListeners(new SkillCancelEvent(container.getServerExecutor(), container));
-		EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(SPSetSkillContainerValue.activate(container.getSlot(), false, container.getExecutor().getOriginal().getId()), container.getExecutor().getOriginal());
+	public void cancelOnServer(SkillContainer skillContainer, CompoundTag arguments) {
+		skillContainer.deactivate();
+		skillContainer.getExecutor().resetHolding();
+
+        EpicFightEventHooks.Player.CANCEL_SKILL.postWithListener(new SkillCancelEvent(skillContainer.getServerExecutor(), skillContainer), skillContainer.getExecutor().getEventListener());
+		EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(SPSetSkillContainerValue.activate(skillContainer.getSlot(), false, skillContainer.getExecutor().getOriginal().getId()), skillContainer.getExecutor().getOriginal());
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @Override @ClientOnly
 	public void cancelOnClient(SkillContainer container, CompoundTag arguments) {
 		super.cancelOnClient(container, arguments);
 		container.deactivate();
@@ -284,8 +303,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		container.deactivate();
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-    @Override
+    @Override @ClientOnly
 	public KeyMapping getKeyMapping() {
 		return EpicFightKeyMappings.GUARD;
 	}
@@ -384,8 +402,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		return container.getDataManager().getDataValue(EpicFightSkillDataKeys.PENALTY) > 0.0F;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public void drawOnGui(BattleModeGui gui, SkillContainer container, GuiGraphics guiGraphics, float x, float y, float partialTick) {
 		guiGraphics.blit(EpicFightSkills.GUARD.get().getSkillTexture(), (int)x, (int)y, 24, 24, 0, 0, 1, 1, 1, 1);
 		guiGraphics.drawString(gui.getFont(), String.format("x%.1f", container.getDataManager().getDataValue(EpicFightSkillDataKeys.PENALTY)), x, y + 6, 16777215, true);
@@ -401,8 +418,7 @@ public class GuardSkill extends Skill implements HoldableSkill {
 		return this.guardMotions.keySet();
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public boolean getCustomConsumptionTooltips(SkillBookScreen.AttributeIconList consumptionList) {
 		consumptionList.add(Component.translatable("attribute.name.epicfight.stamina.consume.tooltip"), Component.translatable("skill.epicfight.guard.consume.tooltip"), SkillBookScreen.STAMINA_TEXTURE_INFO);
 		return true;

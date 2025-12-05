@@ -631,7 +631,7 @@ public class ClothSimulator extends AbstractSimulator<ResourceLocation, ClothObj
 				this.particleMass = clothInfo.particleMass();
 				
 				/**
-				 * Add particles
+				 * AddEntity particles
 				 */
 				for (int i = 0; i < clothInfo.particles().length / 2; i++) {
 					int positionIndex = clothInfo.particles()[i * 2];
@@ -652,7 +652,7 @@ public class ClothSimulator extends AbstractSimulator<ResourceLocation, ClothObj
 				int idx = 0;
 				
 				/**
-				 * Add constraints
+				 * AddEntity constraints
 				 */
 				for (int[] constraints : clothInfo.constraints()) {
 					float compliance = clothInfo.compliances()[idx];

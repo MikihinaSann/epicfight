@@ -10,9 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import yesman.epicfight.api.client.event.EpicFightClientHooks;
-import yesman.epicfight.api.client.event.types.BuildCameraTransform;
-import yesman.epicfight.api.client.event.types.LockOnEvent;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.camera.BuildCameraTransform;
+import yesman.epicfight.api.client.event.types.camera.LockOnEvent;
 import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
@@ -67,8 +67,8 @@ public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
     }
 
     private void registerEpicFightEvents() {
-        EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.registerEvent(ShoulderSurfingCompat::buildCameraTransform);
-        EpicFightClientHooks.Camera.LOCK_ON_TICK.registerEvent(ShoulderSurfingCompat::lockOnTick);
+        EpicFightClientEventHooks.Camera.BUILD_TRANSFORM_PRE.registerEvent(ShoulderSurfingCompat::buildCameraTransform);
+        EpicFightClientEventHooks.Camera.LOCK_ON_TICK.registerEvent(ShoulderSurfingCompat::lockOnTick);
     }
 
     private static class CameraCouplingOnAttack implements ICameraCouplingCallback {

@@ -1,12 +1,9 @@
 package yesman.epicfight.api.animation.types.grappling;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.Keyframe;
@@ -19,6 +16,7 @@ import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 
@@ -78,8 +76,7 @@ public class GrapplingAttackAnimation extends AttackAnimation {
 		}
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void renderDebugging(PoseStack poseStack, MultiBufferSource buffer, LivingEntityPatch<?> entitypatch, float playTime, float partialTicks) {
 	}
 }

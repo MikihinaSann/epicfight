@@ -3,15 +3,12 @@ package yesman.epicfight.api.animation.types.datapack;
 import com.google.gson.JsonArray;
 
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.types.LongHitAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.model.Armature;
 
-@OnlyIn(Dist.CLIENT)
 public class DatapackLongHitAnimation extends LongHitAnimation implements DatapackAnimation<DatapackLongHitAnimation> {
 	protected AnimationClip clip;
 	protected EditorAnimation fakeAnimation;

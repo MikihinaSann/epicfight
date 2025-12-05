@@ -1,13 +1,9 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.EntityDimensions;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.property.AnimationEvent;
 import yesman.epicfight.api.animation.property.AnimationEvent.SimpleEvent;
@@ -21,9 +17,12 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 import yesman.epicfight.world.entity.DodgeLocationIndicator;
 
+import java.util.function.Function;
+
 public class DodgeAnimation extends ActionAnimation {
 	public static final Function<DamageSource, AttackResult.ResultType> DODGEABLE_SOURCE_VALIDATOR = (damagesource) -> {
-		if (damagesource.getEntity() != null
+		if (
+            damagesource.getEntity() != null
 			&& !damagesource.is(DamageTypeTags.IS_EXPLOSION)
 			&& !damagesource.is(DamageTypes.MAGIC)
 			&& !damagesource.is(DamageTypeTags.BYPASSES_ARMOR)
@@ -36,9 +35,7 @@ public class DodgeAnimation extends ActionAnimation {
 		return AttackResult.ResultType.SUCCESS;
 	};
 	
-	public static final Consumer<ProjectileImpactEvent> IGNORE_ALL_PROJECTILES = (event) -> {
-		event.setCanceled(true);
-	};
+	public static final EntityState.ProjectileHitPredicate IGNORE_ALL_PROJECTILES = (projectile, hitResult) -> false;
 	
 	public DodgeAnimation(float transitionTime, AnimationAccessor<? extends DodgeAnimation> accessor, float width, float height, AssetAccessor<? extends Armature> armature) {
 		this(transitionTime, 10.0F, accessor, width, height, armature);
@@ -69,7 +66,7 @@ public class DodgeAnimation extends ActionAnimation {
 	public void begin(LivingEntityPatch<?> entitypatch) {
 		super.begin(entitypatch);
 		
-		if (!entitypatch.isLogicalClient() && entitypatch != null) {
+		if (!entitypatch.isLogicalClient()) {
 			entitypatch.getOriginal().level().addFreshEntity(new DodgeLocationIndicator(entitypatch));
 		}
 	}

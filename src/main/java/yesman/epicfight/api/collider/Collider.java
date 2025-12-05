@@ -1,20 +1,13 @@
 package yesman.epicfight.api.collider;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.entity.PartEntity;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.JointTransform;
@@ -23,7 +16,11 @@ import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public abstract class Collider {
 	protected final Vec3 modelCenter;
@@ -79,11 +76,11 @@ public abstract class Collider {
 	}
 	
 	/** Display on debug mode **/
-	@OnlyIn(Dist.CLIENT)
+    @ClientOnly
 	public abstract void drawInternal(PoseStack poseStack, VertexConsumer vertexConsumer, Armature armature, Joint joint, Pose pose1, Pose pose2, float partialTicks, int colliderColor);
 	
 	/** Display on debug mode **/
-	@OnlyIn(Dist.CLIENT)
+    @ClientOnly
 	public void draw(PoseStack poseStack, MultiBufferSource buffer, LivingEntityPatch<?> entitypatch, AttackAnimation animation, Joint joint, float prevElapsedTime, float elapsedTime, float partialTicks, float attackSpeed) {
 		Armature armature = entitypatch.getArmature();
 		EntityState state = animation.getState(entitypatch, elapsedTime);
@@ -110,8 +107,8 @@ public abstract class Collider {
 	public abstract Collider deepCopy();
 	
 	public abstract boolean isCollide(Entity opponent);
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public abstract RenderType getRenderType();
 	
 	protected AABB getHitboxAABB() {

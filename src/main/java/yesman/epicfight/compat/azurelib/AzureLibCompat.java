@@ -3,9 +3,8 @@ package yesman.epicfight.compat.azurelib;
 import mod.azure.azurelib.neoforge.event.GeoRenderEvent;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.EntityUI;
@@ -26,20 +25,17 @@ public class AzureLibCompat implements ICompatModule {
 	}
 	
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public void onModEventBusClient(IEventBus eventBus) {
 		HumanoidModelBaker.registerNewTransformer(new AzureModelTransformer());
 	}
 	
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public void onGameEventBusClient(IEventBus eventBus) {
-		eventBus.addListener(AzureModelTransformer::getGeoArmorTexturePath);
+        EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(AzureModelTransformer::getGeoArmorTexturePath);
 		eventBus.addListener(this::geoEntityRenderPreEvent);
 		eventBus.addListener(this::geoEntityRenderPostEvent);
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public void geoEntityRenderPreEvent(GeoRenderEvent.Entity.Pre event) {
 		Entity entity = event.getEntity();
 		
@@ -82,7 +78,6 @@ public class AzureLibCompat implements ICompatModule {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public void geoEntityRenderPostEvent(GeoRenderEvent.Entity.Post event) {
 		Entity entity = event.getEntity();
 		

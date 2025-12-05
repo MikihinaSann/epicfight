@@ -2,19 +2,17 @@ package yesman.epicfight.api.collider;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 @Deprecated
@@ -88,8 +86,7 @@ public class PlaneCollider extends Collider {
 	public void draw(PoseStack matrixStackIn, MultiBufferSource buffer, LivingEntityPatch<?> entitypatch, AttackAnimation animation, Joint joint, float prevElapsedTime, float elapsedTime, float partialTicks, float attackSpeed) {
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public RenderType getRenderType() {
 		return null;
 	}

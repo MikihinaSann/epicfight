@@ -1,11 +1,5 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.AnimationVariables.IndependentVariableKey;
@@ -13,7 +7,12 @@ import yesman.epicfight.api.animation.property.AnimationEvent;
 import yesman.epicfight.api.animation.property.AnimationEvent.SimpleEvent;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.Layer;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class SelectiveAnimation extends StaticAnimation {
 	public static final IndependentVariableKey<Integer> PREVIOUS_STATE = AnimationVariables.unsyncIndependent((animator) -> 0, true);
@@ -73,14 +72,12 @@ public class SelectiveAnimation extends StaticAnimation {
 		return this.animationsInEachState;
 	}
 
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public Layer.Priority getPriority() {
 		return this.animationsInEachState.get(0).get().getPriority();
 	}
 
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public Layer.LayerType getLayerType() {
 		return this.animationsInEachState.get(0).get().getLayerType();
 	}

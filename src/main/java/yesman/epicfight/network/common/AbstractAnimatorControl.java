@@ -1,15 +1,13 @@
 package yesman.epicfight.network.common;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.network.ManagedCustomPacketPayload;
 import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractAnimatorControl implements ManagedCustomPacketPayload {
 	protected final Action action;
@@ -106,7 +104,6 @@ public abstract class AbstractAnimatorControl implements ManagedCustomPacketPayl
 		ANIMATION, LOWEST, LOW, MIDDLE, HIGH, HIGHEST;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static yesman.epicfight.api.client.animation.Layer.Priority getPriority(Priority priority) {
 		switch (priority) {
 		case LOWEST -> {

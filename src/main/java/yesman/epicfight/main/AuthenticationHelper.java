@@ -2,12 +2,9 @@ package yesman.epicfight.main;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
 
-@OnlyIn(Dist.CLIENT)
 public interface AuthenticationHelper {
 	boolean valid();
 	
@@ -29,12 +26,10 @@ public interface AuthenticationHelper {
      */
     void loadPlayerSkin();
 
-	@OnlyIn(Dist.CLIENT)
 	enum Status {
 		UNAUTHENTICATED, AUTHENTICATED, OFFLINE_MODE;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	enum AuthenticationProvider {
 		NULL("null"), DISCORD("discord"), PATREON("patreon");
 		

@@ -3,10 +3,9 @@ package yesman.epicfight.skill;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerPlayer;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import org.jetbrains.annotations.ApiStatus;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.client.CPHandleSkillData;
 import yesman.epicfight.network.server.SPHandleSkillData;
@@ -94,8 +93,8 @@ public class SkillDataManager {
 			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(msg, serverplayer);
 		}
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	private <T> void syncLocalPlayerData(DeferredHolder<SkillDataKey<?>, ? extends SkillDataKey<T>> key, LocalPlayer player) {
 		CPHandleSkillData msg = new CPHandleSkillData(this.container.getSlot(), key);
 		key.value().encode(msg.buffer(), this.getDataValue(key));

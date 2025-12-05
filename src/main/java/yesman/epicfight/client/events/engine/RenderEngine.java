@@ -40,7 +40,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.LogicalSide;
-import net.neoforged.fml.ModLoader;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
@@ -53,11 +52,12 @@ import org.joml.Vector3f;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.client.input.action.EpicFightInputAction;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.registry.RegisterPatchedRenderersEvent;
+import yesman.epicfight.api.client.event.types.render.RenderEnderDragonEvent;
 import yesman.epicfight.api.client.input.InputManager;
+import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.model.Meshes;
-import yesman.epicfight.api.client.neoevent.PatchedRenderersEvent;
-import yesman.epicfight.api.client.neoevent.RenderEnderDragonEvent;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -136,9 +136,9 @@ public class RenderEngine implements IEventBasedEngine {
 		builder.put(ResourceLocation.withDefaultNamespace("shield"), RenderShield::new);
 		builder.put(ResourceLocation.withDefaultNamespace("trident"), RenderTrident::new);
 		builder.put(EpicFightMod.identifier("uchigatana"), RenderKatana::new);
-		
-		ModLoader.postEvent(new PatchedRenderersEvent.RegisterItemRenderer(builder));
-		
+
+        EpicFightClientEventHooks.Registry.PATCHED_ITEM.post(new RegisterPatchedRenderersEvent.Item(builder));
+
 		this.itemRenderers = ImmutableMap.copyOf(builder);
 	}
 	
@@ -209,8 +209,8 @@ public class RenderEngine implements IEventBasedEngine {
 		for (Map.Entry<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entry : this.entityRendererProvider.entrySet()) {
 			this.entityRendererCache.put(entry.getKey(), entry.getValue().apply(entry.getKey()));
 		}
-		
-		ModLoader.postEvent(new PatchedRenderersEvent.Modify(this.entityRendererCache));
+
+        EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.post(new RegisterPatchedRenderersEvent.ModifyEntity(this.entityRendererCache));
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -371,7 +371,7 @@ public class RenderEngine implements IEventBasedEngine {
 	}
 	
 	/******************
-	 * Forge Event listeners
+	 * Forge EventHook listeners
 	 ******************/
 	private void epicfight$renderLivingPre(RenderLivingEvent.Pre<? extends LivingEntity, ? extends EntityModel<? extends LivingEntity>> event) {
 		LivingEntity livingentity = event.getEntity();
@@ -459,7 +459,7 @@ public class RenderEngine implements IEventBasedEngine {
 											if (translatableContent$2.getKey().equals(Attributes.ATTACK_SPEED.value().getDescriptionId())) {
 												float weaponSpeed = (float)playerpatch.getWeaponAttribute(Attributes.ATTACK_SPEED, event.getItemStack());
 												tooltip.remove(i);
-												tooltip.add(i, Component.literal(String.format(" %.2f ", playerpatch.getModifiedAttackSpeed(itemCapability, weaponSpeed)))
+												tooltip.add(i, Component.literal(String.format(" %.2f ", playerpatch.getModifiedAttackSpeedOfItem(itemCapability, weaponSpeed)))
 														.append(Component.translatable(Attributes.ATTACK_SPEED.value().getDescriptionId())));
 												
 											} else if (translatableContent$2.getKey().equals(Attributes.ATTACK_DAMAGE.value().getDescriptionId())) {
@@ -633,7 +633,7 @@ public class RenderEngine implements IEventBasedEngine {
 		
 		if (this.hasRendererFor(livingentity)) {
 			EpicFightCapabilities.getUnparameterizedEntityPatch(livingentity, EnderDragonPatch.class).ifPresent(enderdragonpatch -> {
-				event.setCanceled(true);
+				event.cancel();
 				this.getEntityRenderer(livingentity).render(livingentity, enderdragonpatch, event.getRenderer(), event.getBuffers(), event.getPoseStack(), event.getLight(), event.getPartialRenderTick());
 			});
 		}
@@ -730,11 +730,11 @@ public class RenderEngine implements IEventBasedEngine {
 	}
 	
 	/**********************
-	 * Forge Event listeners end
+	 * Forge EventHook listeners end
 	 **********************/
 	
 	/**********************
-	 * Mod Event listeners
+	 * Mod EventHook listeners
 	 **********************/
 	private void epicfight$addLayers(EntityRenderersEvent.AddLayers event) {
 		EntityRendererProvider.Context context = event.getContext();
@@ -772,12 +772,12 @@ public class RenderEngine implements IEventBasedEngine {
 		this.firstPersonRenderer = new FirstPersonRenderer(context, EntityType.PLAYER);
 		this.basicHumanoidRenderer = new PHumanoidRenderer<>(Meshes.BIPED, context, EntityType.PLAYER);
 
-		ModLoader.postEvent(new PatchedRenderersEvent.Add(this.entityRendererProvider, context));
-		
+        EpicFightClientEventHooks.Registry.ADD_PATCHED_ENTITY.post(new RegisterPatchedRenderersEvent.AddEntity(this.entityRendererProvider, context));
+
 		this.resetRenderers();
 	}
 	/**********************
-	 * Mod Event listeners end
+	 * Mod EventHook listeners end
 	 **********************/
 	
 	@Override
@@ -789,7 +789,6 @@ public class RenderEngine implements IEventBasedEngine {
 		gameEventBus.addListener(this::epicfight$renderGuiPre);
 		gameEventBus.addListener(this::epicfight$renderHand);
 		gameEventBus.addListener(this::epicfight$renderAfterLevel);
-		gameEventBus.addListener(this::epicfight$renderEnderDragon);
         gameEventBus.addListener(this::epicfight$rightClickBlock);
 		gameEventBus.addListener(this::epicfight$renderTickPre);
 		gameEventBus.addListener(this::epicfight$renderTickPost);
@@ -798,6 +797,8 @@ public class RenderEngine implements IEventBasedEngine {
 		gameEventBus.addListener(this::epicfight$levelTickPost);
 		gameEventBus.addListener(this::epicfight$renderBlockHighlight);
 		gameEventBus.addListener(this::epicfight$renderGuiLayer$Pre);
+
+        EpicFightClientEventHooks.Render.RENDER_ENDER_DRAGON.registerEvent(this::epicfight$renderEnderDragon);
 	}
 
 	@Override

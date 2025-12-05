@@ -2,8 +2,6 @@ package yesman.epicfight.compat.firstperson;
 
 import dev.tr7zw.firstperson.api.ActivationHandler;
 import dev.tr7zw.firstperson.api.FirstPersonAPI;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import yesman.epicfight.compat.ICompatModule;
@@ -12,7 +10,6 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class FirstPersonCompat implements ICompatModule {
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
 		eventBus.<FMLClientSetupEvent>addListener(event -> event.enqueueWork(() -> {
@@ -30,7 +27,6 @@ public class FirstPersonCompat implements ICompatModule {
 		}));
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onGameEventBusClient(IEventBus eventBus) {
 	}

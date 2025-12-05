@@ -4,13 +4,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.types.EntityState;
-import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.InputManager;
-import yesman.epicfight.client.input.InputUtils;
+import yesman.epicfight.api.client.input.MovementDirection;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.ControlEngine;
+import yesman.epicfight.client.input.InputUtils;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
@@ -20,8 +19,7 @@ public class KnockdownWakeupSkill extends DodgeSkill {
 		super(builder);
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public void gatherArguments(SkillContainer container, ControlEngine controlEngine, CompoundTag arguments) {
 		LocalPlayerPatch executor = container.getClientExecutor();
 		LocalPlayer localPlayer = executor.getOriginal();

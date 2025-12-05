@@ -4,12 +4,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.client.animation.ClientAnimator;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightNetworkManager;
@@ -33,8 +32,7 @@ public class ZombiePatch<T extends PathfinderMob> extends HumanoidMobPatch<T> {
 		super.onStartTracking(trackingPlayer);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 		super.entityPairing(packet);
 		

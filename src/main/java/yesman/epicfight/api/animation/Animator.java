@@ -3,12 +3,12 @@ package yesman.epicfight.api.animation;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;
-import net.neoforged.neoforge.common.NeoForge;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
-import yesman.epicfight.api.neoevent.InitAnimatorEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.animation.InitAnimatorEvent;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -28,7 +28,6 @@ public abstract class Animator {
 	
 	/**
 	 * Play an animation
-	 * 
 	 * @param nextAnimation the animation that is meant to be played.
 	 * @param transitionTimeModifier extends the transition time if positive value provided, or starts in time as an amount of time (e.g. -0.1F starts in 0.1F frame time)
 	 */
@@ -40,7 +39,6 @@ public abstract class Animator {
 	
 	/**
 	 * Play a given animation without transition animation.
-	 * @param nextAnimation
 	 */
 	public abstract void playAnimationInstantly(AssetAccessor<? extends StaticAnimation> nextAnimation);
 	
@@ -51,7 +49,6 @@ public abstract class Animator {
 	/**
 	 * Reserve a given animation until the current animation ends.
 	 * If the given animation has a higher priority than current animation, it terminates the current animation by force and play the next animation
-	 * @param nextAnimation
 	 */
 	public abstract void reserveAnimation(AssetAccessor<? extends StaticAnimation> nextAnimation);
 	
@@ -61,7 +58,6 @@ public abstract class Animator {
 	
 	/**
 	 * Stop playing given animation if exist
-	 * @param targetAnimation
 	 * @return true when found and successfully stop the target animation
 	 */
 	public abstract boolean stopPlaying(AssetAccessor<? extends StaticAnimation> targetAnimation);
@@ -100,7 +96,7 @@ public abstract class Animator {
 	
 	public void postInit() {
 		InitAnimatorEvent initAnimatorEvent = new InitAnimatorEvent(this.entitypatch, this);
-		NeoForge.EVENT_BUS.post(initAnimatorEvent);
+        EpicFightEventHooks.Animation.INIT_ANIMATOR.post(initAnimatorEvent);
 	}
 	
 	public void playDeathAnimation() {

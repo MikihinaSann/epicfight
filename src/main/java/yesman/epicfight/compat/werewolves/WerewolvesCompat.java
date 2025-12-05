@@ -1,7 +1,6 @@
 package yesman.epicfight.compat.werewolves;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import de.teamlapen.werewolves.api.entities.werewolf.WerewolfForm;
 import de.teamlapen.werewolves.client.model.WerewolfEarsModel;
 import de.teamlapen.werewolves.client.render.layer.HumanWerewolfLayer;
@@ -15,14 +14,11 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
-import yesman.epicfight.api.client.neoevent.PatchedRenderersEvent;
-import yesman.epicfight.api.client.neoevent.RenderEpicFightPlayerEvent;
-import yesman.epicfight.api.neoevent.BattleModeSustainableEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.patched.entity.PPlayerRenderer;
@@ -39,38 +35,35 @@ public class WerewolvesCompat implements ICompatModule {
 
 	@Override
 	public void onGameEventBus(IEventBus eventBus) {
-		eventBus.<BattleModeSustainableEvent>addListener((event) -> {
-			WerewolfForm form = WerewolfPlayer.get(event.getPlayerPatch().getOriginal()).getForm();
-			
-			if (form == WerewolfForm.SURVIVALIST || form == WerewolfForm.BEAST) {
-				event.setCanceled(true);
-			}
-		});
+        EpicFightEventHooks.Player.TICK_EPICFIGHT_MODE.registerEvent(event -> {
+            WerewolfForm form = WerewolfPlayer.get(event.getPlayerPatch().getOriginal()).getForm();
+
+            if (form == WerewolfForm.SURVIVALIST || form == WerewolfForm.BEAST) {
+                event.cancel();
+            }
+        });
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
-		eventBus.<PatchedRenderersEvent.Modify>addListener((event) -> {
-			if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
-				playerrenderer.addPatchedLayerAlways(HumanWerewolfLayer.class, new EpicFightHumanWerewolfLayer<> ());
-			}
-		});
+        EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
+            if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
+                playerrenderer.addPatchedLayerAlways(HumanWerewolfLayer.class, new EpicFightHumanWerewolfLayer<> ());
+            }
+        });
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onGameEventBusClient(IEventBus eventBus) {
-		eventBus.<RenderEpicFightPlayerEvent>addListener((event) -> {
-			WerewolfForm form = WerewolfPlayer.get(event.getPlayerPatch().getOriginal()).getForm();
-			
-			if (form == WerewolfForm.SURVIVALIST || form == WerewolfForm.BEAST) {
-				event.setShouldRender(false);
-			}
-		});
+        EpicFightClientEventHooks.Render.VALIDATE_PLAYER_MODEL_TO_RENDER.registerEvent(event -> {
+            WerewolfForm form = WerewolfPlayer.get(event.getPlayerPatch().getOriginal()).getForm();
+
+            if (form == WerewolfForm.SURVIVALIST || form == WerewolfForm.BEAST) {
+                event.setShouldRender(false);
+            }
+        });
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static class EpicFightHumanWerewolfLayer<A extends HumanoidModel<AbstractClientPlayer>> extends PatchedLayer<AbstractClientPlayer, AbstractClientPlayerPatch<AbstractClientPlayer>, PlayerModel<AbstractClientPlayer>, HumanWerewolfLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>, A>> {
 		private SkinnedMesh mesh;
 		private SkinnedMesh slimMesh;

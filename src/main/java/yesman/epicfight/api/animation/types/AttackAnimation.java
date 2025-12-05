@@ -1,18 +1,9 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.server.level.ServerLevel;
@@ -24,8 +15,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -40,22 +29,24 @@ import yesman.epicfight.api.animation.property.MoveCoordFunctions;
 import yesman.epicfight.api.animation.types.EntityState.StateFactor;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.collider.Collider;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.animation.AttackPhaseEndEvent;
 import yesman.epicfight.api.model.Armature;
-import yesman.epicfight.api.neoevent.playerpatch.AttackEndEvent;
-import yesman.epicfight.api.neoevent.playerpatch.AttackPhaseEndEvent;
-import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.HitEntityList;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.ValueModifier;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.world.capabilities.entitypatch.HumanoidMobPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
-import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.damagesource.EpicFightDamageSources;
+
+import javax.annotation.Nullable;
+import java.util.*;
 
 public class AttackAnimation extends ActionAnimation {
 	/** Entities that collided **/
@@ -177,20 +168,13 @@ public class AttackAnimation extends ActionAnimation {
 	public void end(LivingEntityPatch<?> entitypatch, AssetAccessor<? extends DynamicAnimation> nextAnimation, boolean isEnd) {
 		super.end(entitypatch, nextAnimation, isEnd);
 		
-		if (entitypatch instanceof ServerPlayerPatch playerpatch) {
-			if (isEnd) {
-				PlayerPatchEvent.postAndFireSkillListeners(new AttackEndEvent(playerpatch, this.getAccessor()));
-			}
-			
-			AnimationPlayer player = entitypatch.getAnimator().getPlayerFor(this.getAccessor());
-			float elapsedTime = player.getElapsedTime();
-			EntityState state = this.getState(entitypatch, elapsedTime);
-			
-			if (!isEnd && state.attacking()) {
-				PlayerPatchEvent.postAndFireSkillListeners(new AttackPhaseEndEvent(playerpatch, this.getAccessor(), this.getPhaseByTime(elapsedTime), this.getPhaseOrderByTime(elapsedTime)));
-			}
-		}
-		
+        float elapsedTime = entitypatch.getAnimator().getPlayerFor(this.getAccessor()).getElapsedTime();
+        EntityState state = this.getState(entitypatch, elapsedTime);
+
+        if (!isEnd && state.attacking() && !entitypatch.isLogicalClient()) {
+            EpicFightEventHooks.Animation.ATTACK_PHASE_END.postWithListener(new AttackPhaseEndEvent(entitypatch, this.getAccessor(), this.getPhaseByTime(elapsedTime), this.getPhaseOrderByTime(elapsedTime), true), entitypatch.getEventListener());
+        }
+
 		if (entitypatch instanceof HumanoidMobPatch<?> mobpatch && entitypatch.isLogicalClient()) {
 			Mob entity = mobpatch.getOriginal();
 			
@@ -218,7 +202,7 @@ public class AttackAnimation extends ActionAnimation {
 			this.hurtCollidingEntities(entitypatch, prevElapsedTime, elapsedTime, prevState, state, phase);
 			
 			if ((!state.attacking() || elapsedTime >= this.getTotalTime()) && entitypatch instanceof ServerPlayerPatch playerpatch) {
-				PlayerPatchEvent.postAndFireSkillListeners(new AttackPhaseEndEvent(playerpatch, this.getAccessor(), phase, this.getPhaseOrderByTime(elapsedTime)));
+                EpicFightEventHooks.Animation.ATTACK_PHASE_END.postWithListener(new AttackPhaseEndEvent(entitypatch, this.getAccessor(), phase, this.getPhaseOrderByTime(elapsedTime), false), entitypatch.getEventListener());
 			}
 		}
 	}
@@ -352,17 +336,13 @@ public class AttackAnimation extends ActionAnimation {
 	
 	@Override
 	public float getPlaySpeed(LivingEntityPatch<?> entitypatch, DynamicAnimation animation) {
-		if (entitypatch instanceof PlayerPatch<?> playerpatch) {
-			Phase phase = this.getPhaseByTime(playerpatch.getAnimator().getPlayerFor(this.getAccessor()).getElapsedTime());
-			float speedFactor = this.getProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR).orElse(1.0F);
-			Optional<Float> property = this.getProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED);
-			float correctedSpeed = property.map((value) -> playerpatch.getAttackSpeed(phase.hand) / value).orElse(this.getTotalTime() * playerpatch.getAttackSpeed(phase.hand));
-			correctedSpeed = Math.round(correctedSpeed * 1000.0F) / 1000.0F;
-			
-			return 1.0F + (correctedSpeed - 1.0F) * speedFactor;
-		}
-		
-		return 1.0F;
+        Phase phase = this.getPhaseByTime(entitypatch.getAnimator().getPlayerFor(this.getAccessor()).getElapsedTime());
+        float speedFactor = this.getProperty(AttackAnimationProperty.ATTACK_SPEED_FACTOR).orElse(1.0F);
+        Optional<Float> property = this.getProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED);
+        float correctedSpeed = property.map((value) -> entitypatch.getAttackSpeed(phase.hand) / value).orElse(this.getTotalTime() * entitypatch.getAttackSpeed(phase.hand));
+        correctedSpeed = Math.round(correctedSpeed * 1000.0F) / 1000.0F;
+
+        return 1.0F + (correctedSpeed - 1.0F) * speedFactor;
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -423,8 +403,7 @@ public class AttackAnimation extends ActionAnimation {
 		return val;
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void renderDebugging(PoseStack poseStack, MultiBufferSource buffer, LivingEntityPatch<?> entitypatch, float playbackTime, float partialTicks) {
 		AnimationPlayer animPlayer = entitypatch.getAnimator().getPlayerFor(this.getAccessor());
 		float prevElapsedTime = animPlayer.getPrevElapsedTime();

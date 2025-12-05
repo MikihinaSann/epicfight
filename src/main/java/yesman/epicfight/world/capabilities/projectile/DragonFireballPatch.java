@@ -2,21 +2,22 @@ package yesman.epicfight.world.capabilities.projectile;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.DragonFireball;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.minecraft.world.phys.HitResult;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 
 public class DragonFireballPatch extends ProjectilePatch<DragonFireball> {
 	public DragonFireballPatch(DragonFireball original) {
 		super(original);
 	}
-	
-	@Override
-	public void onJoinWorld(DragonFireball projectileEntity, EntityJoinLevelEvent event) {
-		super.onJoinWorld(projectileEntity, event);
+
+    @Override
+    public void onJoinWorld(DragonFireball entity, Level level, boolean worldgenSpawn) {
+        super.onJoinWorld(entity, level, worldgenSpawn);
+
 		this.impact = 1.0F;
-		projectileEntity.accelerationPower *= 2.0D;
+        entity.accelerationPower *= 2.0D;
 	}
 	
 	@Override
@@ -24,12 +25,12 @@ public class DragonFireballPatch extends ProjectilePatch<DragonFireball> {
 	}
 	
 	@Override
-	public boolean onProjectileImpact(ProjectileImpactEvent event) {
-		if (event.getRayTraceResult() instanceof EntityHitResult entityHitResult) {
+	public boolean onProjectileImpact(HitResult hitResult) {
+		if (hitResult instanceof EntityHitResult entityHitResult) {
 			Entity entity = entityHitResult.getEntity();
 			
-			if (!entity.level().isClientSide() && !entity.is(event.getProjectile().getOwner())) {
-				entity.hurt(entity.level().damageSources().indirectMagic(event.getProjectile(), event.getProjectile().getOwner()), 8.0F);
+			if (!entity.level().isClientSide() && !entity.is(this.original.getOwner())) {
+				entity.hurt(entity.level().damageSources().indirectMagic(this.original, this.original.getOwner()), 8.0F);
 			}
 		}
 		

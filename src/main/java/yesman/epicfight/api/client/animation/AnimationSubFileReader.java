@@ -1,15 +1,5 @@
 package yesman.epicfight.api.client.animation;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
@@ -19,7 +9,6 @@ import com.google.gson.JsonParseException;
 import com.google.gson.internal.Streams;
 import com.google.gson.stream.JsonReader;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.util.GsonHelper;
@@ -32,15 +21,20 @@ import yesman.epicfight.api.animation.types.DirectStaticAnimation;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.JsonAssetLoader;
-import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
-import yesman.epicfight.api.client.animation.property.JointMaskEntry;
-import yesman.epicfight.api.client.animation.property.JointMaskReloadListener;
-import yesman.epicfight.api.client.animation.property.LayerInfo;
-import yesman.epicfight.api.client.animation.property.TrailInfo;
+import yesman.epicfight.api.client.animation.property.*;
 import yesman.epicfight.api.exception.AssetLoadingException;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 public class AnimationSubFileReader {
 	public static final SubFileType<ClientProperty> SUBFILE_CLIENT_PROPERTY = new ClientPropertyType();
@@ -209,7 +203,7 @@ public class AnimationSubFileReader {
 		}
 	}
 	
-	public static record PovSettings(
+	public record PovSettings (
 		@Nullable TransformSheet cameraTransform,
 		Map<String, Boolean> visibilities,
 		RootTransformation rootTransformation,

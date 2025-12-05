@@ -14,14 +14,16 @@ import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimation
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.neoevent.playerpatch.*;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.api.event.EntityEventListener;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.player.ComboAttackEvent;
+import yesman.epicfight.api.event.types.player.ModifyComboCounter;
+import yesman.epicfight.api.event.types.player.SkillConsumeEvent;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
 import yesman.epicfight.skill.*;
-import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
@@ -38,10 +40,10 @@ public class ComboAttacks extends Skill {
 		return new SkillBuilder<>(ComboAttacks::new).setCategory(SkillCategories.BASIC_ATTACK).setActivateType(ActivateType.ONE_SHOT).setResource(Resource.NONE);
 	}
 	
-	public static void setComboCounterWithEvent(ComboCounterHandleEvent.Causal reason, ServerPlayerPatch playerpatch, SkillContainer container, AnimationAccessor<? extends StaticAnimation> causalAnimation, int value) {
+	public static void setComboCounterWithEvent(ModifyComboCounter.Causal reason, ServerPlayerPatch playerpatch, SkillContainer container, AnimationAccessor<? extends StaticAnimation> causalAnimation, int value) {
 		int prevValue = container.getDataManager().getDataValue(EpicFightSkillDataKeys.COMBO_COUNTER);
-		ComboCounterHandleEvent comboResetEvent = new ComboCounterHandleEvent(reason, playerpatch, causalAnimation, prevValue, value);
-		PlayerPatchEvent.postAndFireSkillListeners(comboResetEvent);
+        ModifyComboCounter comboResetEvent = new ModifyComboCounter(reason, playerpatch, causalAnimation, prevValue, value);
+        EpicFightEventHooks.Player.MODIFY_COMBO_COUNTER.postWithListener(comboResetEvent, playerpatch.getEventListener());
 		container.getDataManager().setData(EpicFightSkillDataKeys.COMBO_COUNTER, comboResetEvent.getNextValue());
 	}
 
@@ -60,25 +62,33 @@ public class ComboAttacks extends Skill {
         this.airAttackConsumption = parameters.getFloat("air_attack_consumption");
     }
 
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER)
-	public void actionEvent(StartActionEvent event, SkillContainer skillContainer) {
-		event.runOnServer(serverplayerpatch -> {
-			if (event.getAnimation().get().getProperty(ActionAnimationProperty.RESET_PLAYER_COMBO_COUNTER).orElse(true)) {
-				CapabilityItem itemCapability = serverplayerpatch.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-				List<AnimationAccessor<? extends AttackAnimation>> comboAnimations = itemCapability.getAutoAttackMotion(skillContainer.getExecutor());
-				
-				if (comboAnimations == null) {
-					return;
-				}
+    @Override
+    public void onInitiate(SkillContainer skillContainer, EntityEventListener eventListener) {
+        super.onInitiate(skillContainer, eventListener);
 
-                Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Set.copyOf(Sets.newHashSet(comboAnimations));
+        skillContainer.runOnServer(playerpatch -> {
+            eventListener.registerEvent(
+                EpicFightEventHooks.Animation.START_ACTION,
+                event -> {
+                    if (event.getAnimation().get().getProperty(ActionAnimationProperty.RESET_PLAYER_COMBO_COUNTER).orElse(true)) {
+                        CapabilityItem itemCapability = playerpatch.getHoldingItemCapability(InteractionHand.MAIN_HAND);
+                        List<AnimationAccessor<? extends AttackAnimation>> comboAnimations = itemCapability.getAutoAttackMotion(skillContainer.getExecutor());
 
-                if (!attackMotionSet.contains(event.getAnimation()) && itemCapability.shouldCancelCombo(serverplayerpatch)) {
-					setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, serverplayerpatch, skillContainer, event.getAnimation(), 0);
-				}
-			}
-		});
-	}
+                        if (comboAnimations == null) {
+                            return;
+                        }
+
+                        Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Set.copyOf(Sets.newHashSet(comboAnimations));
+
+                        if (!attackMotionSet.contains(event.getAnimation()) && itemCapability.shouldCancelCombo(playerpatch)) {
+                            setComboCounterWithEvent(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, playerpatch, skillContainer, event.getAnimation(), 0);
+                        }
+                    }
+                },
+                this
+            );
+        });
+    }
 
 	@Override
 	public boolean isExecutableState(PlayerPatch<?> executor) {
@@ -90,13 +100,17 @@ public class ComboAttacks extends Skill {
 	@Override
 	public void executeOnServer(SkillContainer skillContainer, CompoundTag args) {
 		ServerPlayerPatch executor = skillContainer.getServerExecutor();
-		SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
-		
-		if (!PlayerPatchEvent.postAndFireSkillListeners(event).isCanceled()) {
-			event.getResourceType().consumer.consume(skillContainer, executor, event.getAmount());
+		SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(executor, this, this.resource, null);
+        EpicFightEventHooks.Player.CONSUME_SKILL.postWithListener(skillConsumeEvent, executor.getEventListener());
+
+		if (!skillConsumeEvent.isCanceled()) {
+			skillConsumeEvent.getResourceType().consumer.consume(skillContainer, executor, skillConsumeEvent.getAmount());
 		}
-		
-		if (PlayerPatchEvent.postAndFireSkillListeners(new ComboAttackEvent(executor)).isCanceled()) {
+
+        ComboAttackEvent comboAttackEvent = new ComboAttackEvent(executor);
+        EpicFightEventHooks.Player.COMBO_ATTACK.postWithListener(comboAttackEvent, executor.getEventListener());
+
+		if (comboAttackEvent.isCanceled()) {
 			return;
 		}
 		
@@ -137,9 +151,10 @@ public class ComboAttacks extends Skill {
             comboCounter = (dashAttack || airAttack) ? 0 : comboCounter + 1;
 		}
 		
-		setComboCounterWithEvent(ComboCounterHandleEvent.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
+		setComboCounterWithEvent(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
 
         if (attackMotion != null && this.checkConsumption(skillContainer, dashAttack, airAttack)) {
+            // Remove an existing data
 			executor.getAnimator().getVariables().put(COMBO, attackMotion, true);
 			executor.getAnimator().playAnimation(attackMotion, 0.0F);
 			
@@ -162,14 +177,12 @@ public class ComboAttacks extends Skill {
 	public void updateContainer(SkillContainer container) {
 		container.runOnServer(serverplayerpatch -> {
 			if (container.getExecutor().getTickSinceLastAction() > 16 && container.getDataManager().getDataValue(EpicFightSkillDataKeys.COMBO_COUNTER) > 0) {
-				setComboCounterWithEvent(ComboCounterHandleEvent.Causal.TIME_EXPIRED, serverplayerpatch, container, null, 0);
+                    setComboCounterWithEvent(ModifyComboCounter.Causal.TIME_EXPIRED, serverplayerpatch, container, null, 0);
 			}
 		});
 	}
 
-    /**
-     * Checks the consumption of the skill based on dash, air attack states
-     */
+    /// Checks the consumption of the skill based on dash, air attack states
     protected boolean checkConsumption(SkillContainer container, boolean dash, boolean air) {
         float finalConsumption = air ? this.airAttackConsumption : this.dashAttackConsumption;
 

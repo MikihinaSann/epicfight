@@ -1,17 +1,16 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.List;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.model.Armature;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
 
 public class MirrorAnimation extends StaticAnimation {
 	public DirectStaticAnimation original;
@@ -49,14 +48,12 @@ public class MirrorAnimation extends StaticAnimation {
 		return true;
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public Layer.Priority getPriority() {
 		return this.original.getProperty(ClientAnimationProperties.PRIORITY).orElse(Layer.Priority.LOWEST);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public Layer.LayerType getLayerType() {
 		return this.original.getProperty(ClientAnimationProperties.LAYER_TYPE).orElse(Layer.LayerType.BASE_LAYER);
 	}

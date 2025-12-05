@@ -1,5 +1,7 @@
 package yesman.epicfight.mixin.common;
 
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.Entity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -7,12 +9,9 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.entity.Entity;
-import net.neoforged.neoforge.common.NeoForge;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
-import yesman.epicfight.api.neoevent.EntityRemoveEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.entity.EntityRemovedEvent;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -26,7 +25,7 @@ public abstract class MixinEntity {
 	@Shadow
     protected abstract void addAdditionalSaveData(CompoundTag compound);
 	
-	@Inject(at = @At(value = "TAIL"), method = "onAddedToLevel()V", cancellable = true, remap = false)
+	@Inject(at = @At(value = "TAIL"), method = "onAddedToLevel()V", remap = false)
 	private void epicfight$onAddedToLevel(CallbackInfo callbackInfo) {
 		Entity self = (Entity)((Object)this);
 		EntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, EntityPatch.class);
@@ -48,7 +47,7 @@ public abstract class MixinEntity {
 		});
 	}
 	
-	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 0)
+	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
 	private double epicfight$turnParam1(double yRot) {
 		Entity e = (Entity)(Object)this;
 		PlayerPatch<?> playerpatch = EpicFightCapabilities.getEntityPatch(e, PlayerPatch.class);
@@ -60,7 +59,7 @@ public abstract class MixinEntity {
 		return yRot;
 	}
 	
-	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 1)
+	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 1, argsOnly = true)
 	private double epicfight$turnParam2(double xRot) {
 		Entity e = (Entity)(Object)this;
 		PlayerPatch<?> playerpatch = EpicFightCapabilities.getEntityPatch(e, PlayerPatch.class);
@@ -77,7 +76,11 @@ public abstract class MixinEntity {
 	@Inject(at = @At(value = "HEAD"), method = "remove(Lnet/minecraft/world/entity/Entity$RemovalReason;)V")
 	public void epicfight$remove(Entity.RemovalReason reason, CallbackInfo callback) {
 		Entity self = (Entity)(Object)this;
-		NeoForge.EVENT_BUS.post(new EntityRemoveEvent(reason, self));
+        LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
+
+        if (entitypatch != null) {
+            EpicFightEventHooks.Entity.ON_REMOVED.postWithListener(new EntityRemovedEvent(reason, entitypatch), entitypatch.getEventListener());
+        }
     }
 	
 	@Redirect(

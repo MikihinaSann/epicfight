@@ -1,12 +1,12 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import net.minecraft.world.damagesource.DamageSource;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.phys.HitResult;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
+
+import java.util.function.Function;
 
 public class EntityState {
 	public static class StateFactor<T> implements ParameterizedHashMap.ParameterizedKey<T> {
@@ -43,7 +43,7 @@ public class EntityState {
 	public static final StateFactor<Integer> HURT_LEVEL = new StateFactor<>("hurtLevel", 0);
 	public static final StateFactor<Integer> PHASE_LEVEL = new StateFactor<>("phaseLevel", 0);
 	public static final StateFactor<Function<DamageSource, AttackResult.ResultType>> ATTACK_RESULT = new StateFactor<>("attackResultModifier", (damagesource) -> AttackResult.ResultType.SUCCESS);
-	public static final StateFactor<Consumer<ProjectileImpactEvent>> PROJECTILE_IMPACT_RESULT = new StateFactor<>("projectileImpactResult", (event) -> {});
+	public static final StateFactor<ProjectileHitPredicate> PROJECTILE_IMPACT_RESULT = new StateFactor<>("projectileImpactResult", (projectile, hitResult) -> true);
 	
 	private final ParameterizedHashMap<StateFactor<?>> stateMap;
 	
@@ -75,8 +75,8 @@ public class EntityState {
 		return this.getState(EntityState.ATTACK_RESULT).apply(damagesource);
 	}
 	
-	public void setProjectileImpactResult(ProjectileImpactEvent event) {
-		this.getState(EntityState.PROJECTILE_IMPACT_RESULT).accept(event);
+	public boolean setProjectileImpactResult(Projectile projectile, HitResult hitResult) {
+		return this.getState(EntityState.PROJECTILE_IMPACT_RESULT).test(projectile, hitResult);
 	}
 	
 	public boolean canBasicAttack() {
@@ -133,4 +133,9 @@ public class EntityState {
 	public String toString() {
 		return this.stateMap.toString();
 	}
+
+    @FunctionalInterface
+    public interface ProjectileHitPredicate {
+        boolean test(Projectile projectile, HitResult hitResult);
+    }
 }

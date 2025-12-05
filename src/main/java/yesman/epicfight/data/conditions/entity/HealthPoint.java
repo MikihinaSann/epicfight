@@ -1,24 +1,21 @@
 package yesman.epicfight.data.conditions.entity;
 
-import java.util.List;
-import java.util.Locale;
-
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.NumericTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.utils.ParseUtil;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.gui.datapack.widgets.ComboBox;
 import yesman.epicfight.client.gui.datapack.widgets.ResizableEditBox;
 import yesman.epicfight.data.conditions.Condition.EntityPatchCondition;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.Locale;
 
 public class HealthPoint extends EntityPatchCondition {
 	private double health;
@@ -66,8 +63,8 @@ public class HealthPoint extends EntityPatchCondition {
 		return true;
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
+    @OnlyIn(Dist.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		ResizableEditBox editbox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("health"), null, null);
 		AbstractWidget comboBox = new ComboBox<>(screen, screen.getMinecraft().font, 0, 0, 0, 0, null, null, 4, Component.literal("comparator"), List.of(Comparator.values()), ParseUtil::snakeToSpacedCamel, null);

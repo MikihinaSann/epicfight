@@ -1,10 +1,6 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.Optional;
-
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Pose;
@@ -15,7 +11,8 @@ import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
-@OnlyIn(Dist.CLIENT)
+import java.util.Optional;
+
 public class LayerOffAnimation extends DynamicAnimation implements AnimationAccessor<LayerOffAnimation> {
 	private AssetAccessor<? extends DynamicAnimation> lastAnimation;
 	private Pose lastPose;

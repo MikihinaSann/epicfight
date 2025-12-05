@@ -152,7 +152,7 @@ public class Joint {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("\nid: " + this.jointId);
-		sb.append("\nname: " + this.jointName);
+		sb.append("\nidentifier: " + this.jointName);
 		sb.append("\nlocal transform: " + this.localTransform);
 		sb.append("\nto origin: " + this.toOrigin);
 		sb.append("\nchildren: [");

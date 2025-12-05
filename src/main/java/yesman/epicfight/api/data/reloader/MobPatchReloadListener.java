@@ -25,8 +25,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
@@ -285,7 +283,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		
 		if ("has_tags".equals(predicateType)) {
 			if (!tag.contains("tags", 9)) {
-				EpicFightMod.LOGGER.info("Mob capability deserializing exception: Can't find a proper argument for %s. [name: %s, type: %s]".formatted("has_tags", "tags", "string list"));
+				EpicFightMod.LOGGER.info("Mob capability deserializing exception: Can't find a proper argument for %s. [identifier: %s, type: %s]".formatted("has_tags", "tags", "string list"));
 			}
 			
 			predicate = new HasCustomTag(tag.getList("tags", 8));
@@ -556,7 +554,6 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		return tagStream;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static void processServerPacket(SPDatapackSync packet) {
 		for (CompoundTag tag : packet.tags()) {
 			boolean disabled = false;

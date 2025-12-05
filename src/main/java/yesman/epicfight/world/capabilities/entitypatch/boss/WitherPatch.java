@@ -1,12 +1,6 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss;
 
-import java.util.EnumSet;
-import java.util.List;
-
-import org.joml.Quaternionf;
-
 import com.google.common.collect.ImmutableList;
-
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -28,14 +22,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
+import org.joml.Quaternionf;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.JointTransform;
@@ -49,6 +39,7 @@ import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.MobCombatBehaviors;
 import yesman.epicfight.mixin.common.MixinWitherBossAccessor;
@@ -67,6 +58,10 @@ import yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal;
 import yesman.epicfight.world.entity.data.ExpandedEntityDataAccessor;
 import yesman.epicfight.world.entity.data.ExpandedSyncedData;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.List;
 
 public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<WitherBoss> {
 	public WitherPatch(WitherBoss entity) {
@@ -118,8 +113,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 		this.removeBossEventOwner(trackingPlayer);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 		super.entityPairing(packet);
 		
@@ -157,7 +151,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 	}
 	
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
+	public void preTick() {
 		if (this.original.getHealth() <= 0.0F) {
 			if (this.original.deathTime > 1 && this.deathTimerExt < 17) {
 				this.deathTimerExt++;
@@ -176,7 +170,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 			}
 		}
 		
-		super.preTick(event);
+		super.preTick();
 	}
 	
 	@Override
@@ -207,8 +201,8 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 	}
 	
 	@Override
-	public void preTickClient(EntityTickEvent.Pre event) {
-		super.preTickClient(event);
+	public void preTickClient() {
+		super.preTickClient();
 		this.original.setDeltaMovement(0.0D, 0.0D, 0.0D);
 		int transparencyCount = this.getTransparency();
 		
@@ -218,8 +212,8 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 	}
 	
 	@Override
-	public void preTickServer(EntityTickEvent.Pre event) {
-		super.preTickServer(event);
+	public void preTickServer() {
+		super.preTickServer();
 		
 		if (this.original.getHealth() <= this.original.getMaxHealth() * 0.5F) {
 			if (!this.isArmorActivated() && !this.getEntityState().inaction() && this.original.getInvulnerableTicks() <= 0 && this.original.isAlive()) {
@@ -325,8 +319,8 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 	}
 
 	@Override
-	public void onDeath(LivingDeathEvent event) {
-		super.onDeath(event);
+	public void onDeath(DamageSource damageSource) {
+		super.onDeath(damageSource);
 		
 		if (!this.isLogicalClient() && this.original.level().getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT) && EpicFightGameRules.EPIC_DROP.getRuleValue(this.original.level())) {
 			Vec3 startMovement = this.original.getLookAngle().scale(0.4D).add(0.0D, 0.63D, 0.0D);
@@ -336,9 +330,9 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 	}
 	
 	@Override
-	public boolean onDrop(LivingDropsEvent event) {
+	public boolean onDrop(DamageSource source, Collection<ItemEntity> drops) {
 		if (EpicFightGameRules.EPIC_DROP.getRuleValue(this.original.level())) {
-			event.getDrops().removeIf((itemEntity) -> itemEntity.getItem().is(Items.NETHER_STAR));
+            drops.removeIf(itemEntity -> itemEntity.getItem().is(Items.NETHER_STAR));
 		}
 		
 		return false;

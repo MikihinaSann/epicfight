@@ -5,8 +5,6 @@ import com.google.gson.JsonObject;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.asset.JsonAssetLoader;
@@ -14,7 +12,6 @@ import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.client.animation.property.TrailInfo;
 import yesman.epicfight.api.model.Armature;
 
-@OnlyIn(Dist.CLIENT)
 public class DatapackAirSlashAnimation extends DatapackAttackAnimation {
 	public DatapackAirSlashAnimation(float transitionTime, String path, AssetAccessor<? extends Armature> armature, ListTag phases) {
 		super(transitionTime, path, armature, phases);

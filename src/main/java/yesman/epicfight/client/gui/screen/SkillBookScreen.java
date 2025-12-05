@@ -25,12 +25,12 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.neoforged.fml.ModLoader;
 import net.neoforged.neoforge.client.ClientHooks;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
-import yesman.epicfight.api.client.neoevent.AttributeIconRegisterEvent;
-import yesman.epicfight.api.client.neoevent.WeaponCategoryIconRegisterEvent;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.registry.RegisterAttributeIconEvent;
+import yesman.epicfight.api.client.event.types.registry.RegisterWeaponCategoryIconEvent;
 import yesman.epicfight.client.gui.datapack.widgets.Static;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightMod;
@@ -84,11 +84,11 @@ public class SkillBookScreen extends Screen {
         ATTRIBUTE_ICONS.put(EpicFightAttributes.STAMINA_REGEN, new TextureInfo(SKILLBOOK_BACKGROUND, 62, 195, 10, 10));
         ATTRIBUTE_ICONS.put(Attributes.ATTACK_SPEED, new TextureInfo(SKILLBOOK_BACKGROUND, 72, 195, 10, 10));
 
-        WeaponCategoryIconRegisterEvent weaponCategoryIconRegisterEvent = new WeaponCategoryIconRegisterEvent(WEAPON_CATEGORY_ICONS);
-        ModLoader.postEvent(weaponCategoryIconRegisterEvent);
+        RegisterWeaponCategoryIconEvent weaponCategoryIconRegisterEvent = new RegisterWeaponCategoryIconEvent(WEAPON_CATEGORY_ICONS);
+        EpicFightClientEventHooks.Registry.WEAPON_CATEGORY_ICON.post(weaponCategoryIconRegisterEvent);
 
-        AttributeIconRegisterEvent attributeIconRegisterEvent = new AttributeIconRegisterEvent(ATTRIBUTE_ICONS);
-        ModLoader.postEvent(attributeIconRegisterEvent);
+        RegisterAttributeIconEvent attributeIconRegisterEvent = new RegisterAttributeIconEvent(ATTRIBUTE_ICONS);
+        EpicFightClientEventHooks.Registry.ATTRIBUTE_ICON.post(attributeIconRegisterEvent);
     }
 
     protected final Player opener;

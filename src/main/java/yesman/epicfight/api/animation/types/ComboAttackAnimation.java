@@ -1,14 +1,7 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.Locale;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
@@ -18,15 +11,20 @@ import yesman.epicfight.api.animation.types.EntityState.StateFactor;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
-import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.client.input.InputManager;
+import yesman.epicfight.api.client.input.PlayerInputState;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
+
+import javax.annotation.Nullable;
+import java.util.Locale;
+import java.util.Optional;
 
 public class ComboAttackAnimation extends AttackAnimation {
 	public ComboAttackAnimation(float transitionTime, float antic, float contact, float recovery, @Nullable Collider collider, Joint colliderJoint, AnimationAccessor<? extends ComboAttackAnimation> accessor, AssetAccessor<? extends Armature> armature) {
@@ -137,7 +135,7 @@ public class ComboAttackAnimation extends AttackAnimation {
 		return true;
 	}
 	
-	@Override
+	@Override @ClientOnly
 	public boolean shouldPlayerMove(LocalPlayerPatch playerpatch) {
 		if (playerpatch.isLogicalClient()) {
 			if (!EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level())) {
@@ -147,8 +145,8 @@ public class ComboAttackAnimation extends AttackAnimation {
 		
 		return true;
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
     private static boolean isPlayerMoving(LocalPlayerPatch localPlayerPatch) {
         final PlayerInputState inputState = InputManager.getInputState(localPlayerPatch.getOriginal());
         return inputState.forwardImpulse() != 0.0F || inputState.leftImpulse() != 0.0F;

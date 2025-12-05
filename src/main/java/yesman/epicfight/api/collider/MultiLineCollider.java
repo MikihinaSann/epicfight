@@ -1,16 +1,10 @@
 package yesman.epicfight.api.collider;
 
-import java.util.List;
-
-import org.joml.Vector3f;
-
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Vector3f;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.animation.Pose;
@@ -19,15 +13,17 @@ import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
 
 public class MultiLineCollider extends MultiCollider<LineCollider> {
 	public MultiLineCollider(int arrayLength, double posX, double posY, double posZ, double vecX, double vecY, double vecZ) {
 		super(arrayLength, posX, posY, posZ, LineCollider.getInitialAABB(posX, posY, posZ, vecX, vecY, vecZ));
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public void draw(PoseStack poseStack, MultiBufferSource buffer, LivingEntityPatch<?> entitypatch, AttackAnimation animation, Joint joint, float prevElapsedTime, float elapsedTime, float partialTicks, float attackSpeed) {
 		int numberOf = Math.max(Math.round(this.numberOfColliders * attackSpeed), 1);
 		float partialScale = 1.0F / numberOf;
@@ -70,8 +66,7 @@ public class MultiLineCollider extends MultiCollider<LineCollider> {
 		}
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public RenderType getRenderType() {
 		return null;
 	}

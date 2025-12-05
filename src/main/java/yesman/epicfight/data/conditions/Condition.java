@@ -1,15 +1,7 @@
 package yesman.epicfight.data.conditions;
 
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.NoSuchElementException;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -22,16 +14,24 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.utils.ExtensibleEnum;
 import yesman.epicfight.api.utils.ExtensibleEnumManager;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.text.MessageFormat;
+import java.util.List;
+import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public interface Condition<T> {
 	default Condition<T> read(JsonElement json) throws CommandSyntaxException {
 		return this.read(TagParser.parseTag(json.toString()));
 	}
 	
-	public Condition<T> read(CompoundTag tag) throws IllegalArgumentException;
-	public CompoundTag serializePredicate();
-	public boolean predicate(T target);
+	Condition<T> read(CompoundTag tag) throws IllegalArgumentException;
+	CompoundTag serializePredicate();
+	boolean predicate(T target);
 	
 	default <O> O assertTag(String key, String tagFormatMessage, CompoundTag compound, Class<? extends Tag> tagType, BiFunction<CompoundTag, String, O> getter) throws IllegalArgumentException {
 		if (!compound.contains(key)) {
@@ -74,21 +74,23 @@ public interface Condition<T> {
 			throw new NoSuchElementException(MessageFormat.format("{0} condition error: {1}", this.getClass().getSimpleName(), ex.getMessage()));
 		}
 	}
+
+    // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @ClientOnly
+    @OnlyIn(Dist.CLIENT)
+	List<ParameterEditor> getAcceptingParameters(Screen screen);
 	
-	@OnlyIn(Dist.CLIENT)
-	public List<ParameterEditor> getAcceptingParameters(Screen screen);
-	
-	public static abstract class EntityPatchCondition implements Condition<LivingEntityPatch<?>> {
+	abstract class EntityPatchCondition implements Condition<LivingEntityPatch<?>> {
 	}
 	
-	public static abstract class EntityCondition implements Condition<Entity> {
+	abstract class EntityCondition implements Condition<Entity> {
 	}
 	
-	public static abstract class ItemStackCondition implements Condition<ItemStack> {
+	abstract class ItemStackCondition implements Condition<ItemStack> {
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	public static class ParameterEditor {
+
+    @ClientOnly
+	class ParameterEditor {
 		public static ParameterEditor of(Function<Object, Tag> toTag, Function<Tag, Object> fromTag, AbstractWidget editWidget) {
 			return new ParameterEditor(toTag, fromTag, editWidget);
 		}

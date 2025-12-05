@@ -1,27 +1,19 @@
 package yesman.epicfight.skill.identity;
 
-import java.util.Map;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 import com.google.common.collect.Maps;
-
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.neoevent.playerpatch.DodgeSuccessEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SetTargetEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SkillCastEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TargetIndicatorCheckEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TargetIndicatorCheckEvent.Type;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.hud.TickTargetIndicatorEvent;
+import yesman.epicfight.api.event.EntityEventListener;
+import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.utils.AttackResult.ResultType;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.gui.BattleModeGui;
 import yesman.epicfight.gameasset.Animations;
@@ -31,133 +23,153 @@ import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillEvent;
-import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
-import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 
-public class RevelationSkill extends Skill {
-	public static RevelationSkill.Builder createRevelationSkillBuilder() {
-		return new Builder(RevelationSkill::new)
-			.addMotion(WeaponCategories.LONGSWORD, (item, player) -> Animations.REVELATION_TWOHAND)
-			.addMotion(WeaponCategories.GREATSWORD, (item, player) -> Animations.REVELATION_TWOHAND)
-			.addMotion(WeaponCategories.TACHI, (item, player) -> Animations.REVELATION_TWOHAND)
-			.setCategory(SkillCategories.IDENTITY)
-			.setActivateType(ActivateType.DURATION)
-			.setResource(Resource.NONE);
-	}
-	
-	public static class Builder extends SkillBuilder<RevelationSkill.Builder> {
-		protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>>> motions = Maps.newHashMap();
-		
-		public Builder(Function<RevelationSkill.Builder, ? extends Skill> constructor) {
-			super(constructor);
-		}
-		
-		public Builder addMotion(WeaponCategory weaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>> function) {
-			this.motions.put(weaponCategory, function);
-			return this;
-		}
-	}
-	
-	protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>>> motions;
-	protected final Map<EntityType<?>, Integer> maxRevelationStacks = Maps.newHashMap();
-	protected int blockStack;
-	protected int parryStack;
-	protected int dodgeStack;
-	protected int defaultRevelationStacks;
-	
-	public RevelationSkill(Builder builder) {
-		super(builder);
-		
-		this.motions = builder.motions;
-	}
-	
-	@Override
-	public void loadDatapackParameters(CompoundTag parameters) {
-		super.loadDatapackParameters(parameters);
-		
-		this.maxRevelationStacks.clear();
-		this.blockStack = parameters.getInt("block_stacks");
-		this.parryStack = parameters.getInt("parry_stacks");
-		this.dodgeStack = parameters.getInt("dodge_stacks");
-		this.defaultRevelationStacks = parameters.getInt("default_revelation_stacks");
-		
-		CompoundTag maxStacks = parameters.getCompound("max_revelations");
-		
-		for (String registryName : maxStacks.getAllKeys()) {
-			EntityType<?> entityType = EntityType.byString(registryName).orElse(null);
-			
-			if (entityType != null) {
-				this.maxRevelationStacks.put(entityType, maxStacks.getInt(registryName));
-			} else {
-				EpicFightMod.LOGGER.warn("Revelation registry error: no entity type named : " + registryName);
-				
-			}
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.CLIENT)
-	public void skillExecuteEvent(SkillCastEvent event, SkillContainer skillContainer) {
-		if (skillContainer.getExecutor().isLogicalClient()) {
-			Skill skill = event.getSkillContainer().getSkill();
-			
-			if (skill.getCategory() != SkillCategories.WEAPON_INNATE) {
-				return;
-			}
-			
-			if (skillContainer.getExecutor().getTarget() != null) {
-				EpicFightCapabilities.getUnparameterizedEntityPatch(skillContainer.getExecutor().getTarget(), LivingEntityPatch.class).ifPresent(entitypatch -> {
-					if (this.isActivated(skillContainer)) {
-						if (skillContainer.sendCastRequest(skillContainer.getClientExecutor(), ControlEngine.getInstance()).isExecutable()) {
-							skillContainer.setDuration(0);
-							event.setCanceled(true);
-						}
-					}
-				});
-			}
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER)
-	public void setTargetEvent(SetTargetEvent event, SkillContainer skillContainer) {
-		skillContainer.getDataManager().setDataSync(EpicFightSkillDataKeys.STACKS, 0);
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER, priority = -1)
-	public void dodgeSuccessEvent(DodgeSuccessEvent event, SkillContainer skillContainer) {
-		LivingEntity target = skillContainer.getExecutor().getTarget();
-		
-		if (target != null && target.is(event.getDamageSource().getDirectEntity())) {
-			this.checkStackAndActivate(skillContainer, event.getPlayerPatch(), target, skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS), this.dodgeStack);
-		}
-	}
+import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER, priority = -1)
-	public void hurtEventPre(TakeDamageEvent.Income event, SkillContainer skillContainer) {
-		if (event.getResult() == ResultType.BLOCKED) {
-			LivingEntity target = skillContainer.getExecutor().getTarget();
-			
-			if (target != null && target.is(event.getDamageSource().getDirectEntity())) {
-				int stacks = event.isParried() ? this.parryStack : this.blockStack;
-				
-				this.checkStackAndActivate(skillContainer, event.getPlayerPatch(), target, skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS), stacks);
-			}
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.CLIENT, priority = -1)
-	public void targetIndicatorEvent(TargetIndicatorCheckEvent event, SkillContainer skillContainer) {
-		if (this.isActivated(skillContainer)) {
-			event.setType(Type.FLASH);
-		}
-	}
-	
+public class RevelationSkill extends Skill {
+    public static RevelationSkill.Builder createRevelationSkillBuilder() {
+        return new Builder(RevelationSkill::new)
+            .addMotion(WeaponCategories.LONGSWORD, (item, player) -> Animations.REVELATION_TWOHAND)
+            .addMotion(WeaponCategories.GREATSWORD, (item, player) -> Animations.REVELATION_TWOHAND)
+            .addMotion(WeaponCategories.TACHI, (item, player) -> Animations.REVELATION_TWOHAND)
+            .setCategory(SkillCategories.IDENTITY)
+            .setActivateType(ActivateType.DURATION)
+            .setResource(Resource.NONE);
+    }
+
+    public static class Builder extends SkillBuilder<RevelationSkill.Builder> {
+        protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>>> motions = Maps.newHashMap();
+
+        public Builder(Function<RevelationSkill.Builder, ? extends Skill> constructor) {
+            super(constructor);
+        }
+
+        public Builder addMotion(WeaponCategory weaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>> function) {
+            this.motions.put(weaponCategory, function);
+            return this;
+        }
+    }
+
+    protected final Map<WeaponCategory, BiFunction<CapabilityItem, PlayerPatch<?>, AnimationAccessor<? extends StaticAnimation>>> motions;
+    protected final Map<EntityType<?>, Integer> maxRevelationStacks = Maps.newHashMap();
+    protected int blockStack;
+    protected int parryStack;
+    protected int dodgeStack;
+    protected int defaultRevelationStacks;
+
+    public RevelationSkill(Builder builder) {
+        super(builder);
+
+        this.motions = builder.motions;
+    }
+
+    @Override
+    public void loadDatapackParameters(CompoundTag parameters) {
+        super.loadDatapackParameters(parameters);
+
+        this.maxRevelationStacks.clear();
+        this.blockStack = parameters.getInt("block_stacks");
+        this.parryStack = parameters.getInt("parry_stacks");
+        this.dodgeStack = parameters.getInt("dodge_stacks");
+        this.defaultRevelationStacks = parameters.getInt("default_revelation_stacks");
+
+        CompoundTag maxStacks = parameters.getCompound("max_revelations");
+
+        for (String registryName : maxStacks.getAllKeys()) {
+            EntityType<?> entityType = EntityType.byString(registryName).orElse(null);
+
+            if (entityType != null) {
+                this.maxRevelationStacks.put(entityType, maxStacks.getInt(registryName));
+            } else {
+                EpicFightMod.LOGGER.warn("Revelation registry error: no entity type named {}", registryName);
+            }
+        }
+    }
+
+    @Override
+    public void onInitiate(SkillContainer skillContainer, EntityEventListener eventListener) {
+        super.onInitiate(skillContainer, eventListener);
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Player.CAST_SKILL,
+            event -> {
+                if (skillContainer.getExecutor().isLogicalClient()) {
+                    Skill skill = event.getSkillContainer().getSkill();
+
+                    if (skill.getCategory() != SkillCategories.WEAPON_INNATE) {
+                        return;
+                    }
+
+                    if (skillContainer.getExecutor().getTarget() != null) {
+                        EpicFightCapabilities.getUnparameterizedEntityPatch(skillContainer.getExecutor().getTarget(), LivingEntityPatch.class).ifPresent(entitypatch -> {
+                            if (this.isActivated(skillContainer)) {
+                                if (skillContainer.sendCastRequest(skillContainer.getClientExecutor(), ControlEngine.getInstance()).isExecutable()) {
+                                    skillContainer.setDuration(0);
+                                    event.cancel();
+                                }
+                            }
+                        });
+                    }
+                }
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Player.SET_TARGET,
+            event -> {
+                skillContainer.getDataManager().setDataSync(EpicFightSkillDataKeys.STACKS, 0);
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Entity.ON_DODGE,
+            event -> {
+                LivingEntity target = skillContainer.getExecutor().getTarget();
+
+                if (target != null && target.is(event.getDamageSource().getDirectEntity())) {
+                    this.checkStackAndActivate(skillContainer, target, skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS), this.dodgeStack);
+                }
+            },
+            this
+        );
+
+        eventListener.registerContextAwareEvent(
+            EpicFightEventHooks.Entity.TAKE_DAMAGE_INCOME,
+            (event, eventContext) -> {
+                if (event.getResult() == ResultType.BLOCKED) {
+                    LivingEntity target = skillContainer.getExecutor().getTarget();
+
+                    if (target != null && target.is(event.getDamageSource().getDirectEntity())) {
+                        int stacks = event.isParried() ? this.parryStack : this.blockStack;
+
+                        this.checkStackAndActivate(skillContainer, target, skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS), stacks);
+                    }
+                }
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightClientEventHooks.HUD.TARGET_INDICATOR_TICK,
+            event -> {
+                if (this.isActivated(skillContainer)) {
+                    event.setType(TickTargetIndicatorEvent.Type.FLASH);
+                }
+            },
+            this
+        );
+    }
+
 	@Override
 	public void executeOnServer(SkillContainer container, CompoundTag arguments) {
 		super.executeOnServer(container, arguments);
@@ -167,8 +179,8 @@ public class RevelationSkill extends Skill {
 		
 		container.getExecutor().playAnimationSynchronized(animation, 0.0F);
 	}
-	
-	public void checkStackAndActivate(SkillContainer container, ServerPlayerPatch playerpatch, LivingEntity target, int stacks, int addStacks) {
+
+	public void checkStackAndActivate(SkillContainer container, LivingEntity target, int stacks, int addStacks) {
 		int maxStackSize = this.maxRevelationStacks.getOrDefault(target.getType(), this.defaultRevelationStacks);
 		int plusStack = stacks + addStacks;
 		
@@ -176,21 +188,20 @@ public class RevelationSkill extends Skill {
 			container.getDataManager().setDataSync(EpicFightSkillDataKeys.STACKS, plusStack);
 		} else {
 			if (!this.isActivated(container)) {
+                System.out.println( "duration start" );
 				this.setDurationSynchronize(container, this.maxDuration);
 			}
 			
 			container.getDataManager().setDataSync(EpicFightSkillDataKeys.STACKS, 0);
 		}
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+
+	@ClientOnly @Override
 	public boolean shouldDraw(SkillContainer container) {
 		return container.getExecutor().getTarget() != null;
 	}
-	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+
+    @ClientOnly @Override
 	public void drawOnGui(BattleModeGui gui, SkillContainer container, GuiGraphics guiGraphics, float x, float y, float partialTick) {
 		guiGraphics.blit(this.getSkillTexture(), (int)x, (int)y, 24, 24, 0, 0, 1, 1, 1, 1);
 		int stacks = container.getRemainDuration() > 0 ? 0 : this.maxRevelationStacks.getOrDefault(container.getExecutor().getTarget().getType(), this.defaultRevelationStacks) - container.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS);

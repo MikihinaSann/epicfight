@@ -2,8 +2,6 @@ package yesman.epicfight.api.animation.types.datapack;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.asset.JsonAssetLoader;
@@ -14,7 +12,6 @@ import yesman.epicfight.api.model.Armature;
 
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public class DatapackMovementAnimation extends DatapackStaticAnimation {
 	public DatapackMovementAnimation(float convertTime, boolean isRepeat, String path, AssetAccessor<? extends Armature> armature) {
 		super(convertTime, isRepeat, path, armature);

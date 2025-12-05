@@ -3,8 +3,6 @@ package yesman.epicfight.api.animation.types.datapack;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.LivingMotion;
@@ -20,7 +18,6 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public class DatapackStaticAnimation extends StaticAnimation implements DatapackAnimation<DatapackStaticAnimation> {
 	protected EditorAnimation fakeAnimation;
 	protected ResourceLocation registryName;

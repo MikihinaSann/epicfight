@@ -1,25 +1,28 @@
 package yesman.epicfight.world.capabilities.skill;
 
 import com.google.common.collect.HashMultimap;
-import com.mojang.datafixers.util.Pair;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.Event;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.registry.EpicFightRegistries;
-import yesman.epicfight.skill.*;
-import yesman.epicfight.skill.Skill.SkillEventSubscriber;
+import yesman.epicfight.skill.Skill;
+import yesman.epicfight.skill.SkillCategory;
+import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class PlayerSkills {
 	public static final PlayerSkills EMPTY = new PlayerSkills(null);
 	public final SkillContainer[] skillContainers;
-	private final Map<Skill, SkillContainer> containersBySkill = new HashMap<> ();
+	private final Map<Skill, SkillContainer> containersBySkill = new HashMap<>();
 	private final HashMultimap<SkillCategory, SkillContainer> containersByCategory = HashMultimap.create();
 	private final HashMultimap<SkillCategory, Skill> learnedSkills = HashMultimap.create();
 	
@@ -156,39 +159,7 @@ public class PlayerSkills {
 		
 		this.learnedSkills.putAll(capabilitySkill.learnedSkills);
 	}
-	
-	/**
-	 * Find methods with {@link SkillEvent} annotation
-	 * 
-	 * @param <T>
-	 * @param caller give "epicfight" for playerpatch events
-	 *               for custom events called by add-on, give your modid
-	 * @param event
-	 */
-	public <T extends Event> T fireSkillEvents(String caller, T event) {
-		List<Pair<SkillContainer, SkillEventSubscriber>> subscribers = new ArrayList<> ();
-		
-		for (SkillContainer skillContainer : this.skillContainers) {
-			Skill skill = skillContainer.getSkill();
-			
-			if (skill == null) {
-				continue;
-			}
-			
-			SkillEventSubscriber skillEventSubscriber = skill.getSkillEvent(caller, event.getClass(), skillContainer.getExecutor().isLogicalClient());
-			
-			if (skillEventSubscriber != null) {
-				subscribers.add(Pair.of(skillContainer, skillEventSubscriber));
-			}
-		}
-		
-		subscribers.stream().sorted((p1, p2) -> p2.getSecond().compareTo(p1.getSecond())).forEach(subscriber -> {
-			subscriber.getSecond().eventSubscriber().accept(event, subscriber.getFirst());
-		});
-		
-		return event;
-	}
-	
+
 	public CompoundTag write(CompoundTag compound) {
 		CompoundTag skillCompound = new CompoundTag();
 		

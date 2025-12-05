@@ -1,15 +1,10 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
 
-import java.util.EnumSet;
-import java.util.Iterator;
-import java.util.Set;
-
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.monster.Vex;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
@@ -19,6 +14,10 @@ import yesman.epicfight.world.capabilities.entitypatch.Factions;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.MobPatch;
 import yesman.epicfight.world.damagesource.StunType;
+
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.Set;
 
 public class VexPatch extends MobPatch<Vex> {
 	public VexPatch(Vex original) {
@@ -53,8 +52,8 @@ public class VexPatch extends MobPatch<Vex> {
 	}
 	
 	@Override
-	public void preTickServer(EntityTickEvent.Pre event) {
-		super.preTickServer(event);
+	public void preTickServer() {
+		super.preTickServer();
 		
 		if (this.getEntityState().movementLocked()) {
 			this.original.goalSelector.disableControlFlag(Goal.Flag.MOVE);

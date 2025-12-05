@@ -37,7 +37,7 @@ import yesman.epicfight.api.client.model.MeshPartDefinition;
 import yesman.epicfight.api.client.model.SingleGroupVertexBuilder;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelTransformer;
-import yesman.epicfight.api.client.neoevent.AnimatedArmorTextureEvent;
+import yesman.epicfight.api.client.event.types.render.AnimatedArmorTextureEvent;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec2f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -65,12 +65,12 @@ public class GeoModelTransformer extends HumanoidModelTransformer {
 	
 	@SuppressWarnings("unchecked")
 	public static void getGeoArmorTexturePath(AnimatedArmorTextureEvent event) {
-		IClientItemExtensions customRenderProperties = IClientItemExtensions.of(event.getItemstack());
+		IClientItemExtensions customRenderProperties = IClientItemExtensions.of(event.getItemStack());
 		
 		if (customRenderProperties != null) {
-			HumanoidModel<?> extensionRenderer = customRenderProperties.getHumanoidArmorModel(event.getLivingEntity(), event.getItemstack(), event.getEquipmentSlot(), event.getOriginalModel());
+			HumanoidModel<?> extensionRenderer = customRenderProperties.getHumanoidArmorModel(event.getLivingEntity(), event.getItemStack(), event.getEquipmentSlot(), event.getOriginalModel());
 			
-			if (extensionRenderer instanceof GeoArmorRenderer geoArmorRenderer && event.getItemstack().getItem() instanceof GeoAnimatable geoAnimatable) {
+			if (extensionRenderer instanceof GeoArmorRenderer geoArmorRenderer && event.getItemStack().getItem() instanceof GeoAnimatable geoAnimatable) {
 				event.setResultLocation(geoArmorRenderer.getTextureLocation(geoAnimatable));
 			}
 		}

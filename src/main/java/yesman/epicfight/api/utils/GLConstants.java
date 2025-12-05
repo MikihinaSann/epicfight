@@ -1,9 +1,5 @@
 package yesman.epicfight.api.utils;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-
-@OnlyIn(Dist.CLIENT)
 public class GLConstants {
 	/**
 	 * Extracted the GL constants to avoid direct using of gl classes since it causes issues
@@ -19,7 +15,7 @@ public class GLConstants {
 	public static final int GL_VERTEX_ARRAY_BINDING = 34229;
 	public static final int GL_VERTEX_ARRAY_BUFFER_BINDING = 34966;
 	
-	/**
+	/*
 	public static void checkAllMatches() {
 		if (GL_BYTE != GL11.GL_BYTE) {
 			EpicFightMod.LOGGER.warn("GL_BYTE doesn't match " + GL_BYTE + " " + GL11.GL_BYTE);
@@ -61,5 +57,5 @@ public class GLConstants {
 			EpicFightMod.LOGGER.warn("GL_VERTEX_ARRAY_BINDING doesn't match " + GL_VERTEX_ARRAY_BUFFER_BINDING + " " + GL30.GL_VERTEX_ARRAY_BUFFER_BINDING);
 		}
 	}
-	**/
+	*/
 }

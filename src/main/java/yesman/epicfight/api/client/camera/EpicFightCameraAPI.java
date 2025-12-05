@@ -29,8 +29,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader;
-import yesman.epicfight.api.client.event.EpicFightClientHooks;
-import yesman.epicfight.api.client.event.types.*;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.camera.*;
 import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
@@ -117,8 +117,8 @@ public final class EpicFightCameraAPI {
     public boolean isTPSMode() {
         if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.tpsType.shouldSwitch(this)) {
             ActivateTPSCamera event = new ActivateTPSCamera(this);
-            EpicFightClientHooks.Camera.ACTIVATE_TPS_CAMERA.post(event);
-            return !event.hasCanceled();
+            EpicFightClientEventHooks.Camera.ACTIVATE_TPS_CAMERA.post(event);
+            return !event.isCanceled();
         }
 
         return false;
@@ -190,7 +190,7 @@ public final class EpicFightCameraAPI {
     /// will look at the crosshair forever.
     ///
     /// Alternatively, if you want to focus the player to crosshair for specific item use, you can
-    /// consider registering [EpicFightClientHooks.Camera#ITEM_USED_WHEN_DECOUPLED] for better maintenance
+    /// consider registering [EpicFightClientEventHooks.Camera#ITEM_USED_WHEN_DECOUPLED] for better maintenance
     ///
     /// @param flag 	whether the player should follow the camera view
     public void setCouplingState(boolean flag) {
@@ -275,16 +275,16 @@ public final class EpicFightCameraAPI {
 
             if (flag) {
                 LockOnEvent.Start lockOnEvent = new LockOnEvent.Start(this, this.focusingEntity);
-                EpicFightClientHooks.Camera.LOCK_ON_START.post(lockOnEvent);
-                eventCanceled = lockOnEvent.hasCanceled();
+                EpicFightClientEventHooks.Camera.LOCK_ON_START.post(lockOnEvent);
+                eventCanceled = lockOnEvent.isCanceled();
 
                 if (eventCanceled && newlyFoundFocusingEntity) {
                     this.focusingEntity = null;
                 }
             } else {
                 LockOnEvent.Release lockOnEvent = new LockOnEvent.Release(this, this.focusingEntity);
-                EpicFightClientHooks.Camera.LOCK_ON_RELEASED.post(lockOnEvent);
-                eventCanceled = lockOnEvent.hasCanceled();
+                EpicFightClientEventHooks.Camera.LOCK_ON_RELEASED.post(lockOnEvent);
+                eventCanceled = lockOnEvent.isCanceled();
             }
 
             if (!eventCanceled) {
@@ -374,7 +374,7 @@ public final class EpicFightCameraAPI {
         return next.isPresent();
     }
 
-    /// Creates a compact projection matrix without view, hurt bob
+     /// Creates a compact projection matrix without view, hurt bob
     private Matrix4f getCompactProjectionMatrix() {
         PoseStack posestack = new PoseStack();
         double fov = this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
@@ -778,7 +778,7 @@ public final class EpicFightCameraAPI {
 
             if (this.focusingEntity != null && this.lockingOnTarget) {
                 LockOnEvent.Tick lockOnEventTick = new LockOnEvent.Tick(this, this.focusingEntity, desiredXRot, desiredYRot);
-                EpicFightClientHooks.Camera.LOCK_ON_TICK.post(lockOnEventTick);
+                EpicFightClientEventHooks.Camera.LOCK_ON_TICK.post(lockOnEventTick);
                 desiredXRot = lockOnEventTick.getModifiedXRot();
                 desiredYRot = lockOnEventTick.getModifiedYRot();
             }
@@ -807,9 +807,9 @@ public final class EpicFightCameraAPI {
             return buildCameraEventPre;
         }
 
-        EpicFightClientHooks.Camera.BUILD_TRANSFORM_PRE.post(buildCameraEventPre);
+        EpicFightClientEventHooks.Camera.BUILD_TRANSFORM_PRE.post(buildCameraEventPre);
 
-        if (buildCameraEventPre.hasCanceled()) {
+        if (buildCameraEventPre.isCanceled()) {
             return buildCameraEventPre;
         }
 
@@ -925,7 +925,7 @@ public final class EpicFightCameraAPI {
     /// Called after [#setupCamera] to apply a simple transform
     @ApiStatus.Internal
     public void fireCameraBuildPost(Camera camera, float partialTick) {
-        EpicFightClientHooks.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
+        EpicFightClientEventHooks.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));
     }
 
     /// Returns a new basis for [LivingEntity#yRotHead] instead of coupling it to [Entity#getYRot].
@@ -956,7 +956,7 @@ public final class EpicFightCameraAPI {
 
     @ApiStatus.Internal
     public void onItemUseEvent(Player player, PlayerPatch<?> playerpatch, ItemStack itemstack, InteractionHand hand) {
-        if (this.isTPSMode()) EpicFightClientHooks.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
+        if (this.isTPSMode()) EpicFightClientEventHooks.Camera.ITEM_USED_WHEN_DECOUPLED.post(new ItemUsedInDecoupledCamera(this, player, playerpatch, itemstack, hand));
     }
 
     private boolean predicateFocusableEntity(Entity entity) {
@@ -978,7 +978,7 @@ public final class EpicFightCameraAPI {
             this.couplingYRot                                                                                                           // When the player rotation is manually coupled
         );
 
-        EpicFightClientHooks.Camera.COUPLE_CAMERA.post(coupleTPSCameraEvent);
+        EpicFightClientEventHooks.Camera.COUPLE_CAMERA.post(coupleTPSCameraEvent);
 
         return coupleTPSCameraEvent;
     }

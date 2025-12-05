@@ -1,5 +1,6 @@
 package yesman.epicfight.main;
 
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackLocationInfo;
@@ -22,6 +23,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.neoforged.fml.event.lifecycle.FMLConstructModEvent;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.client.event.RegisterClientReloadListenersEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
@@ -87,6 +89,7 @@ import yesman.epicfight.world.capabilities.item.ItemKeywordReloadListener;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
+import yesman.epicfight.world.capabilities.provider.CommonEntityPatchProvider;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 import yesman.epicfight.world.item.SkillBookItem;
 
@@ -104,10 +107,10 @@ import java.util.function.Supplier;
  *  --- Future list ---
  *
  *  Update language files (always)
- *  Add an alert function when an entity targeting the player tries grappling or execution attack
- *  Add UI for execution resistance
- *  Add functionality to blooming effect (resists wither effect)
- *  Add a screen for setting animation properties in datapack editor
+ *  AddEntity an alert function when an entity targeting the player tries grappling or execution attack
+ *  AddEntity UI for execution resistance
+ *  AddEntity functionality to blooming effect (resists wither effect)
+ *  AddEntity a screen for setting animation properties in datapack editor
  *  Enhance the stun system (maybe remove or barely leave knockback)
  *
  *  @author yesman
@@ -165,7 +168,7 @@ public class EpicFightMod {
 		modEventBus.addListener(this::addPackFindersEvent);
 		modEventBus.addListener(this::buildCreativeTabWithSkillBooks);
         modEventBus.addListener(this::addDatapackRegistryEvent);
-		modEventBus.addListener(EpicFightCapabilities::registerCapabilities);
+		modEventBus.addListener(this::registerCapabilities);
 
     	NeoForge.EVENT_BUS.addListener(this::command);
         NeoForge.EVENT_BUS.addListener(this::addReloadListnerEvent);
@@ -177,12 +180,12 @@ public class EpicFightMod {
     	WeaponCategory.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, WeaponCategories.class);
     	Faction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, Factions.class);
     	EntityPairingPacketType.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EntityPairingPacketTypes.class);
-        WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFightMod.prefix("color_determinator_theme"), ColorDeterminator.Theme.class);
-        WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFightMod.prefix("anchored_button_built_in_theme"), AnchoredButton.BuiltInTheme.class);
 
     	if (EpicFightSharedConstants.isPhysicalClient()) {
             InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EpicFightInputAction.class);
             InputAction.ENUM_MANAGER.registerEnumCls("minecraft", MinecraftInputAction.class);
+            WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFightMod.prefix("color_determinator_theme"), ColorDeterminator.Theme.class);
+            WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFightMod.prefix("anchored_button_built_in_theme"), AnchoredButton.BuiltInTheme.class);
         }
 
     	EpicFightRegistries.DEFERRED_REGISTRIES.forEach(deferredRegistry -> deferredRegistry.register(modEventBus));
@@ -317,12 +320,18 @@ public class EpicFightMod {
         event.dataPackRegistry(EpicFightRegistries.Keys.EMOTE, Emote.CODEC, Emote.CODEC);
     }
 
+    public void registerCapabilities(RegisterCapabilitiesEvent event) {
+        BuiltInRegistries.ITEM.forEach(item -> {
+            event.registerItem(EpicFightCapabilities.CAPABILITY_ITEM, EpicFightCapabilities.ITEM_CAPABILITY_PROVIDER, item);
+        });
+    }
+
 	@EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
         	event.enqueueWork(ComputeShaderProvider::checkIfSupports);
-    		event.enqueueWork(EpicFightCapabilities.ENTITY_PATCH_PROVIDER::registerClientPlayerPatches);
+    		event.enqueueWork(CommonEntityPatchProvider.ClientModule::registerClientPlayerPatches);
     		event.enqueueWork(SkillBookScreen::registerIconItems);
     		event.enqueueWork(EpicFightItemProperties::registerItemProperties);
     		event.enqueueWork(() -> {

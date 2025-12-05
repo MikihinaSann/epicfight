@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
 
-import java.util.List;
-
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,11 +9,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.damagesource.StunType;
+
+import java.util.List;
 
 public abstract class HurtableEntityPatch<T extends LivingEntity> extends EntityPatch<T> {
 	private boolean stunReductionDecreases;
@@ -51,7 +50,7 @@ public abstract class HurtableEntityPatch<T extends LivingEntity> extends Entity
 	}
 	
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
+	public void preTick() {
 		if (!this.original.level().isClientSide()) {
 			this.updateStunTime();
 		}

@@ -15,8 +15,6 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.Event;
 import net.neoforged.fml.event.IModBusEvent;
 import org.apache.logging.log4j.Logger;
@@ -30,6 +28,7 @@ import yesman.epicfight.api.data.reloader.SkillReloadListener;
 import yesman.epicfight.api.exception.AssetLoadingException;
 import yesman.epicfight.api.utils.InstantiateInvoker;
 import yesman.epicfight.api.utils.MutableBoolean;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.main.EpicFightMod;
@@ -277,7 +276,7 @@ public class AnimationManager extends SimplePreparableReloadListener<List<Resour
 	 *                        custom weapon types & mob capabilities won't be created because they won't be able to find the animations from the server
 	 *                        dummy animations will be automatically removed right after reloading resourced as the server forces using resource pack
 	 */
-	@OnlyIn(Dist.CLIENT)
+    @ClientOnly
 	public void processServerPacket(SPDatapackSync packet, boolean mandatoryPack) {
 		if (mandatoryPack) {
 			for (CompoundTag tag : packet.tags()) {

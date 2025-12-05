@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
 
-import java.util.Set;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -9,7 +7,6 @@ import net.minecraft.world.entity.ai.goal.SwellGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.monster.Creeper;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
@@ -22,6 +19,8 @@ import yesman.epicfight.world.capabilities.entitypatch.Factions;
 import yesman.epicfight.world.capabilities.entitypatch.MobPatch;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.ai.goal.CreeperSwellStoppableGoal;
+
+import java.util.Set;
 
 public class CreeperPatch extends MobPatch<Creeper> {
 	public CreeperPatch(Creeper creeper) {
@@ -59,8 +58,8 @@ public class CreeperPatch extends MobPatch<Creeper> {
 	}
 	
 	@Override
-	public void preTickServer(EntityTickEvent.Pre event) {
-		super.preTickServer(event);
+	public void preTickServer() {
+		super.preTickServer();
 		
 		if (this.getEntityState().inaction()) {
 			for (WrappedGoal goal : this.original.goalSelector.getAvailableGoals()) {

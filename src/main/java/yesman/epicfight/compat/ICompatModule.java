@@ -1,14 +1,12 @@
 package yesman.epicfight.compat;
 
-import java.lang.reflect.Constructor;
-
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModLoadingException;
 import net.neoforged.neoforge.common.NeoForge;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
+
+import java.lang.reflect.Constructor;
 
 public interface ICompatModule {
 	static void loadCompatModule(IEventBus modEventBus, Class<? extends ICompatModule> compatModule) {
@@ -36,8 +34,7 @@ public interface ICompatModule {
 	
 	void onGameEventBus(IEventBus eventBus);
 	
-	@OnlyIn(Dist.CLIENT)
 	void onModEventBusClient(IEventBus eventBus);
-	@OnlyIn(Dist.CLIENT)
+
 	void onGameEventBusClient(IEventBus eventBus);
 }

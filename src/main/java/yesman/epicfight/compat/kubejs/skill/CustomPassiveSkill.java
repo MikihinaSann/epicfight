@@ -3,8 +3,7 @@ package yesman.epicfight.compat.kubejs.skill;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.gui.BattleModeGui;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillContainer;
@@ -14,8 +13,7 @@ public class CustomPassiveSkill extends CustomSkill {
         super(builder);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    @Override
+    @Override @ClientOnly
     public void drawOnGui(BattleModeGui gui, SkillContainer container, GuiGraphics guiGraphics, float x, float y, float partialTick) {
         guiGraphics.blit(this.getSkillTexture(), (int)x, (int)y, 24, 24, 0.0F, 0.0F, 1, 1, 1, 1);
         String remainTime = String.format("%.0f", container.getMaxResource() - container.getResource());

@@ -1,20 +1,10 @@
 package yesman.epicfight.api.utils;
 
-import java.util.List;
-import java.util.Random;
-
-import javax.annotation.Nullable;
-
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
-
 import com.google.common.collect.Lists;
-
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
@@ -33,10 +23,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import yesman.epicfight.api.utils.math.QuaternionUtils;
 import yesman.epicfight.api.utils.math.Vec2i;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPCreateTerrainFracture;
@@ -47,6 +38,9 @@ import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.level.block.FractureBlock;
 import yesman.epicfight.world.level.block.FractureBlockState;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 public class LevelUtil {
 	/**
@@ -184,19 +178,13 @@ public class LevelUtil {
 			}
 		}
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public static void createParticle(Level level, BlockPos bp, BlockState bs) {
 		for (int i = 0; i < 4; i += level.getRandom().nextInt(4)) {
 			double x = bp.getX() + (i % 2);
 			double z = bp.getZ() + 1 - (i % 2);
-			
-			TerrainParticle blockParticle = new TerrainParticle((ClientLevel)level, x, bp.getY() + 1, z, 0, 0, 0, bs, bp);
-			blockParticle.setParticleSpeed((Math.random() - 0.5D) * 0.3D, Math.random() * 0.5D, (Math.random() - 0.5D) * 0.3D);
-			blockParticle.setLifetime(10 + new Random().nextInt(60));
-			
-			Minecraft mc = Minecraft.getInstance();
-			mc.particleEngine.add(blockParticle);
+            level.addParticle(new BlockParticleOption(EpicFightParticles.GROUND_FRACTURE.get(), bs).setPos(bp.above()), x, bp.getY() + 1, z, 0.0, 0.0, 0.0);
 		}
 	}
 	
@@ -211,8 +199,8 @@ public class LevelUtil {
 	public static boolean circleSlamFracture(@Nullable LivingEntity caster, Level level, Vec3 center, double radius, boolean noSound, boolean noParticle) {
 		return circleSlamFracture(caster, level, center, radius, noSound, noParticle, true);
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public static boolean circleSlamFracture(@Nullable LivingEntity caster, ClientLevel level, Vec3 center, double radius, boolean noSound, boolean noParticle) {
 		return circleSlamFracture(caster, level, center, radius, noSound, noParticle, true);
 	}

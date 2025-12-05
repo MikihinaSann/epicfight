@@ -1,16 +1,9 @@
 package yesman.epicfight.api.utils;
 
-import java.util.List;
-import java.util.function.Function;
-
-import org.apache.logging.log4j.Logger;
-import org.joml.Matrix4f;
-
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -33,9 +26,9 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.client.ClientHooks;
+import org.apache.logging.log4j.Logger;
+import org.joml.Matrix4f;
 import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.model.Mesh;
@@ -55,7 +48,9 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClie
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
-@OnlyIn(Dist.CLIENT)
+import java.util.List;
+import java.util.function.Function;
+
 public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 	private static final InteractionHand[] HANDS = InteractionHand.values();
 	
@@ -248,11 +243,9 @@ public class EntitySnapshot<T extends LivingEntityPatch<?>> {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	public static record RenderableFigure(Mesh mesh, ResourceLocation texture) {
+	public record RenderableFigure(Mesh mesh, ResourceLocation texture) {
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static class PlayerSnapshot extends EntitySnapshot<AbstractClientPlayerPatch<?>> {
 		protected final Matrix4f localMatrix;
 		protected final OpenMatrix4f[] unboundPoseMatrices;

@@ -1,18 +1,17 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss;
 
-import java.util.UUID;
-
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.entity.Entity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPEntityPairingPacket;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.UUID;
 
 public interface BossPatch<T extends Entity> {
 	BossEvent getBossEvent();
@@ -37,8 +36,8 @@ public interface BossPatch<T extends Entity> {
 	default <P extends LivingEntityPatch<?>> P cast() {
 		return (P)this;
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	default void processOwnerRecordPacket(FriendlyByteBuf buffer) {
 		boolean addOperation = buffer.readBoolean();
 		UUID eventUUID = buffer.readUUID();

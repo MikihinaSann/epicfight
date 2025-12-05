@@ -7,35 +7,35 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.input.InputManager;
-import yesman.epicfight.api.client.neoevent.MappedMovementInputUpdateEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
+import yesman.epicfight.api.event.EntityEventListener;
+import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.utils.LevelUtil;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.gameasset.Animations;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.server.SPSkillFeedback;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
 import yesman.epicfight.registry.entries.EpicFightSounds;
-import yesman.epicfight.skill.*;
-import yesman.epicfight.skill.SkillEvent.Side;
+import yesman.epicfight.skill.Skill;
+import yesman.epicfight.skill.SkillBuilder;
+import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
-	private AnimationAccessor<? extends StaticAnimation> chargingAnimation;
-	private AnimationAccessor<? extends StaticAnimation> shootAnimation;
+	private final AnimationAccessor<? extends StaticAnimation> chargingAnimation;
+	private final AnimationAccessor<? extends StaticAnimation> shootAnimation;
 	
 	public DemolitionLeapSkill(SkillBuilder<?> builder) {
 		super(builder);
@@ -43,29 +43,44 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		this.chargingAnimation = Animations.BIPED_DEMOLITION_LEAP_CHARGING;
 		this.shootAnimation = Animations.BIPED_DEMOLITION_LEAP;
 	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.CLIENT)
-	public void movementInputEvent(MappedMovementInputUpdateEvent event, SkillContainer skillContainer) {
-		if (skillContainer.getExecutor().isHoldingSkill(this)) {
-			InputManager.setInputState(event.getInputState().withJumping(false));
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER, priority = 1)
-	public void takeDamagePost(TakeDamageEvent.Pre event, SkillContainer container) {
-		if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && container.getDataManager().getDataValue(EpicFightSkillDataKeys.PROTECT_NEXT_FALL)) {
-			event.attachValueModifier(ValueModifier.multiplier(0.5F));
-			container.getDataManager().setData(EpicFightSkillDataKeys.PROTECT_NEXT_FALL, false);
-		}
-	}
-	
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER)
-	public void livingFall(LivingFallEvent event, SkillContainer skillContainer) {
-		if (LevelUtil.calculateLivingEntityFallDamage(event.getEntity(), event.getDamageMultiplier(), event.getDistance()) == 0) {
-			skillContainer.getDataManager().setData(EpicFightSkillDataKeys.PROTECT_NEXT_FALL, false);
-		}
-	}
-	
+
+    @Override
+    public void onInitiate(SkillContainer skillContainer, EntityEventListener eventListener) {
+        super.onInitiate(skillContainer, eventListener);
+
+        eventListener.registerEvent(
+            EpicFightClientEventHooks.Control.MAPPED_MOVEMENT_INPUT_UPDATE,
+            event -> {
+                if (skillContainer.getExecutor().isHoldingSkill(this)) {
+                    InputManager.setInputState(event.getInputState().withJumping(false));
+                }
+            },
+            this
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Entity.TAKE_DAMAGE_PRE,
+            event -> {
+                if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.PROTECT_NEXT_FALL)) {
+                    event.attachValueModifier(ValueModifier.multiplier(0.5F));
+                    skillContainer.getDataManager().setData(EpicFightSkillDataKeys.PROTECT_NEXT_FALL, false);
+                }
+            },
+            this,
+            1
+        );
+
+        eventListener.registerEvent(
+            EpicFightEventHooks.Entity.ON_FALL,
+            event -> {
+                if (LevelUtil.calculateLivingEntityFallDamage(event.getEntityPatch().getOriginal(), event.getDamageMultiplier(), event.getDistance()) == 0) {
+                    skillContainer.getDataManager().setData(EpicFightSkillDataKeys.PROTECT_NEXT_FALL, false);
+                }
+            },
+            this
+        );
+    }
+
 	@Override
 	public boolean isExecutableState(PlayerPatch<?> executor) {
 		return super.isExecutableState(executor) && executor.getOriginal().onGround();
@@ -92,8 +107,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		container.getExecutor().resetHolding();
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public void gatherHoldArguments(SkillContainer container, ControlEngine controlEngine, CompoundTag arguments) {
 		// Set player charging skill cause it won't be fired on feedback packet cause it jumped
 		controlEngine.setHoldingKey(SkillSlots.MOVER, this.getKeyMapping());
@@ -142,8 +156,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		return 12;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public KeyMapping getKeyMapping() {
 		return EpicFightKeyMappings.MOVER_SKILL;
 	}
@@ -159,8 +172,7 @@ public class DemolitionLeapSkill extends Skill implements ChargeableSkill {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public boolean getCustomConsumptionTooltips(SkillBookScreen.AttributeIconList consumptionList) {
 		consumptionList.add(Component.translatable("attribute.name.epicfight.stamina.consume.tooltip"), Component.translatable("attribute.name.epicfight.stamina_per_second.consume", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(this.consumption), "0.25"), SkillBookScreen.STAMINA_TEXTURE_INFO);
 		return true;

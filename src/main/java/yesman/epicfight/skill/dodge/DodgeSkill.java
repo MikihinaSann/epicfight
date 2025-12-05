@@ -5,16 +5,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.InputManager;
-import yesman.epicfight.client.input.InputUtils;
+import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.client.events.engine.ControlEngine;
+import yesman.epicfight.client.input.InputUtils;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
@@ -54,7 +52,6 @@ public class DodgeSkill extends Skill {
 		this.animations = builder.animations;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void gatherArguments(SkillContainer container, ControlEngine controlEngine, CompoundTag arguments) {
 		LocalPlayerPatch executor = container.getClientExecutor();
@@ -72,7 +69,6 @@ public class DodgeSkill extends Skill {
 		arguments.putFloat("yRot", degree);
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public List<Object> getTooltipArgsOfScreen(List<Object> list) {
 		list.add(ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(this.consumption));
 		return list;

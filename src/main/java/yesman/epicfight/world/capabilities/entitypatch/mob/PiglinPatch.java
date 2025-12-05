@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
 
-import java.util.Set;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
@@ -10,13 +8,12 @@ import net.minecraft.world.entity.ai.behavior.MeleeAttack;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.piglin.Piglin;
 import net.minecraft.world.entity.schedule.Activity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.client.animation.ClientAnimator;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightNetworkManager;
@@ -28,6 +25,8 @@ import yesman.epicfight.world.entity.ai.behavior.AnimatedCombatBehavior;
 import yesman.epicfight.world.entity.ai.behavior.MoveToTargetSinkStopInaction;
 import yesman.epicfight.world.entity.ai.brain.BrainRecomposer;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
+
+import java.util.Set;
 
 public class PiglinPatch extends HumanoidMobPatch<Piglin> {
 	public PiglinPatch(Piglin original) {
@@ -64,8 +63,7 @@ public class PiglinPatch extends HumanoidMobPatch<Piglin> {
 		super.onStartTracking(trackingPlayer);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 		super.entityPairing(packet);
 		

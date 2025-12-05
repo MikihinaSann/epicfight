@@ -71,7 +71,7 @@ public abstract class EpicFightRegistries {
     }
 
     @SubscribeEvent
-    public static void registerSkills(NewRegistryEvent event) {
+    public static void addNewRegistries(NewRegistryEvent event) {
         event.register(CONDITION);
         event.register(EXPANDED_ENTITY_DATA_ACCESSOR);
         event.register(SKILL);

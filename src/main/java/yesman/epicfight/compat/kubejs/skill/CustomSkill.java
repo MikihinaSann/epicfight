@@ -1,14 +1,5 @@
 package yesman.epicfight.compat.kubejs.skill;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Predicate;
-
-import com.mojang.datafixers.util.Pair;
-
 import dev.latvian.mods.kubejs.registry.BuilderBase;
 import dev.latvian.mods.kubejs.typings.Info;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,25 +9,27 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.bus.api.Event;
+import yesman.epicfight.api.event.EntityEventListener;
 import yesman.epicfight.client.gui.BattleModeGui;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.compat.kubejs.CallbackUtils;
 import yesman.epicfight.registry.entries.EpicFightCreativeTabs;
-import yesman.epicfight.skill.Skill;
-import yesman.epicfight.skill.SkillBuilder;
-import yesman.epicfight.skill.SkillCategories;
-import yesman.epicfight.skill.SkillCategory;
-import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.skill.*;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class CustomSkill extends Skill {
     public record DrawOnGuiContext(BattleModeGui getGui, SkillContainer getContainer, GuiGraphics getGuiGraphics, float getX, float getY) {}
     public record OnScreenContext(LocalPlayerPatch getLocalPlayerPatch, float getResolutionX, float getResolutionY) {}
     public record GetTooltipOnItem(ItemStack getItemStack, CapabilityItem getCap, PlayerPatch<?> getPlayerPatch) {}
 
-    private final Consumer<SkillContainer> onInitiate;
+    private final BiConsumer<SkillContainer, EntityEventListener> onInitiate;
     private final Consumer<SkillContainer> onRemoved;
     private final BiConsumer<SkillContainer, CompoundTag> executeOnServer;
     private final BiConsumer<SkillContainer, CompoundTag> executeOnClient;
@@ -62,14 +55,14 @@ public class CustomSkill extends Skill {
 
     public CustomSkill(CustomSkillBuilder builder) {
         super(
-	        new SkillBuilder<SkillBuilder<?>> (null)
-	            .setCategory(builder.category)
-	            .setCreativeTab(BuiltInRegistries.CREATIVE_MODE_TAB.get(builder.tab))
-	            .setActivateType(builder.activateType)
-	            .setResource(builder.resource)
-	            .setRegistryName(builder.id)
+            new SkillBuilder<SkillBuilder<?>> (null)
+                .setCategory(builder.category)
+                .setCreativeTab(BuiltInRegistries.CREATIVE_MODE_TAB.get(builder.tab))
+                .setActivateType(builder.activateType)
+                .setResource(builder.resource)
+                .setRegistryName(builder.id)
         );
-        
+
         this.onInitiate = builder.onInitiate;
         this.onRemoved = builder.onRemoved;
         this.executeOnServer = builder.executeOnServer;
@@ -89,11 +82,11 @@ public class CustomSkill extends Skill {
         this.onScreen = builder.onScreen;
         this.getTooltipOnItem = builder.getTooltipOnItem;
         this.getTooltipArgsOfScreen = builder.getTooltipArgsOfScreen;
-        
+
         if (builder.textureLocation != null) {
             this.textureLocation = builder.textureLocation;
         }
-        
+
         this.tab = builder.tab;
     }
 
@@ -156,9 +149,9 @@ public class CustomSkill extends Skill {
     }
 
     @Override
-    public void onInitiate(SkillContainer container) {
-        if (onInitiate != null) CallbackUtils.safeCallback(onInitiate, container, "Error while executing onInitiate for skill: " + getRegistryName());
-        super.onInitiate(container);
+    public void onInitiate(SkillContainer container, EntityEventListener entityEventListener) {
+        if (onInitiate != null) CallbackUtils.biSafeCallback(onInitiate, container, entityEventListener, "Error while executing onInitiate for skill: " + getRegistryName());
+        super.onInitiate(container, entityEventListener);
     }
 
     @Override
@@ -248,7 +241,7 @@ public class CustomSkill extends Skill {
         public Skill.ActivateType activateType = Skill.ActivateType.ONE_SHOT;
         public Skill.Resource resource = Skill.Resource.NONE;
 
-        private Consumer<SkillContainer> onInitiate;
+        private BiConsumer<SkillContainer, EntityEventListener> onInitiate;
         private Consumer<SkillContainer> onRemoved;
         private BiConsumer<SkillContainer, CompoundTag> executeOnServer;
         private BiConsumer<SkillContainer, CompoundTag> executeOnClient;
@@ -267,35 +260,13 @@ public class CustomSkill extends Skill {
         private Consumer<OnScreenContext> onScreen;
         private Function<GetTooltipOnItem, List<Component>> getTooltipOnItem;
         private Function<List<Object>, List<Object>> getTooltipArgsOfScreen;
-        
-        private List<Pair<String, SkillEventSubscriber>> clientEventListeners = new ArrayList<> ();
-        private List<Pair<String, SkillEventSubscriber>> serverEventListeners = new ArrayList<> ();
-        
+
         private ResourceLocation textureLocation;
 
         public CustomSkillBuilder(ResourceLocation id) {
             super(id);
         }
-        
-        public CustomSkillBuilder newClientEventListener(String caller, int priority, BiConsumer<Event, SkillContainer> eventSubscriber) {
-            this.clientEventListeners.add(Pair.of(caller, new SkillEventSubscriber(priority, eventSubscriber, null)));
-            
-            return this;
-        }
-        
-        public CustomSkillBuilder newServerEventListener(String caller, int priority, BiConsumer<Event, SkillContainer> eventSubscriber) {
-            this.serverEventListeners.add(Pair.of(caller, new SkillEventSubscriber(priority, eventSubscriber, null)));
-            
-            return this;
-        }
-        
-        public CustomSkillBuilder newCommonEventListener(String caller, int priority, BiConsumer<Event, SkillContainer> eventSubscriber) {
-            this.newClientEventListener(caller, priority, eventSubscriber);
-            this.newServerEventListener(caller, priority, eventSubscriber);
-            
-            return this;
-        }
-        
+
         @Info("""
                 Sets the creative tab that the skill book for this skill will be in.
                 Optional.
@@ -344,7 +315,7 @@ public class CustomSkill extends Skill {
         @Info("""
                 This is called when the skill is learned by the player.
                 """)
-        public CustomSkillBuilder onInitiate(Consumer<SkillContainer> consumer) {
+        public CustomSkillBuilder onInitiate(BiConsumer<SkillContainer, EntityEventListener> consumer) {
             this.onInitiate = consumer;
             return this;
         }
@@ -494,7 +465,7 @@ public class CustomSkill extends Skill {
             this.getTooltipArgsOfScreen = function;
             return this;
         }
-        
+
         @Override
         public Skill createObject() {
             return new CustomSkill(this);

@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities.projectile;
 
-import java.util.List;
-
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -10,11 +8,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.ThrownTrident;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import yesman.epicfight.api.utils.math.ValueModifier;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightNetworkManager;
@@ -27,11 +24,9 @@ import yesman.epicfight.skill.weaponinnate.EverlastingAllegiance;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
-import yesman.epicfight.world.damagesource.EpicFightDamageSource;
-import yesman.epicfight.world.damagesource.EpicFightDamageSources;
-import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
-import yesman.epicfight.world.damagesource.ExtraDamageInstance;
-import yesman.epicfight.world.damagesource.StunType;
+import yesman.epicfight.world.damagesource.*;
+
+import java.util.List;
 
 public class ThrownTridentPatch extends ProjectilePatch<ThrownTrident> {
 	private boolean innateActivated;
@@ -59,8 +54,7 @@ public class ThrownTridentPatch extends ProjectilePatch<ThrownTrident> {
 		}
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 		super.entityPairing(packet);
 		
@@ -77,15 +71,15 @@ public class ThrownTridentPatch extends ProjectilePatch<ThrownTrident> {
 	}
 	
 	@Override
-	public void onJoinWorld(ThrownTrident projectileEntity, EntityJoinLevelEvent event) {
-		super.onJoinWorld(projectileEntity, event);
+    public void onJoinWorld(ThrownTrident entity, Level level, boolean worldgenSpawn) {
+        super.onJoinWorld(entity, level, worldgenSpawn);
 		
 		if (!this.isLogicalClient()) {
-			EpicFightCapabilities.getUnparameterizedEntityPatch(projectileEntity.getOwner(), ServerPlayerPatch.class).ifPresent(playerpatch -> {
+			EpicFightCapabilities.getUnparameterizedEntityPatch(entity.getOwner(), ServerPlayerPatch.class).ifPresent(playerpatch -> {
 				SkillContainer container = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
 				
 				if (container.getSkill() instanceof EverlastingAllegiance) {
-					EverlastingAllegiance.setThrownTridentEntityId(container, projectileEntity.getId());
+					EverlastingAllegiance.setThrownTridentEntityId(container, entity.getId());
 				}
 			});
 			

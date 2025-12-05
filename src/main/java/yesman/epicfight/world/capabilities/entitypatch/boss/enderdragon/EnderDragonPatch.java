@@ -23,6 +23,7 @@ import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -30,12 +31,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.*;
@@ -53,6 +49,7 @@ import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.data.loot.function.SetSkillFunction;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.Armatures;
@@ -108,8 +105,7 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 		}
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void entityPairing(SPEntityPairingPacket packet) {
 		super.entityPairing(packet);
 		
@@ -119,8 +115,8 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void onJoinWorld(EnderDragon enderdragon, EntityJoinLevelEvent event) {
-		super.onJoinWorld(enderdragon, event);
+    public void onJoinWorld(EnderDragon entity, Level level, boolean worldgenSpawn) {
+		super.onJoinWorld(entity, level, worldgenSpawn);
 		
 		DragonPhaseInstance currentPhase = this.original.phaseManager.getCurrentPhase();
 		EnderDragonPhase<?> startPhase = (currentPhase == null || !(currentPhase instanceof PatchedDragonPhase)) ? PatchedPhases.FLYING : this.original.phaseManager.getCurrentPhase().getPhase();
@@ -174,8 +170,8 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
-		super.preTick(event);
+	public void preTick() {
+		super.preTick();
 		
 		if (this.original.getPhaseManager().getCurrentPhase().isSitting()) {
 			this.original.nearestCrystal = null;
@@ -219,8 +215,9 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void preTickServer(EntityTickEvent.Pre event) {
-		super.preTickServer(event);
+	public void preTickServer() {
+		super.preTickServer();
+
 		this.original.hurtTime = 2;
 		this.original.getSensing().tick();
 		this.updateMotion(true);
@@ -272,11 +269,11 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void preTickClient(EntityTickEvent.Pre event) {
+	public void preTickClient() {
 		this.xRootO = this.xRoot;
 		this.zRootO = this.zRoot;
 		
-		super.preTickClient(event);
+		super.preTickClient();
 		
 		this.ikSimulator.tick(null);
 		this.setIKHeightAndRootRotation();
@@ -324,8 +321,8 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 	}
 	
 	@Override
-	public void onDeath(LivingDeathEvent event) {
-		super.onDeath(event);
+	public void onDeath(DamageSource damageSource) {
+		super.onDeath(damageSource);
 
 		for (Player player : this.contributors.keySet()) {
 			ItemStack skillbook = new ItemStack(EpicFightItems.SKILLBOOK.get());
@@ -404,8 +401,7 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 		return true;
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public boolean isOutlineVisible(LocalPlayer player) {
 		return false;
 	}

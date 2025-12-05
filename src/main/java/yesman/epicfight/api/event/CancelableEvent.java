@@ -1,17 +1,15 @@
 package yesman.epicfight.api.event;
 
-/**
- * An interface for event instances that represents
- * {@link CancelableEventHook}
- */
+/// An interface for [Event] that can be canceled by subscribers
+/// [CancelableEventHook]
 public interface CancelableEvent {
-	/**
-	 * Returns whether the event is cancelled
-	 */
-	boolean hasCanceled();
-	
-	/**
-	 * Cancel the event
-	 */
-	void cancel();
+	/// Returns whether the event is cancelled
+	default boolean isCanceled() {
+        return ((Event)this).getEventContext().isCanceled();
+    }
+
+    /// Cancels the event
+    default void cancel() {
+        ((Event)this).getEventContext().onCanceled();
+    }
 }

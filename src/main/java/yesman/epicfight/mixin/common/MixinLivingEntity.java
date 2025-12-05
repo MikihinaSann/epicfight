@@ -18,7 +18,8 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
-import yesman.epicfight.api.neoevent.EntityRemoveEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.types.entity.EntityRemovedEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPAbsorption;
@@ -113,7 +114,7 @@ public abstract class MixinLivingEntity {
 		}
 	}
 	
-	@Inject(at = @At(value = "TAIL"), method = "setAbsorptionAmount(F)V", cancellable = true)
+	@Inject(at = @At(value = "TAIL"), method = "setAbsorptionAmount(F)V")
 	private void epicfight$setAbsorptionAmount(float absorptionAmount, CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		
@@ -122,13 +123,13 @@ public abstract class MixinLivingEntity {
 		}
 	}
 	
-	@Inject(at = @At(value = "TAIL"), method = "makePoofParticles()V", cancellable = true)
+	@Inject(at = @At(value = "TAIL"), method = "makePoofParticles()V")
 	private void epicfight$makePoofParticles(CallbackInfo info) {
 		LivingEntity self = (LivingEntity)((Object)this);
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(self, LivingEntityPatch.class).ifPresent(entitypatch -> {
-			// Fire killed event manually
-			entitypatch.onRemoved(new EntityRemoveEvent(Entity.RemovalReason.KILLED, self));
+            // We needed a hook when an entity is removed by death, makePoofParticles provided a perfect place to achieve it
+            EpicFightEventHooks.Entity.ON_REMOVED.postWithListener(new EntityRemovedEvent(Entity.RemovalReason.KILLED, entitypatch), entitypatch.getEventListener());
 		});
 	}
 

@@ -1,10 +1,6 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.Optional;
-
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Pose;
@@ -13,9 +9,11 @@ import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
-@OnlyIn(Dist.CLIENT)
+import java.util.Optional;
+
 public class ConcurrentLinkAnimation extends DynamicAnimation implements AnimationAccessor<ConcurrentLinkAnimation> {
 	protected AssetAccessor<? extends StaticAnimation> nextAnimation;
 	protected AssetAccessor<? extends DynamicAnimation> currentAnimation;
@@ -100,8 +98,7 @@ public class ConcurrentLinkAnimation extends DynamicAnimation implements Animati
 		this.nextAnimation = animation;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public Optional<JointMaskEntry> getJointMaskEntry(LivingEntityPatch<?> entitypatch, boolean useCurrentMotion) {
 		return this.nextAnimation.get().getJointMaskEntry(entitypatch, useCurrentMotion);
 	}

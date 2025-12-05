@@ -1,18 +1,9 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.List;
-import java.util.Optional;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import yesman.epicfight.api.animation.AnimationClip;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.animation.LivingMotions;
-import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.animation.property.AnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.StaticAnimationProperty;
 import yesman.epicfight.api.asset.AssetAccessor;
@@ -22,8 +13,12 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.QuaternionUtils;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.Optional;
 
 public class AimAnimation extends StaticAnimation {
 	public DirectStaticAnimation lookForward;
@@ -119,14 +114,12 @@ public class AimAnimation extends StaticAnimation {
 		return this.lookForward.getProperty(propertyType);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public Layer.Priority getPriority() {
 		return this.lookForward.getProperty(ClientAnimationProperties.PRIORITY).orElse(Layer.Priority.LOWEST);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public Layer.LayerType getLayerType() {
 		return this.lookForward.getProperty(ClientAnimationProperties.LAYER_TYPE).orElse(Layer.LayerType.BASE_LAYER);
 	}

@@ -39,7 +39,7 @@ public abstract class AbstractSimulator<KEY, B extends SimulationObjectBuilder, 
 	}
 	
 	/**
-	 * Add a simulation object and run. Remove when @Param until returns false
+	 * AddEntity a simulation object and run. Remove when @Param until returns false
 	 */
 	@Override
 	public void runUntil(KEY key, PV provider, B builder, BooleanSupplier until) {
@@ -47,7 +47,7 @@ public abstract class AbstractSimulator<KEY, B extends SimulationObjectBuilder, 
 	}
 	
 	/**
-	 * Add an undeleted simulation object. Run simulation when @Param when returns true
+	 * AddEntity an undeleted simulation object. Run simulation when @Param when returns true
 	 */
 	@Override
 	public void runWhen(KEY key, PV provider, B builder, BooleanSupplier when) {

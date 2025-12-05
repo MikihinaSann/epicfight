@@ -21,7 +21,7 @@ public final class EpicFightBlockEntities {
 		REGISTRY.register(
 			  "fracture_block"
 			, () ->
-				new UniversalBlockEntityType<FractureBlockEntity>(
+				new UniversalBlockEntityType<>(
 					  FractureBlockEntity::new
 					, ImmutableSet.of(EpicFightBlocks.FRACTURE.get())
 					, Util.fetchChoiceType(References.BLOCK_ENTITY, "fracture_block")

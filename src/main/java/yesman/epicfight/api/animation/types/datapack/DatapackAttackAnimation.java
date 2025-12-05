@@ -7,8 +7,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.animation.Joint;
@@ -25,7 +23,6 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import java.util.Locale;
 import java.util.NoSuchElementException;
 
-@OnlyIn(Dist.CLIENT)
 public class DatapackAttackAnimation extends AttackAnimation implements DatapackAnimation<DatapackAttackAnimation> {
 	private static Phase[] convertListTagToPhases(ListTag listTag, Armature armature) {
 		float start = 0.0F;

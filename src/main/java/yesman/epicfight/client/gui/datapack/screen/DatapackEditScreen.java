@@ -211,8 +211,8 @@ public class DatapackEditScreen extends Screen {
 	};
 	
 	public DatapackEditScreen(@Nullable Screen parentScreen) {
-		super(Component.translatable(EpicFightMod.format("gui.%s.datapack_edit")));
-		
+		super(Component.translatable(LangKeys.GUI_TITLE_DATAPACK_EDITOR));
+
 		this.parentScreen = parentScreen;
 		this.minecraft = parentScreen.getMinecraft();
 		this.font = this.minecraft.font;
@@ -605,7 +605,7 @@ public class DatapackEditScreen extends Screen {
 					DatapackAnimation<? extends StaticAnimation> animation = InstantiateInvoker.invoke(invocationCommand, animationClass).getResult();
 					
 					if (!animation.registryName().equals(rl)) {
-						throw new IllegalArgumentException("Initializer registry name " + animation.registryName() + " is not matching with file path " + rl);
+						throw new IllegalArgumentException("Initializer registry identifier " + animation.registryName() + " is not matching with file path " + rl);
 					}
 					
 					if (streamSupplier != null) {
@@ -804,8 +804,8 @@ public class DatapackEditScreen extends Screen {
 		private final ModelPreviewer modelPreviewer;
 		
 		public WeaponTypeTab() {
-			super(Component.translatable(EpicFightMod.format("gui.%s.tab.datapack.weapon_type")), WeaponTypeReloadListener.DIRECTORY, null);
-			
+			super(Component.translatable(LangKeys.GUI_TAB_DATAPACK_WEAPON_TYPE), WeaponTypeReloadListener.DIRECTORY, null);
+
 			Screen parentScreen = DatapackEditScreen.this;
 			Font font = DatapackEditScreen.this.font;
 			ScreenRectangle rect = DatapackEditScreen.this.getRectangle();
@@ -1238,8 +1238,8 @@ public class DatapackEditScreen extends Screen {
 		}
 		
 		public ItemCapabilityTab() {
-			super(Component.translatable(EpicFightMod.format("gui.%s.tab.datapack.item_capability")), ItemCapabilityReloadListener.DIRECTORY, BuiltInRegistries.ITEM);
-			
+			super(Component.translatable(LangKeys.GUI_TAB_DATAPACK_ITEM_CAPABILITY), ItemCapabilityReloadListener.DIRECTORY, BuiltInRegistries.ITEM);
+
 			Screen parentScreen = DatapackEditScreen.this;
 			
 			this.modelPreviewer = new ModelPreviewer(20, 15, 0, 150, HorizontalSizing.LEFT_RIGHT, null, Armatures.BIPED, Meshes.BIPED);
@@ -2203,10 +2203,10 @@ public class DatapackEditScreen extends Screen {
 		private PopupBox.ArmaturePopupBox armaturePopupBox;
 		
 		public MobCapabilityTab() {
-			super(Component.translatable(EpicFightMod.format("gui.%s.tab.datapack.mob_patch")), MobPatchReloadListener.DIRECTORY, BuiltInRegistries.ENTITY_TYPE, (entityType) -> {
+			super(Component.translatable(LangKeys.GUI_TAB_DATAPACK_MOB_PATCH), MobPatchReloadListener.DIRECTORY, BuiltInRegistries.ENTITY_TYPE, (entityType) -> {
 				return entityType.getCategory() != MobCategory.MISC && entityType != EntityType.ENDER_DRAGON;
 			});
-			
+
 			this.inputComponentsList = new InputComponentList<>(DatapackEditScreen.this, 0, 0, 0, 30) {
 				@Override
 				public void importTag(CompoundTag tag) {

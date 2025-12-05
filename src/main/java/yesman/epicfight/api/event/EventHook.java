@@ -1,91 +1,99 @@
 package yesman.epicfight.api.event;
 
-import yesman.epicfight.api.client.event.EpicFightClientHooks;
-import yesman.epicfight.api.event.subscriptions.DefaultEventSubscription;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.event.subscription.DefaultEventSubscription;
+import yesman.epicfight.api.utils.side.LogicalSide;
 
 import java.util.TreeMap;
+import java.util.stream.Stream;
 
-/**
- * This class handles event subscription in Epic Fight API, inspired by
- * Forge/NeoForge's EventHook, and Fabric's Callback/EventHook
- * <p>
- * Note this object isn't created each time a event is occur. it only
- * defines event type and its subscriptions
- * <p>
- * To create custom events, follow these codebase: {@link EpicFightHooks}
- * and {@link EpicFightClientHooks} for client-side only events
- */
+/// An event bus that is dedicated to one [Event] type
+///
+/// Note that this object isn't created each time an event is fired. it
+/// only defines event type and its subscriptions. Look at [Event]
+/// which hold event states and arguments
+///
+/// To create custom events, follow these codebase: [EpicFightEventHooks]
+/// and [EpicFightClientEventHooks] for client-side only events
 public class EventHook<T extends Event> {
-	/**
-	 * Treemap to order subscribers in descending order
-	 */
-	final TreeMap<Integer, EventListener<T>> subscriptions = new TreeMap<> ((i1, i2) -> Integer.compare(i2, i1));
-	
-	/**
-	 * Executes the subscribers' task by their priorities
-	 * @return whether the event is canceled. Always returns false since the event is not cancelable
-	 */
-	public boolean post(T eventInstance) {
-		EventContext eventContext = new EventContext();
-		
-		for (EventListener<T> subscriber : this.subscriptions.values()) {
-			eventContext.subscriptionStart(subscriber.name());
-			
-			if (subscriber.subscription() instanceof DefaultEventSubscription<T> passiveSubscription) {
-				passiveSubscription.fire(eventInstance);
-				eventContext.onCalled();
-			}
-		}
-		
-		eventContext.subscriptionEnd();
-		
-		return false;
-	}
-	
-	/**
-	 * Register an event with default name and priority
-	 */
+	/// Treemap to order subscribers in descending order
+	final TreeMap<Integer, EventListener<T>> subscribers = new TreeMap<> ((i1, i2) -> Integer.compare(i2, i1));
+
+    /// Determines if the event is only called in logical side
+    protected final LogicalSide logicalSide;
+
+    protected EventHook(LogicalSide logicalSide) {
+        this.logicalSide = logicalSide;
+    }
+
+    /// Post the event to subscribers and execute tasks by their priority in descending order
+    public T post(T event) {
+        for (EventListener<T> subscriber : this.subscribers.values()) {
+            if (subscriber.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
+                passiveSubscription.fire(event);
+            }
+        }
+
+        return event;
+    }
+
+    /// Post the event to subscribers including from [EntityEventListener], and execute tasks by their priority in descending order
+    public T postWithListener(T event, EntityEventListener eventListener) {
+        if (!(event instanceof LivingEntityPatchEvent)) {
+            throw new IllegalArgumentException("EventHook instance must be a subtype of LivingEntityPatchEvent to be posted with EntityEventListener");
+        }
+
+        Stream.concat(this.subscribers.values().stream(), eventListener.getListenersFor(this))
+            .sorted((o1, o2) -> Integer.compare(o2.priority(), o1.priority()))
+            .forEach(subscriber -> {
+                if (subscriber.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
+                    passiveSubscription.fire(event);
+                }
+            });
+
+        return event;
+    }
+
+	/// Registers an event with default identifier and priority
 	public void registerEvent(DefaultEventSubscription<T> subscription) {
 		this.registerEvent(subscription, getDefaultSubscriberName(), 0);
 	}
 	
-	/**
-	 * Register an event with default name
-	 * @param priority determines the order of the event in descending order
-	 */
+	/// Registers an event with default identifier
+	/// @param priority determines the order of the event in descending order
 	public void registerEvent(DefaultEventSubscription<T> subscription, int priority) {
 		this.registerEvent(subscription, getDefaultSubscriberName(), priority);
 	}
 	
-	/**
-	 * Register an event with default priority
-	 * @param name you can specify the subscriber name to be referenced by other events, it will be stored
-	 * 			   at {@link EventContext}
-	 */
+	/// Registers an event with default priority
+	/// @param name specify the subscriber identifier to be referenced by other events, it will be stored at {@link EventContext}
 	public void registerEvent(DefaultEventSubscription<T> subscription, String name) {
 		this.registerEvent(subscription, name, 0);
 	}
 	
-	/**
-	 * Register an event with full parameters
-	 */
+	/// Registers an event with full parameters
 	public void registerEvent(DefaultEventSubscription<T> subscription, String name, int priority) {
-		this.subscriptions.put(priority, new EventListener<>(name, subscription));
+		this.subscribers.put(priority, new EventListener<> (name, priority, subscription));
 	}
-	
-	/**
-	 * Returns a class name who called register_event methods
-	 */
+
+    public final LogicalSide logicalSide() {
+        return this.logicalSide;
+    }
+
+	/// Returns a class identifier who called register_event methods
 	protected static String getDefaultSubscriberName() {
 		StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
         StackTraceElement caller = stackTraceElements[2];
         return caller.getClassName();
 	}
 	
-	/**
-	 * Defines a default event type
-	 */
+	/// Defines a default event type
 	public static <T extends Event> EventHook<T> createEventHook() {
-		return new EventHook<>();
+		return new EventHook<> (LogicalSide.BOTH);
 	}
+
+    /// Defines a sided default event type
+    public static <T extends Event> EventHook<T> createSidedEventHook(LogicalSide logicalSide) {
+        return new EventHook<> (logicalSide);
+    }
 }

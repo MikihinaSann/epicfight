@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities.projectile;
 
-import java.util.Map;
-
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -9,9 +7,9 @@ import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.ProjectileImpactEvent;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightParticles;
@@ -22,6 +20,8 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.RangedWeaponCapability;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 
+import java.util.Map;
+
 public abstract class ProjectilePatch<T extends Projectile> extends EntityPatch<T> {
 	protected float impact;
 	protected float armorNegation;
@@ -31,10 +31,12 @@ public abstract class ProjectilePatch<T extends Projectile> extends EntityPatch<
 	public ProjectilePatch(T original) {
 		super(original);
 	}
-	
-	@Override
-	public void onJoinWorld(T projectileEntity, EntityJoinLevelEvent event) {
-		Entity shooter = projectileEntity.getOwner();
+
+    @Override
+    public void onJoinWorld(T entity, Level level, boolean worldgenSpawn) {
+        super.onJoinWorld(entity, level, worldgenSpawn);
+
+		Entity shooter = entity.getOwner();
 		boolean flag = true;
 		
 		if (shooter != null && shooter instanceof LivingEntity livingshooter) {
@@ -56,7 +58,7 @@ public abstract class ProjectilePatch<T extends Projectile> extends EntityPatch<
 								: (float)EpicFightAttributes.IMPACT.value().getDefaultValue();
 					
 					if (modifierMap.containsKey(EpicFightAttributes.MAX_STRIKES)) {
-						this.setMaxStrikes(projectileEntity, (int)modifierMap.get(EpicFightAttributes.MAX_STRIKES).amount());
+						this.setMaxStrikes(entity, (int)modifierMap.get(EpicFightAttributes.MAX_STRIKES).amount());
 					}
 				}
 				
@@ -81,7 +83,7 @@ public abstract class ProjectilePatch<T extends Projectile> extends EntityPatch<
 	/**
 	 * @return true if event should be canceled
 	 */
-	public boolean onProjectileImpact(ProjectileImpactEvent event) {
+	public boolean onProjectileImpact(HitResult hitResult) {
 		return false;
 	}
 	

@@ -1,13 +1,8 @@
 package yesman.epicfight.compat.skinlayer3d;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.function.Function;
-
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import dev.tr7zw.skinlayers.SkinLayersModBase;
 import dev.tr7zw.skinlayers.SkinUtil;
 import dev.tr7zw.skinlayers.accessor.PlayerEntityModelAccessor;
@@ -35,18 +30,15 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
-import yesman.epicfight.compat.skinlayer3d.client.SkinLayer3DTransformer;
-import yesman.epicfight.api.client.neoevent.PatchedRenderersEvent;
-import yesman.epicfight.api.neoevent.EntityRemoveEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.mesh.HumanoidMesh;
@@ -54,7 +46,12 @@ import yesman.epicfight.client.renderer.patched.entity.PPlayerRenderer;
 import yesman.epicfight.client.renderer.patched.layer.ModelRenderLayer;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClientPlayerPatch;
 import yesman.epicfight.compat.ICompatModule;
+import yesman.epicfight.compat.skinlayer3d.client.SkinLayer3DTransformer;
 import yesman.epicfight.main.EpicFightMod;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
 
 public class SkinLayer3DCompat implements ICompatModule {
 	public static final DeferredRegister<AttachmentType<?>> REGISTRY = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, EpicFightMod.MODID);
@@ -75,30 +72,27 @@ public class SkinLayer3DCompat implements ICompatModule {
 	public void onGameEventBus(IEventBus eventBus) {
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
 		REGISTRY.register(eventBus);
-		
-		eventBus.<PatchedRenderersEvent.Modify>addListener((event) -> {
-			if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
-				playerrenderer.addPatchedLayerAlways(CustomLayerFeatureRenderer.class, new EpicFight3DSkinLayerRenderer());
-			}
-		});
+
+        EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
+            if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
+                playerrenderer.addPatchedLayerAlways(CustomLayerFeatureRenderer.class, new EpicFight3DSkinLayerRenderer());
+            }
+        });
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onGameEventBusClient(IEventBus eventBus) {
-		eventBus.<EntityRemoveEvent>addListener(event -> {
-			event.getEntity().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
-				skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
-				skinlayerMesh.partMeshes.clear();
-			});
-		});
+        EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
+            event.getEntityPatch().getOriginal().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
+                skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
+                skinlayerMesh.partMeshes.clear();
+            });
+        });
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static final class SkinLayer3DMeshes {
 		private final Map<PlayerModelPart, SkinnedMesh> partMeshes = Maps.newHashMap();
 		
@@ -121,7 +115,6 @@ public class SkinLayer3DCompat implements ICompatModule {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static class EpicFight3DSkinLayerRenderer extends ModelRenderLayer<AbstractClientPlayer, AbstractClientPlayerPatch<AbstractClientPlayer>, PlayerModel<AbstractClientPlayer>, CustomLayerFeatureRenderer, HumanoidMesh> {
 		private final Map<PlayerModelPart, Function<Player, Boolean>> partVisibilities = Maps.newHashMap();
 		

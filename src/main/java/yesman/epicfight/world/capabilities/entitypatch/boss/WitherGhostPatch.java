@@ -1,8 +1,8 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss;
 
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
@@ -18,10 +18,10 @@ public class WitherGhostPatch extends MobPatch<WitherGhostClone> {
 	public WitherGhostPatch(WitherGhostClone entity) {
 		super(entity);
 	}
-	
-	@Override
-	public void onJoinWorld(WitherGhostClone original, EntityJoinLevelEvent event) {
-		super.onJoinWorld(original, event);
+
+    @Override
+    public void onJoinWorld(WitherGhostClone entity, Level level, boolean worldgenSpawn) {
+        super.onJoinWorld(entity, level, worldgenSpawn);
 		
 		if (!this.original.isNoAi()) {
 			this.playAnimation(Animations.WITHER_CHARGE, 0.0F);

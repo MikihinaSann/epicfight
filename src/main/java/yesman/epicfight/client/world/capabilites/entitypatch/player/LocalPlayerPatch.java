@@ -3,8 +3,10 @@ package yesman.epicfight.client.world.capabilites.entitypatch.player;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -15,10 +17,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.animation.Keyframe;
 import yesman.epicfight.api.animation.Pose;
@@ -72,23 +71,23 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		this.minecraft = Minecraft.getInstance();
 	}
 	
-	public void onRespawnLocalPlayer(ClientPlayerNetworkEvent.Clone event) {
-		this.onJoinWorld(event.getNewPlayer(), new EntityJoinLevelEvent(event.getNewPlayer(), event.getNewPlayer().level()));
+	public void onRespawnLocalPlayer(LocalPlayer newPlayer) {
+		this.onJoinWorld(newPlayer, newPlayer.level(), false);
 	}
 
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
+	public void preTick() {
 		if (this.isHoldingAny()) {
 			this.chargingTicksO = this.getChargingTicks();
 		} else {
 			this.chargingTicksO = 0;
 		}
 		
-		super.preTick(event);
+		super.preTick();
 	}
 
 	@Override
-	public void postTickClient(EntityTickEvent.Post event) {
+	public void postTickClient() {
 		// Handle first person animation
 		final AssetAccessor<? extends StaticAnimation> currentPlaying = this.firstPersonLayer.animationPlayer.getRealAnimation();
 		
@@ -99,15 +98,17 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			
 			Optional<DirectStaticAnimation> optPovAnimation = layer.animationPlayer.getRealAnimation().get().getProperty(ClientAnimationProperties.POV_ANIMATION);
 			Optional<PovSettings> optPovSettings = layer.animationPlayer.getRealAnimation().get().getProperty(ClientAnimationProperties.POV_SETTINGS);
-			
-			optPovAnimation.ifPresent(povAnimation -> {
-				if (!povAnimation.equals(currentPlaying.get())) {
-					this.firstPersonLayer.playAnimation(povAnimation, layer.animationPlayer.getRealAnimation(), this, 0.0F);
-					this.povSettings = optPovSettings.get();
-				}
-			});
-			
-			return !optPovAnimation.isPresent();
+
+            if (optPovAnimation.isPresent() && optPovSettings.isPresent()) {
+                DirectStaticAnimation povAnimation = optPovAnimation.get();
+
+                if (!povAnimation.equals(currentPlaying.get())) {
+                    this.firstPersonLayer.playAnimation(povAnimation, layer.animationPlayer.getRealAnimation(), this, 0.0F);
+                    this.povSettings = optPovSettings.get();
+                }
+            }
+
+			return optPovAnimation.isEmpty();
 		});
 		
 		if (noPovAnimation && !currentPlaying.equals(Animations.EMPTY_ANIMATION)) {
@@ -417,7 +418,14 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			}
 		}
 	}
-	
+
+    @Override
+    public void playLocalSound(Holder<SoundEvent> sound) {
+        // Playing sound twice fixes volume issue...
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(sound.value(), 1.0F, 1.0F));
+        Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(sound.value(), 1.0F, 1.0F));
+    }
+
 	/**
 	 * Judge the next behavior depending on player's item preference and where he's looking at
 	 * @return true if the next action is swing a weapon, false if the next action is breaking a block

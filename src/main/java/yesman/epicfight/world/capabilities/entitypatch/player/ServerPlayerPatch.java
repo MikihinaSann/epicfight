@@ -16,18 +16,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraft.world.level.Level;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
-import yesman.epicfight.api.neoevent.InnateSkillChangeEvent;
-import yesman.epicfight.api.neoevent.playerpatch.DodgeSuccessEvent;
-import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SetTargetEvent;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.IdentifierProvider;
+import yesman.epicfight.api.event.types.player.ChangeInnateSkillEvent;
+import yesman.epicfight.api.event.types.player.SetTargetEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.EpicFightNetworkManager.PayloadBundleBuilder;
@@ -37,7 +33,10 @@ import yesman.epicfight.network.server.SPInitSkills;
 import yesman.epicfight.network.server.SPModifyPlayerData;
 import yesman.epicfight.network.server.SPSkillFeedback;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
+import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.HoldableSkill;
+import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
 import java.util.HashMap;
@@ -49,11 +48,31 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	
 	public ServerPlayerPatch(ServerPlayer entity) {
 		super(entity);
+
+        this.getEventListener().registerEvent(
+            EpicFightEventHooks.Entity.DELIEVER_DAMAGE_POST,
+            event -> {
+                if (!event.getDamageSource().shouldChargeWeapon()) return;
+
+                SkillContainer container = this.getSkill(SkillSlots.WEAPON_INNATE);
+                ItemStack mainHandItem = this.getOriginal().getMainHandItem();
+
+                if (!container.isFull() && !container.isActivated() && container.hasSkill(EpicFightCapabilities.getItemStackCapability(mainHandItem).getInnateSkill(this, mainHandItem))) {
+                    float value = container.getResource() + event.getModifiedDamage();
+
+                    if (value > 0.0F) {
+                        container.getSkill().setConsumptionSynchronize(container, value);
+                    }
+                }
+            },
+            IdentifierProvider.permanent(),
+            10
+        );
 	}
 	
 	@Override
-	public void onJoinWorld(ServerPlayer player, EntityJoinLevelEvent event) {
-		super.onJoinWorld(player, event);
+	public void onJoinWorld(ServerPlayer player, Level level, boolean worldgenSpawn) {
+		super.onJoinWorld(player, level, worldgenSpawn);
 
         PayloadBundleBuilder payloadBundleBuilder = PayloadBundleBuilder.beginWith(new SPInitSkills(this.getPlayerSkills()));
         payloadBundleBuilder.and(new BiDirectionalSyncEmoteSlots(this));
@@ -65,6 +84,7 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		PayloadBundleBuilder payloadBundleBuilder = PayloadBundleBuilder.create();
 		SPChangeLivingMotion msg = new SPChangeLivingMotion(this.getOriginal().getId());
 		msg.putEntries(this.getAnimator().getLivingAnimations().entrySet());
+		
 		payloadBundleBuilder.and(msg);
 		
 		this.getPlayerSkills().listSkillContainers().filter(skillContainer -> !skillContainer.isEmpty() && skillContainer.getSkill().getCategory().shouldSynchronize()).forEach(skillContainer -> {
@@ -78,11 +98,11 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	}
 	
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
-		super.preTick(event);
+	public void preTick() {
+		super.preTick();
 		this.updatedMotionCurrentTick = false;
 	}
-	
+
 	@Override
 	public void updateMotion(boolean considerInaction) {
 	}
@@ -100,8 +120,8 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		
 		CapabilityItem mainHandCap = (hand == InteractionHand.MAIN_HAND) ? toCap : this.getHoldingItemCapability(InteractionHand.MAIN_HAND);
 		mainHandCap.changeWeaponInnateSkill(this, (hand == InteractionHand.MAIN_HAND) ? to : this.original.getMainHandItem());
-		NeoForge.EVENT_BUS.post(new InnateSkillChangeEvent(this, from, fromCap, to, toCap, hand));
-		
+        EpicFightEventHooks.Player.CHANGE_INNATE_SKILL.postWithListener(new ChangeInnateSkillEvent(this, from, fromCap, to, toCap, hand), this.getEventListener());
+
 		if (hand == InteractionHand.OFF_HAND) {
 			if (!from.isEmpty()) {
 				from.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
@@ -222,22 +242,8 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		if (this.getOriginal().getAbilities().invulnerable && !damageSource.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
 			return AttackResult.missed(amount); 
 		}
-		
-		TakeDamageEvent.Income takeDamageEvent$pre = new TakeDamageEvent.Income(this, damageSource, amount);
-		
-		if (PlayerPatchEvent.postAndFireSkillListeners(takeDamageEvent$pre).isCanceled()) {
-			return new AttackResult(takeDamageEvent$pre.getResult(), takeDamageEvent$pre.getDamage());
-		} else {
-			return super.tryHurt(damageSource, amount);
-		}
-	}
-	
-	@Override
-	public void onDodgeSuccess(DamageSource damageSource, Vec3 location) {
-		super.onDodgeSuccess(damageSource, location);
 
-		DodgeSuccessEvent dodgeSuccessEvent = new DodgeSuccessEvent(this, damageSource, location);
-		PlayerPatchEvent.postAndFireSkillListeners(dodgeSuccessEvent);
+        return super.tryHurt(damageSource, amount);
 	}
 
 	@Override
@@ -278,8 +284,9 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	
 	public void setAttackTarget(LivingEntity entity) {
 		SetTargetEvent event = new SetTargetEvent(this, entity);
-		if (NeoForge.EVENT_BUS.post(event).isCanceled()) return;
-		
+        EpicFightEventHooks.Player.SET_TARGET.postWithListener(event, this.getEventListener());
+        if (event.isCanceled()) return;
+
 		this.attackTarget = event.getTarget();
 	}
 	

@@ -1,10 +1,5 @@
 package yesman.epicfight.skill.guard;
 
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
@@ -13,12 +8,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
+import yesman.epicfight.api.event.EntityEventListener;
+import yesman.epicfight.api.event.types.entity.TakeDamageEvent;
 import yesman.epicfight.gameasset.Animations;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
@@ -27,13 +21,16 @@ import yesman.epicfight.registry.entries.EpicFightSounds;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillDataManager;
-import yesman.epicfight.skill.SkillEvent;
-import yesman.epicfight.skill.SkillEvent.Side;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 public class ParryingSkill extends GuardSkill {
 	public static GuardSkill.Builder createActiveGuardBuilder() {
@@ -64,46 +61,50 @@ public class ParryingSkill extends GuardSkill {
 			this.parryWindow = 8;
 		}
 	}
-	
+
+    @Override
+    public void onInitiate(SkillContainer skillContainer, EntityEventListener eventListener) {
+        super.onInitiate(skillContainer, eventListener);
+
+        skillContainer.runOnServer(playerpatch -> {
+            CapabilityItem itemCapability = skillContainer.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND);
+
+            if (this.isHoldingWeaponAvailable(skillContainer.getExecutor(), itemCapability, BlockType.GUARD) && this.isExecutableState(skillContainer.getExecutor())) {
+                skillContainer.getExecutor().getOriginal().startUsingItem(InteractionHand.MAIN_HAND);
+            }
+
+            int lastActive = skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE);
+
+            if (skillContainer.getExecutor().getOriginal().tickCount - lastActive > this.parryWindow * 2) {
+                skillContainer.getDataManager().setData(EpicFightSkillDataKeys.LAST_ACTIVE, skillContainer.getExecutor().getOriginal().tickCount);
+            }
+        });
+    }
+
 	@Override
-	public void startHolding(SkillContainer container) {
-		super.startHolding(container);
+	public void startHolding(SkillContainer skillContainer) {
+		super.startHolding(skillContainer);
 		
-		container.runOnServer(serverExecutor -> {
-			 int lastActive = container.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE);
+		skillContainer.runOnServer(serverExecutor -> {
+			 int lastActive = skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE);
 			 
 			 if (serverExecutor.getOriginal().tickCount - lastActive > this.parryWindow * 2) {
-				 container.getDataManager().setDataSync(EpicFightSkillDataKeys.LAST_ACTIVE, serverExecutor.getOriginal().tickCount);
+				 skillContainer.getDataManager().setDataSync(EpicFightSkillDataKeys.LAST_ACTIVE, serverExecutor.getOriginal().tickCount);
 			 }
 		});
 	}
-
-	@SkillEvent(caller = EpicFightMod.MODID, side = Side.SERVER, override = true)
-	public void serverRightClickItemEvent(PlayerInteractEvent.RightClickItem event, SkillContainer skillContainer) {
-		CapabilityItem itemCapability = skillContainer.getExecutor().getHoldingItemCapability(InteractionHand.MAIN_HAND);
-		
-		if (this.isHoldingWeaponAvailable(skillContainer.getExecutor(), itemCapability, BlockType.GUARD) && this.isExecutableState(skillContainer.getExecutor())) {
-			skillContainer.getExecutor().getOriginal().startUsingItem(InteractionHand.MAIN_HAND);
-		}
-		
-		int lastActive = skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE);
-		
-		if (skillContainer.getExecutor().getOriginal().tickCount - lastActive > this.parryWindow * 2) {
-			skillContainer.getDataManager().setData(EpicFightSkillDataKeys.LAST_ACTIVE, skillContainer.getExecutor().getOriginal().tickCount);
-		}
-	}
 	
 	@Override
-	public void guard(SkillContainer container, CapabilityItem itemCapability, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
-		if (this.isHoldingWeaponAvailable(event.getPlayerPatch(), itemCapability, BlockType.ADVANCED_GUARD)) {
+	public void guard(SkillContainer container, CapabilityItem itemCapability, ServerPlayerPatch playerPatch, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
+		if (this.isHoldingWeaponAvailable(playerPatch, itemCapability, BlockType.ADVANCED_GUARD)) {
 			DamageSource damageSource = event.getDamageSource();
 			Entity offender = getOffender(damageSource);
 			
 			if (offender != null && this.isBlockableSource(damageSource, true)) {
-				ServerPlayer serverplayer = event.getPlayerPatch().getOriginal();
+				ServerPlayer serverplayer = playerPatch.getOriginal();
 				boolean successParrying = serverplayer.tickCount - container.getDataManager().getDataValue(EpicFightSkillDataKeys.LAST_ACTIVE) < this.parryWindow;
 				float penalty = container.getDataManager().getDataValue(EpicFightSkillDataKeys.PENALTY);
-				event.getPlayerPatch().playSound(EpicFightSounds.CLASH.get(), -0.05F, 0.1F);
+				playerPatch.playSound(EpicFightSounds.CLASH.get(), -0.05F, 0.1F);
 				EpicFightParticles.HIT_BLUNT.get().spawnParticleWithArgument(serverplayer.serverLevel(), HitParticleType.FRONT_OF_EYES, HitParticleType.ZERO, serverplayer, offender);
 				
 				if (successParrying) {
@@ -123,29 +124,28 @@ public class ParryingSkill extends GuardSkill {
 					knockback = (modifiedKnockback - knockback) * 0.1F;
 				}
 
-                assert offender != null;
-                event.getPlayerPatch().knockBackEntity(offender.position(), knockback);
+                playerPatch.knockBackEntity(offender.position(), knockback);
 				float consumeAmount = penalty * impact;
-				boolean canAfford = event.getPlayerPatch().consumeForSkill(this, Skill.Resource.STAMINA, consumeAmount);
+				boolean canAfford = playerPatch.consumeForSkill(this, Skill.Resource.STAMINA, consumeAmount);
 				
 				BlockType blockType = successParrying ? BlockType.ADVANCED_GUARD : (canAfford ? BlockType.GUARD : BlockType.GUARD_BREAK);
-				AnimationAccessor<? extends StaticAnimation> animation = this.getGuardMotion(container, event.getPlayerPatch(), itemCapability, blockType);
+				AnimationAccessor<? extends StaticAnimation> animation = this.getGuardMotion(container, playerPatch, itemCapability, blockType);
 				
 				if (animation != null) {
-					event.getPlayerPatch().playAnimationSynchronized(animation, 0);
+					playerPatch.playAnimationSynchronized(animation, 0);
 				}
 				
 				if (blockType == BlockType.GUARD_BREAK) {
-					event.getPlayerPatch().playSound(EpicFightSounds.NEUTRALIZE_MOBS.get(), 3.0F, 0.0F, 0.1F);
+					playerPatch.playSound(EpicFightSounds.NEUTRALIZE_MOBS.get(), 3.0F, 0.0F, 0.1F);
 				}
 				
-				this.dealEvent(event.getPlayerPatch(), event, advanced);
+				this.dealEvent(playerPatch, event, advanced);
 				
 				return;
 			}
 		}
 		
-		super.guard(container, itemCapability, event, knockback, impact, false);
+		super.guard(container, itemCapability, playerPatch, event, knockback, impact, false);
 	}
 	
 	@Override

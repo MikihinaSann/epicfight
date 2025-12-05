@@ -7,8 +7,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationClip;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationPlayer;
@@ -29,7 +27,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Iterator;
 import java.util.Map;
 
-@OnlyIn(Dist.CLIENT)
 public class EditorAnimation extends StaticAnimation implements AnimationAccessor<EditorAnimation> {
 	private AnimationType animationType;
 	private AnimationClip animationClip;
@@ -295,7 +292,6 @@ public class EditorAnimation extends StaticAnimation implements AnimationAccesso
 		return DatapackStaticAnimation.class;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public enum AnimationType {
 		STATIC(StaticAnimation.class),
 		MOVEMENT(MovementAnimation.class),

@@ -1,9 +1,8 @@
 package yesman.epicfight.compat.mcreator;
 
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
-import yesman.epicfight.api.client.neoevent.RenderEpicFightPlayerEvent;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.render.ValidatePlayerModelEvent;
 import yesman.epicfight.compat.ICompatModule;
 
 public class MCreatorPlayerAnimationsCompat implements ICompatModule {
@@ -17,13 +16,11 @@ public class MCreatorPlayerAnimationsCompat implements ICompatModule {
     public void onModEventBusClient(IEventBus eventBus) {}
 
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void onGameEventBusClient(IEventBus eventBus) {
-        eventBus.addListener(this::renderEvent);
+        EpicFightClientEventHooks.Render.VALIDATE_PLAYER_MODEL_TO_RENDER.registerEvent(this::renderEvent);
     }
 
-    @OnlyIn(Dist.CLIENT)
-    private void renderEvent(RenderEpicFightPlayerEvent event) {
+    private void renderEvent(ValidatePlayerModelEvent event) {
         String animation = event.getPlayerPatch().getOriginal().getPersistentData().getString("PlayerCurrentAnimation");
         if (!animation.isEmpty()) event.setShouldRender(false);
     }

@@ -1,21 +1,10 @@
 package yesman.epicfight.world.capabilities.item;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -27,11 +16,16 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.utils.ParseUtil;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.server.SPDatapackSync;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ItemKeywordReloadListener extends SimplePreparableReloadListener<Map<ResourceLocation, List<JsonElement>>> {
 	private static final String DIRECTORY = "capabilities/weapons/item_keyword";
@@ -109,8 +103,8 @@ public class ItemKeywordReloadListener extends SimplePreparableReloadListener<Ma
 	public static Stream<CompoundTag> getCompounds() {
 		return COMPOUNDS.stream();
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public static void handleClientBoundSyncPacket(SPDatapackSync packet) {
 		if (packet.packetType() == SPDatapackSync.PacketType.WEAPON_TYPE) {
 			REGEXES.clear();

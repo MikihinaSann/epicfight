@@ -1,12 +1,7 @@
 package yesman.epicfight.compat.curiosapi;
 
-import java.util.Map;
-
-import org.apache.commons.lang3.mutable.MutableBoolean;
-
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.vertex.PoseStack;
-
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,17 +9,16 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import top.theillusivec4.curios.api.CuriosApi;
 import top.theillusivec4.curios.api.SlotContext;
 import top.theillusivec4.curios.api.client.CuriosRendererRegistry;
 import top.theillusivec4.curios.api.type.inventory.IDynamicStackHandler;
 import top.theillusivec4.curios.client.render.CuriosLayer;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
-import yesman.epicfight.api.client.neoevent.PatchedRenderersEvent;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRenderer;
@@ -32,24 +26,24 @@ import yesman.epicfight.client.renderer.patched.layer.ModelRenderLayer;
 import yesman.epicfight.compat.ICompatModule;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
+import java.util.Map;
+
 public class CuriosCompat implements ICompatModule {
 	@SuppressWarnings("unchecked")
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
-		eventBus.<PatchedRenderersEvent.Modify>addListener((event) -> {
-			if (event.get(EntityType.PLAYER) instanceof PatchedLivingEntityRenderer patchedlivingrenderer) {
-				patchedlivingrenderer.addPatchedLayerAlways(CuriosLayer.class, new PatchedCuriosLayerRenderer());
-			}
-		});
-		
+        EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
+            if (event.get(EntityType.PLAYER) instanceof PatchedLivingEntityRenderer patchedlivingrenderer) {
+                patchedlivingrenderer.addPatchedLayerAlways(CuriosLayer.class, new PatchedCuriosLayerRenderer());
+            }
+        });
+
 		eventBus.<EntityRenderersEvent.AddLayers>addListener((event) -> {
 			PatchedCuriosLayerRenderer.CURIO_MESHES.values().forEach(SkinnedMesh::destroy);
 			PatchedCuriosLayerRenderer.CURIO_MESHES.clear();
 		});
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onGameEventBusClient(IEventBus eventBus) {
 	}
@@ -62,7 +56,6 @@ public class CuriosCompat implements ICompatModule {
 	public void onGameEventBus(IEventBus eventBus) {
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static class PatchedCuriosLayerRenderer extends ModelRenderLayer<LivingEntity, LivingEntityPatch<LivingEntity>, EntityModel<LivingEntity>, CuriosLayer<LivingEntity, EntityModel<LivingEntity>>, SkinnedMesh> {
 		private static final Map<HumanoidModel<LivingEntity>, SkinnedMesh> CURIO_MESHES = Maps.newHashMap();
 		
@@ -170,7 +163,6 @@ public class CuriosCompat implements ICompatModule {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public interface EpicFightCurioRenderer {
 		void draw(
 			  ItemStack itemstack

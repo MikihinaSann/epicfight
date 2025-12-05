@@ -1,8 +1,5 @@
 package yesman.epicfight.skill.guard;
 
-import java.util.List;
-import java.util.Set;
-
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
@@ -10,10 +7,9 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
-import yesman.epicfight.api.neoevent.playerpatch.TakeDamageEvent;
+import yesman.epicfight.api.event.types.entity.TakeDamageEvent;
 import yesman.epicfight.api.utils.AttackResult;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkills;
@@ -22,6 +18,7 @@ import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
@@ -30,6 +27,9 @@ import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.damagesource.EpicFightDamageSources;
 import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 import yesman.epicfight.world.damagesource.StunType;
+
+import java.util.List;
+import java.util.Set;
 
 public class ImpactGuardSkill extends GuardSkill {
 	public static GuardSkill.Builder createImpactGuardBuilder() {
@@ -54,16 +54,16 @@ public class ImpactGuardSkill extends GuardSkill {
 		this.superiorPenalizer = parameters.getFloat("superior_penalizer");
 		this.damageReducer = parameters.getFloat("damage_reducer");
 	}
-	
+
 	@Override
-	public void guard(SkillContainer container, CapabilityItem itemCapapbility, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
-		boolean canUse = this.isHoldingWeaponAvailable(event.getPlayerPatch(), itemCapapbility, BlockType.ADVANCED_GUARD);
+	public void guard(SkillContainer container, CapabilityItem itemCapability, ServerPlayerPatch playerPatch, TakeDamageEvent.Income event, float knockback, float impact, boolean advanced) {
+		boolean canUse = this.isHoldingWeaponAvailable(playerPatch, itemCapability, BlockType.ADVANCED_GUARD);
 		
 		if (event.getDamageSource().is(DamageTypeTags.IS_EXPLOSION)) {
 			impact = event.getDamage();
 		}
 		
-		super.guard(container, itemCapapbility, event, knockback, impact, canUse);
+		super.guard(container, itemCapability, playerPatch, event, knockback, impact, canUse);
 	}
 	
 	@Override
@@ -96,7 +96,7 @@ public class ImpactGuardSkill extends GuardSkill {
 			epicfightDamageSource.setStunType(StunType.NONE);
 		}
 		
-		event.setCanceled(true);
+		event.cancel();
 		Entity directEntity = event.getDamageSource().getDirectEntity();
 		
 		if (advanced) {
@@ -144,8 +144,7 @@ public class ImpactGuardSkill extends GuardSkill {
 		return true;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
-	@Override
+	@Override @ClientOnly
 	public List<Object> getTooltipArgsOfScreen(List<Object> list) {
 		list.add(String.format("%.1f", this.damageReducer * 100.0D));
 		

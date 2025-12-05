@@ -1,14 +1,13 @@
 package yesman.epicfight.api.animation.types;
 
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.EntityState.StateFactor;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 import java.util.Map;
@@ -102,7 +101,7 @@ public class LinkAnimation extends DynamicAnimation implements AnimationAccessor
 	
 	@Override
 	public void modifyPose(DynamicAnimation animation, Pose pose, LivingEntityPatch<?> entitypatch, float time, float partialTicks) {
-		// Bad implementation: Add root joint as coord in loading animation
+		// Bad implementation: AddEntity root joint as coord in loading animation
 		if (this.toAnimation.get() instanceof ActionAnimation actionAnimation) {
 			if (!this.getTransfroms().containsKey("Coord")) {
 				actionAnimation.correctRootJoint(this, pose, entitypatch, time, partialTicks);
@@ -134,8 +133,8 @@ public class LinkAnimation extends DynamicAnimation implements AnimationAccessor
 		
 		return TransformSheet.EMPTY_SHEET;
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public Optional<JointMaskEntry> getJointMaskEntry(LivingEntityPatch<?> entitypatch, boolean useCurrentMotion) {
 		return useCurrentMotion ? this.toAnimation.get().getJointMaskEntry(entitypatch, true) : this.fromAnimation.get().getJointMaskEntry(entitypatch, false);
 	}

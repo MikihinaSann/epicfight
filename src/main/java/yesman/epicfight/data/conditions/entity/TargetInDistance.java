@@ -1,8 +1,5 @@
 package yesman.epicfight.data.conditions.entity;
 
-import java.util.List;
-import java.util.function.Function;
-
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -13,9 +10,13 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.utils.ParseUtil;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.gui.datapack.widgets.ResizableEditBox;
 import yesman.epicfight.data.conditions.Condition.EntityPatchCondition;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.function.Function;
 
 public class TargetInDistance extends EntityPatchCondition {
 	private double min;
@@ -52,8 +53,8 @@ public class TargetInDistance extends EntityPatchCondition {
 		return this.min * this.min < distanceSqr && distanceSqr < this.max * this.max;
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
+    @OnlyIn(Dist.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		ResizableEditBox minEditBox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("min"), null, null);
 		ResizableEditBox maxEditBox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("max"), null, null);

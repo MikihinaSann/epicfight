@@ -1,7 +1,5 @@
 package yesman.epicfight.client.particle;
 
-import java.util.Random;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.NoRenderParticle;
@@ -9,12 +7,16 @@ import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
 import net.minecraft.client.particle.TerrainParticle;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.world.level.block.FractureBlockState;
+
+import java.util.Random;
 
 public class GroundSlamParticle extends NoRenderParticle {
 	protected GroundSlamParticle(ClientLevel level, double x, double y, double z, double dx, double dy, double dz, BlockPos bp, BlockState bs) {
@@ -58,7 +60,7 @@ public class GroundSlamParticle extends NoRenderParticle {
 	
 	public static class Provider implements ParticleProvider<SimpleParticleType> {
 		@Override
-		public Particle createParticle(SimpleParticleType typeIn, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
+		public Particle createParticle(SimpleParticleType particleOption, ClientLevel level, double x, double y, double z, double xSpeed, double ySpeed, double zSpeed) {
 			BlockPos blockpos = new BlockPos.MutableBlockPos(x, y, z);
 			BlockState blockstate = level.getBlockState(blockpos);
 			if (blockstate == null) return null; 
@@ -66,4 +68,15 @@ public class GroundSlamParticle extends NoRenderParticle {
 			return new GroundSlamParticle(level, x, y, z, xSpeed, ySpeed, zSpeed, blockpos, blockstate);
 		}
 	}
+
+    public static class BlockParticleProvider implements ParticleProvider<BlockParticleOption> {
+        @Override
+        public @Nullable Particle createParticle(BlockParticleOption particleOption, ClientLevel clientLevel, double x, double y, double z, double dx, double dy, double dz) {
+            TerrainParticle blockParticle = new TerrainParticle(clientLevel, x, y, z, dx, dy, dz, particleOption.getState(), particleOption.getPos());
+            blockParticle.setParticleSpeed((Math.random() - 0.5D) * 0.3D, Math.random() * 0.5D, (Math.random() - 0.5D) * 0.3D);
+            blockParticle.setLifetime(10 + new Random().nextInt(60));
+
+            return blockParticle;
+        }
+    }
 }

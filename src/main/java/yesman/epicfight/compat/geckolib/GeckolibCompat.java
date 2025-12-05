@@ -2,16 +2,16 @@ package yesman.epicfight.compat.geckolib;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import software.bernie.geckolib.event.GeoRenderEvent;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
 import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.EntityUI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.compat.ICompatModule;
+import yesman.epicfight.compat.azurelib.client.AzureModelTransformer;
 import yesman.epicfight.compat.geckolib.client.GeoModelTransformer;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -19,15 +19,13 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 public class GeckolibCompat implements ICompatModule {
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public void onModEventBusClient(IEventBus eventBus) {
 		eventBus.<FMLClientSetupEvent>addListener(event -> event.enqueueWork(() -> HumanoidModelBaker.registerNewTransformer(new GeoModelTransformer())));
 	}
 	
 	@Override
-	@OnlyIn(Dist.CLIENT)
 	public void onGameEventBusClient(IEventBus eventBus) {
-		eventBus.addListener(GeoModelTransformer::getGeoArmorTexturePath);
+        EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(AzureModelTransformer::getGeoArmorTexturePath);
 		eventBus.addListener(this::geoEntityRenderPreEvent);
 		eventBus.addListener(this::geoEntityRenderPostEvent);
 	}
@@ -40,7 +38,6 @@ public class GeckolibCompat implements ICompatModule {
 	public void onGameEventBus(IEventBus eventBus) {
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public void geoEntityRenderPreEvent(GeoRenderEvent.Entity.Pre event) {
 		Entity entity = event.getEntity();
 		
@@ -83,7 +80,6 @@ public class GeckolibCompat implements ICompatModule {
 		}
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public void geoEntityRenderPostEvent(GeoRenderEvent.Entity.Post event) {
 		Entity entity = event.getEntity();
 		

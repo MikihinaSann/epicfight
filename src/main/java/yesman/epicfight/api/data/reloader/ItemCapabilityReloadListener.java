@@ -1,12 +1,5 @@
 package yesman.epicfight.api.data.reloader;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -14,7 +7,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -30,8 +22,6 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.data.conditions.Condition;
 import yesman.epicfight.gameasset.ColliderPreset;
@@ -40,11 +30,14 @@ import yesman.epicfight.network.server.SPDatapackSync;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightConditions;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
-import yesman.epicfight.world.capabilities.item.ArmorCapability;
-import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.capabilities.item.RuntimeCapability;
-import yesman.epicfight.world.capabilities.item.Style;
-import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
+import yesman.epicfight.world.capabilities.item.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListener {
 	public static final String DIRECTORY = "capabilities";
@@ -229,14 +222,12 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 		weaponTypeReceived = true;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static void reset() {
 		armorReceived = false;
 		weaponReceived = false;
 		weaponTypeReceived = false;
 	}
 	
-	@OnlyIn(Dist.CLIENT)
 	public static void processServerPacket(SPDatapackSync packet) {
 		switch (packet.packetType()) {
 		case ARMOR:

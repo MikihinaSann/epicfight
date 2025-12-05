@@ -1,10 +1,7 @@
 package yesman.epicfight.api.collider;
 
-import org.joml.Matrix4f;
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
@@ -13,8 +10,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
+import org.joml.Matrix4f;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.animation.Pose;
@@ -22,6 +18,7 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 
 public class OBBCollider extends Collider {
 	protected final Vec3[] modelVertices;
@@ -76,9 +73,6 @@ public class OBBCollider extends Collider {
 	
 	/**
 	 * make 2d obb
-	 * @param pos1 left
-	 * @param pos2 right
-	 * @param modelCenter central position
 	 */
 	public OBBCollider(
 		  AABB entityCallAABB
@@ -242,13 +236,12 @@ public class OBBCollider extends Collider {
 		return super.toString() + " worldCenter : " + this.worldCenter + " world direction : " + this.rotatedVertices[0];
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public RenderType getRenderType() {
 		return RenderType.lines();
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public void draw(PoseStack poseStack, MultiBufferSource buffer, int color) {
 		VertexConsumer vertexConsumer = buffer.getBuffer(this.getRenderType());
 		Matrix4f matrix = poseStack.last().pose();
@@ -322,8 +315,7 @@ public class OBBCollider extends Collider {
 		vertexConsumer.addVertex(matrix, v5x, v5y, v5z).setColor(color).setNormal(0.0F, 0.0F, 0.0F);
 	}
 	
-	@Override
-	@OnlyIn(Dist.CLIENT)
+	@Override @ClientOnly
 	public void drawInternal(PoseStack poseStack, VertexConsumer vertexConsumer, Armature armature, Joint joint, Pose pose1, Pose pose2, float partialTicks, int color) {
 		OpenMatrix4f poseMatrix;
 		Pose interpolatedPose = Pose.interpolatePose(pose1, pose2, partialTicks);

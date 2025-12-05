@@ -1,12 +1,5 @@
 package yesman.epicfight.client.renderer.patched.entity;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.List;
-import java.util.Map;
-
-import org.joml.Vector4f;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.GsonBuilder;
@@ -14,7 +7,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.LightTexture;
@@ -32,10 +24,11 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.common.NeoForge;
+import org.joml.Vector4f;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.registry.RegisterPatchedRenderersEvent;
+import yesman.epicfight.api.client.event.types.render.PrepareModelEvent;
 import yesman.epicfight.api.client.model.SkinnedMesh;
-import yesman.epicfight.api.client.neoevent.PatchedRenderersEvent;
-import yesman.epicfight.api.client.neoevent.PrepareModelEvent;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
@@ -48,6 +41,11 @@ import yesman.epicfight.client.renderer.patched.layer.RenderOriginalModelLayer;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.mixin.client.MixinLivingEntityRenderer;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+import java.util.Map;
 
 public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, M extends EntityModel<E>, R extends LivingEntityRenderer<E, M>, AM extends SkinnedMesh> extends PatchedEntityRenderer<E, T, R, AM> implements LayerRenderer<E, T, M> {
 	protected final Map<Class<?>, PatchedLayer<E, T, M, ? extends RenderLayer<E, M>>> patchedLayers = Maps.newHashMap();
@@ -134,8 +132,8 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 			AM mesh = this.getMeshProvider(entitypatch).get();
 			this.prepareModel(mesh, entity, entitypatch, renderer);
 			PrepareModelEvent prepareModelEvent = new PrepareModelEvent(this, mesh, entitypatch, buffer, poseStack, packedLight, partialTicks);
-			
-			if (!NeoForge.EVENT_BUS.post(prepareModelEvent).isCanceled()) {
+
+			if (!EpicFightClientEventHooks.Render.PREPARE_MODEL_TO_RENDER.post(prepareModelEvent).isCanceled()) {
 				Vector4f color = new Vector4f(1.0F, 1.0F, 1.0F, isVisibleToPlayer ? 0.15F : 1.0F);
 				entitypatch.getEntityDecorations().modifyColor(color, partialTicks);
 				
@@ -147,7 +145,7 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 				mesh.draw(poseStack, buffer, renderType, modifiedLight, color.x(), color.y(), color.z(), color.w(), this.getOverlayCoord(entity, entitypatch, partialTicks), armature, armature.getPoseMatrices());
 				
 				entitypatch.getEntityDecorations().listDecorationOverlays().forEach(decorationOverlay -> {
-					if (!decorationOverlay.shouldRemove() && decorationOverlay.shouldRender()) {
+					if (decorationOverlay.shouldRender()) {
 						Vector4f overlayColor = decorationOverlay.color(partialTicks);
 						mesh.draw(poseStack, buffer, decorationOverlay.getRenderType(), modifiedLight, overlayColor.x(), overlayColor.y(), overlayColor.z(), overlayColor.w(), OverlayTexture.NO_OVERLAY, armature, armature.getPoseMatrices());
 					}
@@ -276,7 +274,7 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 	}
 	
 	/**
-	 * Use this method in {@link PatchedRenderersEvent.Modify}}
+	 * Use this method in {@link RegisterPatchedRenderersEvent.ModifyEntity}}
 	 */
 	public void addPatchedLayerAlways(Class<?> originalLayerClass, PatchedLayer<E, T, M, ? extends RenderLayer<E, M>> patchedLayer) {
 		this.patchedLayers.put(originalLayerClass, patchedLayer);

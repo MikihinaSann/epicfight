@@ -143,7 +143,7 @@ public interface EpicFightClientBoundPayloadHandler {
 	static void handleClearSkills(final SPClearSkills data, final IPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
 
-        EpicFightCapabilities.getPlayerPatch(entity).ifPresent(playerpatch -> {
+        EpicFightCapabilities.getPlayerPatchAsOptional(entity).ifPresent(playerpatch -> {
 			playerpatch.getPlayerSkills().clearContainersAndLearnedSkills(playerpatch.getOriginal().isLocalPlayer());
 		});
 	}
@@ -350,7 +350,7 @@ public interface EpicFightClientBoundPayloadHandler {
 	}
 
     static void handleSyncEmoteSlot(final BiDirectionalSyncEmoteSlots data, final IPayloadContext context) {
-        EpicFightCapabilities.getLocalPlayerPatch(context.player().level().getEntity(data.playerId())).ifPresent(playerpatch -> {
+        EpicFightCapabilities.getLocalPlayerPatchAsOptional(context.player().level().getEntity(data.playerId())).ifPresent(playerpatch -> {
             playerpatch.getEmoteSlots().deserialize(data.compoundTag(), playerpatch.getOriginal().registryAccess());
         });
     }

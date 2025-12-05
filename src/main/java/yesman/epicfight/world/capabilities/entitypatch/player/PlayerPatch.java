@@ -2,6 +2,7 @@ package yesman.epicfight.world.capabilities.entitypatch.player;
 
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -13,28 +14,22 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
-import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
-import net.neoforged.neoforge.event.tick.EntityTickEvent;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.ActionAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.neoevent.BattleModeSustainableEvent;
-import yesman.epicfight.api.neoevent.ChangePlayerModeEvent;
-import yesman.epicfight.api.neoevent.playerpatch.ModifyAttackSpeedEvent;
-import yesman.epicfight.api.neoevent.playerpatch.ModifyBaseDamageEvent;
-import yesman.epicfight.api.neoevent.playerpatch.PlayerPatchEvent;
-import yesman.epicfight.api.neoevent.playerpatch.SkillConsumeEvent;
+import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.IdentifierProvider;
+import yesman.epicfight.api.event.types.player.SkillConsumeEvent;
+import yesman.epicfight.api.event.types.player.TickPlayerEpicFightModeEvent;
+import yesman.epicfight.api.event.types.player.TogglePlayerModeEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
-import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.gameasset.Animations;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightExpandedEntityDataAccessors;
 import yesman.epicfight.registry.entries.EpicFightSkills;
@@ -92,11 +87,20 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	public PlayerPatch(T entity) {
 		super(entity);
+
+        // Register permanent events
+        this.getEventListener().registerEvent(
+            EpicFightEventHooks.Animation.START_ACTION,
+            event -> {
+                this.resetActionTick();
+            },
+            IdentifierProvider.permanent()
+        );
 	}
 	
 	@Override
-	public void onJoinWorld(T entity, EntityJoinLevelEvent event) {
-		super.onJoinWorld(entity, event);
+	public void onJoinWorld(T entity, Level level, boolean worldgenSpawn) {
+		super.onJoinWorld(entity, level, worldgenSpawn);
 		
 		PlayerSkills skillCapability = this.getPlayerSkills();
 		skillCapability.skillContainers[SkillSlots.COMBO_ATTACKS.universalOrdinal()].setSkill(EpicFightSkills.COMBO_ATTACKS.get());
@@ -185,8 +189,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	@Override
-	public void preTickServer(EntityTickEvent.Pre event) {
-		super.preTickServer(event);
+	public void preTickServer() {
+		super.preTickServer();
 		
 		if (this.state.canBasicAttack()) {
 			this.tickSinceLastAction++;
@@ -215,12 +219,12 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	@Override
-	public void preTick(EntityTickEvent.Pre event) {
+	public void preTick() {
 		if (this.playerMode == PlayerMode.EPICFIGHT || this.battleModeRestricted) {
-			BattleModeSustainableEvent battleModeSustainableEvent = new BattleModeSustainableEvent(this);
-			NeoForge.EVENT_BUS.post(battleModeSustainableEvent);
-			
-			if (battleModeSustainableEvent.isCanceled()) {
+            TickPlayerEpicFightModeEvent tickEpicFightModeEvent = new TickPlayerEpicFightModeEvent(this);
+            EpicFightEventHooks.Player.TICK_EPICFIGHT_MODE.postWithListener(tickEpicFightModeEvent, this.getEventListener());
+
+			if (tickEpicFightModeEvent.isCanceled()) {
 				if (this.playerMode == PlayerMode.EPICFIGHT) {
 					this.toVanillaMode(false);
 					this.battleModeRestricted = true;
@@ -239,7 +243,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		
 		this.modelYRotO = this.modelYRot;
 		
-		super.preTick(event);
+		super.preTick();
 		
 		// Cancel using item depending on player state
 		if (!this.state.canUseItem()) {
@@ -320,41 +324,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		this.playerSkills.read(compound);
         this.emoteSlots.deserialize(compound, this.getLevel().registryAccess());
 	}
-	
-	@Override
-	public float getModifiedBaseDamage(float baseDamage) {
-		ModifyBaseDamageEvent event = new ModifyBaseDamageEvent(this, baseDamage, ValueModifier.calculator());
-		PlayerPatchEvent.postAndFireSkillListeners(event);
-		
-		return event.calculateModifiedDamage();
-	}
-	
-	public float getAttackSpeed(InteractionHand hand) {
-		float baseSpeed;
-		
-		if (hand == InteractionHand.MAIN_HAND) {
-			baseSpeed = (float)this.original.getAttributeValue(Attributes.ATTACK_SPEED);
-		} else {
-			baseSpeed = (float)(this.isOffhandItemValid() ? this.original.getAttributeValue(EpicFightAttributes.OFFHAND_ATTACK_SPEED) : this.original.getAttributeBaseValue(Attributes.ATTACK_SPEED));
-		}
-		
-		return this.getModifiedAttackSpeed(this.getAdvancedHoldingItemCapability(hand), baseSpeed);
-	}
-	
-	public float getModifiedAttackSpeed(CapabilityItem itemCapability, float baseSpeed) {
-		ModifyAttackSpeedEvent event = new ModifyAttackSpeedEvent(this, itemCapability, baseSpeed);
-		PlayerPatchEvent.postAndFireSkillListeners(event);
-		
-		float weight = this.getWeight();
-		
-		if (weight > 40.0F) {
-			float attenuation = Mth.clamp(EpicFightGameRules.WEIGHT_PENALTY.getRuleValue(this.getOriginal().level()), 0, 100) / 100.0F;
-			return event.getAttackSpeed() + (-0.1F * (weight / 40.0F) * Math.max(event.getAttackSpeed() - 0.8F, 0.0F) * attenuation);
-		} else {
-			return event.getAttackSpeed();
-		}
-	}
-	
+
 	public double getWeaponAttribute(Holder<Attribute> attribute, ItemStack itemstack) {
 		AttributeInstance attrInstance = new AttributeInstance(attribute, attrInstance$2 -> {});
 		
@@ -459,7 +429,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		float f1 = Mth.clamp(value, 0.0F, this.getMaxStamina());
 		this.getExpandedSynchedData().set(EpicFightExpandedEntityDataAccessors.STAMINA, f1);
 	}
-	
+
 	public void clampMaxAttributes() {
 		float currentHealth = this.original.getHealth();
 		float maxHealth = this.original.getMaxHealth();
@@ -513,8 +483,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		
 		SkillContainer skillContainer = oContainer.get();
 		SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(this, skill, consumeResource, amount, args);
-		PlayerPatchEvent.postAndFireSkillListeners(skillConsumeEvent);
-		
+        EpicFightEventHooks.Player.CONSUME_SKILL.postWithListener(skillConsumeEvent, this.getEventListener());
+
 		if (skillConsumeEvent.isCanceled()) {
 			return false;
 		}
@@ -584,7 +554,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public boolean isHoldingSkill(Skill holdingSkill) {
 		return this.holdingSkill == holdingSkill;
 	}
-	
+
+    /// Returns the last charging start tick
 	public int getLastChargingTick() {
 		return this.lastChargingTick;
 	}
@@ -596,19 +567,22 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			this.chargingTicks = 0;
 		}
 	}
-	
+
+    /// Returns a raw charging ticks
 	public int getChargingTicks() {
 		return this.chargingTicks;
 	}
-	
-	public float getSkillChargingTicks(float partialTicks) {
-		return this.isHoldingAny() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTicks : 0;
+
+    /// Returns a raw charging ticks with partial tick
+	public float getSkillChargingTicks(float partialTick) {
+		return this.isHoldingAny() ? (this.original.tickCount - this.getLastChargingTick() - 1.0F) + partialTick : 0;
 	}
-	
+
+    /// Returns a charging ticks with holding skill check and clamped by the holding skill's max ticks
 	public int getSkillChargingTicks() {
 		return this.isHoldingAny() && this.holdingSkill instanceof ChargeableSkill chargingSkill ? Math.min(this.original.tickCount - this.getLastChargingTick(), chargingSkill.getMaxChargingTicks()) : 0;
 	}
-	
+
 	public int getAccumulatedChargeTicks() {
 		return this.getHoldingSkill() instanceof ChargeableSkill ? this.chargingTicks : 0;
 	}
@@ -628,14 +602,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	
 	public void openSkillBook(ItemStack itemstack, InteractionHand hand) {
 	}
-	
-	@Override
-	public void onFall(LivingFallEvent event) {
-		this.getPlayerSkills().fireSkillEvents(EpicFightMod.MODID, event);
-		super.onFall(event);
-		this.setAirborneState(false);
-	}
-	
+
 	public void toggleMode() {
 		switch (this.playerMode) {
 		case VANILLA -> this.toEpicFightMode(true);
@@ -662,11 +629,12 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		if (this.battleModeRestricted) {
 			this.battleModeRestricted = false;
 		}
-		
-		ChangePlayerModeEvent prepareModelEvent = new ChangePlayerModeEvent(this, PlayerMode.VANILLA);
-		
-		if (!NeoForge.EVENT_BUS.post(prepareModelEvent).isCanceled()) {
-			this.playerMode = prepareModelEvent.getPlayerMode();
+
+        TogglePlayerModeEvent togglePlayerModeEvent = new TogglePlayerModeEvent(this, PlayerMode.VANILLA);
+        EpicFightEventHooks.Player.TOGGLE_MODE.postWithListener(togglePlayerModeEvent, this.getEventListener());
+
+		if (!togglePlayerModeEvent.isCanceled()) {
+			this.playerMode = togglePlayerModeEvent.getPlayerMode();
 		}
 	}
 	
@@ -674,12 +642,13 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 		if (this.playerMode == PlayerMode.EPICFIGHT) {
 			return;
 		}
-		
-		ChangePlayerModeEvent prepareModelEvent = new ChangePlayerModeEvent(this, PlayerMode.EPICFIGHT);
-		
-		if (!NeoForge.EVENT_BUS.post(prepareModelEvent).isCanceled()) {
-			this.playerMode = prepareModelEvent.getPlayerMode();
-		}
+
+        TogglePlayerModeEvent togglePlayerModeEvent = new TogglePlayerModeEvent(this, PlayerMode.VANILLA);
+        EpicFightEventHooks.Player.TOGGLE_MODE.postWithListener(togglePlayerModeEvent, this.getEventListener());
+
+        if (!togglePlayerModeEvent.isCanceled()) {
+            this.playerMode = togglePlayerModeEvent.getPlayerMode();
+        }
 	}
 	
 	public boolean isEpicFightMode() {
@@ -729,7 +698,11 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public float getYRotLimit() {
 		return 180.0F;
 	}
-	
+
+    /// Play a local sound
+    public void playLocalSound(Holder<SoundEvent> sound) {
+    }
+
 	@Override
 	public AnimationAccessor<? extends StaticAnimation> getHitAnimation(StunType stunType) {
 		if (this.original.getVehicle() != null) {

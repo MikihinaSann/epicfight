@@ -1,24 +1,13 @@
 package yesman.epicfight.api.animation.types;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
-import yesman.epicfight.api.animation.AnimationPlayer;
-import yesman.epicfight.api.animation.AnimationVariables;
+import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.AnimationVariables.IndependentVariableKey;
 import yesman.epicfight.api.animation.AnimationVariables.SharedVariableKey;
-import yesman.epicfight.api.animation.JointTransform;
-import yesman.epicfight.api.animation.Keyframe;
-import yesman.epicfight.api.animation.Pose;
-import yesman.epicfight.api.animation.TransformSheet;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.AttackAnimationProperty;
 import yesman.epicfight.api.animation.property.AnimationProperty.PlaybackSpeedModifier;
@@ -35,11 +24,16 @@ import yesman.epicfight.api.utils.TimePairList;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
+import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ActionAnimation extends MainFrameAnimation {
 	public static final SharedVariableKey<TransformSheet> ACTION_ANIMATION_COORD = AnimationVariables.unsynchShared(animator -> new TransformSheet(), false);
@@ -389,8 +383,8 @@ public class ActionAnimation extends MainFrameAnimation {
 		
 		return move.toDoubleVector();
 	}
-	
-	@OnlyIn(Dist.CLIENT)
+
+    @ClientOnly
 	public boolean shouldPlayerMove(LocalPlayerPatch playerpatch) {
 		return playerpatch.isLogicalClient();
 	}
