@@ -200,7 +200,7 @@ public class EpicFightMod {
     	EntityPairingPacketType.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EntityPairingPacketTypes.class);
         if (EpicFightSharedConstants.isPhysicalClient()) {
             InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, EpicFightInputAction.class);
-            InputAction.ENUM_MANAGER.registerEnumCls(EpicFightMod.MODID, MinecraftInputAction.class);
+            InputAction.ENUM_MANAGER.registerEnumCls("minecraft", MinecraftInputAction.class);
         }
     	
     	EpicFightMobEffects.EFFECTS.register(bus);
