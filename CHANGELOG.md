@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the massive memory consume on loading the game caused by animation loads
 - Disabled the `AzureLib` and `AzureLibArmor` compatibility modules for version `3.X.X` and newer as a workaround to
   address breaking changes and prevent crashes.
+- Fixed the player kicked from a dedicated server when other players are equipping Adaptive Skin skill
 
 ### For Devs
 
