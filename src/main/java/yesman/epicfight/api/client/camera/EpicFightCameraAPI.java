@@ -1,7 +1,19 @@
 package yesman.epicfight.api.client.camera;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix4f;
+
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -20,22 +32,23 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.*;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.client.event.ViewportEvent.ComputeCameraAngles;
 import net.minecraftforge.entity.PartEntity;
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings;
 import yesman.epicfight.api.client.event.EpicFightClientHooks;
 import yesman.epicfight.api.client.event.types.ActivateTPSCamera;
 import yesman.epicfight.api.client.event.types.BuildCameraTransform;
+import yesman.epicfight.api.client.event.types.CoupleTPSCamera;
 import yesman.epicfight.api.client.event.types.ItemUsedInDecoupledCamera;
 import yesman.epicfight.api.client.event.types.LockOnEvent;
 import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
+import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -49,11 +62,6 @@ import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.ZoomInType;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Provides access to Epic Fight's camera and third-person systems, including
@@ -958,18 +966,23 @@ public final class EpicFightCameraAPI {
     }
 	
 	private boolean predicateCouplingPlayer() {
-		/**
-		 * We do assume playerpatch is never null, but check the null for the crash resistancy
-		 */
-		@Nullable
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
-		
-		return InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F ||								// When moving
-				this.minecraft.options.keyAttack.isDown() ||																					// When pressing left button
-				this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()) ||		// When using an item with pre-defined use animations
-				this.isZooming() ||																												// when zooming
-				(playerpatch == null || playerpatch.isHoldingAny()) ||																			// When holding a skill
-				this.couplingYRot;																												// When the player rotation is manually coupled
+        // We do assume playerpatch is never null, but check the null for the crash resistancy
+        @Nullable
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
+
+        CoupleTPSCamera coupleTPSCameraEvent = new CoupleTPSCamera(
+            this,
+            InputManager.getInputState(this.minecraft.player.input).getMoveVector().lengthSquared() > 0.0F,                             // When moving
+            InputManager.isActionActive(MinecraftInputAction.ATTACK_DESTROY),                                                           // When pressing left button
+            this.minecraft.player.isUsingItem() && tpsItemAnimations.contains(this.minecraft.player.getUseItem().getUseAnimation()),    // When using an item with pre-defined use animations
+            this.isZooming(),                                                                                                           // When zooming
+            (playerpatch == null || playerpatch.isHoldingAny()),                                                                        // When holding a skill
+            this.couplingYRot                                                                                                           // When the player rotation is manually coupled
+        );
+
+        EpicFightClientHooks.Camera.COUPLE_CAMERA.post(coupleTPSCameraEvent);
+
+        return coupleTPSCameraEvent.shouldCoupleCamera();
 	}
 	
 	@ApiStatus.Internal
