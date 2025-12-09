@@ -21,13 +21,16 @@ public abstract class MixinCamera {
     private Entity entity;
     @Shadow
     private boolean detached;
-
+    @Shadow
+    private float partialTickTime;
+    
     @Inject(at = @At(value = "HEAD"), method = "setup(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/world/entity/Entity;ZZF)V", cancellable = true)
     public void epicfight$setup(BlockGetter level, Entity entity, boolean detached, boolean thirdPersonReverse, float partialTick, CallbackInfo callbackInfo) {
         this.initialized = true;
         this.level = level;
         this.entity = entity;
         this.detached = detached;
+        this.partialTickTime = partialTick;
 
         EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
         Camera camera = (Camera)(Object)this;
