@@ -5,11 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [20.14.3] - 2025-12-11
 
 ### Fixed
 
 - Fixed datapack animations not loading properly
+
+### Changed
+
+- Changed the asset license to All Rights Reserved, whereas the source code license keeps GNU GPLv3.
+    - This means, we still allow forks of our project, but they're required to replace assets into custom and
+      their original-made ones to redistribute.
+    - You're still allowed to use assets via datapack editor or addons. Nevertheless, we can claim copyright
+      of our assets if we find some abuse, or your behaviors that don't respect our efforts on it.
 
 ## [20.14.2] - 2025-12-10
 
@@ -45,14 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as [Shoulder Surfing Reloaded](https://modrinth.com/mod/shoulder-surfing-reloaded)
   or [Better Third Person](https://modrinth.com/mod/better-third-person), is detected to prevent issues.
 - Explicit Shoulder Surfing compatibility with the new enhanced lock-on (credit [Exopandora](https://github.com/Exopandora)).
-
-### Changed
-
-- Changed the asset license to All Rights Reserved, whereas the source code license keeps GNU GPLv3.
-    - This means, we still allow forks of our project, but they're required to replace assets into custom and
-      their original-made ones to redistribute.
-    - You're still allowed to use assets via datapack editor or addons. Nevertheless, we can claim copyright
-      of our assets if we find some abuse, or your behaviors that don't respect our efforts on it.
 
 ### Fixed
 
