@@ -50,6 +50,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   enhanced lock-on (credit [Exopandora](https://github.com/Exopandora)).
   [#2258](https://github.com/Epic-Fight/epicfight/issues/2258)
 
+### Changed
+
+- Changed the asset license to All Rights Reserved, whereas the source code license keeps GNU GPLv3.
+    - This means, we still allow forks of our project, but they're required to replace assets into custom and
+      their original-made ones to redistribute.
+    - You're still allowed to use assets via datapack editor or addons. Nevertheless, we can claim copyright
+      of our assets if we find some abuse, or your behaviors that don't respect our efforts on it.
+
 ### Fixed
 
 - Fixed a bug that allowed the player to replace the current skill slot even during cooldown.
