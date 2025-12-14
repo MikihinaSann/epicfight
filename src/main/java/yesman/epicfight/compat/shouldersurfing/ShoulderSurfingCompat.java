@@ -44,7 +44,7 @@ import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerP
 /// For reference:
 ///
 /// - [Add lock-on support for Shoulder Surfing](https://github.com/Epic-Fight/epicfight/issues/2258)
-/// - [Player doesn’t turn in Shoulder Surfing when holding Epic Fight skills](https://github.com/Epic-Fight/epicfight/issues/2114)
+/// - [Player doesn't turn in Shoulder Surfing when holding Epic Fight skills](https://github.com/Epic-Fight/epicfight/issues/2114)
 /// - [Shoulder Surfing mod doesn't turn player when attacking by default](https://github.com/Epic-Fight/epicfight/issues/2113)
 /// - [Shoulder Surfing mod does not detect Epic Fight custom Attack keybind](https://github.com/Epic-Fight/epicfight/issues/2111)
 /// - [Handle Epic Fight Breaking Changes from Shoulder Surfing's side](https://github.com/Exopandora/ShoulderSurfing/issues/359)

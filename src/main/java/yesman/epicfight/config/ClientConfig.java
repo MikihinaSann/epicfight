@@ -81,7 +81,7 @@ public class ClientConfig {
                     Defines how the camera toggles perspectives.
                     
                         1. Vanilla (Default)
-                           Uses Minecraft’s default behavior.
+                           Uses Minecraft's default behavior.
                            Cycles through all available perspectives.
                     
                         2. Skip Third-Person Front Perspective

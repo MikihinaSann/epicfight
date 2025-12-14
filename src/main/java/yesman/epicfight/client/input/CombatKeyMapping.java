@@ -15,7 +15,7 @@ import yesman.epicfight.client.ClientEngine;
 /// **Important:** Other mods or consumers should *not* rely on this behavior.
 /// They should explicitly check whether the player is in Epic Fight mode through
 /// [yesman.epicfight.client.ClientEngine#isEpicFightMode()] instead of depending on
-/// this key mapping’s conditional logic.
+/// this key mapping's conditional logic.
 ///
 /// This also force setting [KeyConflictContext#IN_GAME],
 /// since a [CombatKeyMapping] is usually used for player moves
