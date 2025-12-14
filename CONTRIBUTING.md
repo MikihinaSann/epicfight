@@ -340,3 +340,55 @@ Component.translatable(key);
 Hardcoding is error-prone, more runtime crashes and bugs, and misleading behavior.
 Where `LangKeys` is a generated object that updates when launching the game,
 and automatically adapts the latest `en_us.json` changes, forcing all references to be fixed at compile time.
+
+### 13. Avoid handling programming bugs at runtime or hiding them
+
+Imagine a complex system with many features that suddenly stops working,
+with no errors, no logs, no crashes.
+
+That would be very hard to debug, right?
+
+Which is why it's sometimes better to crash the game than allow misleading
+behavior caused by programming bugs.
+
+Example of good design that makes bugs easier to catch:
+
+```java
+/// Sets the maximum number of retries.
+///
+/// @param retries number of retries, must be >= 0
+/// @throws IllegalArgumentException if retries is negative (invalid usage)
+void setMaxRetries(int retries) {
+  if (retries < 0) {
+    throw new IllegalArgumentException("retries must be >= 0");
+  }
+  // ...
+}
+```
+
+### Errors vs Failures
+
+- **Errors:** Programming issues that must be fixed at the core,
+  and **never** handled at runtime via `try-catch`
+  (e.g., passing a `-1` or `null` to a parameter that requires a valid argument value).
+  - `IllegalArgumentException` is almost always a programming bug.
+  - Errors such as `NullPointerException` must never be caught via `try-catch`, as they usually indicate
+    programming bugs that must be solved.
+  - Avoid throwing errors for expected failures.
+- **Failures:** Runtime issues that are not the
+  developer's fault (e.g., bad image data on a user's device, disk full, incorrect password or email not found).
+
+It's better to prevent it at the core, rather than accessing a nullable
+fields and then using this workaround (try-catch `NullPointerException`).
+
+Handling is only acceptable when coming from external libraries or JSON deserialization.
+Even then, document the workaround clearly, map it to a cleaner exception,
+or validate via (e.g., `assert`, `if`) and fail fast.
+
+It's also acceptable to log errors instead of silently ignoring
+bugs to save development time ([example PR](https://github.com/Epic-Fight/epicfight/pull/1935)).
+
+> [!TIP]
+> For more details about this topic,
+> read [this comment](https://github.com/flutter/packages/pull/8079#discussion_r1902075152).
+> However, it's unrelated to Epic Fight.
