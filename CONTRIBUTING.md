@@ -30,6 +30,11 @@ participating in this project.
 
 ## 🍴 Forking & cloning the repository
 
+> [!TIP]
+> If you want a **beginner-friendly** guide on how to contribute by sending **pull requests** (aka PRs),
+> refer to [this video](https://youtu.be/8lGpZkjnkt4?si=X_OV0U6Jk3ox-DHY).
+> This skill will benefit you **greatly** as a **professional developer**, not just for one PR.
+
 - Fork the [GitHub repo](https://github.com/Epic-Fight/epicfight/) to your account. If you already have a fork,
   make sure it's up to date.
 
