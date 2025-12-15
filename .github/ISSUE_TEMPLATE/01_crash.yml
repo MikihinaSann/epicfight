@@ -1,7 +1,7 @@
 name: 💥 Crash Report
 description: Submit a Minecraft crash report for any issues, including mod conflicts, runtime crashes, or problems preventing the game from launching.
 title: "[Crash]: "
-labels: [ "crash" ]
+labels: [ "crash", "bug" ]
 body:
   - type: markdown
     attributes:
