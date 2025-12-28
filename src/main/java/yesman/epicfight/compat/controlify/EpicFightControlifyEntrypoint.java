@@ -35,8 +35,10 @@ import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.client.input.controller.EpicFightControllerModProvider;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
+import yesman.epicfight.client.gui.screen.config.EpicFightSettingScreen;
 import yesman.epicfight.client.input.EpicFightInputCategories;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.compat.controlify.screenop.EpicFightSettingScreenProcessor;
 import yesman.epicfight.compat.controlify.screenop.SkillBookScreenProcessor;
 import yesman.epicfight.compat.controlify.screenop.SkillEditScreenProcessor;
 import yesman.epicfight.generated.LangKeys;
@@ -428,6 +430,10 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
         ScreenProcessorProvider.registerProvider(
                 SkillBookScreen.class,
                 SkillBookScreenProcessor::new
+        );
+        ScreenProcessorProvider.registerProvider(
+                EpicFightSettingScreen.class,
+                EpicFightSettingScreenProcessor::new
         );
     }
 }

@@ -180,11 +180,11 @@ public class EpicFightSettingScreen extends Screen {
         return null;
     }
 
-    private AnchoredButton getSaveButton() {
+    public AnchoredButton getSaveButton() {
         return this.saveButton;
     }
 
-    private AnchoredButton getDiscardButton() {
+    public AnchoredButton getDiscardButton() {
         return this.discardButton;
     }
 
