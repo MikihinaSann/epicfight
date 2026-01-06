@@ -1,6 +1,7 @@
 // Shared utilities between all Gradle projects or plugins.
 
 import me.modmuss50.mpp.ModPublishExtension
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.api.artifacts.VersionCatalog
 import org.gradle.api.artifacts.VersionCatalogsExtension
@@ -173,6 +174,13 @@ fun Project.configureModPublish(
     jarFile: () -> Provider<RegularFile>,
 ) {
     val project = this
+    project.tasks.named("publishMods") {
+        doLast {
+            if (extractCurrentVersionChangelog() == null) {
+                throw GradleException("Cannot run publishMods task: No changelog found for version $modVersion in CHANGELOG.md file")
+            }
+        }
+    }
     extensions.getByType(ModPublishExtension::class.java).apply {
         // Assumes `java { withSourcesJar() }` is called.
         val sourcesJar = project.tasks.named("sourcesJar")
@@ -180,7 +188,8 @@ fun Project.configureModPublish(
         dryRun.set(false)
 
         val latestChangelog = extractCurrentVersionChangelog() ?: run {
-            error("No changelog found for version $modVersion in CHANGELOG.md file")
+            logger.warn("Skipping the publishMods configuration: No changelog found for version $modVersion in CHANGELOG.md file")
+            return@apply
         }
         val releaseChangelog = project.buildReleaseChangelog(latestChangelog, modLoader)
         changelog.set(releaseChangelog)
