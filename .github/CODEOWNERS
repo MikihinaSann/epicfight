@@ -1,18 +1,2 @@
 # All requests must be reviewed and approved by:
 * @Yesssssman @Forixaim
-
-# Controlify compatibility
-/src/main/java/yesman/epicfight/compat/controlify/ @EchoEllet
-/src/main/resources/META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint @EchoEllet
-/src/main/resources/assets/controlify/ @EchoEllet
-
-# Input
-/src/main/java/yesman/epicfight/api/client/input/ @EchoEllet
-/src/main/java/yesman/epicfight/client/events/engine/ControlEngine.java @EchoEllet
-
-# Skills and Animation API
-/src/main/java/yesman/epicfight/skill/ @Forixaim
-/src/main/java/yesman/epicfight/api/animation/ @Forixaim
-
-# Shoulder Surfing Compatibility
-/src/main/java/yesman/epicfight/compat/shouldersurfing/ @EchoEllet
