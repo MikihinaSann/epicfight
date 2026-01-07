@@ -453,8 +453,8 @@ public final class EpicFightCameraAPI {
         if (syncToServer) {
             this.minecraft.player.connection.send(
                 new ServerboundMovePlayerPacket.Rot(
-                    this.cameraYRot,
-                    this.cameraXRot,
+                    yRot,
+                    xRot,
                     this.minecraft.player.onGround()
                 )
             );

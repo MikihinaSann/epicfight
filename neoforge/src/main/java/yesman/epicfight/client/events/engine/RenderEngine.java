@@ -644,12 +644,22 @@ public class RenderEngine implements IEventBasedEngine {
      * Only needs to fire in TPS mode
      */
     private void epicfight$rightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        if (event.getSide() == LogicalSide.SERVER || !EpicFightCameraAPI.getInstance().isTPSMode()) return;
+        EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+
+        if (event.getSide() == LogicalSide.SERVER || !cameraApi.isTPSMode()) return;
+
+        if (!cameraApi.isTPSMode()) {
+            return;
+        }
 
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
             Vec3 toHit = event.getHitVec().getLocation().subtract(playerpatch.getOriginal().getEyePosition());
-            playerpatch.getOriginal().setXRot((float)MathUtils.getXRotOfVector(toHit));
-            playerpatch.getOriginal().setYRot((float)MathUtils.getYRotOfVector(toHit));
+            float xRot = (float)MathUtils.getXRotOfVector(toHit);
+            float yRot = (float)MathUtils.getYRotOfVector(toHit);
+
+            playerpatch.getOriginal().setXRot(xRot);
+            playerpatch.getOriginal().setYRot(yRot);
+            playerpatch.getOriginal().setYHeadRot(yRot);
         });
     }
 
@@ -687,11 +697,14 @@ public class RenderEngine implements IEventBasedEngine {
 		});
 	}
 
-    private static final ResourceLocation GUI_ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
-
 	private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
         if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
             CameraType cameraType = this.minecraft.options.getCameraType();
+
+            // Don't override crosshair in spectator mode (fix for 20.14)
+            if (this.minecraft.player != null && this.minecraft.player.isSpectator()) {
+                return;
+            }
 
             // Cancel if a modified crosshair is rendered
             if (event.isCanceled() && cameraType.isFirstPerson()) {
