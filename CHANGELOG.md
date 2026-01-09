@@ -27,12 +27,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - Some configurations' names have been changed to more standard and in common use terminologies
     - Added a side bar to switch Settings, Data Pack Editor, Cosemtics screen
 
+### Fixed
+- Fixed the player can't play the same attack animation, until it fully ends in the server side
+
 ### For Devs
 
 - Renamed the JAR file to be consistent with the Modrinth project slug URL, to support automatic sources download.
 - Added `EntityPatchRegistryEvent#registerEntityPatch` and `EntityPatchRegistryEvent#registerEntityPatchUnsafe`, which
   are more type-safe and recommended over `EntityPatchRegistryEvent#getTypeEntry`. 
 - Deprecated `EpicFight.format` since we added `LangKeys` for words translation
+- ComboCounterHandler
+    - A more modularized and parameter sensitive way to handle combo counter of `ComboAttacks`
+    - CapabilityItem.shouldCancelCombo is now deprecated, as more parameter sensitive version introduced
 
 ## [21.14.4] - 2025-12-17
 

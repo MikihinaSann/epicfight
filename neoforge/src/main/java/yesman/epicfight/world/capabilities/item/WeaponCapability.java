@@ -8,12 +8,15 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.MainFrameAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
+import yesman.epicfight.api.event.types.player.ModifyComboCounter;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.registry.entries.EpicFightParticles;
@@ -37,7 +40,9 @@ public class WeaponCapability extends CapabilityItem {
 	protected final Map<Style, Function<ItemStack, Skill>> innateSkill;
 	protected final Map<Style, Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>>> livingMotionModifiers;
 	protected final boolean canBePlacedOffhand;
-	protected final Function<Style, Boolean> comboCancel;
+    @Deprecated
+    protected final Function<Style, Boolean> comboCancel;
+    protected final ModifyComboCounter.ComboCounterHandler comboCounterHandler;
 	protected final ZoomInType zoomInType;
 	protected final float reach;
 	
@@ -57,6 +62,7 @@ public class WeaponCapability extends CapabilityItem {
 		this.hitSound = weaponBuilder.hitSound;
 		this.canBePlacedOffhand = weaponBuilder.canBePlacedOffhand;
 		this.comboCancel = weaponBuilder.comboCancel;
+        this.comboCounterHandler = weaponBuilder.comboCounterHandler;
 		this.zoomInType = weaponBuilder.zoomInType;
 		this.reach = weaponBuilder.reach;
 	}
@@ -111,7 +117,12 @@ public class WeaponCapability extends CapabilityItem {
 	public boolean shouldCancelCombo(LivingEntityPatch<?> entitypatch) {
 		return this.comboCancel.apply(this.getStyle(entitypatch));
 	}
-	
+
+    @Override
+    public int handleComboCounter(ModifyComboCounter.Causal causal, PlayerPatch<?> entitypatch, @Nullable AnimationAccessor<? extends MainFrameAnimation> nextAnimation, int original) {
+        return this.comboCounterHandler.handleComboCounter(this, causal, entitypatch, nextAnimation, original);
+    }
+
 	@Override
 	public ZoomInType getZoomInType() {
 		return this.zoomInType;
@@ -178,7 +189,9 @@ public class WeaponCapability extends CapabilityItem {
 		Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> autoAttackMotionMap;
 		Map<Style, Function<ItemStack, Skill>> innateSkillByStyle;
 		Map<Style, Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>>> livingMotionModifiers;
+        @Deprecated
 		Function<Style, Boolean> comboCancel;
+        ModifyComboCounter.ComboCounterHandler comboCounterHandler;
 		boolean canBePlacedOffhand;
 		ZoomInType zoomInType;
 		float reach;
@@ -196,6 +209,7 @@ public class WeaponCapability extends CapabilityItem {
 			this.livingMotionModifiers = null;
 			this.canBePlacedOffhand = true;
 			this.comboCancel = (style) -> true;
+            this.comboCounterHandler = ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER;
 			this.zoomInType = ZoomInType.NONE;
 			this.reach = 0.2F;
 		}
@@ -269,12 +283,19 @@ public class WeaponCapability extends CapabilityItem {
 			this.innateSkillByStyle.put(style, innateSkill);
 			return this;
 		}
-		
+
+        /// @Deprecated - Use more sensitive version [#comboCounterHandler]
+        @Deprecated
 		public Builder comboCancel(Function<Style, Boolean> comboCancel) {
 			this.comboCancel = comboCancel;
 			return this;
 		}
-		
+
+        public Builder comboCounterHandler(ModifyComboCounter.ComboCounterHandler comboHandler) {
+            this.comboCounterHandler = comboHandler;
+            return this;
+        }
+
 		public Builder zoomInType(ZoomInType zoomInType) {
 			this.zoomInType = zoomInType;
 			return this;

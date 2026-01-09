@@ -20,8 +20,10 @@ import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.MainFrameAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.collider.Collider;
+import yesman.epicfight.api.event.types.player.ModifyComboCounter;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.main.EpicFightMod;
@@ -272,8 +274,6 @@ public class CapabilityItem {
 		toRemote.send((first, others) -> {
 			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(first, (ServerPlayer)playerpatch.getOriginal(), others);
 		});
-		
-		
 	}
 	
 	public SoundEvent getSmashingSound() {
@@ -344,10 +344,17 @@ public class CapabilityItem {
 		return true;
 	}
 	
-	public boolean shouldCancelCombo(LivingEntityPatch<?> entitypatch) {
-		return true;
-	}
-	
+    /// Use [#handleComboCounter(PlayerPatch, AnimationAccessor)] with animation sensitive version
+    @Deprecated(forRemoval = true)
+    public boolean shouldCancelCombo(LivingEntityPatch<?> entitypatch) {
+        return true;
+    }
+
+    /// @param nextAnimation null when causal == [ModifyComboCounter.Causal#TIME_EXPIRED]
+    public int handleComboCounter(ModifyComboCounter.Causal causal, PlayerPatch<?> entitypatch, @Nullable AnimationAccessor<? extends MainFrameAnimation> nextAnimation, int original) {
+        return ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER.handleComboCounter(this, causal, entitypatch, nextAnimation, original);
+    }
+
 	public boolean isEmpty() {
 		return this == CapabilityItem.EMPTY;
 	}
