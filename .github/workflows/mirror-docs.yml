@@ -1,0 +1,43 @@
+name: Mirror docs to EpicFight-Docs
+
+on:
+  push:
+    paths:
+      - "docs/**"
+
+jobs:
+  mirror:
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+
+      - name: Clone target repo
+        run: |
+          git clone https://x-access-token:${{ secrets.DOCS_MIRROR_TOKEN }}@github.com/Epic-Fight/EpicFight-Docs.git target
+
+      - name: Sync Documents
+        run: |
+          mkdir -p target/docs/API/${{ github.ref_name }}
+          rsync -av --delete --exclude='universal-docs/' docs/ target/docs/API/${{ github.ref_name }}/
+
+          if [ -d "docs/universal-docs" ]; then
+            rsync -av --delete --exclude='*/' docs/universal-docs/ target/docs/API/
+          fi
+
+      - name: Commit and push changes
+        run: |
+          cd target
+          git config user.name "EpicFight Docs Bot"
+          git config user.email "docs-bot@users.noreply.github.com"
+          
+          git add docs/API
+
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Sync docs: Reflect changes/deletions from default branch"
+            git push
+          fi
