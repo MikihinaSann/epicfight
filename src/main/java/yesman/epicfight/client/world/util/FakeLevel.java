@@ -172,6 +172,11 @@ public class FakeLevel extends ClientLevel {
 		public FakeClientPlayer(FakeLevel fakeLevel, GameProfile gameProfile) {
 			super(fakeLevel, gameProfile);
 		}
+		
+		@Override
+		public boolean isLocalPlayer() {
+			return true;
+		}
 	}
 	
 	/**
