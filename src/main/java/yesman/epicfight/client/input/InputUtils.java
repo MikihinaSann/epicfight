@@ -1,16 +1,17 @@
 package yesman.epicfight.client.input;
 
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
+
 import com.mojang.blaze3d.platform.InputConstants;
+
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.Input;
+import net.minecraft.client.Options;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.event.InputEvent;
-import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
-import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 
 /// Internal utility for simplified input checks.
@@ -32,13 +33,8 @@ public final class InputUtils {
 
         final int mouseButton = isMouse ? key.getValue() : -1;
 
-        @SuppressWarnings("UnstableApiUsage")
-        InputEvent.InteractionKeyMappingTriggered inputEvent = ForgeHooksClient.onClickInput(
-                mouseButton, keyMapping, InteractionHand.MAIN_HAND
-        );
-
-        if (!inputEvent.isCanceled()) {
-            handler.run();
+        if (checkInteractionKeyUsable(mouseButton, keyMapping)) {
+        	handler.run();
         }
     }
 
@@ -49,6 +45,27 @@ public final class InputUtils {
         }
     }
 
+    /// Checks if the given key mapping is interaction key (block or entity interaction) and triggers
+    /// [InteractionKeyMappingTriggered] event
+    public static boolean checkInteractionKeyUsable(int mouseButton, KeyMapping keyMapping) {
+    	Options option = Minecraft.getInstance().options;
+    	
+    	if (
+			keyMapping == option.keyAttack ||
+			keyMapping == option.keyUse ||
+			keyMapping == option.keyPickItem
+    	) {
+    		@SuppressWarnings("UnstableApiUsage")
+            InputEvent.InteractionKeyMappingTriggered inputEvent = ForgeHooksClient.onClickInput(
+                mouseButton, keyMapping, InteractionHand.MAIN_HAND
+            );
+    		
+    		return !inputEvent.isCanceled();
+    	}
+    	
+    	return true;
+    }
+    
     /// Currently, this calls [Input#tick] without performing any additional logic.
     /// This abstraction was introduced to allow calling it without depending on the vanilla Minecraft [Input],
     /// enabling Epic Fight to introduce changes in future updates if necessary to support controllers.
