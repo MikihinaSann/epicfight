@@ -114,6 +114,12 @@ public class CapabilityItem {
 	
 	public void modifyItemTooltip(ItemStack itemstack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
 		Style style = this instanceof RangedWeaponCapability ? Styles.RANGED : this.getStyle(entitypatch);
+		
+		/// TODO: Lazy Fix for crash https://mclo.gs/cfIdSOY. Need more inspection what causes this
+		if (style == null) {
+			return;
+		}
+		
 		itemTooltip.add(1, Component.translatable(EpicFightMod.MODID + ".style." + style.toString().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_GRAY));
 		
 		int index = 0;
