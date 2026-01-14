@@ -442,7 +442,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public boolean hasStamina(float amount) {
-		return this.getStamina() > amount;
+		return this.getStamina() >= amount;
 	}
 	
 	public void setStamina(float value) {
