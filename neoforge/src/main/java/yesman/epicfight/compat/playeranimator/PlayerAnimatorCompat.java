@@ -23,7 +23,12 @@ public class PlayerAnimatorCompat implements ICompatModule {
     }
 
     private void renderEvent(ValidatePlayerModelEvent event) {
-        AnimationApplier emote = ((IAnimatedPlayer) event.getPlayerPatch().getOriginal()).playerAnimator_getAnimation();
-        if (emote.isActive()) event.setShouldRender(false);
+        AnimationApplier playerAnimatorAnimation = ((IAnimatedPlayer) event.getPlayerPatch().getOriginal()).playerAnimator_getAnimation();
+
+        if (!event.getPlayerPatch().getClientAnimator().getPlayerFor(null).getAnimation().get().isMainFrameAnimation() && // The case when playing EF animation that controls player location
+            playerAnimatorAnimation.isActive()
+        ) {
+            event.setShouldRender(false);
+        }
     }
 }
