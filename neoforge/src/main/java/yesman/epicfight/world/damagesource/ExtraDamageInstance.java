@@ -9,6 +9,7 @@ import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.neoforged.neoforge.common.extensions.ILevelReaderExtension;
+import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.world.capabilities.item.WeaponCapabilityPresets;
 
 public class ExtraDamageInstance {
@@ -20,7 +21,8 @@ public class ExtraDamageInstance {
 				tier += WeaponCapabilityPresets.vanillaTierToLevel(tieredItem.getTier());
 			}
 			
-			return (target.getMaxHealth() - target.getHealth()) * (params[0] + 0.05F * tier);
+            // Bad implementation: add parameter to ExtraDamageFunction to accept skill parameters
+            return Math.min((target.getMaxHealth() - target.getHealth()) * (params[0] + 0.05F * tier), (EpicFightSkills.EVISCERATE.get()).getDamageCap());
 		},
 		(levelReader, itemstack, tooltips, baseDamage, params) -> {
 			int tier = 0;

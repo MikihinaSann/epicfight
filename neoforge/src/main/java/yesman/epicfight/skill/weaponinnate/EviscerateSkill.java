@@ -12,6 +12,7 @@ import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+import yesman.epicfight.world.damagesource.ExtraDamageInstance;
 
 import java.util.List;
 
@@ -19,11 +20,19 @@ public class EviscerateSkill extends WeaponInnateSkill {
     private final AssetAccessor<? extends AttackAnimation> first;
     private final AssetAccessor<? extends AttackAnimation> second;
 
+    private float damageCap;
+
     public EviscerateSkill(WeaponInnateSkill.Builder<?> builder) {
         super(builder);
 
         this.first = Animations.EVISCERATE_FIRST;
         this.second = Animations.EVISCERATE_SECOND;
+    }
+
+    @Override
+    public void loadDatapackParameters(CompoundTag parameters) {
+        super.loadDatapackParameters(parameters);
+        this.damageCap = parameters.getFloat("damage_cap");
     }
 
     @Override
@@ -66,5 +75,11 @@ public class EviscerateSkill extends WeaponInnateSkill {
         this.first.get().phases[0].addProperties(this.properties.get(0).entrySet());
         this.second.get().phases[0].addProperties(this.properties.get(1).entrySet());
         return this;
+    }
+
+    /// TODO: bad implementation but to avoid breaking changes
+    /// make [ExtraDamageInstance] configurable via skill parameters
+    public float getDamageCap() {
+        return this.damageCap;
     }
 }
