@@ -48,11 +48,6 @@ public class ComboAttacks extends Skill {
         }
 
         CapabilityItem itemCapability = playerpatch.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-
-        if (reason != ModifyComboCounter.Causal.TIME_EXPIRED && !itemCapability.shouldCancelCombo(playerpatch)) {
-            return;
-        }
-
         int modifiedCombo = itemCapability.handleComboCounter(reason, playerpatch, causalAnimation, counter);
         int prevValue = container.getDataManager().getDataValue(EpicFightSkillDataKeys.COMBO_COUNTER);
         ModifyComboCounter modifyComboCounterEvent = new ModifyComboCounter(reason, playerpatch, causalAnimation, prevValue, modifiedCombo);
@@ -132,11 +127,11 @@ public class ComboAttacks extends Skill {
 				comboCounter++;
 			}
 		} else {
-			List<AnimationAccessor<? extends AttackAnimation>> combo = cap.getAutoAttackMotion(executor);
+            List<AnimationAccessor<? extends AttackAnimation>> combo = cap.getAutoAttackMotion(executor);
 
-			if (combo == null) {
-				return;
-			}
+            if (combo == null) {
+                return;
+            }
 
             int comboSize = combo.size();
 
@@ -150,9 +145,6 @@ public class ComboAttacks extends Skill {
                 // Grows the combo counter when doing combo attacks
                 comboCounter = (comboCounter + 1) % (comboSize - 2);
             }
-
-            attackMotion = combo.get(comboCounter);
-            comboCounter = (dashAttack || airAttack) ? 0 : comboCounter + 1;
 		}
 		
 		setComboCounterWithEvent(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
