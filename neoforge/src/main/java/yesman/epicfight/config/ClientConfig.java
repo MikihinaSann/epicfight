@@ -14,6 +14,7 @@ import net.neoforged.fml.event.config.ModConfigEvent;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.utils.CirculatableEnum;
@@ -149,6 +150,9 @@ public class ClientConfig {
 
     // Camera Config values
     public static boolean enableFirstPersonCameraMove;
+
+    /** Use {@link #getTpsActivationType()} to handle null */
+    @Deprecated @ApiStatus.Internal
     public static TPSActivationType tpsType;
     public static int cameraHorizontalLocation;
     public static int cameraVerticalLocation;
@@ -653,6 +657,26 @@ public class ClientConfig {
         int posX = chargingBarBaseX.positionGetter.apply(Minecraft.getInstance().getWindow().getGuiScaledWidth(), chargingBarX);
         int posY = chargingBarBaseY.positionGetter.apply(Minecraft.getInstance().getWindow().getGuiScaledHeight(), chargingBarY);
         return new Vec2i(posX, posY);
+    }
+
+    /// TODO: this is a cheap resolution for a crash by unknown reason: https://mclo.gs/nehnpG3
+    /// We need to follow up the issue when the exact reason of the crash is confirmed, the log message
+    /// will fully shown the caller
+    public static TPSActivationType getTpsActivationType() {
+        if (tpsType == null) {
+            Exception noConfigValueException = new IllegalStateException("TPS Type is null");
+
+            EpicFightMod.LOGGER.warn(
+                "Epic Fight Config error: TPS Type is null",
+                noConfigValueException
+            );
+
+            noConfigValueException.printStackTrace();
+
+            return TPSActivationType.ON_AIMING;
+        }
+
+        return tpsType;
     }
 
     /// Determines which entities should show the health bar

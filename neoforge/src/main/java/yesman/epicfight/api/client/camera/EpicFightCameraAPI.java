@@ -115,7 +115,7 @@ public final class EpicFightCameraAPI {
     /// Returns if the camera is TPS mode
     /// When zooming ranged weapons or TPS mode is turned on by config
     public boolean isTPSMode() {
-        if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.tpsType.shouldSwitch(this)) {
+        if (this.minecraft.options.getCameraType() == CameraType.THIRD_PERSON_BACK && ClientConfig.getTpsActivationType().shouldSwitch(this)) {
             ActivateTPSCamera event = new ActivateTPSCamera(this);
             EpicFightClientEventHooks.Camera.ACTIVATE_TPS_CAMERA.post(event);
             return !event.isCanceled();
@@ -815,7 +815,7 @@ public final class EpicFightCameraAPI {
 
         if (this.isTPSMode()) {
             float partialZoomTick = this.zoomTick == 0 ? 0.0F : Math.min(this.zoomTick + (this.zoomingIn ? partialTick : -partialTick), MAX_ZOOM_TICK - 1);
-            float delta = ClientConfig.tpsType == ClientConfig.TPSActivationType.ON_AIMING ? partialZoomTick / (float)(MAX_ZOOM_TICK - 1) : 1.0F;
+            float delta = ClientConfig.getTpsActivationType() == ClientConfig.TPSActivationType.ON_AIMING ? partialZoomTick / (float)(MAX_ZOOM_TICK - 1) : 1.0F;
             float xRot = Mth.rotLerp(delta, this.minecraft.player.getXRot(), Mth.rotLerp(partialTick, this.cameraXRotO, this.cameraXRot));
             float yRot = Mth.rotLerp(delta, this.minecraft.player.getYRot(), Mth.rotLerp(partialTick, this.cameraYRotO, this.cameraYRot));
             camera.setRotation(yRot, xRot);

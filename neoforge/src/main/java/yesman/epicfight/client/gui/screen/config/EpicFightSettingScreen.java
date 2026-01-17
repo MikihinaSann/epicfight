@@ -1012,7 +1012,7 @@ public class EpicFightSettingScreen extends Screen {
                         15,
                         AnchoredWidget.HorizontalAnchorType.RIGHT_WIDTH,
                         AnchoredWidget.VerticalAnchorType.TOP_HEIGHT,
-                        () -> ClientConfig.tpsType,
+                        ClientConfig::getTpsActivationType,
                         value -> ClientConfig.tpsType = value,
                         8,
                         Component.translatable(GUI_WIDGET_SETTINGS_CAMERA_TPS_PERSPECTIVE),
