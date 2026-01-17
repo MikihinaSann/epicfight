@@ -1,12 +1,7 @@
 package yesman.epicfight.world.gamerule;
 
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,6 +12,10 @@ import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPChangeGamerule;
+
+import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
 public class EpicFightGameRules {
 	public static final ConfigurableGameRule<Boolean, ModConfigSpec.BooleanValue, GameRules.BooleanValue> GLOBAL_STUN = create(
@@ -106,7 +105,15 @@ public class EpicFightGameRules {
 			, RuleType.INTEGER
 			, true
 	);
-	
+
+    public static final ConfigurableGameRule<Boolean, ModConfigSpec.BooleanValue, GameRules.BooleanValue> ALLOW_VANILLA_MELEE = EpicFightGameRules.create(
+        "allowVanillaMelee"
+        , GameRules.Category.PLAYER
+        , configBuilder -> configBuilder.define("default_gamerule.allow_vanilla_melee", true)
+        , RuleType.BOOLEAN
+        , true
+    );
+
 	public static final Map<String, ConfigurableGameRule<?, ?, ?>> GAME_RULES = ImmutableMap.<String, ConfigurableGameRule<?, ?, ?>>builder()
 			.put("globalStun", GLOBAL_STUN)
 			.put("keepSkills", KEEP_SKILLS)
@@ -119,6 +126,7 @@ public class EpicFightGameRules {
 			.put("weightPenalty", WEIGHT_PENALTY)
 			.put("epicDrop", EPIC_DROP)
 			.put("skillReplaceCooldown", SKILL_REPLACE_COOLDOWN)
+            .put("allowVanillaMelee", ALLOW_VANILLA_MELEE)
 			.build();
 	
 	public static void registerGameRules() {

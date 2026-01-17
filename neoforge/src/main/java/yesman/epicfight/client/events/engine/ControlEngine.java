@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,8 +26,8 @@ import net.neoforged.neoforge.client.ClientHooks;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
+import net.neoforged.neoforge.entity.PartEntity;
 import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -56,6 +57,7 @@ import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.skill.modules.HoldableSkill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.skill.PlayerSkills;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
@@ -1016,6 +1018,24 @@ public class ControlEngine implements IEventBasedEngine {
 			}
 		}
 
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
+
+        if (playerpatch == null) {
+            return;
+        }
+
+        if (playerpatch.isVanillaMode() && triggeredAction == MinecraftInputAction.ATTACK_DESTROY) {
+            // Blocks vanilla attacks against living entities
+            if (
+                !EpicFightGameRules.ALLOW_VANILLA_MELEE.getRuleValue(playerpatch.getOriginal().level()) &&
+                    this.minecraft.hitResult instanceof EntityHitResult entityHitResult &&
+                    (entityHitResult.getEntity() instanceof LivingEntity || entityHitResult.getEntity() instanceof PartEntity)
+            ) {
+                event.setSwingHand(false);
+                event.setCanceled(true);
+            }
+        }
+
 		if (
 			triggeredAction == MinecraftInputAction.USE &&
 			InputManager.isBoundToSamePhysicalInput(MinecraftInputAction.USE, EpicFightInputAction.GUARD) &&
@@ -1024,50 +1044,49 @@ public class ControlEngine implements IEventBasedEngine {
 				ClientConfig.canceledVanillaActions.cancelItemUse()
 			)
 		) {
-			MutableBoolean canGuard = new MutableBoolean();
+			boolean canGuard = false;
+            SkillContainer skillcontainer = playerpatch.getSkill(SkillSlots.GUARD);
 
-			EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-				SkillContainer skillcontainer = playerpatch.getSkill(SkillSlots.GUARD);
+            if (skillcontainer.getSkill() != null && skillcontainer.getSkill().canExecute(skillcontainer)) {
+                canGuard = true;
+            }
 
-				if (skillcontainer.getSkill() != null && skillcontainer.getSkill().canExecute(skillcontainer)) {
-					canGuard.setValue(true);
-				}
-			});
+            if (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT) {
+                if (this.minecraft.hitResult.getType() == HitResult.Type.MISS) {
+                    if (canGuard && ClientConfig.canceledVanillaActions.cancelItemUse()) {
+                        event.setSwingHand(false);
+                        event.setCanceled(true);
+                    }
+                } else {
+                    if (canGuard) {
+                        InteractionResult interactionResult = switch (this.minecraft.hitResult.getType()) {
+                            case ENTITY -> {
+                                yield ((EntityHitResult) this.minecraft.hitResult).getEntity().interact(this.minecraft.player, event.getHand());
+                            }
+                            case BLOCK -> {
+                                BlockHitResult blockHitResult = ((BlockHitResult) this.minecraft.hitResult);
+                                BlockPos blockpos = blockHitResult.getBlockPos();
+                                BlockState blockstate = this.minecraft.level.getBlockState(blockpos);
+                                FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(this.minecraft.level);
+                                FakeLevel.FakeClientPlayer fakePlayerForSimulation = FakeLevel.getFakePlayer(this.minecraft.player.getGameProfile());
 
-			if (this.minecraft.hitResult.getType() == HitResult.Type.MISS) {
-				if (canGuard.booleanValue() && ClientConfig.canceledVanillaActions.cancelItemUse()) {
-					event.setSwingHand(false);
-					event.setCanceled(true);
-				}
-			} else {
-				if (canGuard.booleanValue()) {
-					InteractionResult interactionResult = switch (this.minecraft.hitResult.getType()) {
-						case ENTITY -> {
-							yield ((EntityHitResult)this.minecraft.hitResult).getEntity().interact(this.minecraft.player, event.getHand());
-						}
-						case BLOCK -> {
-							BlockHitResult blockHitResult = ((BlockHitResult)this.minecraft.hitResult);
-							BlockPos blockpos = blockHitResult.getBlockPos();
-							BlockState blockstate = this.minecraft.level.getBlockState(blockpos);
-							FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(this.minecraft.level);
-							FakeLevel.FakeClientPlayer fakePlayerForSimulation = FakeLevel.getFakePlayer(this.minecraft.player.getGameProfile());
+                                InteractionResult useItemInteractionResult = blockstate.useItemOn(this.player.getItemInHand(event.getHand()), fakeLevelForSimulation, fakePlayerForSimulation, event.getHand(), blockHitResult).result();
+                                if (useItemInteractionResult != InteractionResult.PASS) yield useItemInteractionResult;
+                                yield blockstate.useWithoutItem(fakeLevelForSimulation, fakePlayerForSimulation, blockHitResult);
+                            }
+                            default -> throw new IllegalArgumentException();
+                        };
 
-							InteractionResult useItemInteractionResult = blockstate.useItemOn(this.player.getItemInHand(event.getHand()), fakeLevelForSimulation, fakePlayerForSimulation, event.getHand(), blockHitResult).result();
-							if (useItemInteractionResult != InteractionResult.PASS) yield useItemInteractionResult;
-							yield blockstate.useWithoutItem(fakeLevelForSimulation, fakePlayerForSimulation, blockHitResult);
-						}
-						default -> throw new IllegalArgumentException();
-					};
-
-					if (interactionResult != InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelInteraction()) {
-						event.setSwingHand(false);
-						event.setCanceled(true);
-					} else if (interactionResult == InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelItemUse()) {
-						event.setSwingHand(false);
-						event.setCanceled(true);
-					}
-				}
-			}
+                        if (interactionResult != InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelInteraction()) {
+                            event.setSwingHand(false);
+                            event.setCanceled(true);
+                        } else if (interactionResult == InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelItemUse()) {
+                            event.setSwingHand(false);
+                            event.setCanceled(true);
+                        }
+                    }
+                }
+            }
 		}
 	}
 
