@@ -7,6 +7,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.compress.utils.Lists;
+import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.NotNull;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
@@ -24,18 +26,17 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.jetbrains.annotations.NotNull;
-import yesman.epicfight.client.online.EpicFightServerConnectionHelper;
+import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.utils.CirculatableEnum;
 import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.api.utils.math.Vec2i;
 import yesman.epicfight.client.ClientEngine;
-import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.client.gui.ScreenCalculations.AlignDirection;
 import yesman.epicfight.client.gui.ScreenCalculations.HorizontalBasis;
 import yesman.epicfight.client.gui.ScreenCalculations.VerticalBasis;
 import yesman.epicfight.client.gui.screen.config.ItemsPreferenceScreen;
 import yesman.epicfight.client.gui.widgets.ColorSlider;
+import yesman.epicfight.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.main.AuthenticationHelper.AuthenticationProvider;
 import yesman.epicfight.main.EpicFightMod;
 
@@ -164,6 +165,9 @@ public class ClientConfig {
 	
 	public static Set<Item> combatPreferredItems;
 	public static Set<Item> miningPreferredItems;
+	
+	/** Use {@link #getCameraMode()} to handle null */
+	@Deprecated @ApiStatus.Internal
 	public static TPSType cameraMode;
 	public static int cameraHorizontalLocation;
 	public static int cameraVerticalLocation;
@@ -492,6 +496,26 @@ public class ClientConfig {
 		int posX = chargingBarBaseX.positionGetter.apply(width, chargingBarX);
 		int posY = chargingBarBaseY.positionGetter.apply(height, chargingBarY);
 		return new Vec2i(posX, posY);
+	}
+	
+	/// TODO: this is a cheap resolution for a crash by unknown reason: https://mclo.gs/nehnpG3
+	/// We need to follow up the issue when the exact reason of the crash is confirmed, the log message
+	/// will fully shown the caller 
+	public static TPSType getCameraMode() {
+		if (cameraMode == null) {
+			Exception noConfigValueException = new IllegalStateException("TPS Type is null");
+			
+			EpicFightMod.LOGGER.warn(
+				"Epic Fight Config error: TPS Type is null",
+				noConfigValueException
+			);
+			
+			noConfigValueException.printStackTrace();
+			
+			return TPSType.WHEN_AIMING;
+		}
+		
+		return cameraMode;
 	}
 	
 	/**

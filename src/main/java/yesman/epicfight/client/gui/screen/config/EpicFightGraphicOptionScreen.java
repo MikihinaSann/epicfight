@@ -74,13 +74,13 @@ public class EpicFightGraphicOptionScreen extends EpicFightOptionSubScreen {
 			}
 		}).pos(this.width / 2 + 5, this.height / 4 - 8).size(160, 20).tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.tps_setup.tooltip")))).build();
 		
-		Button cameraTypeButton = Button.builder(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.cameraMode.name()))), (button) -> {
-			ClientConfig.cameraMode = ClientConfig.cameraMode.nextEnum();
-			button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.cameraMode.name()))));
-			cameraSetupButton.active = ClientConfig.cameraMode.hasTPSTransition();
+		Button cameraTypeButton = Button.builder(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.getCameraMode().name()))), (button) -> {
+			ClientConfig.cameraMode = ClientConfig.getCameraMode().nextEnum();
+			button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective." + ParseUtil.toLowerCase(ClientConfig.getCameraMode().name()))));
+			cameraSetupButton.active = ClientConfig.getCameraMode().hasTPSTransition();
 		}).pos(this.width / 2 - 165, this.height / 4 + buttonHeight).size(160, 20).tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.tps_perspective.tooltip")))).build();
 		
-		cameraSetupButton.active = ClientConfig.cameraMode.hasTPSTransition();
+		cameraSetupButton.active = ClientConfig.getCameraMode().hasTPSTransition();
 		this.optionsList.addSmall(cameraTypeButton, cameraSetupButton);
 		
 		buttonHeight += 24;
