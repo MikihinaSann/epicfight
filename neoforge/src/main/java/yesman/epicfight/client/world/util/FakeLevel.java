@@ -2,23 +2,13 @@ package yesman.epicfight.client.world.util;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.ChatComponent;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientLevel;
-import net.minecraft.client.multiplayer.ClientPacketListener;
-import net.minecraft.client.multiplayer.CommonListenerCookie;
-import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.player.AbstractClientPlayer;
-import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.PacketFlow;
-import net.minecraft.server.ServerLinks;
+import net.minecraft.network.protocol.Packet;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -30,7 +20,6 @@ import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
-import net.neoforged.neoforge.network.connection.ConnectionType;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.main.EpicFightMod;
 
@@ -64,7 +53,11 @@ public class FakeLevel extends ClientLevel {
 	
 	public FakeLevel(ClientLevel refLevel, Minecraft minecraft) {
 		super(
-			new FakeClientPacketListener(refLevel, minecraft),
+            // Copy the connection instance from original level due to the mixin crashes from
+            // Fabric's network API (#2419), tho this may have side effect, possibly modify the world
+            // data and send packet for the modification. (So in FakeLevel it overrides all methods where to use)
+            refLevel.connection,
+			// new FakeClientPacketListener(refLevel, minecraft), << the original approach, making a fake connection
 			new ClientLevel.ClientLevelData(Difficulty.NORMAL, false, false),
 			Level.OVERWORLD,
 			refLevel.registryAccess().registryOrThrow(Registries.DIMENSION_TYPE).getHolderOrThrow(BuiltinDimensionTypes.OVERWORLD),
@@ -78,7 +71,20 @@ public class FakeLevel extends ClientLevel {
 		
 		this.refLevel = refLevel;
 	}
-	
+
+    /// These are method overrides where [#connection] is used to send packets,
+    /// preventing payloads are shipping from fake level.
+    ///
+    /// Left only getter methods as is: [#enabledFeatures]. [#potionBrewing], [#getScoreboard], [#getRecipeManager]
+    @Override
+    public void disconnect() {
+    }
+
+    @Override
+    public void sendPacketToServer(Packet<?> packet) {
+    }
+    /// **********************************************************************
+
 	/**
 	 * Accessor methods referencing original world
 	 */
@@ -156,11 +162,6 @@ public class FakeLevel extends ClientLevel {
 	}
 	
 	@Override
-	public FeatureFlagSet enabledFeatures() {
-		return this.refLevel.enabledFeatures();
-	}
-	
-	@Override
 	public List<Entity> getEntities(@Nullable Entity pEntity, AABB pArea, Predicate<? super Entity> pPredicate) {
 		return this.refLevel.getEntities(pEntity, pArea, pPredicate);
 	}
@@ -204,6 +205,9 @@ public class FakeLevel extends ClientLevel {
         }
     }
 
+    /* Due to the workaround specified in constructor of FakeLevel this class is no longer needed.
+     * Maybe revert the change when significant issue is found
+     *
 	private static class FakeClientPacketListener extends ClientPacketListener {
 		private static final Connection DUMMY_CONNECTION = new Connection(PacketFlow.CLIENTBOUND);
 		
@@ -233,4 +237,5 @@ public class FakeLevel extends ClientLevel {
 		public void close() {
 		}
 	}
+	*/
 }
