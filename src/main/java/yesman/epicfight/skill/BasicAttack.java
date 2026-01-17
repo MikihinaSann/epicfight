@@ -48,11 +48,6 @@ public class BasicAttack extends Skill {
 		}
 		
 		CapabilityItem itemCapability = playerpatch.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-		
-		if (reason != ComboCounterHandleEvent.Causal.TIME_EXPIRED && !itemCapability.shouldCancelCombo(playerpatch)) {
-			return;
-		}
-		
 		int modifiedCombo = itemCapability.handleComboCounter(reason, playerpatch, causalAnimation, counter);
 		int prevValue = container.getDataManager().getDataValue(SkillDataKeys.COMBO_COUNTER.get());
 		ComboCounterHandleEvent comboResetEvent = new ComboCounterHandleEvent(reason, playerpatch, causalAnimation, prevValue, modifiedCombo);

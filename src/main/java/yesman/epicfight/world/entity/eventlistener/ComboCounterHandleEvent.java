@@ -2,11 +2,13 @@ package yesman.epicfight.world.entity.eventlistener;
 
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import javax.annotation.Nullable;
 
 import com.google.common.collect.Sets;
 
+import net.minecraft.Util;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.MainFrameAnimation;
@@ -71,7 +73,7 @@ public class ComboCounterHandleEvent extends AbstractPlayerEvent<ServerPlayerPat
 			Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Sets.newHashSet(comboAnimations);
 			
 			// when the next animation is not included in weapon attack motion, reset the counter
-			if (!attackMotionSet.contains(nextAnimation)) {
+			if (!attackMotionSet.contains(nextAnimation) && causal != ComboCounterHandleEvent.Causal.TIME_EXPIRED && itemCapability.shouldCancelCombo(entitypatch)) {
 				return 0;
 			}
 			
@@ -84,6 +86,37 @@ public class ComboCounterHandleEvent extends AbstractPlayerEvent<ServerPlayerPat
 			
 			return comboCounter;
 		};
+		
+		Function<Class<? extends StaticAnimation>, ComboCounterHandler> NO_RESET_WITH_ANIM_TYPE = Util.memoize(animType -> {
+			return (CapabilityItem itemCapability, ComboCounterHandleEvent.Causal causal, PlayerPatch<?> entitypatch, @Nullable AnimationAccessor<? extends MainFrameAnimation> nextAnimation, int comboCounter) -> {
+				// When causal is time expiration, reset the counter
+				if (causal == ComboCounterHandleEvent.Causal.TIME_EXPIRED) {
+					return 0;
+				}
+				
+				List<AnimationAccessor<? extends AttackAnimation>> comboAnimations = itemCapability.getAutoAttackMotion(entitypatch);
+				
+				if (comboAnimations == null) {
+					return 0;
+				}
+				
+				Set<AnimationAccessor<? extends AttackAnimation>> attackMotionSet = Sets.newHashSet(comboAnimations);
+				
+				// when the next animation is not included in weapon attack motion, reset the counter
+				if (!nextAnimation.checkType(animType) && !attackMotionSet.contains(nextAnimation)) {
+					return 0;
+				}
+				
+				int comboSize = comboAnimations.size();
+				
+				// When the next animation is dash or air attacks, reset combo counter
+				if (nextAnimation.equals(comboAnimations.get(comboSize - 1)) || nextAnimation.equals(comboAnimations.get(comboSize - 2))) {
+					return 0;
+				}
+				
+				return comboCounter;
+			};
+		});
 		
 		/// Control the combo counter with given parameters
 		/// @param nextAnimation null when ComboCounterHandleEvent.Causal is {@link ComboCounterHandleEvent.Causal#TIME_EXPIRED}
