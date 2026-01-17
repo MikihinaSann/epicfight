@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [20.14.6] - 2025-01-17
+
+### Fixed
+- Fixed Forbidden Strength triggered via basic attacks
+- Fixed an issue where you can cast skills with holding TaCZ firearms #2413
+- Fixed skills not casting with exact same amount of stamina required (reported by @Reascer)
+- Fixed a crash: https://mclo.gs/nehnpG3
+- Fixed a crash when hover items to show its tooltips #2406
+- Fixed a crash when Fabric Networking API is installed through multi-platform mods #2399
+
+### Added
+- A game rule that blocked vanilla melee attacks is now rolled back with a new name, "allowVanillaMelee"
+- A maximum damage limitation is applied to Eviscerate(dagger skill, default is 20) #2364
+
+### Changed
+- Now Epic Fight's action animations have higher priority than Player Animator's animations
+
+### For Devs
+- Now `BuildCameraTransform.Post` is applied to TPS mode too (https://github.com/Epic-Fight/epicfight/commit/e0f3daab8d61b5bc8a4c14e3051b34c3ff599080)
+
 ## [20.14.5] - 2025-01-11
 
 ### Fixed
