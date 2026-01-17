@@ -3,6 +3,7 @@ package yesman.epicfight.client.input;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
@@ -32,11 +33,7 @@ public final class InputUtils {
 
         final int mouseButton = isMouse ? key.getValue() : -1;
 
-        InputEvent.InteractionKeyMappingTriggered inputEvent = ClientHooks.onClickInput(
-                mouseButton, keyMapping, InteractionHand.MAIN_HAND
-        );
-
-        if (!inputEvent.isCanceled()) {
+        if (checkInteractionKeyUsable(mouseButton, keyMapping)) {
             handler.run();
         }
     }
@@ -46,6 +43,27 @@ public final class InputUtils {
         if (localPlayer != null) {
             sneakingTick(localPlayer, isSneaking, sneakingSpeedMultiplier);
         }
+    }
+
+    /// Checks if the given key mapping is interaction key (block or entity interaction) and triggers
+    /// [InputEvent.InteractionKeyMappingTriggered] event
+    public static boolean checkInteractionKeyUsable(int mouseButton, KeyMapping keyMapping) {
+        Options option = Minecraft.getInstance().options;
+
+        if (
+            keyMapping == option.keyAttack ||
+                keyMapping == option.keyUse ||
+                keyMapping == option.keyPickItem
+        ) {
+            @SuppressWarnings("UnstableApiUsage")
+            InputEvent.InteractionKeyMappingTriggered inputEvent = ClientHooks.onClickInput(
+                mouseButton, keyMapping, InteractionHand.MAIN_HAND
+            );
+
+            return !inputEvent.isCanceled();
+        }
+
+        return true;
     }
 
     /// Currently, this calls [Input#tick] without performing any additional logic.
