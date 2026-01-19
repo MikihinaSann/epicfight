@@ -1,5 +1,5 @@
 ---
-icon: file-multiple
+icon: material/file-multiple
 hide:
   - announcement
 ---
