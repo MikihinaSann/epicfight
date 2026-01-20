@@ -11,7 +11,6 @@ import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.EntityUI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.compat.ICompatModule;
-import yesman.epicfight.compat.azurelib.client.AzureModelTransformer;
 import yesman.epicfight.compat.geckolib.client.GeoModelTransformer;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -25,7 +24,7 @@ public class GeckolibCompat implements ICompatModule {
 	
 	@Override
 	public void onGameEventBusClient(IEventBus eventBus) {
-        EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(AzureModelTransformer::getGeoArmorTexturePath);
+        EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(GeoModelTransformer::getGeoArmorTexturePath);
 		eventBus.addListener(this::geoEntityRenderPreEvent);
 		eventBus.addListener(this::geoEntityRenderPostEvent);
 	}
