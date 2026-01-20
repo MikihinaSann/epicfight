@@ -1,5 +1,5 @@
 [versions]
-mod = "21.15.0.1"
+mod = "21.15.1"
 java = "21"
 
 # Minecraft
@@ -31,7 +31,7 @@ architectury = "13.0.8"
 controlify = "2.5.0+1.21.1-neoforge"
 azurelib = "2.3.28"
 azurelib-armor = "2.3.15"
-geckolib = "4.8.2"
+geckolib = "4.8.3"
 sodium = "mc1.21.1-0.6.13-neoforge"
 iris = "1.8.12+1.21.1-neoforge"
 werewolves = "1.21-2.0.2.5"
