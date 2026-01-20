@@ -622,6 +622,8 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public void toVanillaMode(boolean synchronize) {
+        System.out.println("to Vanilla");
+
 		if (this.playerMode == PlayerMode.VANILLA) {
 			return;
 		}
@@ -643,7 +645,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 			return;
 		}
 
-        TogglePlayerModeEvent togglePlayerModeEvent = new TogglePlayerModeEvent(this, PlayerMode.VANILLA);
+        TogglePlayerModeEvent togglePlayerModeEvent = new TogglePlayerModeEvent(this, PlayerMode.EPICFIGHT);
         EpicFightEventHooks.Player.TOGGLE_MODE.postWithListener(togglePlayerModeEvent, this.getEventListener());
 
         if (!togglePlayerModeEvent.isCanceled()) {
