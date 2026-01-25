@@ -622,8 +622,6 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public void toVanillaMode(boolean synchronize) {
-        System.out.println("to Vanilla");
-
 		if (this.playerMode == PlayerMode.VANILLA) {
 			return;
 		}
