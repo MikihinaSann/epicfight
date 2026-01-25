@@ -59,7 +59,7 @@ public final class EpicFightSkillDataKeys {
 	);
 	
 	public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Float>> FALL_DISTANCE = REGISTRY.register("fall_distance", () -> 
-		SkillDataKey.createSkillDataKey(ByteBufCodecs.FLOAT, 0.0F, false, MeteorSlamSkill.class)
+		SkillDataKey.createSkillDataKey(ByteBufCodecs.FLOAT, 0.0F, true, MeteorSlamSkill.class)
 	);
 	
 	public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Boolean>> PROTECT_NEXT_FALL = REGISTRY.register("slam_protect_next_fall", () -> 
