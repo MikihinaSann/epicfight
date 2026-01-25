@@ -3,7 +3,6 @@ package yesman.epicfight.skill;
 import java.util.function.Supplier;
 
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraftforge.registries.DeferredRegister;
@@ -46,7 +45,7 @@ public class SkillDataKeys {
 	public static final RegistryObject<SkillDataKey<Float>> PENALTY = DATA_KEYS.register("penalty", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.FLOAT, 0.0F, GuardSkill.class, ImpactGuardSkill.class));
 	public static final RegistryObject<SkillDataKey<Integer>> LAST_ACTIVE = DATA_KEYS.register("last_active", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.INTEGER, 0, ParryingSkill.class));
 	public static final RegistryObject<SkillDataKey<Integer>> PARRY_MOTION_COUNTER = DATA_KEYS.register("parry_motion_counter", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.INTEGER, 0, ParryingSkill.class));
-	public static final RegistryObject<SkillDataKey<Float>> FALL_DISTANCE = DATA_KEYS.register("fall_distance", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.FLOAT, 0.0F, MeteorSlamSkill.class));
+	public static final RegistryObject<SkillDataKey<Float>> FALL_DISTANCE = DATA_KEYS.register("fall_distance", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.FLOAT, 0.0F, true, MeteorSlamSkill.class));
 	public static final RegistryObject<SkillDataKey<Boolean>> PROTECT_NEXT_FALL = DATA_KEYS.register("slam_protect_next_fall", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.BOOLEAN, false, MeteorSlamSkill.class, DemolitionLeapSkill.class, PhantomAscentSkill.class));
 	public static final RegistryObject<SkillDataKey<Integer>> STACKS = DATA_KEYS.register("stacks", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.INTEGER, 0, AdaptiveSkinSkill.class, BonebreakerSkill.class, RevelationSkill.class));
 	public static final RegistryObject<SkillDataKey<Boolean>> JUMP_KEY_PRESSED_LAST_TICK = DATA_KEYS.register("jump_key_pressed_last_tick", () -> SkillDataKey.createSkillDataKey(PacketBufferCodec.BOOLEAN, false, PhantomAscentSkill.class));
