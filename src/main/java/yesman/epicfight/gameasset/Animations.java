@@ -14,7 +14,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -1675,7 +1674,12 @@ public class Animations {
 				.addProperty(AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.setter(15.0F))
 				.addProperty(ActionAnimationProperty.MOVE_VERTICAL, true)
 				.addProperty(ActionAnimationProperty.COORD_SET_BEGIN, (self, entitypatch, transformSheet) -> {
-					if (!self.isLinkAnimation() && entitypatch instanceof WitherPatch witherpatch && witherpatch.getOriginal().getAlternativeTarget(0) > 0) {
+					Entity target = null;
+					
+					if (
+						!self.isLinkAnimation() && entitypatch instanceof WitherPatch witherpatch &&
+						(target = entitypatch.getOriginal().level().getEntity(witherpatch.getOriginal().getAlternativeTarget(0))) != null
+					) {
 						TransformSheet transform = self.getTransfroms().get("Root").copyAll();
 						Keyframe[] keyframes = transform.getKeyframes();
 						int startFrame = 1;
@@ -1683,7 +1687,7 @@ public class Animations {
 						Vec3f keyOrigin = keyframes[startFrame].transform().translation().multiply(1.0F, 1.0F, 0.0F);
 						Vec3f keyLast = keyframes[3].transform().translation();
 						Vec3 pos = entitypatch.getOriginal().getEyePosition();
-						Vec3 targetpos = entitypatch.getOriginal().level().getEntity(witherpatch.getOriginal().getAlternativeTarget(0)).position();
+						Vec3 targetpos = target.position();
 						float horizontalDistance = (float)targetpos.subtract(pos).length();
 						float verticalDistance = (float)(targetpos.y - pos.y);
 						Vec3f prevPosition = Vec3f.sub(keyLast, keyOrigin, null);
