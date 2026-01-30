@@ -328,19 +328,36 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			
 			provider.defaultAnimations = deserializeDefaultAnimations(tag.getCompound("default_livingmotions"));
 			provider.faction = Faction.ENUM_MANAGER.getOrThrow(tag.getString("faction"));
-			
 			provider.scale = tag.getCompound("attributes").contains("scale") ? (float)tag.getCompound("attributes").getDouble("scale") : 1.0F;
 			
 			if (tag.contains("swing_sound")) {
-				provider.swingSound = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.parse(tag.getString("swing_sound")));
+				SoundEvent soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.parse(tag.getString("swing_sound")));
+				
+				if (soundEvent == null) {
+					EpicFightMod.LOGGER.warn("Can't find a swing sound " + tag.getString("swing_sound") + " for the next mot patch: " + entityType.toString());
+				} else {
+					provider.swingSound = soundEvent;
+				}
 			}
 			
 			if (tag.contains("hit_sound")) {
-				provider.hitSound = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.parse(tag.getString("hit_sound")));
+				SoundEvent soundEvent = ForgeRegistries.SOUND_EVENTS.getValue(ResourceLocation.parse(tag.getString("hit_sound")));
+				
+				if (soundEvent == null) {
+					EpicFightMod.LOGGER.warn("Can't find a hit sound " + tag.getString("hit_sound") + " for the next mot patch: " + entityType.toString());
+				} else {
+					provider.hitSound = soundEvent;
+				}
 			}
 			
 			if (tag.contains("hit_particle")) {
-				provider.hitParticle = (HitParticleType)ForgeRegistries.PARTICLE_TYPES.getValue(ResourceLocation.parse(tag.getString("hit_particle")));
+				HitParticleType hitParticle = (HitParticleType)ForgeRegistries.PARTICLE_TYPES.getValue(ResourceLocation.parse(tag.getString("hit_particle")));
+				
+				if (hitParticle == null) {
+					EpicFightMod.LOGGER.warn("Can't find a hit particle type" + tag.getString("hit_particle") + " for the next mot patch: " + entityType.toString());
+				} else {
+					provider.hitParticle = hitParticle;
+				}
 			}
 			
 			if (!clientSide) {
