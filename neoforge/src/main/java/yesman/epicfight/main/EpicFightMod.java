@@ -50,7 +50,6 @@ import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
 import yesman.epicfight.api.data.reloader.SkillReloadListener;
 import yesman.epicfight.client.events.engine.IEventBasedEngine;
-import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.config.EpicFightSettingScreen;
 import yesman.epicfight.client.gui.screen.config.ItemsPreferenceScreen;
@@ -367,8 +366,6 @@ public class EpicFightMod {
     				ItemsPreferenceScreen.resetItems();
     			}
     		});
-
-    		event.enqueueWork(RenderEngine.getInstance()::initialize);
         }
 
         @SubscribeEvent

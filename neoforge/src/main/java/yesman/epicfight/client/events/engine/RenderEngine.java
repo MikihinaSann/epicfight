@@ -2,7 +2,6 @@ package yesman.epicfight.client.events.engine;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.GlStateManager;
@@ -49,6 +48,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
@@ -76,7 +76,6 @@ import yesman.epicfight.client.renderer.patched.entity.*;
 import yesman.epicfight.client.renderer.patched.item.*;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.entries.EpicFightEntityTypes;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -93,329 +92,324 @@ import java.util.stream.Collectors;
 
 @SuppressWarnings("rawtypes")
 public class RenderEngine implements IEventBasedEngine {
-	private static final RenderEngine INSTANCE = new RenderEngine();
-	
-	public static RenderEngine getInstance() {
-		return INSTANCE;
-	}
-	
-	public final BattleModeGui battleModeHUD;
-	public final VersionNotifier versionNotifier;
-	public final Minecraft minecraft;
-	
-	private final BiMap<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entityRendererProvider;
-	private final Map<EntityType<?>, PatchedEntityRenderer> entityRendererCache;
-	private final Map<Item, RenderItemBase> itemRendererMapByInstance;
-	private final Map<Class<?>, RenderItemBase> itemRendererMapByClass;
-	private final Map<UUID, BossPatch> bossEventOwners = new ConcurrentHashMap<> ();
-	private final OverlayManager overlayManager;
-	private FakeBlockRenderer fakeBlockRenderer;
-	
-	private Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers;
-	private FirstPersonRenderer firstPersonRenderer;
-	private PHumanoidRenderer<?, ?, ?, ?, ?> basicHumanoidRenderer;
-	private int modelInitTimer;
+    private static final RenderEngine INSTANCE = new RenderEngine();
 
-	private RenderEngine() {
-		this.minecraft = Minecraft.getInstance();
-		this.battleModeHUD = new BattleModeGui(this.minecraft);
-		this.versionNotifier = new VersionNotifier(this.minecraft);
-		this.entityRendererProvider = HashBiMap.create();
-		this.entityRendererCache = new HashMap<> ();
-		this.itemRendererMapByInstance = new HashMap<> ();
-		this.itemRendererMapByClass = new HashMap<> ();
-		this.overlayManager = new OverlayManager();
-		this.fakeBlockRenderer = new VanillaFakeBlockRenderer();
-	}
-	
-	public void initialize() {
-		Map<ResourceLocation, Function<JsonElement, RenderItemBase>> builder = new HashMap<> ();
-		builder.put(ResourceLocation.withDefaultNamespace("base"), RenderItemBase::new);
-		builder.put(ResourceLocation.withDefaultNamespace("ranged"), RenderTwoHandedRangedWeapon::new);
-		builder.put(ResourceLocation.withDefaultNamespace("map"), RenderFilledMap::new);
-		builder.put(ResourceLocation.withDefaultNamespace("shield"), RenderShield::new);
-		builder.put(ResourceLocation.withDefaultNamespace("trident"), RenderTrident::new);
-		builder.put(EpicFightMod.identifier("uchigatana"), RenderKatana::new);
+    public static RenderEngine getInstance() {
+        return INSTANCE;
+    }
 
-        EpicFightClientEventHooks.Registry.PATCHED_ITEM.post(new RegisterPatchedRenderersEvent.Item(builder));
+    public final BattleModeGui battleModeHUD;
+    public final VersionNotifier versionNotifier;
+    public final Minecraft minecraft;
 
-		this.itemRenderers = ImmutableMap.copyOf(builder);
-	}
-	
-	public void reloadFakeBlockRenderer(FakeBlockRenderer fakeBlockRenderer) {
-		this.fakeBlockRenderer = fakeBlockRenderer;
-	}
-	
-	public void reloadItemRenderers(Map<ResourceLocation, JsonElement> objects) {
-		//Clear item renderers
-		this.itemRendererMapByInstance.clear();
-		this.itemRendererMapByClass.clear();
-		
-		for (Map.Entry<ResourceLocation, JsonElement> entry : objects.entrySet()) {
-			ResourceLocation rl = entry.getKey();
-			String pathString = rl.getPath();
-			ResourceLocation registryName = ResourceLocation.fromNamespaceAndPath(rl.getNamespace(), pathString);
-			
-			if (!BuiltInRegistries.ITEM.containsKey(registryName)) {
-				EpicFightMod.LOGGER.warn("Failed to load item skin: no item named " + registryName);
-				continue;
-			}
-			
-			Item item = BuiltInRegistries.ITEM.get(registryName);
-			Function<JsonElement, RenderItemBase> rendererProvider;
-			
-			if (entry.getValue().getAsJsonObject().has("renderer")) {
-				ResourceLocation rendererName = ResourceLocation.parse(entry.getValue().getAsJsonObject().get("renderer").getAsString());
-				
-				if (itemRenderers.containsKey(rendererName)) {
-					rendererProvider = itemRenderers.get(rendererName);
-				} else {
-					EpicFightMod.LOGGER.warn("No renderer named " + rendererName);
-					rendererProvider = RenderItemBase::new;
-				}
-			} else {
-				rendererProvider = RenderItemBase::new;
-			}
-			
-			RenderItemBase itemRenderer = rendererProvider.apply(entry.getValue());
-			this.itemRendererMapByInstance.put(item, itemRenderer);
-		}
-		
-		RenderItemBase baseRenderer = new RenderItemBase(new JsonObject());
-		RenderTwoHandedRangedWeapon bowRenderer = new RenderTwoHandedRangedWeapon(objects.get(BuiltInRegistries.ITEM.getKey(Items.BOW)).getAsJsonObject());
-		RenderTwoHandedRangedWeapon crossbowRenderer = new RenderTwoHandedRangedWeapon(objects.get(BuiltInRegistries.ITEM.getKey(Items.CROSSBOW)).getAsJsonObject());
-		RenderTrident tridentRenderer = new RenderTrident(objects.get(BuiltInRegistries.ITEM.getKey(Items.TRIDENT)).getAsJsonObject());
-		RenderFilledMap mapRenderer = new RenderFilledMap(objects.get(BuiltInRegistries.ITEM.getKey(Items.FILLED_MAP)).getAsJsonObject());
-		RenderShield shieldRenderer = new RenderShield(objects.get(BuiltInRegistries.ITEM.getKey(Items.SHIELD)).getAsJsonObject());
-		
-		// Render by item classes
-		this.itemRendererMapByClass.put(BowItem.class, bowRenderer);
-		this.itemRendererMapByClass.put(CrossbowItem.class, crossbowRenderer);
-		this.itemRendererMapByClass.put(ShieldItem.class, baseRenderer);
-		this.itemRendererMapByClass.put(TridentItem.class, tridentRenderer);
-		this.itemRendererMapByClass.put(ShieldItem.class, shieldRenderer);
-		
-		// Render by capability classes
-		this.itemRendererMapByClass.put(BowCapability.class, bowRenderer);
-		this.itemRendererMapByClass.put(CrossbowCapability.class, crossbowRenderer);
-		this.itemRendererMapByClass.put(TridentCapability.class, tridentRenderer);
-		this.itemRendererMapByClass.put(MapCapability.class, mapRenderer);
-		this.itemRendererMapByClass.put(ShieldCapability.class, shieldRenderer);
-	}
-	
-	public void resetRenderers() {
-		this.entityRendererCache.clear();
-		
-		for (Map.Entry<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entry : this.entityRendererProvider.entrySet()) {
-			this.entityRendererCache.put(entry.getKey(), entry.getValue().apply(entry.getKey()));
-		}
+    private final BiMap<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entityRendererProvider;
+    private final Map<EntityType<?>, PatchedEntityRenderer> entityRendererCache;
+    private final Map<Item, RenderItemBase> itemRendererMapByInstance;
+    private final Map<Class<?>, RenderItemBase> itemRendererMapByClass;
+    private final Map<UUID, BossPatch> bossEventOwners = new ConcurrentHashMap<> ();
+    private final OverlayManager overlayManager;
+    private FakeBlockRenderer fakeBlockRenderer;
+
+    private FirstPersonRenderer firstPersonRenderer;
+    private PHumanoidRenderer<?, ?, ?, ?, ?> basicHumanoidRenderer;
+    private int modelInitTimer;
+
+    private RenderEngine() {
+        this.minecraft = Minecraft.getInstance();
+        this.battleModeHUD = new BattleModeGui(this.minecraft);
+        this.versionNotifier = new VersionNotifier(this.minecraft);
+        this.entityRendererProvider = HashBiMap.create();
+        this.entityRendererCache = new HashMap<> ();
+        this.itemRendererMapByInstance = new HashMap<> ();
+        this.itemRendererMapByClass = new HashMap<> ();
+        this.overlayManager = new OverlayManager();
+        this.fakeBlockRenderer = new VanillaFakeBlockRenderer();
+    }
+
+    public void reloadFakeBlockRenderer(FakeBlockRenderer fakeBlockRenderer) {
+        this.fakeBlockRenderer = fakeBlockRenderer;
+    }
+
+    public void reloadItemRenderers(Map<ResourceLocation, JsonElement> objects) {
+        //Clear item renderers
+        this.itemRendererMapByInstance.clear();
+        this.itemRendererMapByClass.clear();
+
+        Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers = new HashMap<> ();
+        itemRenderers.put(ResourceLocation.withDefaultNamespace("base"), RenderItemBase::new);
+        itemRenderers.put(ResourceLocation.withDefaultNamespace("ranged"), RenderTwoHandedRangedWeapon::new);
+        itemRenderers.put(ResourceLocation.withDefaultNamespace("map"), RenderFilledMap::new);
+        itemRenderers.put(ResourceLocation.withDefaultNamespace("shield"), RenderShield::new);
+        itemRenderers.put(ResourceLocation.withDefaultNamespace("trident"), RenderTrident::new);
+        itemRenderers.put(EpicFight.identifier("uchigatana"), RenderKatana::new);
+
+        EpicFightClientEventHooks.Registry.PATCHED_ITEM.post(new RegisterPatchedRenderersEvent.Item(itemRenderers));
+
+        for (Map.Entry<ResourceLocation, JsonElement> entry : objects.entrySet()) {
+            ResourceLocation rl = entry.getKey();
+            String pathString = rl.getPath();
+            ResourceLocation registryName = ResourceLocation.fromNamespaceAndPath(rl.getNamespace(), pathString);
+
+            if (!BuiltInRegistries.ITEM.containsKey(registryName)) {
+                EpicFight.LOGGER.warn("Failed to load item skin: no item named " + registryName);
+                continue;
+            }
+
+            Item item = BuiltInRegistries.ITEM.get(registryName);
+            Function<JsonElement, RenderItemBase> rendererProvider;
+
+            if (entry.getValue().getAsJsonObject().has("renderer")) {
+                ResourceLocation rendererName = ResourceLocation.parse(entry.getValue().getAsJsonObject().get("renderer").getAsString());
+
+                if (itemRenderers.containsKey(rendererName)) {
+                    rendererProvider = itemRenderers.get(rendererName);
+                } else {
+                    EpicFight.LOGGER.warn("No renderer named " + rendererName);
+                    rendererProvider = RenderItemBase::new;
+                }
+            } else {
+                rendererProvider = RenderItemBase::new;
+            }
+
+            RenderItemBase itemRenderer = rendererProvider.apply(entry.getValue());
+            this.itemRendererMapByInstance.put(item, itemRenderer);
+        }
+
+        RenderItemBase baseRenderer = new RenderItemBase(new JsonObject());
+        RenderTwoHandedRangedWeapon bowRenderer = new RenderTwoHandedRangedWeapon(objects.get(BuiltInRegistries.ITEM.getKey(Items.BOW)).getAsJsonObject());
+        RenderTwoHandedRangedWeapon crossbowRenderer = new RenderTwoHandedRangedWeapon(objects.get(BuiltInRegistries.ITEM.getKey(Items.CROSSBOW)).getAsJsonObject());
+        RenderTrident tridentRenderer = new RenderTrident(objects.get(BuiltInRegistries.ITEM.getKey(Items.TRIDENT)).getAsJsonObject());
+        RenderFilledMap mapRenderer = new RenderFilledMap(objects.get(BuiltInRegistries.ITEM.getKey(Items.FILLED_MAP)).getAsJsonObject());
+        RenderShield shieldRenderer = new RenderShield(objects.get(BuiltInRegistries.ITEM.getKey(Items.SHIELD)).getAsJsonObject());
+
+        // Render by item classes
+        this.itemRendererMapByClass.put(BowItem.class, bowRenderer);
+        this.itemRendererMapByClass.put(CrossbowItem.class, crossbowRenderer);
+        this.itemRendererMapByClass.put(ShieldItem.class, baseRenderer);
+        this.itemRendererMapByClass.put(TridentItem.class, tridentRenderer);
+        this.itemRendererMapByClass.put(ShieldItem.class, shieldRenderer);
+
+        // Render by capability classes
+        this.itemRendererMapByClass.put(BowCapability.class, bowRenderer);
+        this.itemRendererMapByClass.put(CrossbowCapability.class, crossbowRenderer);
+        this.itemRendererMapByClass.put(TridentCapability.class, tridentRenderer);
+        this.itemRendererMapByClass.put(MapCapability.class, mapRenderer);
+        this.itemRendererMapByClass.put(ShieldCapability.class, shieldRenderer);
+    }
+
+    public void resetRenderers() {
+        this.entityRendererCache.clear();
+
+        for (Map.Entry<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entry : this.entityRendererProvider.entrySet()) {
+            this.entityRendererCache.put(entry.getKey(), entry.getValue().apply(entry.getKey()));
+        }
 
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.post(new RegisterPatchedRenderersEvent.ModifyEntity(this.entityRendererCache));
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void registerCustomEntityRenderer(EntityType<?> entityType, String rendererName, CompoundTag compound) {
-		if (StringUtil.isNullOrEmpty(rendererName)) {
-			return;
-		}
-		
-		EntityRenderDispatcher erd = this.minecraft.getEntityRenderDispatcher();
-		EntityRendererProvider.Context context = new EntityRendererProvider.Context(erd, this.minecraft.getItemRenderer(), this.minecraft.getBlockRenderer(), erd.getItemInHandRenderer(), this.minecraft.getResourceManager(), this.minecraft.getEntityModels(), this.minecraft.font);
-		
-		if ("player".equals(rendererName)) {
-			this.entityRendererCache.put(entityType, this.basicHumanoidRenderer);
-		} else if ("epicfight:custom".equals(rendererName)) {
-			if (compound.getBoolean("humanoid")) {
-				this.entityRendererCache.put(entityType, new PCustomHumanoidEntityRenderer<> (Meshes.getOrCreate(ResourceLocation.parse(compound.getString("model")), (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(HumanoidMesh::new)), context, entityType));
-			} else {
-				this.entityRendererCache.put(entityType, new PCustomEntityRenderer(Meshes.getOrCreate(ResourceLocation.parse(compound.getString("model")), (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(HumanoidMesh::new)), context));
-			}
-		} else {
-			EntityType<?> presetEntityType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(rendererName));
-			
-			if (this.entityRendererProvider.containsKey(presetEntityType)) {
-				PatchedEntityRenderer renderer = this.entityRendererProvider.get(presetEntityType).apply(entityType);
-				
-				if (!(this.minecraft.getEntityRenderDispatcher().renderers.get(entityType) instanceof LivingEntityRenderer) && (renderer instanceof PatchedLivingEntityRenderer patchedLivingEntityRenderer)) {
-					this.entityRendererCache.put(entityType, new PresetRenderer(context, entityType, (LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>)context.getEntityRenderDispatcher().renderers.get(presetEntityType), patchedLivingEntityRenderer.getDefaultMesh()));
-				} else {
-					this.entityRendererCache.put(entityType, this.entityRendererProvider.get(presetEntityType).apply(entityType));
-				}
-			} else {
-				throw new IllegalArgumentException("Datapack Mob Patch Crash: Invalid Renderer type " + rendererName);
-			}
-		}
-	}
-	
-	public RenderItemBase getItemRenderer(ItemStack itemstack) {
-		RenderItemBase renderItem = this.itemRendererMapByInstance.get(itemstack.getItem());
-		
-		if (renderItem == null) {
-			renderItem = this.findMatchingRendererByClass(itemstack.getItem().getClass());
-			
-			if (renderItem == null) {
-				CapabilityItem itemCap = EpicFightCapabilities.getItemStackCapability(itemstack);
-				renderItem = this.findMatchingRendererByClass(itemCap.getClass());
-			}
-			
-			if (renderItem == null) {
-				// Get generic renderer
-				renderItem = this.itemRendererMapByInstance.get(Items.AIR);
-			}
-			
-			this.itemRendererMapByInstance.put(itemstack.getItem(), renderItem);
-		}
-		
-		return renderItem;
-	}
+    }
 
-	private RenderItemBase findMatchingRendererByClass(Class<?> clazz) {
-		RenderItemBase renderer = null;
-		
-		for (; clazz != null && renderer == null; clazz = clazz.getSuperclass()) {
-			renderer = this.itemRendererMapByClass.get(clazz);
-		}
-		
-		return renderer;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public void renderEntityArmatureModel(LivingEntity livingEntity, LivingEntityPatch<?> entitypatch, EntityRenderer<? extends Entity> renderer, MultiBufferSource buffer, PoseStack matStack, int packedLight, float partialTicks) {
-		this.getEntityRenderer(livingEntity).render(livingEntity, entitypatch, renderer, buffer, matStack, packedLight, partialTicks);
-	}
-	
-	public PatchedEntityRenderer getEntityRenderer(Entity entity) {
-		return this.getEntityRenderer(entity.getType());
-	}
-	
-	public PatchedEntityRenderer getEntityRenderer(EntityType entityType) {
-		return this.entityRendererCache.get(entityType);
-	}
-	
-	public boolean hasRendererFor(Entity entity) {
-		return this.entityRendererCache.computeIfAbsent(entity.getType(), (key) -> this.entityRendererProvider.containsKey(key) ? this.entityRendererProvider.get(entity.getType()).apply(entity.getType()) : null) != null;
-	}
-	
-	public Set<ResourceLocation> getRendererEntries() {
-		Set<ResourceLocation> availableRendererEntities = this.entityRendererProvider.keySet().stream().map((entityType) -> EntityType.getKey(entityType)).collect(Collectors.toSet());
-		availableRendererEntities.add(EpicFightMod.identifier("custom"));
-		
-		return availableRendererEntities;
-	}
+    @SuppressWarnings("unchecked")
+    public void registerCustomEntityRenderer(EntityType<?> entityType, String rendererName, CompoundTag compound) {
+        if (StringUtil.isNullOrEmpty(rendererName)) {
+            return;
+        }
 
-	public void setModelInitializerTimer(int tick) {
-		this.modelInitTimer = tick;
-	}
+        EntityRenderDispatcher erd = this.minecraft.getEntityRenderDispatcher();
+        EntityRendererProvider.Context context = new EntityRendererProvider.Context(erd, this.minecraft.getItemRenderer(), this.minecraft.getBlockRenderer(), erd.getItemInHandRenderer(), this.minecraft.getResourceManager(), this.minecraft.getEntityModels(), this.minecraft.font);
 
-	public OverlayManager getOverlayManager() {
-		return this.overlayManager;
-	}
-	
-	public FirstPersonRenderer getFirstPersonRenderer() {
-		return firstPersonRenderer;
-	}
-	
-	public boolean shouldRenderVanillaModel() {
-		return ClientEngine.getInstance().isVanillaModelDebuggingMode() || this.modelInitTimer > 0;
-	}
-	
-	public void addBossEventOwner(UUID uuid, BossPatch bosspatch) {
-		this.bossEventOwners.put(uuid, bosspatch);
-	}
-	
-	public void removeBossEventOwner(UUID uuid, BossPatch bosspatch) {
-		this.bossEventOwners.remove(uuid);
-	}
-	
-	public void initHUD(LocalPlayerPatch playerpatch) {
-		this.battleModeHUD.init(playerpatch);
-		this.versionNotifier.init();
-	}
-	
-	private void freeUnusedSources() {
-		this.bossEventOwners.entrySet().removeIf((entry) -> {
-			Entity entity = entry.getValue().cast().getOriginal();
-			return !entity.isAlive() || entity.isRemoved();
-		});
-		
-		if (!RenderSystem.isOnRenderThread()) {
-			RenderSystem.recordRenderCall(() -> {
-				EpicFightRenderTypes.freeUnusedWorldRenderTypes();
-			});
-		} else {
-			EpicFightRenderTypes.freeUnusedWorldRenderTypes();
-		}
-	}
-	
-	public void clear() {
+        if ("player".equals(rendererName)) {
+            this.entityRendererCache.put(entityType, this.basicHumanoidRenderer);
+        } else if ("epicfight:custom".equals(rendererName)) {
+            if (compound.getBoolean("humanoid")) {
+                this.entityRendererCache.put(entityType, new PCustomHumanoidEntityRenderer<> (Meshes.getOrCreate(ResourceLocation.parse(compound.getString("model")), (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(HumanoidMesh::new)), context, entityType));
+            } else {
+                this.entityRendererCache.put(entityType, new PCustomEntityRenderer(Meshes.getOrCreate(ResourceLocation.parse(compound.getString("model")), (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(HumanoidMesh::new)), context));
+            }
+        } else {
+            EntityType<?> presetEntityType = BuiltInRegistries.ENTITY_TYPE.get(ResourceLocation.parse(rendererName));
+
+            if (this.entityRendererProvider.containsKey(presetEntityType)) {
+                PatchedEntityRenderer renderer = this.entityRendererProvider.get(presetEntityType).apply(entityType);
+
+                if (!(this.minecraft.getEntityRenderDispatcher().renderers.get(entityType) instanceof LivingEntityRenderer) && (renderer instanceof PatchedLivingEntityRenderer patchedLivingEntityRenderer)) {
+                    this.entityRendererCache.put(entityType, new PresetRenderer(context, entityType, (LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>>)context.getEntityRenderDispatcher().renderers.get(presetEntityType), patchedLivingEntityRenderer.getDefaultMesh()));
+                } else {
+                    this.entityRendererCache.put(entityType, this.entityRendererProvider.get(presetEntityType).apply(entityType));
+                }
+            } else {
+                throw new IllegalArgumentException("Datapack Mob Patch Crash: Invalid Renderer type " + rendererName);
+            }
+        }
+    }
+
+    public RenderItemBase getItemRenderer(ItemStack itemstack) {
+        RenderItemBase renderItem = this.itemRendererMapByInstance.get(itemstack.getItem());
+
+        if (renderItem == null) {
+            renderItem = this.findMatchingRendererByClass(itemstack.getItem().getClass());
+
+            if (renderItem == null) {
+                CapabilityItem itemCap = EpicFightCapabilities.getItemStackCapability(itemstack);
+                renderItem = this.findMatchingRendererByClass(itemCap.getClass());
+            }
+
+            if (renderItem == null) {
+                // Get generic renderer
+                renderItem = this.itemRendererMapByInstance.get(Items.AIR);
+            }
+
+            this.itemRendererMapByInstance.put(itemstack.getItem(), renderItem);
+        }
+
+        return renderItem;
+    }
+
+    private RenderItemBase findMatchingRendererByClass(Class<?> clazz) {
+        RenderItemBase renderer = null;
+
+        for (; clazz != null && renderer == null; clazz = clazz.getSuperclass()) {
+            renderer = this.itemRendererMapByClass.get(clazz);
+        }
+
+        return renderer;
+    }
+
+    @SuppressWarnings("unchecked")
+    public void renderEntityArmatureModel(LivingEntity livingEntity, LivingEntityPatch<?> entitypatch, EntityRenderer<? extends Entity> renderer, MultiBufferSource buffer, PoseStack matStack, int packedLight, float partialTicks) {
+        this.getEntityRenderer(livingEntity).render(livingEntity, entitypatch, renderer, buffer, matStack, packedLight, partialTicks);
+    }
+
+    public PatchedEntityRenderer getEntityRenderer(Entity entity) {
+        return this.getEntityRenderer(entity.getType());
+    }
+
+    public PatchedEntityRenderer getEntityRenderer(EntityType entityType) {
+        return this.entityRendererCache.get(entityType);
+    }
+
+    public boolean hasRendererFor(Entity entity) {
+        return this.entityRendererCache.computeIfAbsent(entity.getType(), (key) -> this.entityRendererProvider.containsKey(key) ? this.entityRendererProvider.get(entity.getType()).apply(entity.getType()) : null) != null;
+    }
+
+    public Set<ResourceLocation> getRendererEntries() {
+        Set<ResourceLocation> availableRendererEntities = this.entityRendererProvider.keySet().stream().map((entityType) -> EntityType.getKey(entityType)).collect(Collectors.toSet());
+        availableRendererEntities.add(EpicFight.identifier("custom"));
+
+        return availableRendererEntities;
+    }
+
+    public void setModelInitializerTimer(int tick) {
+        this.modelInitTimer = tick;
+    }
+
+    public OverlayManager getOverlayManager() {
+        return this.overlayManager;
+    }
+
+    public FirstPersonRenderer getFirstPersonRenderer() {
+        return firstPersonRenderer;
+    }
+
+    public boolean shouldRenderVanillaModel() {
+        return ClientEngine.getInstance().isVanillaModelDebuggingMode() || this.modelInitTimer > 0;
+    }
+
+    public void addBossEventOwner(UUID uuid, BossPatch bosspatch) {
+        this.bossEventOwners.put(uuid, bosspatch);
+    }
+
+    public void removeBossEventOwner(UUID uuid, BossPatch bosspatch) {
+        this.bossEventOwners.remove(uuid);
+    }
+
+    public void initHUD(LocalPlayerPatch playerpatch) {
+        this.battleModeHUD.init(playerpatch);
+        this.versionNotifier.init();
+    }
+
+    private void freeUnusedSources() {
+        this.bossEventOwners.entrySet().removeIf((entry) -> {
+            Entity entity = entry.getValue().cast().getOriginal();
+            return !entity.isAlive() || entity.isRemoved();
+        });
+
+        if (!RenderSystem.isOnRenderThread()) {
+            RenderSystem.recordRenderCall(() -> {
+                EpicFightRenderTypes.freeUnusedWorldRenderTypes();
+            });
+        } else {
+            EpicFightRenderTypes.freeUnusedWorldRenderTypes();
+        }
+    }
+
+    public void clear() {
         EpicFightCameraAPI.getInstance().zoomOut(0);
-		this.bossEventOwners.clear();
-		
-		if (!RenderSystem.isOnRenderThread()) {
-			RenderSystem.recordRenderCall(() -> {
-				this.resetRenderers();
-				EpicFightRenderTypes.clearWorldRenderTypes();
-			});
-		} else {
-			this.resetRenderers();
-			EpicFightRenderTypes.clearWorldRenderTypes();
-		}
-	}
-	
-	public static boolean hitResultEquals(@Nullable HitResult hitResult, HitResult.Type hitType) {
-		return hitResult == null ? false : hitType.equals(hitResult.getType());
-	}
-	
-	public static boolean hitResultNotEquals(@Nullable HitResult hitResult, HitResult.Type hitType) {
-		return hitResult == null ? true : !hitType.equals(hitResult.getType());
-	}
-	
-	/******************
-	 * Forge EventHook listeners
-	 ******************/
-	private void epicfight$renderLivingPre(RenderLivingEvent.Pre<? extends LivingEntity, ? extends EntityModel<? extends LivingEntity>> event) {
-		LivingEntity livingentity = event.getEntity();
-		
-		if (livingentity.level() == null) {
-			return;
-		}
-		
-		if (this.hasRendererFor(livingentity)) {
-			LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
-			float originalYRot = 0.0F;
-			
-			//Draw the player in inventory
-			if ((event.getPartialTick() == 0.0F || event.getPartialTick() == 1.0F) && entitypatch instanceof LocalPlayerPatch localPlayerPatch) {
-				if (entitypatch.overrideRender()) {
-					originalYRot = localPlayerPatch.getModelYRot();
-					localPlayerPatch.setModelYRotInGui(livingentity.getYRot());
-					event.getPoseStack().translate(0, 0.1D, 0);
-					boolean compusteShaderSetting = ClientConfig.activateComputeShader;
-					
-					// Disable compute shader
-					ClientConfig.activateComputeShader = false;
-					this.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
-					ClientConfig.activateComputeShader = compusteShaderSetting;
-					
-					event.setCanceled(true);
-					localPlayerPatch.disableModelYRotInGui(originalYRot);
-				}
-				
-				return;
-			}
-			
-			if (entitypatch != null && entitypatch.overrideRender()) {
-				this.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
-				
-				if (this.shouldRenderVanillaModel()) {
-					event.getPoseStack().translate(this.modelInitTimer > 0 ? 10000.0F : 1.5F, 0.0F, 0.0F);
-					--this.modelInitTimer;
-				} else {
-					event.setCanceled(true);
-				}
-			}
-		}
-		if (!this.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+        this.bossEventOwners.clear();
+
+        if (!RenderSystem.isOnRenderThread()) {
+            RenderSystem.recordRenderCall(() -> {
+                this.resetRenderers();
+                EpicFightRenderTypes.clearWorldRenderTypes();
+            });
+        } else {
+            this.resetRenderers();
+            EpicFightRenderTypes.clearWorldRenderTypes();
+        }
+    }
+
+    public static boolean hitResultEquals(@Nullable HitResult hitResult, HitResult.Type hitType) {
+        return hitResult == null ? false : hitType.equals(hitResult.getType());
+    }
+
+    public static boolean hitResultNotEquals(@Nullable HitResult hitResult, HitResult.Type hitType) {
+        return hitResult == null ? true : !hitType.equals(hitResult.getType());
+    }
+
+    /******************
+     * Forge EventHook listeners
+     ******************/
+    private void epicfight$renderLivingPre(RenderLivingEvent.Pre<? extends LivingEntity, ? extends EntityModel<? extends LivingEntity>> event) {
+        LivingEntity livingentity = event.getEntity();
+
+        if (livingentity.level() == null) {
+            return;
+        }
+
+        if (this.hasRendererFor(livingentity)) {
+            LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
+            float originalYRot = 0.0F;
+
+            //Draw the player in inventory
+            if ((event.getPartialTick() == 0.0F || event.getPartialTick() == 1.0F) && entitypatch instanceof LocalPlayerPatch localPlayerPatch) {
+                if (entitypatch.overrideRender()) {
+                    originalYRot = localPlayerPatch.getModelYRot();
+                    localPlayerPatch.setModelYRotInGui(livingentity.getYRot());
+                    event.getPoseStack().translate(0, 0.1D, 0);
+                    boolean compusteShaderSetting = ClientConfig.activateComputeShader;
+
+                    // Disable compute shader
+                    ClientConfig.activateComputeShader = false;
+                    this.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
+                    ClientConfig.activateComputeShader = compusteShaderSetting;
+
+                    event.setCanceled(true);
+                    localPlayerPatch.disableModelYRotInGui(originalYRot);
+                }
+
+                return;
+            }
+
+            if (entitypatch != null && entitypatch.overrideRender()) {
+                this.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getMultiBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
+
+                if (this.shouldRenderVanillaModel()) {
+                    event.getPoseStack().translate(this.modelInitTimer > 0 ? 10000.0F : 1.5F, 0.0F, 0.0F);
+                    --this.modelInitTimer;
+                } else {
+                    event.setCanceled(true);
+                }
+            }
+        }
+        if (!this.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
             EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
                 LivingEntityPatch<?> entityPatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
 
@@ -425,73 +419,73 @@ public class RenderEngine implements IEventBasedEngine {
                     }
                 }
             });
-		}
-	}
-	
-	private void epicfight$itemTooltip(ItemTooltipEvent event) {
-		if (ClientConfig.showEpicFightAttributesInTooltip && event.getEntity() != null && event.getEntity().level().isClientSide) {
-			EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), LocalPlayerPatch.class).ifPresent(playerpatch -> {
-				EpicFightCapabilities.getItemCapability(event.getItemStack()).ifPresent(itemCapability -> {
-					if (InputManager.isActionPhysicallyActive(EpicFightInputAction.WEAPON_INNATE_SKILL_TOOLTIP)) {
-						Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
-						
-						if (weaponInnateSkill != null) {
-							event.getToolTip().clear();
-							List<Component> skilltooltip = weaponInnateSkill.getTooltipOnItem(event.getItemStack(), itemCapability, playerpatch);
+        }
+    }
 
-							for (Component s : skilltooltip) {
-								event.getToolTip().add(s);
-							}
-						}
-					} else {
-						List<Component> tooltip = event.getToolTip();
-						itemCapability.modifyItemTooltip(event.getItemStack(), event.getToolTip(), playerpatch);
-						
-						for (int i = 0; i < tooltip.size(); i++) {
-							Component textComp = tooltip.get(i);
-							
-							if (!textComp.getSiblings().isEmpty()) {
-								Component sibling = textComp.getSiblings().get(0);
-								
-								if (sibling instanceof MutableComponent mutableComponent && mutableComponent.getContents() instanceof TranslatableContents translatableContent) {
-									if (translatableContent.getArgs().length > 1 && translatableContent.getArgs()[1] instanceof MutableComponent mutableComponent$2) {
-										if (mutableComponent$2.getContents() instanceof TranslatableContents translatableContent$2) {
-											if (translatableContent$2.getKey().equals(Attributes.ATTACK_SPEED.value().getDescriptionId())) {
-												float weaponSpeed = (float)playerpatch.getWeaponAttribute(Attributes.ATTACK_SPEED, event.getItemStack());
-												tooltip.remove(i);
-												tooltip.add(i, Component.literal(String.format(" %.2f ", playerpatch.getModifiedAttackSpeedOfItem(itemCapability, weaponSpeed)))
-														.append(Component.translatable(Attributes.ATTACK_SPEED.value().getDescriptionId())));
-												
-											} else if (translatableContent$2.getKey().equals(Attributes.ATTACK_DAMAGE.value().getDescriptionId())) {
-												float weaponDamage = (float)playerpatch.getWeaponAttribute(Attributes.ATTACK_DAMAGE, event.getItemStack());
-												String damageFormat = ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(playerpatch.getModifiedBaseDamage(weaponDamage));
-												
-												tooltip.remove(i);
-												tooltip.add(i, Component.literal(String.format(" %s ", damageFormat))
-																		.append(Component.translatable(Attributes.ATTACK_DAMAGE.value().getDescriptionId()))
-																		.withStyle(ChatFormatting.DARK_GREEN));
-											}
-										}
-									}
-								}
-							}
-						}
-						
-						Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
-						
-						if (weaponInnateSkill != null) {
-							event.getToolTip().add(Component.translatable("inventory.epicfight.guide_innate_tooltip", EpicFightKeyMappings.WEAPON_INNATE_SKILL_TOOLTIP.getKey().getDisplayName()).withStyle(ChatFormatting.DARK_GRAY));
-						}
-					}
-				});
-			});
-		}
-	}
+    private void epicfight$itemTooltip(ItemTooltipEvent event) {
+        if (ClientConfig.showEpicFightAttributesInTooltip && event.getEntity() != null && event.getEntity().level().isClientSide) {
+            EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), LocalPlayerPatch.class).ifPresent(playerpatch -> {
+                EpicFightCapabilities.getItemCapability(event.getItemStack()).ifPresent(itemCapability -> {
+                    if (InputManager.isActionPhysicallyActive(EpicFightInputAction.WEAPON_INNATE_SKILL_TOOLTIP)) {
+                        Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
+
+                        if (weaponInnateSkill != null) {
+                            event.getToolTip().clear();
+                            List<Component> skilltooltip = weaponInnateSkill.getTooltipOnItem(event.getItemStack(), itemCapability, playerpatch);
+
+                            for (Component s : skilltooltip) {
+                                event.getToolTip().add(s);
+                            }
+                        }
+                    } else {
+                        List<Component> tooltip = event.getToolTip();
+                        itemCapability.modifyItemTooltip(event.getItemStack(), event.getToolTip(), playerpatch);
+
+                        for (int i = 0; i < tooltip.size(); i++) {
+                            Component textComp = tooltip.get(i);
+
+                            if (!textComp.getSiblings().isEmpty()) {
+                                Component sibling = textComp.getSiblings().get(0);
+
+                                if (sibling instanceof MutableComponent mutableComponent && mutableComponent.getContents() instanceof TranslatableContents translatableContent) {
+                                    if (translatableContent.getArgs().length > 1 && translatableContent.getArgs()[1] instanceof MutableComponent mutableComponent$2) {
+                                        if (mutableComponent$2.getContents() instanceof TranslatableContents translatableContent$2) {
+                                            if (translatableContent$2.getKey().equals(Attributes.ATTACK_SPEED.value().getDescriptionId())) {
+                                                float weaponSpeed = (float)playerpatch.getWeaponAttribute(Attributes.ATTACK_SPEED, event.getItemStack());
+                                                tooltip.remove(i);
+                                                tooltip.add(i, Component.literal(String.format(" %.2f ", playerpatch.getModifiedAttackSpeedOfItem(itemCapability, weaponSpeed)))
+                                                        .append(Component.translatable(Attributes.ATTACK_SPEED.value().getDescriptionId())));
+
+                                            } else if (translatableContent$2.getKey().equals(Attributes.ATTACK_DAMAGE.value().getDescriptionId())) {
+                                                float weaponDamage = (float)playerpatch.getWeaponAttribute(Attributes.ATTACK_DAMAGE, event.getItemStack());
+                                                String damageFormat = ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(playerpatch.getModifiedBaseDamage(weaponDamage));
+
+                                                tooltip.remove(i);
+                                                tooltip.add(i, Component.literal(String.format(" %s ", damageFormat))
+                                                                        .append(Component.translatable(Attributes.ATTACK_DAMAGE.value().getDescriptionId()))
+                                                                        .withStyle(ChatFormatting.DARK_GREEN));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
+
+                        if (weaponInnateSkill != null) {
+                            event.getToolTip().add(Component.translatable("inventory.epicfight.guide_innate_tooltip", EpicFightKeyMappings.WEAPON_INNATE_SKILL_TOOLTIP.getKey().getDisplayName()).withStyle(ChatFormatting.DARK_GRAY));
+                        }
+                    }
+                });
+            });
+        }
+    }
 
     private static final Vector3f CAMERA_ROTATION_EULER = new Vector3f();
     private static final OpenMatrix4f PLAYER_ROTATION = new OpenMatrix4f();
 
-	private void epicfight$computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+    private void epicfight$computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
             // First person camera correction
             if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
@@ -545,99 +539,99 @@ public class RenderEngine implements IEventBasedEngine {
                 }
             }
         });
-	}
-	
-	private void epicfight$renderGuiPre(RenderGuiEvent.Pre event) {
-		Window window = Minecraft.getInstance().getWindow();
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
-		
-		if (playerpatch != null) {
-			playerpatch.getPlayerSkills().listSkillContainers().filter(skillContainer -> skillContainer.getSkill() != null).forEach(skillContainer -> {
-				skillContainer.getSkill().onScreen(playerpatch, window.getGuiScaledWidth(), window.getGuiScaledHeight());
-			});
-			
-			this.overlayManager.renderTick(window.getGuiScaledWidth(), window.getGuiScaledHeight());
-			
-			//Shows the epic fight version in beta
-			this.versionNotifier.render(event.getGuiGraphics(), true);
-		}
-	}
+    }
 
-	private static final ResourceLocation YELLOWBAR_BACKGROUND = ResourceLocation.withDefaultNamespace("boss_bar/yellow_background");
-	private static final ResourceLocation YELLOWBAR_PROGRESS = ResourceLocation.withDefaultNamespace("boss_bar/yellow_progress");
-	
-	private void epicfight$bossEventProgress(CustomizeGuiOverlayEvent.BossEventProgress event) {
-		if (event.getBossEvent().getName().getString().equals("Ender Dragon")) {
-			if (this.bossEventOwners.containsKey(event.getBossEvent().getId())) {
-				LivingEntityPatch<?> entitypatch = this.bossEventOwners.get(event.getBossEvent().getId()).cast();
-				float stunShield = entitypatch.getStunShield();
-				
-				if (stunShield > 0) {
-					float progression = stunShield / entitypatch.getMaxStunShield();
-					
-					int x = event.getX();
-					int y = event.getY();
-					
-					RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-					event.getGuiGraphics().blitSprite(YELLOWBAR_BACKGROUND, 182, 5, 0, 0, x, y + 6, 182, 5);
-					event.getGuiGraphics().blitSprite(YELLOWBAR_PROGRESS, 182, 5, 0, 0, x, y + 6, (int)(182 * progression), 5);
-				}
-			}
-		}
-	}
-	
-	@SuppressWarnings("unchecked")
-	private void epicfight$renderHand(RenderHandEvent event) {
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
-		
-		if (playerpatch != null) {
-			if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
-				RenderItemBase mainhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getMainHandItem());
-				RenderItemBase offhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getOffhandItem());
-				boolean useEpicFightModel = (mainhandItemSkin == null || !mainhandItemSkin.forceVanillaFirstPerson()) && (offhandItemSkin == null || !offhandItemSkin.forceVanillaFirstPerson());
-				
-				if (useEpicFightModel) {
-					if (event.getHand() == InteractionHand.MAIN_HAND) {
-						this.firstPersonRenderer.render(
-							  playerpatch.getOriginal()
-							, playerpatch
-							, (LivingEntityRenderer)this.minecraft.getEntityRenderDispatcher().getRenderer(playerpatch.getOriginal())
-							, event.getMultiBufferSource()
-							, event.getPoseStack()
-							, event.getPackedLight()
-							, event.getPartialTick()
-						);
-					}
-					
-					event.setCanceled(true);
-				}
-			}
-		}
-	}
+    private void epicfight$renderGuiPre(RenderGuiEvent.Pre event) {
+        Window window = Minecraft.getInstance().getWindow();
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
 
-	private void epicfight$renderAfterLevel(RenderLevelStageEvent event) {
-		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
-			if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-				EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-					if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
-						this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, ((BlockHitResult)this.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
-					}
-				});
-			}
-		}
-	}
+        if (playerpatch != null) {
+            playerpatch.getPlayerSkills().listSkillContainers().filter(skillContainer -> skillContainer.getSkill() != null).forEach(skillContainer -> {
+                skillContainer.getSkill().onScreen(playerpatch, window.getGuiScaledWidth(), window.getGuiScaledHeight());
+            });
 
-	@SuppressWarnings("unchecked")
-	private void epicfight$renderEnderDragon(RenderEnderDragonEvent event) {
-		EnderDragon livingentity = event.getEntity();
-		
-		if (this.hasRendererFor(livingentity)) {
-			EpicFightCapabilities.getUnparameterizedEntityPatch(livingentity, EnderDragonPatch.class).ifPresent(enderdragonpatch -> {
-				event.cancel();
-				this.getEntityRenderer(livingentity).render(livingentity, enderdragonpatch, event.getRenderer(), event.getBuffers(), event.getPoseStack(), event.getLight(), event.getPartialRenderTick());
-			});
-		}
-	}
+            this.overlayManager.renderTick(window.getGuiScaledWidth(), window.getGuiScaledHeight());
+
+            //Shows the epic fight version in beta
+            this.versionNotifier.render(event.getGuiGraphics(), true);
+        }
+    }
+
+    private static final ResourceLocation YELLOWBAR_BACKGROUND = ResourceLocation.withDefaultNamespace("boss_bar/yellow_background");
+    private static final ResourceLocation YELLOWBAR_PROGRESS = ResourceLocation.withDefaultNamespace("boss_bar/yellow_progress");
+
+    private void epicfight$bossEventProgress(CustomizeGuiOverlayEvent.BossEventProgress event) {
+        if (event.getBossEvent().getName().getString().equals("Ender Dragon")) {
+            if (this.bossEventOwners.containsKey(event.getBossEvent().getId())) {
+                LivingEntityPatch<?> entitypatch = this.bossEventOwners.get(event.getBossEvent().getId()).cast();
+                float stunShield = entitypatch.getStunShield();
+
+                if (stunShield > 0) {
+                    float progression = stunShield / entitypatch.getMaxStunShield();
+
+                    int x = event.getX();
+                    int y = event.getY();
+
+                    RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+                    event.getGuiGraphics().blitSprite(YELLOWBAR_BACKGROUND, 182, 5, 0, 0, x, y + 6, 182, 5);
+                    event.getGuiGraphics().blitSprite(YELLOWBAR_PROGRESS, 182, 5, 0, 0, x, y + 6, (int)(182 * progression), 5);
+                }
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void epicfight$renderHand(RenderHandEvent event) {
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
+
+        if (playerpatch != null) {
+            if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
+                RenderItemBase mainhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getMainHandItem());
+                RenderItemBase offhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getOffhandItem());
+                boolean useEpicFightModel = (mainhandItemSkin == null || !mainhandItemSkin.forceVanillaFirstPerson()) && (offhandItemSkin == null || !offhandItemSkin.forceVanillaFirstPerson());
+
+                if (useEpicFightModel) {
+                    if (event.getHand() == InteractionHand.MAIN_HAND) {
+                        this.firstPersonRenderer.render(
+                              playerpatch.getOriginal()
+                            , playerpatch
+                            , (LivingEntityRenderer)this.minecraft.getEntityRenderDispatcher().getRenderer(playerpatch.getOriginal())
+                            , event.getMultiBufferSource()
+                            , event.getPoseStack()
+                            , event.getPackedLight()
+                            , event.getPartialTick()
+                        );
+                    }
+
+                    event.setCanceled(true);
+                }
+            }
+        }
+    }
+
+    private void epicfight$renderAfterLevel(RenderLevelStageEvent event) {
+        if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
+            if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+                EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+                    if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
+                        this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, ((BlockHitResult)this.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);
+                    }
+                });
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void epicfight$renderEnderDragon(RenderEnderDragonEvent event) {
+        EnderDragon livingentity = event.getEntity();
+
+        if (this.hasRendererFor(livingentity)) {
+            EpicFightCapabilities.getUnparameterizedEntityPatch(livingentity, EnderDragonPatch.class).ifPresent(enderdragonpatch -> {
+                event.cancel();
+                this.getEntityRenderer(livingentity).render(livingentity, enderdragonpatch, event.getRenderer(), event.getBuffers(), event.getPoseStack(), event.getLight(), event.getPartialRenderTick());
+            });
+        }
+    }
 
     /**
      * Turn the player toward the direction that the player is digging now
@@ -663,41 +657,41 @@ public class RenderEngine implements IEventBasedEngine {
         });
     }
 
-	private void epicfight$renderTickPre(RenderFrameEvent.Pre event) {
-		EntityUI.HEALTH_BAR.reset();
-	}
-	
-	private void epicfight$renderTickPost(RenderFrameEvent.Post event) {
-		EntityUI.HEALTH_BAR.remove();
-	}
-	
-	private void epicfight$clientTick$Pre(ClientTickEvent.Pre event) {
+    private void epicfight$renderTickPre(RenderFrameEvent.Pre event) {
+        EntityUI.HEALTH_BAR.reset();
+    }
+
+    private void epicfight$renderTickPost(RenderFrameEvent.Post event) {
+        EntityUI.HEALTH_BAR.remove();
+    }
+
+    private void epicfight$clientTick$Pre(ClientTickEvent.Pre event) {
         EpicFightCameraAPI.getInstance().preClientTick();
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(this.battleModeHUD::tick);
-		this.freeUnusedSources();
-	}
+        this.freeUnusedSources();
+    }
 
     private void epicfight$clientTick$Post(ClientTickEvent.Post event) {
         EpicFightCameraAPI.getInstance().postClientTick();
     }
 
-	private void epicfight$levelTickPost(LevelTickEvent.Post event) {
-		if (!event.getLevel().isClientSide()) {
-			return;
-		}
-		
-		EntityUI.HEALTH_BAR.tick();
-	}
-	
-	private void epicfight$renderBlockHighlight(RenderHighlightEvent.Block event) {
-		EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-			if (playerpatch.canPlayAttackAnimation()) {
-				event.setCanceled(true);
-			}
-		});
-	}
+    private void epicfight$levelTickPost(LevelTickEvent.Post event) {
+        if (!event.getLevel().isClientSide()) {
+            return;
+        }
 
-	private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
+        EntityUI.HEALTH_BAR.tick();
+    }
+
+    private void epicfight$renderBlockHighlight(RenderHighlightEvent.Block event) {
+        EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
+            if (playerpatch.canPlayAttackAnimation()) {
+                event.setCanceled(true);
+            }
+        });
+    }
+
+    private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
         if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
             CameraType cameraType = this.minecraft.options.getCameraType();
 
@@ -740,84 +734,84 @@ public class RenderEngine implements IEventBasedEngine {
                 event.setCanceled(true);
             }
         }
-	}
-	
-	/**********************
-	 * Forge EventHook listeners end
-	 **********************/
-	
-	/**********************
-	 * Mod EventHook listeners
-	 **********************/
-	private void epicfight$addLayers(EntityRenderersEvent.AddLayers event) {
-		EntityRendererProvider.Context context = event.getContext();
-		
-		this.entityRendererProvider.clear();
-		this.entityRendererProvider.put(EntityType.CREEPER, (entityType) -> new PCreeperRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ENDERMAN, (entityType) -> new PEndermanRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ZOMBIE, (entityType) -> new PHumanoidRenderer<>(Meshes.BIPED_OLD_TEX, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ZOMBIE_VILLAGER, (entityType) -> new PZombieVillagerRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ZOMBIFIED_PIGLIN, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.HUSK, (entityType) -> new PHumanoidRenderer<>(Meshes.BIPED_OLD_TEX, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.SKELETON, (entityType) -> new PHumanoidRenderer<>(Meshes.SKELETON, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.WITHER_SKELETON, (entityType) -> new PHumanoidRenderer<>(Meshes.SKELETON, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.STRAY, (entityType) -> new PStrayRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.PLAYER, (entityType) -> new PPlayerRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.SPIDER, (entityType) -> new PSpiderRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.CAVE_SPIDER, (entityType) -> new PSpiderRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.IRON_GOLEM, (entityType) -> new PIronGolemRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.VINDICATOR, (entityType) -> new PVindicatorRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.EVOKER, (entityType) -> new PIllagerRenderer<> (context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.WITCH, (entityType) -> new PWitchRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.DROWNED, (entityType) -> new PDrownedRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.PILLAGER, (entityType) -> new PIllagerRenderer<> (context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.RAVAGER, (entityType) -> new PRavagerRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.VEX, (entityType) -> new PVexRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.PIGLIN, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.PIGLIN_BRUTE, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.HOGLIN, (entityType) -> new PHoglinRenderer<> (context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ZOGLIN, (entityType) -> new PHoglinRenderer<> (context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EntityType.ENDER_DRAGON, (entityType) -> new PEnderDragonRenderer());
-		this.entityRendererProvider.put(EntityType.WITHER, (entityType) -> new PWitherRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EpicFightEntityTypes.WITHER_SKELETON_MINION.get(), (entityType) -> new PWitherSkeletonMinionRenderer(context, entityType).initLayerLast(context, entityType));
-		this.entityRendererProvider.put(EpicFightEntityTypes.WITHER_GHOST_CLONE.get(), (entityType) -> new WitherGhostCloneRenderer());
-		
-		this.firstPersonRenderer = new FirstPersonRenderer(context, EntityType.PLAYER);
-		this.basicHumanoidRenderer = new PHumanoidRenderer<>(Meshes.BIPED, context, EntityType.PLAYER);
+    }
+
+    /**********************
+     * Forge EventHook listeners end
+     **********************/
+
+    /**********************
+     * Mod EventHook listeners
+     **********************/
+    private void epicfight$addLayers(EntityRenderersEvent.AddLayers event) {
+        EntityRendererProvider.Context context = event.getContext();
+
+        this.entityRendererProvider.clear();
+        this.entityRendererProvider.put(EntityType.CREEPER, (entityType) -> new PCreeperRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ENDERMAN, (entityType) -> new PEndermanRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ZOMBIE, (entityType) -> new PHumanoidRenderer<>(Meshes.BIPED_OLD_TEX, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ZOMBIE_VILLAGER, (entityType) -> new PZombieVillagerRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ZOMBIFIED_PIGLIN, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.HUSK, (entityType) -> new PHumanoidRenderer<>(Meshes.BIPED_OLD_TEX, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.SKELETON, (entityType) -> new PHumanoidRenderer<>(Meshes.SKELETON, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.WITHER_SKELETON, (entityType) -> new PHumanoidRenderer<>(Meshes.SKELETON, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.STRAY, (entityType) -> new PStrayRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.PLAYER, (entityType) -> new PPlayerRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.SPIDER, (entityType) -> new PSpiderRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.CAVE_SPIDER, (entityType) -> new PSpiderRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.IRON_GOLEM, (entityType) -> new PIronGolemRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.VINDICATOR, (entityType) -> new PVindicatorRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.EVOKER, (entityType) -> new PIllagerRenderer<> (context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.WITCH, (entityType) -> new PWitchRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.DROWNED, (entityType) -> new PDrownedRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.PILLAGER, (entityType) -> new PIllagerRenderer<> (context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.RAVAGER, (entityType) -> new PRavagerRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.VEX, (entityType) -> new PVexRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.PIGLIN, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.PIGLIN_BRUTE, (entityType) -> new PHumanoidRenderer<>(Meshes.PIGLIN, context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.HOGLIN, (entityType) -> new PHoglinRenderer<> (context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ZOGLIN, (entityType) -> new PHoglinRenderer<> (context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EntityType.ENDER_DRAGON, (entityType) -> new PEnderDragonRenderer());
+        this.entityRendererProvider.put(EntityType.WITHER, (entityType) -> new PWitherRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EpicFightEntityTypes.WITHER_SKELETON_MINION.get(), (entityType) -> new PWitherSkeletonMinionRenderer(context, entityType).initLayerLast(context, entityType));
+        this.entityRendererProvider.put(EpicFightEntityTypes.WITHER_GHOST_CLONE.get(), (entityType) -> new WitherGhostCloneRenderer());
+
+        this.firstPersonRenderer = new FirstPersonRenderer(context, EntityType.PLAYER);
+        this.basicHumanoidRenderer = new PHumanoidRenderer<>(Meshes.BIPED, context, EntityType.PLAYER);
 
         EpicFightClientEventHooks.Registry.ADD_PATCHED_ENTITY.post(new RegisterPatchedRenderersEvent.AddEntity(this.entityRendererProvider, context));
 
-		this.resetRenderers();
-	}
-	/**********************
-	 * Mod EventHook listeners end
-	 **********************/
-	
-	@Override
-	public void gameEventBus(IEventBus gameEventBus) {
-		gameEventBus.addListener(this::epicfight$bossEventProgress);
-		gameEventBus.addListener(this::epicfight$renderLivingPre);
-		gameEventBus.addListener(this::epicfight$itemTooltip);
-		gameEventBus.addListener(this::epicfight$computeCameraAngles);
-		gameEventBus.addListener(this::epicfight$renderGuiPre);
-		gameEventBus.addListener(this::epicfight$renderHand);
-		gameEventBus.addListener(this::epicfight$renderAfterLevel);
+        this.resetRenderers();
+    }
+    /**********************
+     * Mod EventHook listeners end
+     **********************/
+
+    @Override
+    public void gameEventBus(IEventBus gameEventBus) {
+        gameEventBus.addListener(this::epicfight$bossEventProgress);
+        gameEventBus.addListener(this::epicfight$renderLivingPre);
+        gameEventBus.addListener(this::epicfight$itemTooltip);
+        gameEventBus.addListener(this::epicfight$computeCameraAngles);
+        gameEventBus.addListener(this::epicfight$renderGuiPre);
+        gameEventBus.addListener(this::epicfight$renderHand);
+        gameEventBus.addListener(this::epicfight$renderAfterLevel);
         gameEventBus.addListener(this::epicfight$rightClickBlock);
-		gameEventBus.addListener(this::epicfight$renderTickPre);
-		gameEventBus.addListener(this::epicfight$renderTickPost);
-		gameEventBus.addListener(this::epicfight$clientTick$Pre);
+        gameEventBus.addListener(this::epicfight$renderTickPre);
+        gameEventBus.addListener(this::epicfight$renderTickPost);
+        gameEventBus.addListener(this::epicfight$clientTick$Pre);
         gameEventBus.addListener(this::epicfight$clientTick$Post);
-		gameEventBus.addListener(this::epicfight$levelTickPost);
-		gameEventBus.addListener(this::epicfight$renderBlockHighlight);
-		gameEventBus.addListener(this::epicfight$renderGuiLayer$Pre);
+        gameEventBus.addListener(this::epicfight$levelTickPost);
+        gameEventBus.addListener(this::epicfight$renderBlockHighlight);
+        gameEventBus.addListener(this::epicfight$renderGuiLayer$Pre);
 
         EpicFightClientEventHooks.Render.RENDER_ENDER_DRAGON.registerEvent(this::epicfight$renderEnderDragon);
-	}
+    }
 
-	@Override
-	public void modEventBus(IEventBus modEventBus) {
-		modEventBus.addListener(this::epicfight$addLayers);
-	}
+    @Override
+    public void modEventBus(IEventBus modEventBus) {
+        modEventBus.addListener(this::epicfight$addLayers);
+    }
 
     /**
      * @deprecated Use {@link EpicFightCameraAPI#zoomIn()} instead
