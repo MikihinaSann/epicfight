@@ -510,12 +510,12 @@ public class ClientAnimator extends Animator {
 		
 		if (animation instanceof StaticAnimation staticAnimation) {
 			Layer layer = staticAnimation.getLayerType() == Layer.LayerType.BASE_LAYER ? this.baseLayer : this.baseLayer.compositeLayers.get(staticAnimation.getPriority());
-			return layer.animationPlayer;
-		} else {
-			for (Layer layer : this.baseLayer.compositeLayers.values()) {
-				if (layer.animationPlayer.getRealAnimation().equals(playingAnimation)) {
-					return layer.animationPlayer;
-				}
+			if (layer.animationPlayer.getAnimation() == playingAnimation) return layer.animationPlayer;
+		}
+		
+		for (Layer layer : this.baseLayer.compositeLayers.values()) {
+			if (layer.animationPlayer.getRealAnimation().equals(playingAnimation)) {
+				return layer.animationPlayer;
 			}
 		}
 		
