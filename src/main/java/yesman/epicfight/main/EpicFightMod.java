@@ -1,6 +1,16 @@
 package yesman.epicfight.main;
 
+import java.nio.file.Path;
+import java.util.Comparator;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+
 import com.mojang.logging.LogUtils;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackType;
@@ -27,9 +37,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationRegistryEvent;
 import yesman.epicfight.api.animation.LivingMotion;
@@ -44,12 +51,22 @@ import yesman.epicfight.api.client.model.Meshes;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
 import yesman.epicfight.api.data.reloader.SkillManager;
-import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.config.IngameConfigurationScreen;
 import yesman.epicfight.client.renderer.patched.item.EpicFightItemProperties;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
-import yesman.epicfight.compat.*;
+import yesman.epicfight.compat.AzureLibArmorCompat;
+import yesman.epicfight.compat.AzureLibCompat;
+import yesman.epicfight.compat.CuriosCompat;
+import yesman.epicfight.compat.FirstPersonCompat;
+import yesman.epicfight.compat.GeckolibCompat;
+import yesman.epicfight.compat.ICompatModule;
+import yesman.epicfight.compat.IRISCompat;
+import yesman.epicfight.compat.IceAndFireCompat;
+import yesman.epicfight.compat.PlayerAnimatorCompat;
+import yesman.epicfight.compat.SkinLayer3DCompat;
+import yesman.epicfight.compat.VampirismCompat;
+import yesman.epicfight.compat.WerewolvesCompat;
 import yesman.epicfight.compat.betterthirdperson.BetterThirdPersonCompat;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.CommonConfig;
@@ -69,7 +86,11 @@ import yesman.epicfight.server.commands.PlayerModeCommand;
 import yesman.epicfight.server.commands.PlayerSkillCommand;
 import yesman.epicfight.server.commands.PlayerStaminaCommand;
 import yesman.epicfight.server.commands.arguments.EpicFightCommandArgumentTypes;
-import yesman.epicfight.skill.*;
+import yesman.epicfight.skill.SkillCategories;
+import yesman.epicfight.skill.SkillCategory;
+import yesman.epicfight.skill.SkillDataKeys;
+import yesman.epicfight.skill.SkillSlot;
+import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.Faction;
 import yesman.epicfight.world.capabilities.entitypatch.Factions;
@@ -92,11 +113,6 @@ import yesman.epicfight.world.item.EpicFightItems;
 import yesman.epicfight.world.item.SkillBookItem;
 import yesman.epicfight.world.level.block.EpicFightBlocks;
 import yesman.epicfight.world.level.block.entity.EpicFightBlockEntities;
-
-import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 
 /**
  *  --- Future list ---
@@ -336,7 +352,6 @@ public class EpicFightMod {
     		event.enqueueWork(EntityPatchProvider::registerEntityPatchesClient);
     		event.enqueueWork(SkillBookScreen::registerIconItems);
     		event.enqueueWork(EpicFightItemProperties::registerItemProperties);
-    		event.enqueueWork(ClientEngine.getInstance().renderEngine::initialize);
         }
         
         @SubscribeEvent

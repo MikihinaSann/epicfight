@@ -1,8 +1,19 @@
 package yesman.epicfight.client.events.engine;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.mutable.MutableBoolean;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -10,6 +21,7 @@ import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -34,13 +46,26 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.BowItem;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.*;
+import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
+import net.minecraftforge.client.event.RenderGuiOverlayEvent;
+import net.minecraftforge.client.event.RenderHandEvent;
+import net.minecraftforge.client.event.RenderHighlightEvent;
+import net.minecraftforge.client.event.RenderLevelStageEvent;
+import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.ViewportEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
@@ -51,17 +76,13 @@ import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.registries.ForgeRegistries;
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.jetbrains.annotations.Nullable;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader.PovSettings.ViewLimit;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.client.forgeevent.PatchedRenderersEvent;
 import yesman.epicfight.api.client.forgeevent.RenderEnderDragonEvent;
-import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.input.InputManager;
+import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.model.Meshes;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
@@ -78,8 +99,36 @@ import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.FakeBlockRenderer;
 import yesman.epicfight.client.renderer.FirstPersonRenderer;
 import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
-import yesman.epicfight.client.renderer.patched.entity.*;
-import yesman.epicfight.client.renderer.patched.item.*;
+import yesman.epicfight.client.renderer.patched.entity.PCreeperRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PCustomEntityRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PCustomHumanoidEntityRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PDrownedRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PEnderDragonRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PEndermanRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PHoglinRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PHumanoidRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PIllagerRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PIronGolemRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PPlayerRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PRavagerRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PSpiderRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PStrayRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PVexRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PVindicatorRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PWitchRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PWitherRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PWitherSkeletonMinionRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PZombieVillagerRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PatchedEntityRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRenderer;
+import yesman.epicfight.client.renderer.patched.entity.PresetRenderer;
+import yesman.epicfight.client.renderer.patched.entity.WitherGhostCloneRenderer;
+import yesman.epicfight.client.renderer.patched.item.RenderFilledMap;
+import yesman.epicfight.client.renderer.patched.item.RenderItemBase;
+import yesman.epicfight.client.renderer.patched.item.RenderKatana;
+import yesman.epicfight.client.renderer.patched.item.RenderShield;
+import yesman.epicfight.client.renderer.patched.item.RenderTrident;
+import yesman.epicfight.client.renderer.patched.item.RenderTwoHandedRangedWeapon;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.main.EpicFightMod;
@@ -88,16 +137,14 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.BossPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon.EnderDragonPatch;
-import yesman.epicfight.world.capabilities.item.*;
+import yesman.epicfight.world.capabilities.item.BowCapability;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
+import yesman.epicfight.world.capabilities.item.CrossbowCapability;
+import yesman.epicfight.world.capabilities.item.MapCapability;
+import yesman.epicfight.world.capabilities.item.ShieldCapability;
+import yesman.epicfight.world.capabilities.item.TridentCapability;
 import yesman.epicfight.world.entity.EpicFightEntities;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("rawtypes")
 public class RenderEngine {
@@ -105,7 +152,6 @@ public class RenderEngine {
 	public final VersionNotifier versionNotifier;
 	public final Minecraft minecraft;
 	
-	private Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers;
 	private final BiMap<EntityType<?>, Function<EntityType<?>, PatchedEntityRenderer>> entityRendererProvider;
 	private final Map<EntityType<?>, PatchedEntityRenderer> entityRendererCache;
 	private final Map<Item, RenderItemBase> itemRendererMapByInstance;
@@ -132,19 +178,14 @@ public class RenderEngine {
 		this.fakeBlockRenderer = new VanillaFakeBlockRenderer();
 	}
 	
+	/**
+	 * Dummy method for backward compatibility (since 20.14.7)
+	 * Originally existed for initialization of item renderer types ('type' property in 'item_skins'),
+	 * but it's moved to {@link #reloadItemRenderers}
+	 */
+	@Deprecated(forRemoval = true)
 	public void initialize() {
-		Map<ResourceLocation, Function<JsonElement, RenderItemBase>> builder = Maps.newHashMap();
 		
-		builder.put(ResourceLocation.withDefaultNamespace("base"), RenderItemBase::new);
-		builder.put(ResourceLocation.withDefaultNamespace("ranged"), RenderTwoHandedRangedWeapon::new);
-		builder.put(ResourceLocation.withDefaultNamespace("map"), RenderFilledMap::new);
-		builder.put(ResourceLocation.withDefaultNamespace("shield"), RenderShield::new);
-		builder.put(ResourceLocation.withDefaultNamespace("trident"), RenderTrident::new);
-		builder.put(EpicFightMod.identifier("uchigatana"), RenderKatana::new);
-		
-		ModLoader.get().postEvent(new PatchedRenderersEvent.RegisterItemRenderer(builder));
-		
-		this.itemRenderers = ImmutableMap.copyOf(builder);
 	}
 	
 	public void reloadFakeBlockRenderer(FakeBlockRenderer fakeBlockRenderer) {
@@ -194,6 +235,17 @@ public class RenderEngine {
 		//Clear item renderers
 		this.itemRendererMapByInstance.clear();
 		this.itemRendererMapByClass.clear();
+		
+		// Build item renderers
+		Map<ResourceLocation, Function<JsonElement, RenderItemBase>> itemRenderers = Maps.newHashMap();
+		itemRenderers.put(ResourceLocation.withDefaultNamespace("base"), RenderItemBase::new);
+		itemRenderers.put(ResourceLocation.withDefaultNamespace("ranged"), RenderTwoHandedRangedWeapon::new);
+		itemRenderers.put(ResourceLocation.withDefaultNamespace("map"), RenderFilledMap::new);
+		itemRenderers.put(ResourceLocation.withDefaultNamespace("shield"), RenderShield::new);
+		itemRenderers.put(ResourceLocation.withDefaultNamespace("trident"), RenderTrident::new);
+		itemRenderers.put(EpicFightMod.identifier("uchigatana"), RenderKatana::new);
+		
+		ModLoader.get().postEvent(new PatchedRenderersEvent.RegisterItemRenderer(itemRenderers));
 		
 		for (Map.Entry<ResourceLocation, JsonElement> entry : objects.entrySet()) {
 			ResourceLocation rl = entry.getKey();
