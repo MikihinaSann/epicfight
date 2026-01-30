@@ -245,7 +245,12 @@ public class AttackAnimation extends ActionAnimation {
 							target.invulnerableTime = prevInvulTime;
 							
 							if (attackResult.resultType.dealtDamage()) {
-								target.level().playSound(null, target.getX(), target.getY(), target.getZ(), this.getHitSound(entitypatch, phase), target.getSoundSource(), 1.0F, 1.0F);
+                                SoundEvent hitSound = this.getHitSound(entitypatch, phase);
+
+                                if (hitSound != null) {
+								    target.level().playSound(null, target.getX(), target.getY(), target.getZ(), hitSound, target.getSoundSource(), 1.0F, 1.0F);
+                                }
+
 								this.spawnHitParticle((ServerLevel)target.level(), entitypatch, target, phase);
 							}
 							

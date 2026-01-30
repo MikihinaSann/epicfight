@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
@@ -38,7 +39,6 @@ import yesman.epicfight.client.mesh.HumanoidMesh;
 import yesman.epicfight.data.conditions.Condition;
 import yesman.epicfight.data.conditions.entity.HasCustomTag;
 import yesman.epicfight.gameasset.Armatures;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.model.armature.HumanoidArmature;
 import yesman.epicfight.network.server.SPDatapackSync;
@@ -86,7 +86,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			ResourceLocation registryName = ResourceLocation.fromNamespaceAndPath(rl.getNamespace(), pathString);
 			
 			if (!BuiltInRegistries.ENTITY_TYPE.containsKey(registryName)) {
-				EpicFightMod.LOGGER.warn("Mob Patch Exception: No Entity named " + registryName);
+                EpicFight.LOGGER.warn("Mob Patch Exception: No Entity named {}", registryName);
 				continue;
 			}
 			
@@ -96,7 +96,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			try {
 				tag = TagParser.parseTag(entry.getValue().toString());
 			} catch (CommandSyntaxException e) {
-				EpicFightMod.LOGGER.warn("Error while deserializing datapack for " + registryName + ": " + e.getLocalizedMessage());
+                EpicFight.LOGGER.warn("Error while deserializing datapack for {} : {}", registryName, e.getLocalizedMessage());
 				continue;
 			}
 			
@@ -105,7 +105,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			try {
 				abstractMobpatchProvider = deserialize(entityType, tag, false, resourceManager);
 			} catch (Exception e) {
-                EpicFightMod.LOGGER.warn("Can't deserialize mob capability: {}: {}", registryName, e.getLocalizedMessage());
+                EpicFight.LOGGER.warn("Can't deserialize mob capability: {}: {}", registryName, e.getLocalizedMessage());
 				continue;
 			}
 			
@@ -166,17 +166,17 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		@Override
 		public EntityPatch<?> get(Entity entity) {
 			if (this.humanoidCombatBehaviors == null && !entity.level().isClientSide()) {
-				EpicFightMod.LOGGER.warn("Custom humanoid mob capability undefined combat behaviors");
+                EpicFight.LOGGER.warn("Custom humanoid mob capability undefined combat behaviors");
 				return null;
 			}
 			
 			if (this.humanoidWeaponMotions == null && !entity.level().isClientSide()) {
-				EpicFightMod.LOGGER.warn("Custom humanoid mob capability undefined weapon motions");
+                EpicFight.LOGGER.warn("Custom humanoid mob capability undefined weapon motions");
 				return null;
 			}
 			
 			if (!(entity instanceof PathfinderMob pathfinderMob)) {
-				EpicFightMod.LOGGER.warn(entity.getClass().getSimpleName() + " is not a subtype of Pathfinder Mob");
+                EpicFight.LOGGER.warn(entity.getClass().getSimpleName() + " is not a subtype of Pathfinder Mob");
 				return null;
 			}
 			
@@ -207,12 +207,12 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		@Override
 		public EntityPatch<?> get(Entity entity) {
 			if (this.combatBehaviorsBuilder == null && !entity.level().isClientSide()) {
-				EpicFightMod.LOGGER.warn("Combat behavior undefined for mob capability of " + entity.getClass());
+                EpicFight.LOGGER.warn("Combat behavior undefined for mob capability of " + entity.getClass());
 				return null;
 			}
 			
 			if (!(entity instanceof PathfinderMob pathfinderMob)) {
-				EpicFightMod.LOGGER.warn(entity.getClass().getSimpleName() + " is not a subtype of Pathfinder Mob");
+                EpicFight.LOGGER.warn(entity.getClass().getSimpleName() + " is not a subtype of Pathfinder Mob");
 				return null;
 			}
 			
@@ -283,7 +283,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		
 		if ("has_tags".equals(predicateType)) {
 			if (!tag.contains("tags", 9)) {
-				EpicFightMod.LOGGER.info("Mob capability deserializing exception: Can't find a proper argument for %s. [identifier: %s, type: %s]".formatted("has_tags", "tags", "string list"));
+                EpicFight.LOGGER.info("Mob capability deserializing exception: Can't find a proper argument for %s. [identifier: %s, type: %s]".formatted("has_tags", "tags", "string list"));
 			}
 			
 			predicate = new HasCustomTag(tag.getList("tags", 8));
@@ -305,8 +305,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			String presetName = tag.getString("preset");
 			Function<Entity, EntityPatch<?>> preset = EpicFightCapabilities.ENTITY_PATCH_PROVIDER.get(presetName);
 			Armatures.registerEntityTypeArmatureByPreset(entityType, presetName);
-			MobPatchPresetProvider provider = new MobPatchPresetProvider(preset);
-			return provider;
+            return new MobPatchPresetProvider(preset);
 		} else {
 			boolean humanoid = tag.getBoolean("isHumanoid");
 			CustomMobPatchProvider provider = humanoid ? new CustomHumanoidMobPatchProvider() : new CustomMobPatchProvider();
@@ -324,18 +323,36 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			provider.faction = Faction.ENUM_MANAGER.getOrThrow(tag.getString("faction"));
 			
 			provider.scale = tag.getCompound("attributes").contains("scale") ? (float)tag.getCompound("attributes").getDouble("scale") : 1.0F;
-			
-			if (tag.contains("swing_sound")) {
-				provider.swingSound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.getString("swing_sound")));
-			}
-			
-			if (tag.contains("hit_sound")) {
-				provider.hitSound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.getString("hit_sound")));
-			}
-			
-			if (tag.contains("hit_particle")) {
-				provider.hitParticle = (HitParticleType)BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(tag.getString("hit_particle")));
-			}
+
+            if (tag.contains("swing_sound")) {
+                SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.getString("swing_sound")));
+
+                if (soundEvent == null) {
+                    EpicFight.LOGGER.warn("Can't find a swing sound {} for the next mot patch: {}", tag.getString("swing_sound"), entityType.toString());
+                } else {
+                    provider.swingSound = soundEvent;
+                }
+            }
+
+            if (tag.contains("hit_sound")) {
+                SoundEvent soundEvent = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.getString("hit_sound")));
+
+                if (soundEvent == null) {
+                    EpicFight.LOGGER.warn("Can't find a hit sound {} for the next mot patch: {}", tag.getString("hit_sound"), entityType.toString());
+                } else {
+                    provider.hitSound = soundEvent;
+                }
+            }
+
+            if (tag.contains("hit_particle")) {
+                HitParticleType hitParticle = (HitParticleType)BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(tag.getString("hit_particle")));
+
+                if (hitParticle == null) {
+                    EpicFight.LOGGER.warn("Can't find a hit particle type {} for the next mot patch: {}", tag.getString("hit_particle"), entityType.toString());
+                } else {
+                    provider.hitParticle = hitParticle;
+                }
+            }
 			
 			if (!clientSide) {
 				provider.stunAnimations = deserializeStunAnimations(tag.getCompound("stun_animations"));
@@ -499,7 +516,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		if (type.contains(":")) {
 			rl = ResourceLocation.parse(type);
 		} else {
-			rl = EpicFightMod.identifier(type);
+			rl = EpicFight.identifier(type);
 		}
 		
 		Supplier<Condition<T>> predicateProvider = EpicFightConditions.getConditionOrNull(rl);
