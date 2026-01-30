@@ -139,7 +139,7 @@ public class ComboAttackAnimation extends AttackAnimation {
 	public boolean shouldPlayerMove(LocalPlayerPatch playerpatch) {
 		if (playerpatch.isLogicalClient()) {
 			if (!EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level())) {
-				return isPlayerMoving(playerpatch);
+				return !isPlayerMoving(playerpatch);
 			}
 		}
 		

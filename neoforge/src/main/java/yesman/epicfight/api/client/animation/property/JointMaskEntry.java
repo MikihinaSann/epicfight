@@ -1,16 +1,15 @@
 package yesman.epicfight.api.client.animation.property;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import net.minecraft.resources.ResourceLocation;
+import org.apache.commons.lang3.tuple.Pair;
+import yesman.epicfight.api.animation.LivingMotion;
+import yesman.epicfight.api.client.animation.property.JointMask.JointMaskSet;
+
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-
-import yesman.epicfight.api.animation.LivingMotion;
-import yesman.epicfight.api.client.animation.property.JointMask.JointMaskSet;
 
 public class JointMaskEntry {
 	public static final JointMaskSet BIPED_UPPER_JOINTS_WITH_ROOT = JointMaskSet.of(
@@ -68,9 +67,15 @@ public class JointMaskEntry {
 			builder.append(entry.getKey() + ": ");
 			builder.append(JointMaskReloadListener.getKey(entry.getValue()) + ", ");
 		}
-		
-		builder.append("default: ");
-		builder.append(JointMaskReloadListener.getKey(this.defaultMask));
+
+        ResourceLocation maskKey = JointMaskReloadListener.getKey(this.defaultMask);
+
+        if (maskKey == null) {
+            builder.append("default: custom");
+        } else {
+            builder.append("default: ");
+            builder.append(JointMaskReloadListener.getKey(this.defaultMask));
+        }
 		
 		return builder.toString();
 	}
