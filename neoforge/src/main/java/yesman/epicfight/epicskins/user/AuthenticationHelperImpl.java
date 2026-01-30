@@ -47,7 +47,7 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
 	}
 	
 	public synchronized static AuthenticationHelperImpl getInstance() {
-		return (AuthenticationHelperImpl)ClientEngine.getInstance().getAuthHelper();
+		return (AuthenticationHelperImpl)(ClientEngine.getInstance().getAuthHelper());
 	}
 	
 	private final Multimap<Cosmetic.Slot, Cosmetic> cosmeticsBySlot = HashMultimap.create();
