@@ -36,7 +36,7 @@ public class OffhandValidatorScreen extends Screen {
 	private Grid parameterGrid;
 	
 	public OffhandValidatorScreen(Screen parentScreen, CompoundTag rootTag) {
-		super(Component.translatable("datapack_edit.weapon_type.offhand_validator"));
+		super(Component.translatable("datapack_edit.weapon_type.offhand_visibility"));
 		
 		this.minecraft = parentScreen.getMinecraft();
 		this.font = parentScreen.getMinecraft().font;
