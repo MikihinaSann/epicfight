@@ -336,6 +336,11 @@ public class ModelPreviewer extends AbstractContainerWidget implements AnchoredW
 	}
 	
 	public void addAnimationToPlay(AssetAccessor<? extends StaticAnimation> animation) {
+        // Blocks crashes for exceptional cases
+        if (animation == null) {
+            return;
+        }
+
 		if (this.index == -1) {
 			this.index = 0;
 		}
