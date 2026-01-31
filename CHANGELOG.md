@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.15.3] - 2026-01-31
+
+### Fixed
+
+- Fixed Phantom Ascent being disabled if a player lands without taking damage [#2421](https://github.com/Epic-Fight/epicfight/issues/2421)
+- Fixed casting Meteor slam immediately crashes remote players and kicks them from a dedicated server [#2422](https://github.com/Epic-Fight/epicfight/issues/2422)
+- Fixed a wither animation crash [#2428](https://github.com/Epic-Fight/epicfight/issues/2428)
+- Fixed a crash by null sound object [#2432](https://github.com/Epic-Fight/epicfight/issues/2432)
+- Fixed a crash when initializing item renderers. [#2430](https://github.com/Epic-Fight/epicfight/issues/2430)
+- Fixed the 'stiffComboAttack' game rule breaking player motions and trail effects [#2369](https://github.com/Epic-Fight/epicfight/issues/2369)
+- Fixed a crash when loading non-existent animations in datapack editor [#2317](https://github.com/Epic-Fight/epicfight/issues/2317)
+- Relieved the crosshair hit entity detection [#2431](https://github.com/Epic-Fight/epicfight/issues/2431)
+- Fixed an infinite combo attacks looping for some attack movesets [#2429](https://github.com/Epic-Fight/epicfight/issues/2429)
+
 ## [21.15.2] - 2026-01-21
 
 ### Fixed

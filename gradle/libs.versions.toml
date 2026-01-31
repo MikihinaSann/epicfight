@@ -1,5 +1,5 @@
 [versions]
-mod = "21.15.2"
+mod = "21.15.3"
 java = "21"
 
 # Minecraft
@@ -7,7 +7,7 @@ minecraft = "1.21.1"
 parchmentMappings = "2024.11.17"
 
 # NeoForge
-neoforge = "21.1.218"
+neoforge = "21.1.219"
 neoforgeRange = "[21,)"
 moddevgradle = "2.0.134"
 # https://projects.neoforged.net/neoforged/neoform
