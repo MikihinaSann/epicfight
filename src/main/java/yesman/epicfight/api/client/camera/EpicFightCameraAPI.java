@@ -678,8 +678,9 @@ public final class EpicFightCameraAPI {
 			if (view.dot(this.crosshairHitResult.getLocation().subtract(localPlayer.getEyePosition()).normalize()) < -0.1D) {
 				this.crosshairHitResult = BlockHitResult.miss(cameraPos.add(lookVec.x * 50.0D, lookVec.y * 50.0D, lookVec.z * 50.0D), Direction.UP, BlockPos.ZERO);
 				
-				if (!this.lockingOnTarget) {
+				if (!this.lockingOnTarget && this.focusingEntity != null) {
 					this.focusingEntity = null;
+					this.sendTargeting(null);
 				}
 			}
 			
@@ -690,6 +691,7 @@ public final class EpicFightCameraAPI {
 				if (dot < -0.1D) {
 					if (!this.lockingOnTarget) {
 						this.focusingEntity = null;
+						this.sendTargeting(null);
 					}
 				}
 			}
@@ -705,7 +707,7 @@ public final class EpicFightCameraAPI {
                     this.setLockOn(false);
                 }
 			} else {
-				double distance = cameraPos.distanceToSqr(this.focusingEntity.position());
+				double distance = this.minecraft.player.distanceToSqr(this.focusingEntity.position());
 				double maxLockOnDistance = focusingRange * focusingRange;
 				
 				if (
@@ -717,8 +719,8 @@ public final class EpicFightCameraAPI {
 					!MathUtils.canBeSeen(this.focusingEntity, this.minecraft.player, maxLockOnDistance) ||
 					// Angle between look vec and to target too wide
 					!this.lockingOnTarget &&
-						this.focusingEntity.getBoundingBox().getCenter().subtract(mainCamera.getPosition()).normalize()
-							.dot(new Vec3(mainCamera.getLookVector())) < Mth.clampedLerp(0.0D, 0.99D, Mth.inverseLerp(Mth.clamp(distance, 1.0D, 3.5D), 1.0D, 3.5D))
+						this.focusingEntity.position().subtract(mainCamera.getPosition()).normalize() // camera position -> focusing entity feet
+							.dot(new Vec3(mainCamera.getLookVector())) < Mth.clampedLerp(0.8D, 0.96D, Mth.inverseLerp(Mth.clamp(distance, 9.0D, 64.0D), 9.0D, 64.0D))
 				) {
 					if (this.lockingOnTarget) {
 						this.setLockOn(false);
