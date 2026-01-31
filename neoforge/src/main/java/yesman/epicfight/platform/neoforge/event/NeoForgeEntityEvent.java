@@ -8,7 +8,6 @@ import net.neoforged.neoforge.event.ItemAttributeModifierEvent;
 import net.neoforged.neoforge.event.entity.*;
 import net.neoforged.neoforge.event.entity.living.*;
 import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerFlyableFallEvent;
 import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import yesman.epicfight.api.event.impl.VanillaEntityEventHooks;
 import yesman.epicfight.api.event.impl.VanillaItemEventHooks;
@@ -136,16 +135,6 @@ public final class NeoForgeEntityEvent {
 	@SubscribeEvent
 	public static void epicfight$livingJump(LivingJumpEvent event) {
         VanillaEntityEventHooks.onJump(event.getEntity());
-	}
-
-	@SubscribeEvent
-	public static void epicfight$livingFall(LivingFallEvent event) {
-        VanillaEntityEventHooks.onFall(event.getEntity(), event.getDistance(), event.getDamageMultiplier());
-	}
-
-	@SubscribeEvent
-	public static void epicfight$flyablePlayerFall(PlayerFlyableFallEvent event) {
-        VanillaEntityEventHooks.onFall(event.getEntity(), event.getDistance(), event.getMultiplier());
 	}
 
 	private NeoForgeEntityEvent() {}

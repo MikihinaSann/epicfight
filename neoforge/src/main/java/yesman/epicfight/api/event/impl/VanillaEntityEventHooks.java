@@ -557,15 +557,6 @@ public final class VanillaEntityEventHooks {
         });
     }
 
-    /// Called when an entity receives fall damage
-    ///
-    /// @see LivingEntity#causeFallDamage
-    public static void onFall(LivingEntity entity, float distance, float multiplier) {
-        EpicFightCapabilities.getUnparameterizedEntityPatch(entity, LivingEntityPatch.class).ifPresent(entitypatch -> {
-            entitypatch.onFall(distance, multiplier);
-        });
-    }
-
     /// Called when EnderMan spawns, on the main island of Ender world
     ///
     /// @return whether cancel the event
