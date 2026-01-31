@@ -1,5 +1,6 @@
 package yesman.epicfight.world.capabilities.item;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,6 +130,7 @@ public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 		PRESETS.put(rl, (item) -> builder);
 	}
 	
+	@SuppressWarnings("unchecked")
 	public static WeaponCapability.Builder deserializeWeaponCapabilityBuilder(ResourceLocation rl, CompoundTag tag) {
 		WeaponCapability.Builder builder = WeaponCapability.builder();
 		
@@ -177,14 +179,19 @@ public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 		for (String key : combosTag.getAllKeys()) {
 			Style style = Style.ENUM_MANAGER.getOrThrow(key);
 			ListTag comboAnimations = combosTag.getList(key, Tag.TAG_STRING);
-			@SuppressWarnings("unchecked")
-			AnimationAccessor<? extends AttackAnimation>[] animArray = new AnimationAccessor[comboAnimations.size()];
+			List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<> ();
 			
 			for (int i = 0; i < comboAnimations.size(); i++) {
-				animArray[i] = AnimationManager.byKey(comboAnimations.getString(i));
+				AnimationAccessor<? extends AttackAnimation> animation = AnimationManager.byKey(comboAnimations.getString(i));
+				
+				if (animation == null) {
+					EpicFightMod.LOGGER.warn("Can't find an animation named " + comboAnimations.getString(i) + " in " + rl);
+				} else {
+					anims.add(animation);
+				}
 			}
 			
-			builder.newStyleCombo(style, animArray);
+			builder.newStyleCombo(style, anims.toArray(new AnimationAccessor[0]));
 		}
 		
 		CompoundTag innateSkillsTag = tag.getCompound("innate_skills");

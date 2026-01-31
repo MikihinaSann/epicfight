@@ -292,6 +292,11 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 	}
 	
 	public void addAnimationToPlay(AssetAccessor<? extends StaticAnimation> animation) {
+		// Blocks crashes for exceptional cases
+		if (animation == null) {
+			return;
+		}
+		
 		if (this.index == -1) {
 			this.index = 0;
 		}
