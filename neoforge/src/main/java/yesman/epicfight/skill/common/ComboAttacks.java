@@ -52,7 +52,10 @@ public class ComboAttacks extends Skill {
         int prevValue = container.getDataManager().getDataValue(EpicFightSkillDataKeys.COMBO_COUNTER);
         ModifyComboCounter modifyComboCounterEvent = new ModifyComboCounter(reason, playerpatch, causalAnimation, prevValue, modifiedCombo);
         EpicFightEventHooks.Player.MODIFY_COMBO_COUNTER.postWithListener(modifyComboCounterEvent, playerpatch.getEventListener());
-        container.getDataManager().setData(EpicFightSkillDataKeys.COMBO_COUNTER, Mth.clamp(modifyComboCounterEvent.getNextValue(), 0, itemCapability.getAutoAttackMotion(playerpatch).size() - 3));
+
+        // Clamped combo counter value from 0 to last combo index
+        int comboCounterSafe = Mth.clamp(modifyComboCounterEvent.getNextValue(), 0, itemCapability.getAutoAttackMotion(playerpatch).size() - 3);
+        container.getDataManager().setData(EpicFightSkillDataKeys.COMBO_COUNTER, comboCounterSafe);
     }
 
     /// Consumption amount when basic attacks set to use stamina
@@ -146,8 +149,8 @@ public class ComboAttacks extends Skill {
                 comboCounter = (comboCounter + 1) % (comboSize - 2);
             }
 		}
-		
-		setComboCounterWithEvent(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
+
+        if (!airAttack && !dashAttack) dataManager.setData(EpicFightSkillDataKeys.COMBO_COUNTER, comboCounter);
 
         if (attackMotion != null && this.checkConsumption(skillContainer, dashAttack, airAttack)) {
             // Remove an existing data
