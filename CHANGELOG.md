@@ -5,7 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [20.14.6] - 2025-01-17
+## [20.14.7] - 2026-01-31
+
+### Fixed
+
+- Fixed Phantom Ascent being disabled if a player lands without taking damage [#2421](https://github.com/Epic-Fight/epicfight/issues/2421)
+- Fixed casting Meteor slam immediately crashes remote players and kicks them from a dedicated server [#2422](https://github.com/Epic-Fight/epicfight/issues/2422)
+- Fixed a wither animation crash [#2428](https://github.com/Epic-Fight/epicfight/issues/2428)
+- Fixed a crash by null sound object [#2432](https://github.com/Epic-Fight/epicfight/issues/2432)
+- Fixed a crash when initializing item renderers [#2430](https://github.com/Epic-Fight/epicfight/issues/2430)
+- Fixed the 'stiffComboAttack' game rule breaking player motions and trail effects [#2369](https://github.com/Epic-Fight/epicfight/issues/2369)
+- Fixed a crash when loading non-existent animations in datapack editor [#2317](https://github.com/Epic-Fight/epicfight/issues/2317)
+- Relieved the crosshair hit entity detection [#2431](https://github.com/Epic-Fight/epicfight/issues/2431)
+- Fixed an infinite combo attacks looping for some attack movesets [#2429](https://github.com/Epic-Fight/epicfight/issues/2429)
+
+## [20.14.6] - 2026-01-17
 
 ### Fixed
 - Fixed Forbidden Strength triggered via basic attacks
@@ -25,7 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### For Devs
 - Now `BuildCameraTransform.Post` is applied to TPS mode too (https://github.com/Epic-Fight/epicfight/commit/e0f3daab8d61b5bc8a4c14e3051b34c3ff599080)
 
-## [20.14.5] - 2025-01-11
+## [20.14.5] - 2026-01-11
 
 ### Fixed
 - Fixed the player can't play the same attack animation, until it fully ends in the server side
