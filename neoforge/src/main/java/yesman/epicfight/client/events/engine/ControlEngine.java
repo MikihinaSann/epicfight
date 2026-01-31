@@ -697,7 +697,7 @@ public class ControlEngine implements IEventBasedEngine {
     public static void makeUnpressed(KeyMapping keyMapping) {
         while (keyMapping.consumeClick()) {
         }
-        KeyMapping.set(keyMapping.getKey(), false);
+        keyMapping.setDown(false);
     }
 
     /**
@@ -713,7 +713,7 @@ public class ControlEngine implements IEventBasedEngine {
     @SuppressWarnings("JavadocReference")
     @Deprecated(forRemoval = true)
     public static void setKeyBind(KeyMapping key, boolean setter) {
-        KeyMapping.set(key.getKey(), setter);
+        key.setDown(setter);
     }
 
     /**
@@ -729,7 +729,7 @@ public class ControlEngine implements IEventBasedEngine {
      */
     @SuppressWarnings("JavadocReference")
     public static void setSprintingKeyStateNotDown() {
-        KeyMapping.set(MinecraftInputAction.SPRINT.keyMapping().getKey(), false);
+        MinecraftInputAction.SPRINT.keyMapping().setDown(false);
     }
 
     /**
