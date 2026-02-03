@@ -335,7 +335,7 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 							.withParameter(LootContextParams.ORIGIN, player.position())
 							.create(LootContextParamSets.ADVANCEMENT_ENTITY)
 					)
-					.create(null)
+					.create(Optional.empty())
 				);
 			
 			if (!modified.is(Items.AIR)) {
