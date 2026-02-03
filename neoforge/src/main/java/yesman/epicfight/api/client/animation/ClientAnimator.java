@@ -7,6 +7,7 @@ import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.ApiStatus;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
@@ -21,7 +22,6 @@ import yesman.epicfight.api.client.animation.property.JointMask.JointMaskSet;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
 import yesman.epicfight.gameasset.Animations;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
@@ -122,7 +122,7 @@ public class ClientAnimator extends Animator {
 	@Override
 	public void addLivingAnimation(LivingMotion livingMotion, AssetAccessor<? extends StaticAnimation> animation) {
 		if (AnimationManager.checkNull(animation)) {
-			EpicFightMod.LOGGER.warn("Unable to put an empty animation for " + livingMotion);
+			EpicFight.LOGGER.warn("Unable to put an empty animation for {}", livingMotion);
 			return;
 		}
 		
@@ -166,10 +166,10 @@ public class ClientAnimator extends Animator {
 	public void resetLivingAnimations() {
 		super.resetLivingAnimations();
 		this.compositeLivingAnimations.clear();
-		this.defaultLivingAnimations.forEach((key, val) -> this.addLivingAnimation(key, val));
-		this.defaultCompositeLivingAnimations.forEach((key, val) -> this.addLivingAnimation(key, val));
+		this.defaultLivingAnimations.forEach(this::addLivingAnimation);
+		this.defaultCompositeLivingAnimations.forEach(this::addLivingAnimation);
 	}
-	
+
 	public AssetAccessor<? extends StaticAnimation> getLivingMotion(LivingMotion motion) {
 		return this.livingAnimations.getOrDefault(motion, this.livingAnimations.get(LivingMotions.IDLE));
 	}
@@ -190,14 +190,14 @@ public class ClientAnimator extends Animator {
 	
 	@Override
 	public void tick() {
-		/**
+		/*
 		// Layer debugging
 		for (Layer layer : this.getAllLayers()) {
 			System.out.println(layer);
 		}
 		System.out.println();
-		**/
-		
+		*/
+
 		if (this.hardPaused) {
 			return;
 		}
