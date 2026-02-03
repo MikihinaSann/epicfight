@@ -1,14 +1,9 @@
 package yesman.epicfight.world.capabilities.entitypatch;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
-
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -18,12 +13,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.ProjectileWeaponItem;
-import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.TridentItem;
+import net.minecraft.world.item.*;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.LivingMotion;
@@ -44,6 +34,10 @@ import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.ai.goal.AnimatedAttackGoal;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
 import yesman.epicfight.world.entity.ai.goal.TargetChasingGoal;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public abstract class HumanoidMobPatch<T extends PathfinderMob> extends MobPatch<T> {
 	protected Map<WeaponCategory, Map<Style, Set<Pair<LivingMotion, AnimationAccessor<? extends StaticAnimation>>>>> weaponLivingMotions;
@@ -157,7 +151,7 @@ public abstract class HumanoidMobPatch<T extends PathfinderMob> extends MobPatch
 		
 		if (hand == InteractionHand.OFF_HAND) {
 			if (!from.isEmpty()) {
-				to.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
+                from.getAttributeModifiers().forEach(EquipmentSlot.MAINHAND, (attribute, modifier) -> {
 					if (attribute == Attributes.ATTACK_SPEED) {
 						this.original.getAttribute(EpicFightAttributes.OFFHAND_ATTACK_SPEED).removeModifier(modifier);
 					}
