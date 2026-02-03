@@ -1,24 +1,14 @@
 package yesman.epicfight.client.gui.datapack.screen;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.DoubleTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.StringTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import yesman.epicfight.api.utils.ParseUtil;
@@ -32,6 +22,11 @@ import yesman.epicfight.client.gui.datapack.widgets.Static;
 import yesman.epicfight.data.conditions.Condition.ParameterEditor;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.Styles;
 import yesman.epicfight.world.capabilities.item.Style;
+
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 public class WeaponAttributeScreen extends Screen {
 	private final Map<String, ParameterEditor> weaponAttributeEditors = Maps.newLinkedHashMap();
@@ -156,7 +151,8 @@ public class WeaponAttributeScreen extends Screen {
 											grid.setGridFocus(rowposition, "attribute");
 										})
 										.pressRemove((grid, button) -> {
-											this.styles.get(this.stylesGrid.getRowposition()).getValue().remove(((ParameterEditor)grid.getValue(grid.getRowposition(), "attribute")).editWidget.getMessage().getString());
+                                            Object attributeGridRow = grid.getValue(grid.getRowposition(), "attribute");
+											this.styles.get(this.stylesGrid.getRowposition()).getValue().remove(attributeGridRow == null ? "" : ((ParameterEditor)attributeGridRow).editWidget.getMessage().getString());
 											grid.removeRow((removedRow) -> {});
 										})
 										.build();
