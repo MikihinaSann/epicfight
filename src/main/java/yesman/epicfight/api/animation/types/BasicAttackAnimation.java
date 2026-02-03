@@ -140,9 +140,7 @@ public class BasicAttackAnimation extends AttackAnimation {
 	@Override
 	public boolean shouldPlayerMove(LocalPlayerPatch playerpatch) {
 		if (playerpatch.isLogicalClient()) {
-			if (!EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level())) {
-                return !isPlayerMoving(playerpatch);
-			}
+			return EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level());
 		}
 		
 		return true;
