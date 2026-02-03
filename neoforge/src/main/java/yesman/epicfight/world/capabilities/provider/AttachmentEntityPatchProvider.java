@@ -1,11 +1,12 @@
 package yesman.epicfight.world.capabilities.provider;
 
-import javax.annotation.Nullable;
-
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.neoforged.neoforge.attachment.IAttachmentHolder;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
+
+import javax.annotation.Nullable;
 
 public final class AttachmentEntityPatchProvider {
 	@Nullable
@@ -15,7 +16,11 @@ public final class AttachmentEntityPatchProvider {
 		if (!(attachmentHolder instanceof Entity entity)) {
 			throw new IllegalArgumentException(attachmentHolder + " is not a subtype of Entity");
 		}
-		
+
+        if (attachmentHolder instanceof EnderDragonPart) {
+            return;
+        }
+
 		this.entitypatch = EpicFightCapabilities.ENTITY_PATCH_PROVIDER.getCapability(entity);
 	}
 	
