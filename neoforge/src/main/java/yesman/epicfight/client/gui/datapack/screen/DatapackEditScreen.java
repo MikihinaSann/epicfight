@@ -389,7 +389,11 @@ public class DatapackEditScreen extends Screen {
 	protected void init() {
 		// Enable stencil buffer to render a grid inside the area
 		Minecraft.getInstance().getMainRenderTarget().enableStencil();
-		
+
+        if (this.tabNavigationBar != null) this.removeWidget(this.tabNavigationBar);
+        if (this.bottomButtons != null) this.bottomButtons.visitWidgets(this::removeWidget);
+        if (this.sideNavigationBarOpener != null) this.removeWidget(this.sideNavigationBarOpener);
+
 		this.tabNavigationBar = TabNavigationBar.builder(this.tabManager, this.width).addTabs(this.weaponTypeTab, this.itemCapabilityTab, this.mobCapabilityTab).build();
 		this.tabNavigationBar.selectTab(0, false);
 		
