@@ -129,7 +129,7 @@ public class ComboAttackAnimation extends AttackAnimation {
 		
 		return super.getJointMaskEntry(entitypatch, useCurrentMotion);
 	}
-	
+
 	@Override
 	public boolean isComboAttackAnimation() {
 		return true;
@@ -138,9 +138,7 @@ public class ComboAttackAnimation extends AttackAnimation {
 	@Override @ClientOnly
 	public boolean shouldPlayerMove(LocalPlayerPatch playerpatch) {
 		if (playerpatch.isLogicalClient()) {
-			if (!EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level())) {
-				return !isPlayerMoving(playerpatch);
-			}
+            return EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(playerpatch.getOriginal().level());
 		}
 		
 		return true;
