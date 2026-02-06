@@ -1,18 +1,9 @@
 package yesman.epicfight.api.utils;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Function;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import yesman.epicfight.api.animation.Joint;
@@ -25,6 +16,13 @@ import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.main.EpicFightSharedConstants;
 
+import javax.annotation.Nullable;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
 public class InstantiateInvoker {
 	private static final BiMap<String, Class<?>> PRIMITIVE_KEYWORDS = HashBiMap.create();
 	private static final BiMap<Class<?>, Class<?>> RETURN_TYPE_MAPPER = HashBiMap.create();
@@ -35,7 +33,7 @@ public class InstantiateInvoker {
 		registerPrimitive("C", char.class, (s) -> s.charAt(0));
 		registerPrimitive("D", double.class, Double::parseDouble);
 		registerPrimitive("F", float.class, Float::parseFloat);
-		registerPrimitive("IMeshRenderBoost", int.class, Integer::parseInt);
+		registerPrimitive("I", int.class, Integer::parseInt);
 		registerPrimitive("J", long.class, Long::parseLong);
 		registerPrimitive("S", short.class, Short::parseShort);
 		registerPrimitive("Z", boolean.class, Boolean::parseBoolean);
@@ -84,7 +82,11 @@ public class InstantiateInvoker {
 			String[] param = splitExceptWrapper(invocationCommand, '#', true);
 			String sValue = param[0];
 			String sType = param[1];
-			
+
+            if ("IMeshRenderBoost".equals(sType)) {
+                sType = "I"; // Bad Implementation: I > IMeshRenderBoost is caused by replace all but kept to preserve backward compatibility
+            }
+
 			if (PRIMITIVE_KEYWORDS.containsKey(sType)) {
 				Class<T> type = (Class<T>)PRIMITIVE_KEYWORDS.get(sType);
 				return Result.of(type, (T)STRING_TO_OBJECT_PARSER.get(type).apply(sValue));
@@ -115,6 +117,11 @@ public class InstantiateInvoker {
 		
 		String[] param$type = splitExceptWrapper(invocationCommand, '#', true);
 		String sParams = param$type[0];
+
+        if (param$type.length > 1 && "yesman.epicfight.api.animation.types.BasicAttackAnimation".equals(param$type[1])) {
+            param$type[1] = "yesman.epicfight.api.animation.types.ComboAttackAnimation"; // Class name changed: BasicAttackAnimation(1.20.1) -> "ComboAttackAnimation"
+        }
+
 		Class<?> type = param$type.length > 1 ? Class.forName(param$type[1]) : hint;
 		
 		if (type == null) {
