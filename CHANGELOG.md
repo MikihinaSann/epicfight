@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [20.14.8] - 2026-02-06
+
+### Fixed
+
+- Fixed the player still moves forward even when the 'stiffComboAttack' gamerule is set to false [#2444](https://github.com/Epic-Fight/epicfight/issues/2444)
+- Fixed a crash when removing an empty row in weapon attribute screen [#2439](https://github.com/Epic-Fight/epicfight/issues/2439)
+- Fixed a crash from wrong animation formatting [#2441](https://github.com/Epic-Fight/epicfight/issues/2441)
+
 ## [20.14.7] - 2026-01-31
 
 ### Fixed
