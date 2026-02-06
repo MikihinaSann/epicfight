@@ -9,6 +9,8 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -37,7 +39,6 @@ import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.types.AttackAnimation;
-import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.SkillManager;
 import yesman.epicfight.api.forgeevent.WeaponCapabilityPresetRegistryEvent;
@@ -48,6 +49,7 @@ import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.server.SPDatapackSync;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 
 public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 	public static void registerDefaultWeaponTypes() {
@@ -130,8 +132,18 @@ public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 		PRESETS.put(rl, (item) -> builder);
 	}
 	
-	@SuppressWarnings("unchecked")
+	
 	public static WeaponCapability.Builder deserializeWeaponCapabilityBuilder(ResourceLocation rl, CompoundTag tag) {
+		return deserializeWeaponCapabilityBuilder(rl, tag, null);
+	}
+	
+	/**
+	 * @deprecated Use Non-datapack sensitive version. {@link #deserializeWeaponCapabilityBuilder(ResourceLocation, CompoundTag)}
+	 * @param extraEntryProvider Returns extra-entry created in runtime. (Datapack editor) Exists to access animations
+	 */
+	@Deprecated
+	@SuppressWarnings("unchecked")
+	public static WeaponCapability.Builder deserializeWeaponCapabilityBuilder(ResourceLocation rl, CompoundTag tag, @Nullable ExtraEntryProvider extraEntryProvider) {
 		WeaponCapability.Builder builder = WeaponCapability.builder();
 		
 		if (!tag.contains("category") || StringUtil.isNullOrEmpty(tag.getString("category"))) {
@@ -182,7 +194,8 @@ public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 			List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<> ();
 			
 			for (int i = 0; i < comboAnimations.size(); i++) {
-				AnimationAccessor<? extends AttackAnimation> animation = AnimationManager.byKey(comboAnimations.getString(i));
+				String animId = comboAnimations.getString(i);
+				AnimationAccessor<? extends AttackAnimation> animation = extraEntryProvider == null ? AnimationManager.byKey(animId) : extraEntryProvider.getExtraOrBuiltInAnimation(animId);
 				
 				if (animation == null) {
 					EpicFightMod.LOGGER.warn("Can't find an animation named " + comboAnimations.getString(i) + " in " + rl);
@@ -210,9 +223,15 @@ public class WeaponTypeReloadListener extends SimpleJsonResourceReloadListener {
 			
 			for (String sLivingmotion : styleAnimationTag.getAllKeys()) {
 				LivingMotion livingmotion = LivingMotion.ENUM_MANAGER.getOrThrow(sLivingmotion);
-				AnimationAccessor<? extends StaticAnimation> animation = AnimationManager.byKey(styleAnimationTag.getString(sLivingmotion));
 				
-				builder.livingMotionModifier(style, livingmotion, animation);
+				String animId = styleAnimationTag.getString(sLivingmotion);
+				AnimationAccessor<? extends AttackAnimation> animation = extraEntryProvider == null ? AnimationManager.byKey(animId) : extraEntryProvider.getExtraOrBuiltInAnimation(animId);
+				
+				if (animation == null) {
+					EpicFightMod.LOGGER.warn("No animation named {}", styleAnimationTag.getString(sLivingmotion));
+				} else {
+					builder.livingMotionModifier(style, livingmotion, animation);
+				}
 			}
 		}
 		

@@ -705,6 +705,13 @@ public class JsonAssetLoader {
 				continue;
 			}
 			
+			// WORKAROUND: The case when transform format is wrongly specified!
+            if (transformFormat == TransformFormat.ATTRIBUTES && transformArray.get(i).isJsonArray()) {
+                transformFormat = TransformFormat.MATRIX;
+            } else if (transformFormat == TransformFormat.MATRIX && transformArray.get(i).isJsonObject()) {
+                transformFormat = TransformFormat.ATTRIBUTES;
+            }
+			
 			switch (transformFormat) {
 			case MATRIX -> {
 				JsonArray matrixArray = transformArray.get(i).getAsJsonArray();

@@ -6,6 +6,8 @@ import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.Gson;
@@ -41,6 +43,7 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.TagBasedSeparativeCapability;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 import yesman.epicfight.world.capabilities.provider.ItemCapabilityProvider;
 import yesman.epicfight.world.entity.ai.attribute.EpicFightAttributes;
 
@@ -120,12 +123,23 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 	}
 	
 	public static CapabilityItem deserializeWeapon(Item item, CompoundTag tag) {
+		return deserializeWeapon(item, tag, null);
+	}
+	
+	/**
+	 * @deprecated Use Non-datapack sensitive version. {@link #deserializeWeapon(Item, CompoundTag)}
+	 * @param extraEntryProvider Returns extra-entry created in runtime. (Datapack editor) Exists to access weapon types.
+	 */
+	public static CapabilityItem deserializeWeapon(Item item, CompoundTag tag, @Nullable ExtraEntryProvider extraEntryProvider) {
 		CapabilityItem capability;
 		
 		if (tag.contains("variations")) {
 			ListTag jsonArray = tag.getList("variations", 10);
 			List<Pair<Condition<ItemStack>, CapabilityItem>> list = Lists.newArrayList();
-			CapabilityItem.Builder innerDefaultCapabilityBuilder = tag.contains("type") ? WeaponTypeReloadListener.getOrThrow(tag.getString("type")).apply(item) : CapabilityItem.builder();
+			CapabilityItem.Builder innerDefaultCapabilityBuilder = tag.contains("type") ?
+				(extraEntryProvider == null ?
+					WeaponTypeReloadListener.getOrThrow(tag.getString("type")) : extraEntryProvider.getExtraOrBuiltInWeaponType(tag.getString("type"))).apply(item)
+				: CapabilityItem.builder();
 			
 			if (tag.contains("attributes")) {
 				CompoundTag attributes = tag.getCompound("attributes");
@@ -149,7 +163,10 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 			
 			capability = new TagBasedSeparativeCapability(list, innerDefaultCapabilityBuilder.build());
 		} else {
-			CapabilityItem.Builder builder = tag.contains("type") ? WeaponTypeReloadListener.getOrThrow(tag.getString("type")).apply(item) : CapabilityItem.builder();
+			CapabilityItem.Builder builder = tag.contains("type") ?
+				(extraEntryProvider == null ?
+					WeaponTypeReloadListener.getOrThrow(tag.getString("type")) : extraEntryProvider.getExtraOrBuiltInWeaponType(tag.getString("type"))).apply(item)
+				: CapabilityItem.builder();
 			
 			if (tag.contains("attributes")) {
 				CompoundTag attributes = tag.getCompound("attributes");

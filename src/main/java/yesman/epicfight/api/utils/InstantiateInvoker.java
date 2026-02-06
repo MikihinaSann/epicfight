@@ -35,7 +35,7 @@ public class InstantiateInvoker {
 		registerPrimitive("C", char.class, (s) -> s.charAt(0));
 		registerPrimitive("D", double.class, Double::parseDouble);
 		registerPrimitive("F", float.class, Float::parseFloat);
-		registerPrimitive("IMeshRenderBoost", int.class, Integer::parseInt);
+		registerPrimitive("I", int.class, Integer::parseInt);
 		registerPrimitive("J", long.class, Long::parseLong);
 		registerPrimitive("S", short.class, Short::parseShort);
 		registerPrimitive("Z", boolean.class, Boolean::parseBoolean);
@@ -84,6 +84,10 @@ public class InstantiateInvoker {
 			String[] param = splitExceptWrapper(invocationCommand, '#', true);
 			String sValue = param[0];
 			String sType = param[1];
+			
+			if ("IMeshRenderBoost".equals(sType)) {
+				sType = "I"; // Bad Implementation: I > IMeshRenderBoost is caused by replace all but kept to preserve backward compatibility
+			}
 			
 			if (PRIMITIVE_KEYWORDS.containsKey(sType)) {
 				Class<T> type = (Class<T>)PRIMITIVE_KEYWORDS.get(sType);
