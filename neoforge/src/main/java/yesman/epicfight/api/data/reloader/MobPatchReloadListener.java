@@ -25,6 +25,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -51,6 +52,7 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.*;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors.Behavior;
@@ -295,8 +297,14 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		
 		return predicate;
 	}
-	
-	public static AbstractMobPatchProvider deserializeMobPatchProvider(EntityType<?> entityType, CompoundTag tag, boolean clientSide, ResourceManager resourceManager) {
+
+    public static AbstractMobPatchProvider deserializeMobPatchProvider(EntityType<?> entityType, CompoundTag tag, boolean clientSide, ResourceManager resourceManager) {
+        return deserializeMobPatchProvider(entityType, tag, clientSide, resourceManager, null);
+    }
+
+    /// @deprecated Use Non-datapack sensitive version. [#deserialize(EntityType, CompoundTag, boolean, ResourceManager)]
+    /// @param extraEntryProvider Returns extra-entry created in runtime. (Datapack editor) Exists to access armatures and meshes
+    public static AbstractMobPatchProvider deserializeMobPatchProvider(EntityType<?> entityType, CompoundTag tag, boolean clientSide, ResourceManager resourceManager, @Nullable ExtraEntryProvider extraEntryProvider) {
 		boolean disabled = tag.contains("disabled") && tag.getBoolean("disabled");
 		
 		if (disabled) {
@@ -304,7 +312,7 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 		} else if (tag.contains("preset")) {
 			String presetName = tag.getString("preset");
 			Function<Entity, EntityPatch<?>> preset = EpicFightCapabilities.ENTITY_PATCH_PROVIDER.get(presetName);
-			Armatures.registerEntityTypeArmatureByPreset(entityType, presetName);
+            if (extraEntryProvider == null) Armatures.registerEntityTypeArmatureByPreset(entityType, presetName); // Register armature when it's not loaded from datapack
             return new MobPatchPresetProvider(preset);
 		} else {
 			boolean humanoid = tag.getBoolean("isHumanoid");
@@ -314,10 +322,10 @@ public class MobPatchReloadListener extends SimpleJsonResourceReloadListener {
 			ResourceLocation armatureId = ResourceLocation.parse(tag.getString("armature"));
 			
 			if (EpicFightSharedConstants.isPhysicalClient()) {
-				Meshes.getOrCreate(modelLocation, (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(humanoid ? SkinnedMesh::new : HumanoidMesh::new));
+                if (extraEntryProvider == null) Meshes.getOrCreate(modelLocation, (jsonAssetLoader) -> jsonAssetLoader.loadSkinnedMesh(humanoid ? SkinnedMesh::new : HumanoidMesh::new)); // Register mesh when it's not loaded from datapack
 			}
-			
-			Armatures.registerEntityTypeArmature(entityType, Armatures.getOrCreate(armatureId, Armature::new));
+
+            if (extraEntryProvider == null) Armatures.registerEntityTypeArmature(entityType, Armatures.getOrCreate(armatureId, Armature::new)); // Register armature when it's not loaded from datapack
 			
 			provider.defaultAnimations = deserializeDefaultAnimations(tag.getCompound("default_livingmotions"));
 			provider.faction = Faction.ENUM_MANAGER.getOrThrow(tag.getString("faction"));

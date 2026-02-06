@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.JsonOps;
+import io.netty.util.internal.StringUtil;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.TagParser;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableInt;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -378,6 +380,25 @@ public abstract class ParseUtil {
 		
 		return sb.toString();
 	}
+
+    public static boolean canParseToResourceLocation(String str) {
+        if (StringUtil.isNullOrEmpty(str)) {
+            return true;
+        }
+
+        String[] astring = new String[]{"minecraft", str};
+        int i = str.indexOf(ResourceLocation.NAMESPACE_SEPARATOR);
+
+        if (i >= 0) {
+            astring[1] = str.substring(i + 1);
+
+            if (i >= 1) {
+                astring[0] = str.substring(0, i);
+            }
+        }
+
+        return ResourceLocation.isValidNamespace(astring[0]) && ResourceLocation.isValidPath(astring[1]);
+    }
 
 	private ParseUtil() {}
 }

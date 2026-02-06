@@ -25,6 +25,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.data.conditions.Condition;
 import yesman.epicfight.gameasset.ColliderPreset;
@@ -35,6 +36,7 @@ import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightConditions;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.item.*;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 
 import java.util.HashMap;
 import java.util.List;
@@ -129,15 +131,24 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
         setter.apply(sound);
     }
 
-	public static CapabilityItem deserializeWeapon(Item item, CompoundTag tag) {
+    public static CapabilityItem deserializeWeapon(Item item, CompoundTag tag) {
+        return deserializeWeapon(item, tag, null);
+    }
+
+    /// @deprecated Use Non-datapack sensitive version. [#deserializeWeapon(Item, CompoundTag)]
+    /// @param extraEntryProvider Returns extra-entry created in runtime. (Datapack editor) Exists to access weapon types.
+    public static CapabilityItem deserializeWeapon(Item item, CompoundTag tag, @Nullable ExtraEntryProvider extraEntryProvider) {
 		CapabilityItem capability;
-		
+
 		if (tag.contains("variations")) {
 			ListTag jsonArray = tag.getList("variations", 10);
 			List<Pair<Condition<ItemStack>, CapabilityItem>> list = Lists.newArrayList();
-			CapabilityItem.Builder<?> innerDefaultCapabilityBuilder = tag.contains("type") ? WeaponTypeReloadListener.getOrThrow(tag.getString("type")).apply(item) : CapabilityItem.builder();
-			
-			if (tag.contains("attributes")) {
+            CapabilityItem.Builder<?> innerDefaultCapabilityBuilder = tag.contains("type") ?
+                (extraEntryProvider == null ?
+                    WeaponTypeReloadListener.getOrThrow(tag.getString("type")) : extraEntryProvider.getExtraOrBuiltInWeaponType(tag.getString("type"))).apply(item)
+                : CapabilityItem.builder();
+
+            if (tag.contains("attributes")) {
 				CompoundTag attributes = tag.getCompound("attributes");
 				
 				for (String key : attributes.getAllKeys()) {
@@ -159,9 +170,12 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 			
 			capability = new RuntimeCapability(list, innerDefaultCapabilityBuilder.build());
 		} else {
-			CapabilityItem.Builder<?> builder = tag.contains("type") ? WeaponTypeReloadListener.getOrThrow(tag.getString("type")).apply(item) : CapabilityItem.builder();
-			
-			if (tag.contains("attributes")) {
+            CapabilityItem.Builder<?> builder = tag.contains("type") ?
+                (extraEntryProvider == null ?
+                    WeaponTypeReloadListener.getOrThrow(tag.getString("type")) : extraEntryProvider.getExtraOrBuiltInWeaponType(tag.getString("type"))).apply(item)
+                : CapabilityItem.builder();
+
+            if (tag.contains("attributes")) {
 				CompoundTag attributes = tag.getCompound("attributes");
 				
 				for (String key : attributes.getAllKeys()) {

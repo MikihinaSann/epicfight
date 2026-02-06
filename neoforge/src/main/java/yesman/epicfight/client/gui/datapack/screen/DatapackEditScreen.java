@@ -47,7 +47,9 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.validation.DirectoryValidator;
 import org.jetbrains.annotations.Nullable;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.AnimationManager;
+import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.HitAnimation;
@@ -88,6 +90,7 @@ import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.Faction;
 import yesman.epicfight.world.capabilities.item.*;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 import yesman.epicfight.world.damagesource.StunType;
 
 import java.io.*;
@@ -102,7 +105,7 @@ import java.util.function.Predicate;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-public class DatapackEditScreen extends Screen {
+public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 	private static DatapackEditScreen workingPackScreen;
 	
 	public static DatapackEditScreen getCurrentScreen() {
@@ -112,51 +115,84 @@ public class DatapackEditScreen extends Screen {
 	public static boolean hasEditingScreen() {
 		return workingPackScreen != null;
 	}
-	
-	public static AssetAccessor<? extends StaticAnimation> animationByKey(String path) {
-		ResourceLocation rl = ResourceLocation.parse(path);
-		
-		if (workingPackScreen.userAnimations.containsKey(rl)) {
-			return workingPackScreen.userAnimations.get(rl).getValue();
-		}
-		
-		return AnimationManager.byKey(rl);
-	}
-	
-	public static AssetAccessor<? extends SkinnedMesh> getMesh(String path) {
-		ResourceLocation rl = ResourceLocation.parse(path);
-		
-		if (workingPackScreen != null && workingPackScreen.userMeshes.containsKey(rl)) {
-			return workingPackScreen.userMeshes.get(rl);
-		}
-		
-		return Meshes.get(rl);
-	}
-	
-	public static AssetAccessor<? extends Armature> getArmature(String path) {
-		ResourceLocation rl = ResourceLocation.parse(path);
-		
-		if (workingPackScreen != null && workingPackScreen.userArmatures.containsKey(rl)) {
-			return workingPackScreen.userArmatures.get(rl);
-		}
-		
-		return Armatures.get(rl);
-	}
-	
-	public static Function<Item, ? extends CapabilityItem.Builder<?>> getWeaponType(String typeName) {
-		ResourceLocation typeId = ResourceLocation.parse(typeName);
-		
-		if (workingPackScreen.userWeaponTypes.containsKey(typeId)) {
-			return workingPackScreen.userWeaponTypes.get(typeId);
-		}
-		
-		return WeaponTypeReloadListener.get(typeName);
-	}
+
+    public static AssetAccessor<? extends StaticAnimation> animationByKey(String path) {
+        if (workingPackScreen != null) {
+            return workingPackScreen.getExtraOrBuiltInAnimation(path);
+        }
+
+        return AnimationManager.byKey(ResourceLocation.parse(path));
+    }
+
+    public static AssetAccessor<? extends SkinnedMesh> getMesh(String path) {
+        if (workingPackScreen != null) {
+            return workingPackScreen.getExtraOrBuiltInMesh(path);
+        }
+
+        return Meshes.get(ResourceLocation.parse(path));
+    }
+
+    public static AssetAccessor<? extends Armature> getArmature(String path) {
+        if (workingPackScreen != null) {
+            return workingPackScreen.getExtraOrBuiltInArmature(path);
+        }
+
+        return Armatures.get(ResourceLocation.parse(path));
+    }
+
+    public static Function<Item, ? extends CapabilityItem.Builder<?>> getWeaponType(String typeName) {
+        if (workingPackScreen != null) {
+            return workingPackScreen.getExtraOrBuiltInWeaponType(typeName);
+        }
+
+        return WeaponTypeReloadListener.get(typeName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends StaticAnimation> AnimationAccessor<T> getExtraOrBuiltInAnimation(String path) throws ClassCastException {
+        ResourceLocation rl = ResourceLocation.parse(path);
+
+        if (userAnimations.containsKey(rl)) {
+            return (AnimationAccessor<T>)userAnimations.get(rl).getValue();
+        }
+
+        return AnimationManager.byKey(rl);
+    }
+
+    public AssetAccessor<? extends SkinnedMesh> getExtraOrBuiltInMesh(String path) {
+        ResourceLocation rl = ResourceLocation.parse(path);
+
+        if (workingPackScreen != null && workingPackScreen.userMeshes.containsKey(rl)) {
+            return workingPackScreen.userMeshes.get(rl);
+        }
+
+        return Meshes.get(rl);
+    }
+
+    public AssetAccessor<? extends Armature> getExtraOrBuiltInArmature(String path) {
+        ResourceLocation rl = ResourceLocation.parse(path);
+
+        if (workingPackScreen != null && workingPackScreen.userArmatures.containsKey(rl)) {
+            return workingPackScreen.userArmatures.get(rl);
+        }
+
+        return Armatures.get(rl);
+    }
+
+    public Function<Item, ? extends CapabilityItem.Builder<?>> getExtraOrBuiltInWeaponType(String typeName) {
+        ResourceLocation typeId = ResourceLocation.parse(typeName);
+
+        if (userWeaponTypes.containsKey(typeId)) {
+            return userWeaponTypes.get(typeId);
+        }
+
+        return WeaponTypeReloadListener.get(typeName);
+    }
 	
 	public static Set<Map.Entry<ResourceLocation, Function<Item, ? extends CapabilityItem.Builder<?>>>> getSerializableWeaponTypes() {
 		return workingPackScreen.weaponTypeTab.packList.stream().reduce(Sets.<Map.Entry<ResourceLocation, Function<Item, ? extends CapabilityItem.Builder<?>>>>newHashSet(), (set, entry) -> {
 			try {
-				WeaponCapability.Builder builder = WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(entry.getKey(), entry.getValue());
+				WeaponCapability.Builder builder = WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(entry.getKey(), entry.getValue(), workingPackScreen);
 				Function<Item, ? extends CapabilityItem.Builder<?>> provider = (itemstack) -> builder;
 				
 				if (!workingPackScreen.userWeaponTypes.containsKey(entry.getKey())) {
@@ -165,7 +201,7 @@ public class DatapackEditScreen extends Screen {
 				
 				set.add(PackEntry.ofValue(entry.getKey(), provider));
 			} catch (Exception e) {
-				EpicFightMod.LOGGER.error("Can not deserialize weapon type " + entry.getKey());
+				EpicFight.LOGGER.error("Can not deserialize weapon type " + entry.getKey());
 				return set;
 			}
 			
@@ -604,6 +640,11 @@ public class DatapackEditScreen extends Screen {
 					}
 					
 					String className = invocationCommand.substring(invocationCommand.lastIndexOf('#') + 1);
+
+                    if ("yesman.epicfight.api.animation.types.BasicAttackAnimation".equals(className)) {
+                        className = "yesman.epicfight.api.animation.types.ComboAttackAnimation"; // Class name changed: BasicAttackAnimation(1.20.1) -> "ComboAttackAnimation"
+                    }
+
 					@SuppressWarnings({ "unchecked" })
 					Class<? extends DatapackAnimation<? extends StaticAnimation>> animationClass = EditorAnimation.switchType((Class<? extends StaticAnimation>)Class.forName(className));
 					DatapackAnimation<? extends StaticAnimation> animation = InstantiateInvoker.invoke(invocationCommand, animationClass).getResult();
@@ -737,20 +778,7 @@ public class DatapackEditScreen extends Screen {
 									.rowEditable(RowEditButton.ADD_REMOVE)
 									.rowpositionChanged(this::packGridRowpositionChanged)
 									.addColumn(Grid.editbox("pack_item")
-													.editWidgetCreated((editbox) -> editbox.setFilter((str) -> {
-                                                        String[] astring = new String[]{"minecraft", str};
-                                                        int i = str.indexOf(ResourceLocation.NAMESPACE_SEPARATOR);
-
-                                                        if (i >= 0) {
-                                                            astring[1] = str.substring(i + 1);
-
-                                                            if (i >= 1) {
-                                                                astring[0] = str.substring(0, i);
-                                                            }
-                                                        }
-
-                                                        return ResourceLocation.isValidNamespace(astring[0]) && ResourceLocation.isValidPath(astring[1]);
-                                                    }))
+													.editWidgetCreated((editbox) -> editbox.setFilter(ParseUtil::canParseToResourceLocation))
 													.valueChanged((event) -> this.packList.get(event.rowposition).setPackKey(ResourceLocation.parse(event.postValue)))
 									.defaultVal(EpicFightMod.prefix("")).editable(registry == null ? true : false).width(180))
 									.pressAdd((grid, button) -> {
@@ -1169,7 +1197,7 @@ public class DatapackEditScreen extends Screen {
 		public void validateBeforeExport() {
 			for (PackEntry<ResourceLocation, CompoundTag> packEntry : this.packList) {
 				try {
-					WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(packEntry.getKey(), packEntry.getValue());
+					WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(packEntry.getKey(), packEntry.getValue(), DatapackEditScreen.this);
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new IllegalStateException("Failed to export weapon type " + packEntry.getKey() + " :\n" + e.getMessage());
@@ -1201,7 +1229,7 @@ public class DatapackEditScreen extends Screen {
 				CompoundTag compTag = TagParser.parseTag(jsonObject.toString());
 				
 				try {
-					WeaponCapability.Builder builder = WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(registryName, compTag);
+					WeaponCapability.Builder builder = WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(registryName, compTag, DatapackEditScreen.this);
 					DatapackEditScreen.this.userWeaponTypes.put(registryName, (item) -> builder);
 				} catch (Exception e) {
 					EpicFightMod.LOGGER.warn("Failed to deserialize weapon type from datapack." + registryName + ": " + e.getMessage());
@@ -1894,7 +1922,7 @@ public class DatapackEditScreen extends Screen {
 					TrailInfo trailInfo = TrailInfo.deserialize(trailTag);
 					this.modelPreviewer.setTrailInfo(trailInfo);
 				});
-				texturePath.setFilter((context) -> StringUtil.isNullOrEmpty(context) || (ResourceLocation.isValidNamespace(context) && ResourceLocation.isValidPath(context)));
+				texturePath.setFilter((context) -> StringUtil.isNullOrEmpty(context) || (ParseUtil.canParseToResourceLocation(context)));
 				texturePath.setMaxLength(100);
 				texturePath.setValue("epicfight:textures/particle/swing_trail.png");
 				texturePath.moveCursorToStart(true);
@@ -1983,19 +2011,27 @@ public class DatapackEditScreen extends Screen {
 		@Override
 		public void validateBeforeExport() {
 			for (PackEntry<ResourceLocation, CompoundTag> packEntry : this.packList) {
-				try {
-					String sItemType = packEntry.getValue().getString("item_type");
-					
-					if (StringUtil.isNullOrEmpty(sItemType)) {
-						throw new IllegalStateException("Item type not specified");
-					}
-					
-					if (sItemType == ItemType.WEAPON.toString() && !packEntry.getValue().contains("type")) {
-						throw new IllegalStateException("Weapon type not specified");
-					}
-				} catch (Exception e) {
-					throw new IllegalStateException("Failed to export item capability " + packEntry.getKey() + " :\n" + e.getMessage());
-				}
+                try {
+                    if (!packEntry.getValue().contains("item_type")) {
+                        throw new NoSuchElementException("Item type undefined!");
+                    }
+
+                    Item item = BuiltInRegistries.ITEM.get(packEntry.getKey());
+                    ItemType itemType = ItemType.valueOf(packEntry.getValue().getString("item_type"));
+
+                    if (itemType == ItemType.WEAPON && !packEntry.getValue().contains("type")) {
+                        throw new IllegalStateException("Weapon type undefined!");
+                    }
+
+                    if (itemType == ItemType.WEAPON) {
+                        ItemCapabilityReloadListener.deserializeWeapon(item, packEntry.getValue(), DatapackEditScreen.this);
+                    } else {
+                        ItemCapabilityReloadListener.deserializeArmor(item, packEntry.getValue());
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new IllegalStateException("Failed to export item capability " + packEntry.getKey() + " :\n" + e.getMessage());
+                }
 			}
 		}
 		
@@ -2641,7 +2677,7 @@ public class DatapackEditScreen extends Screen {
 						throw new IllegalStateException("Invalid entity type");
 					}
 					
-					MobPatchReloadListener.deserializeMobPatchProvider(type.get(), packEntry.getValue(), true, Minecraft.getInstance().getResourceManager());
+					MobPatchReloadListener.deserializeMobPatchProvider(type.get(), packEntry.getValue(), true, Minecraft.getInstance().getResourceManager(), DatapackEditScreen.this);
 				} catch (Exception e) {
 					e.printStackTrace();
 					throw new IllegalStateException("Failed to export mobpatch " + packEntry.getKey() + " :\n" + e.getMessage());
