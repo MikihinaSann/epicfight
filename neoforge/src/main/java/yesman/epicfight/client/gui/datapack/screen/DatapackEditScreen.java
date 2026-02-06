@@ -737,7 +737,20 @@ public class DatapackEditScreen extends Screen {
 									.rowEditable(RowEditButton.ADD_REMOVE)
 									.rowpositionChanged(this::packGridRowpositionChanged)
 									.addColumn(Grid.editbox("pack_item")
-													.editWidgetCreated((editbox) -> editbox.setFilter((str) -> ResourceLocation.isValidNamespace(str) && ResourceLocation.isValidPath(str)))
+													.editWidgetCreated((editbox) -> editbox.setFilter((str) -> {
+                                                        String[] astring = new String[]{"minecraft", str};
+                                                        int i = str.indexOf(ResourceLocation.NAMESPACE_SEPARATOR);
+
+                                                        if (i >= 0) {
+                                                            astring[1] = str.substring(i + 1);
+
+                                                            if (i >= 1) {
+                                                                astring[0] = str.substring(0, i);
+                                                            }
+                                                        }
+
+                                                        return ResourceLocation.isValidNamespace(astring[0]) && ResourceLocation.isValidPath(astring[1]);
+                                                    }))
 													.valueChanged((event) -> this.packList.get(event.rowposition).setPackKey(ResourceLocation.parse(event.postValue)))
 									.defaultVal(EpicFightMod.prefix("")).editable(registry == null ? true : false).width(180))
 									.pressAdd((grid, button) -> {
