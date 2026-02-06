@@ -33,8 +33,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Vector4f;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.types.*;
 import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
@@ -56,6 +54,7 @@ import yesman.epicfight.api.physics.SimulationTypes;
 import yesman.epicfight.api.physics.bezier.CubicBezierCurve;
 import yesman.epicfight.api.utils.math.*;
 import yesman.epicfight.client.particle.AnimationTrailParticle;
+import yesman.epicfight.client.particle.EpicFightParticleRenderTypes;
 import yesman.epicfight.client.renderer.EpicFightShaders;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.main.EpicFightSharedConstants;
@@ -392,7 +391,6 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 	}
 	
 	protected void renderFigure(GuiGraphics guiGraphics, Tesselator tesselator) {
-		BufferBuilder bufferbuilder = null;
 		RenderSystem.enableDepthTest();
 
         final float partialTicks =((DeltaTracker.Timer)Minecraft.getInstance().getTimer()).deltaTickResidual;
@@ -402,20 +400,30 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 				Pose pose = this.animator.getPose(partialTicks);
 				this.mesh.get().initialize();
 				OpenMatrix4f[] poseMatrices = this.entitypatch.getArmature().getPoseAsTransformMatrix(pose, false);
-				
+
 				if (this.figureTexture != null) {
 					RenderSystem.setShader(GameRenderer::getRendertypeCloudsShader);
 					RenderSystem.setShaderTexture(0, this.figureTexture);
-					bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
+                    BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
 					this.mesh.get().drawPosed(guiGraphics.pose(), bufferbuilder, Mesh.DrawingFunction.POSITION_TEX_COLOR_NORMAL, -1, 0.9411F, 0.9411F, 0.9411F, 1.0F, -1, this.entitypatch.getArmature(), poseMatrices);
+
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+                        BufferUploader.drawWithShader(meshData);
+                    }
 				} else {
 					RenderSystem.setShader(EpicFightShaders::getPositionColorNormalShader);
-					bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+                    BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 					this.mesh.get().drawPosed(guiGraphics.pose(), bufferbuilder, Mesh.DrawingFunction.POSITION_COLOR_NORMAL, -1, 0.9411F, 0.9411F, 0.9411F, 1.0F, -1, this.entitypatch.getArmature(), poseMatrices);
+
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+                        BufferUploader.drawWithShader(meshData);
+                    }
 				}
-				
-				BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
-				
+
 				if (this.item != null && this.showItemCheckbox._getValue()) {
 					BufferSource bufferSource = Minecraft.getInstance().renderBuffers().bufferSource();
 					ItemRenderer itemRenderer = Minecraft.getInstance().getItemRenderer();
@@ -442,22 +450,28 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 				
 				if (!this.trailParticles.isEmpty() && this.showTrailCheckbox._getValue()) {
 					RenderSystem.setShader(GameRenderer::getParticleShader);
-					DynamicTexture light = Minecraft.getInstance().gameRenderer.lightTexture().lightTexture;
-					
-					// Update light color
-					light.getPixels().setPixelRGBA(0, 0, 0xFFFFFFFF);
-					light.upload();
-					
+                    RenderSystem.enableBlend();
+                    Minecraft.getInstance().gameRenderer.lightTexture().turnOnLightLayer();
+
 					for (CustomTrailParticle trail : this.trailParticles) {
 						ParticleRenderType particleRendertype = trail.getRenderType();
-						particleRendertype.begin(tesselator, Minecraft.getInstance().getTextureManager());
+                        BufferBuilder bufferbuilder = particleRendertype.begin(tesselator, Minecraft.getInstance().getTextureManager());
 						trail.render(bufferbuilder, null, partialTicks);
+                        MeshData meshdata = bufferbuilder.build();
+
+                        if (meshdata != null) {
+                            BufferUploader.drawWithShader(meshdata);
+                        }
 					}
+
+                    RenderSystem.depthMask(true);
+                    RenderSystem.disableBlend();
+                    Minecraft.getInstance().gameRenderer.lightTexture().turnOffLightLayer();
 				}
 				
 				if (this.collider != null && this.showColliderCheckbox._getValue()) {
 					RenderType renderType = this.collider.getRenderType();
-					bufferbuilder = tesselator.begin(renderType.mode(), renderType.format);
+                    BufferBuilder bufferbuilder = tesselator.begin(renderType.mode(), renderType.format);
 					RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 					
 					AnimationPlayer player = this.animator.getPlayerFor(null);
@@ -481,12 +495,16 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 							}
 						}
 					}
-					
-					RenderSystem.lineWidth(3.0F);
-					RenderSystem.disableCull();
-					BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
-					RenderSystem.lineWidth(1.0F);
-					RenderSystem.enableCull();
+
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+                        RenderSystem.lineWidth(3.0F);
+                        RenderSystem.disableCull();
+                        BufferUploader.drawWithShader(meshData);
+                        RenderSystem.lineWidth(1.0F);
+                        RenderSystem.enableCull();
+                    }
 				}
 			} else {
 				RenderSystem.setShader(EpicFightShaders::getPositionColorNormalShader);
@@ -495,15 +513,27 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 				if (this.figureTexture != null) {
 					RenderSystem.setShader(GameRenderer::getRendertypeCloudsShader);
 					RenderSystem.setShaderTexture(0, this.figureTexture);
-					bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
+                    BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
 					this.mesh.get().draw(guiGraphics.pose(), bufferbuilder, Mesh.DrawingFunction.POSITION_TEX_COLOR_NORMAL, -1, 0.9411F, 0.9411F, 0.9411F, 1.0F, OverlayTexture.NO_OVERLAY);
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+                        RenderSystem.lineWidth(3.0F);
+                        RenderSystem.disableCull();
+                        BufferUploader.drawWithShader(meshData);
+                    }
 				} else {
 					RenderSystem.setShader(EpicFightShaders::getPositionColorNormalShader);
-					bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+                    BufferBuilder  bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
 					this.mesh.get().draw(guiGraphics.pose(), bufferbuilder, Mesh.DrawingFunction.POSITION_COLOR_NORMAL, -1, 0.9411F, 0.9411F, 0.9411F, 1.0F, OverlayTexture.NO_OVERLAY);
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+                        RenderSystem.lineWidth(3.0F);
+                        RenderSystem.disableCull();
+                        BufferUploader.drawWithShader(meshData);
+                    }
 				}
-				
-				BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
 			}
 		}
 		
@@ -539,10 +569,15 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 					});
 				} else {
 					RenderSystem.setShader(GameRenderer::getRendertypeCloudsShader);
-					bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
+					BufferBuilder bufferbuilder = tesselator.begin(VertexFormat.Mode.TRIANGLES, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
 					RenderSystem.setShaderTexture(0, this.cloakTexture);
 					((Mesh)this.cloakMesh).draw(guiGraphics.pose(), bufferbuilder, Mesh.DrawingFunction.POSITION_TEX_COLOR_NORMAL, -1, this.cloakColor.x, this.cloakColor.y, this.cloakColor.z, 1.0F, OverlayTexture.NO_OVERLAY);
-					BufferUploader.drawWithShader(bufferbuilder.buildOrThrow());
+
+                    MeshData meshData = bufferbuilder.build();
+
+                    if (meshData != null) {
+					    BufferUploader.drawWithShader(meshData);
+                    }
 				}
 			}
 		}
@@ -604,9 +639,9 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 		if (scissorApplied) {
 			guiGraphics.enableScissor(screenrectangle.left(), screenrectangle.top(), screenrectangle.right(), screenrectangle.bottom());
 		}
-		
+
 		this.modelRenderTarget.blitToScreen(guiGraphics);
-		
+
 		if (this.animator != null) {
 			// Visibility control widgets
 			int top = this._getY() + 6;
@@ -1144,7 +1179,12 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 		protected CustomTrailParticle(Joint joint, AssetAccessor<? extends StaticAnimation> animation, TrailInfo trailInfo) {
 			super(ModelPreviewer.this.entitypatch.getArmature(), ModelPreviewer.this.entitypatch, joint, animation, trailInfo);
 		}
-		
+
+        @Override
+        public ParticleRenderType getRenderType() {
+            return EpicFightParticleRenderTypes.TRAIL_EFFECT.apply(this.trailInfo.texturePath());
+        }
+
 		@Override
 		public void tick() {
 			AnimationPlayer animPlayer = ModelPreviewer.this.animator.getPlayerFor(null);
@@ -1246,14 +1286,7 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 			if (this.trailEdges.isEmpty()) {
 				return;
 			}
-			
-			TextureManager texturemanager = Minecraft.getInstance().getTextureManager();
-	        AbstractTexture abstracttexture = texturemanager.getTexture(this.trailInfo.texturePath());
-	        RenderSystem.bindTexture(abstracttexture.getId());
-	        RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL12.GL_CLAMP_TO_EDGE);
-		    RenderSystem.texParameter(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL12.GL_CLAMP_TO_EDGE);
-		    RenderSystem.setShaderTexture(0, abstracttexture.getId());
-			
+
 			PoseStack poseStack = new PoseStack();
 			this.setupPoseStack(poseStack, camera, partialTick);
 			Matrix4f matrix4f = poseStack.last().pose();
@@ -1297,7 +1330,7 @@ public class ModelPreviewer extends AbstractWidget implements ResizableComponent
 				vertexConsumer.addVertex(pos2.x(), pos2.y(), pos2.z()).setUv(from, 0.0F).setColor(this.rCol, this.gCol, this.bCol, this.alpha * alphaFrom * fading).setLight(0);
 				vertexConsumer.addVertex(pos3.x(), pos3.y(), pos3.z()).setUv(to, 0.0F).setColor(this.rCol, this.gCol, this.bCol, this.alpha * alphaTo * fading).setLight(0);
 				vertexConsumer.addVertex(pos4.x(), pos4.y(), pos4.z()).setUv(to, 1.0F).setColor(this.rCol, this.gCol, this.bCol, this.alpha * alphaTo * fading).setLight(0);
-				
+
 				from += interval;
 				to += interval;
 			}
