@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.15.4] - 2026-02-06
+
+### Fixed
+
+- Fixed a crash when changing hand items from entities by commands [#2437](https://github.com/Epic-Fight/epicfight/issues/2437)
+- Fixed a crash when removing an empty row in weapon attribute screen [#2439](https://github.com/Epic-Fight/epicfight/issues/2439)
+- Fixed the overlapped tab buttons are created in the datapack editor when resizing the screen [#2443](https://github.com/Epic-Fight/epicfight/issues/2443)
+- Fixed the player still moves forward even when the 'stiffComboAttack' gamerule is set to false [#2444](https://github.com/Epic-Fight/epicfight/issues/2444)
+- Fixed an error due to Ender Dragon spawning [#2445](https://github.com/Epic-Fight/epicfight/issues/2445)
+- Fixed a crash when killing Ender Dragon [#2446](https://github.com/Epic-Fight/epicfight/issues/2446)
+- Fixed an issue where you can't type namespace separator ":" for weapon type entries in datapack editor
+- Fixed a crash from wrong animation formatting [#2441](https://github.com/Epic-Fight/epicfight/issues/2441)
+
+### Added
+
+- Made the Datapack Editor detect the classname change from 1.20.1 packs
+  - BasicAttackAnimation(1.20.1) -> ComboAttackAnimation(1.21.1)
+
 ## [21.15.3] - 2026-01-31
 
 ### Fixed
@@ -18,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a crash when loading non-existent animations in datapack editor [#2317](https://github.com/Epic-Fight/epicfight/issues/2317)
 - Relieved the crosshair hit entity detection [#2431](https://github.com/Epic-Fight/epicfight/issues/2431)
 - Fixed an infinite combo attacks looping for some attack movesets [#2429](https://github.com/Epic-Fight/epicfight/issues/2429)
+- Fixed a crash when trying to render a preview model's trail particle in Datapack Editor [#2452](https://github.com/Epic-Fight/epicfight/issues/2452)
 
 ## [21.15.2] - 2026-01-21
 
