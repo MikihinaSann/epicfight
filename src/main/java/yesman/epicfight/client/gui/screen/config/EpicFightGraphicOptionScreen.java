@@ -257,6 +257,21 @@ public class EpicFightGraphicOptionScreen extends EpicFightOptionSubScreen {
 		this.optionsList.addSmall(enableCosmetics, useComputeShaderButton);
 		buttonHeight += 30;
 		
+		Button groundSlamsButton =
+			Button.builder(Component.translatable(EpicFightMod.format("gui.%s.ground_slams." + (ClientConfig.groundSlams ? "on" : "off"))),
+				button -> {
+					ClientConfig.groundSlams = !ClientConfig.groundSlams;
+					button.setMessage(Component.translatable(EpicFightMod.format("gui.%s.ground_slams." + (ClientConfig.groundSlams ? "on" : "off"))));
+				}
+			)
+			.pos(this.width / 2 - 165, this.height / 4 + buttonHeight)
+			.size(160, 20)
+			.tooltip(Tooltip.create(Component.translatable(EpicFightMod.format("gui.%s.ground_slams.tooltip"))))
+			.build();
+		
+		this.optionsList.addSmall(groundSlamsButton, null);
+		buttonHeight += 30;
+		
 		this.optionsList.addBig(
 			new ColorSlider(
 				this.font,

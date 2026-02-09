@@ -57,6 +57,7 @@ public class ClientConfig {
 	
 	// Particle
 	public static final BooleanValue BLOOD_EFFECTS = BUILDER.define("ingame.blood_effects", () -> true);
+	public static final BooleanValue GROUND_SLAMS = BUILDER.define("ingame.ground_slams", () -> true);
 	
 	// Model
 	public static final IntValue MAX_STUCK_PROJECTILES = BUILDER.defineInRange("ingame.max_hit_projectiles", 30, 0, 30);
@@ -146,6 +147,7 @@ public class ClientConfig {
 	public static double targetOutlineColor;
 	public static int packedTargetOutlineColor = 0xFFFFFFFF;
 	public static boolean bloodEffects;
+	public static boolean groundSlams;
 	public static boolean showEpicFightAttributesInTooltip;
 	public static boolean activateComputeShader;
 	public static boolean enableAnimatedFirstPersonModel;
@@ -205,6 +207,7 @@ public class ClientConfig {
 		targetOutlineColor = TARGET_OUTLINE_COLOR.get();
 		packedTargetOutlineColor = ColorSlider.rgbColor(targetOutlineColor);
 		bloodEffects = BLOOD_EFFECTS.get();
+		groundSlams = GROUND_SLAMS.get();
 		showEpicFightAttributesInTooltip = SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get();
 		activateComputeShader = ACTIVATE_COMPUTE_SHADER.get();
 		enableAnimatedFirstPersonModel = ENABLE_ANIMATED_FIRST_PERSON_MODEL.get();
@@ -287,6 +290,9 @@ public class ClientConfig {
 		
 		if (bloodEffects != BLOOD_EFFECTS.get())
 			saveWorks.add(() -> BLOOD_EFFECTS.set(bloodEffects));
+		
+		if (groundSlams != GROUND_SLAMS.get())
+			saveWorks.add(() -> GROUND_SLAMS.set(groundSlams));
 		
 		if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get()) 
 			saveWorks.add(() -> SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip));
@@ -425,6 +431,7 @@ public class ClientConfig {
 		if (maxStuckProjectiles != MAX_STUCK_PROJECTILES.get()) MAX_STUCK_PROJECTILES.set(maxStuckProjectiles);
 		if (targetOutlineColor != TARGET_OUTLINE_COLOR.get()) { TARGET_OUTLINE_COLOR.set(targetOutlineColor); packedTargetOutlineColor = ColorSlider.rgbColor(targetOutlineColor); }
 		if (bloodEffects != BLOOD_EFFECTS.get()) BLOOD_EFFECTS.set(bloodEffects);
+		if (groundSlams != GROUND_SLAMS.get()) GROUND_SLAMS.set(groundSlams);
 		if (showEpicFightAttributesInTooltip != SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get()) SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.set(showEpicFightAttributesInTooltip);
 		if (activateComputeShader != ACTIVATE_COMPUTE_SHADER.get()) ACTIVATE_COMPUTE_SHADER.set(activateComputeShader);
 		if (enableAnimatedFirstPersonModel != ENABLE_ANIMATED_FIRST_PERSON_MODEL.get()) ENABLE_ANIMATED_FIRST_PERSON_MODEL.set(enableAnimatedFirstPersonModel);
