@@ -28,6 +28,7 @@ import org.joml.Vector3f;
 import yesman.epicfight.api.utils.math.QuaternionUtils;
 import yesman.epicfight.api.utils.math.Vec2i;
 import yesman.epicfight.api.utils.side.ClientOnly;
+import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPCreateTerrainFracture;
@@ -142,6 +143,10 @@ public class LevelUtil {
 			}
 			
 			if (level.isClientSide) {
+                if (!ClientConfig.groundSlams) {
+                    continue;
+                }
+
 				if (!canTransferShockWave(level, bp, bs) || bs instanceof FractureBlockState || bs.getBlock() instanceof EntityBlock) {
 					continue;
 				}

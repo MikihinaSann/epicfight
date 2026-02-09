@@ -573,6 +573,38 @@ public class EpicFightSettingScreen extends Screen {
                         Component.translatable(GUI_TOOLTIP_SETTINGS_GRAPHICS_PERSISTENT_BUFFER),
                         false
                     )
+                )
+                .newRow()
+                .addWidget(
+                    new SettingTitle(
+                        minecraft.font,
+                        this.widgetTable.nextX(4),
+                        125,
+                        0,
+                        15,
+                        AnchoredWidget.HorizontalAnchorType.LEFT_RIGHT,
+                        AnchoredWidget.VerticalAnchorType.TOP_HEIGHT,
+                        GUI_WIDGET_SETTINGS_GRAPHICS_GROUND_SLAMS,
+                        this.textBox::setMessage,
+                        this::getHoveringSettingTitle,
+                        this::setHoveringSettingTitle,
+                        EpicFightSettingScreen.this::getFocusedWidgetFromTable
+                    )
+                )
+                .addWidget(
+                    new CheckBox(
+                        minecraft.font,
+                        9,
+                        12,
+                        0,
+                        12,
+                        AnchoredWidget.HorizontalAnchorType.RIGHT_WIDTH,
+                        AnchoredWidget.VerticalAnchorType.TOP_HEIGHT,
+                        () -> ClientConfig.groundSlams,
+                        value -> ClientConfig.groundSlams = value,
+                        Component.translatable(GUI_TOOLTIP_SETTINGS_GRAPHICS_GROUND_SLAMS),
+                        false
+                    )
                 );
 
             this.widgetTable.initialize(false);

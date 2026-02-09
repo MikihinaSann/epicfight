@@ -52,6 +52,7 @@ public class ClientConfig {
     public static final BooleanValue BLOOD_EFFECTS = BUILDER.define("ingame.blood_effects", () -> true);
     public static final BooleanValue ACTIVATE_COMPUTE_SHADER = BUILDER.define("ingame.use_compute_shader", () -> false);
     public static final BooleanValue ACTIVATE_PERSISTENT_BUFFER = BUILDER.define("ingame.use_persistent_buffer", () -> false);
+    public static final BooleanValue GROUND_SLAMS = BUILDER.define("ingame.ground_slams", () -> true);
 
     // Model
     public static final IntValue MAX_STUCK_PROJECTILES = BUILDER.defineInRange("ingame.max_hit_projectiles", 30, 0, 30);
@@ -141,6 +142,7 @@ public class ClientConfig {
     public static boolean bloodEffects;
     public static boolean activateComputeShader;
     public static boolean activatePersistentBuffer;
+    public static boolean groundSlams;
 
     // Model Config values
     public static int maxStuckProjectiles;
@@ -210,6 +212,7 @@ public class ClientConfig {
         showEpicFightAttributesInTooltip = SHOW_EPICFIGHT_ATTRIBUTES_IN_TOOLTIP.get();
         activateComputeShader = ACTIVATE_COMPUTE_SHADER.get();
         activatePersistentBuffer = ACTIVATE_PERSISTENT_BUFFER.get();
+        groundSlams = GROUND_SLAMS.get();
         enableAnimatedFirstPersonModel = ENABLE_ANIMATED_FIRST_PERSON_MODEL.get();
         mineBlockGuideOption = MINE_BLOCK_GUIDE_OPTION.get();
         enableTargetEntityGuide = ENABLE_TARGET_ENTITY_GUIDE.get();
@@ -332,6 +335,14 @@ public class ClientConfig {
                 ACTIVATE_PERSISTENT_BUFFER.save();
             });
             discard.add(() -> activatePersistentBuffer = ACTIVATE_PERSISTENT_BUFFER.get());
+        }
+
+        if (groundSlams != GROUND_SLAMS.get()) {
+            save.add(() -> {
+                GROUND_SLAMS.set(groundSlams);
+                GROUND_SLAMS.save();
+            });
+            discard.add(() -> groundSlams = GROUND_SLAMS.get());
         }
 
         if (enableAnimatedFirstPersonModel != ENABLE_ANIMATED_FIRST_PERSON_MODEL.get()) {
