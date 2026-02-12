@@ -1,7 +1,6 @@
 package yesman.epicfight.api.utils;
 
 import com.google.common.collect.Lists;
-import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -184,6 +183,7 @@ public class LevelUtil {
 		}
 	}
 
+    /// Client side only since [Level#addParticle] doesn't support networking
     @ClientOnly
 	public static void createParticle(Level level, BlockPos bp, BlockState bs) {
 		for (int i = 0; i < 4; i += level.getRandom().nextInt(4)) {
@@ -205,11 +205,6 @@ public class LevelUtil {
 		return circleSlamFracture(caster, level, center, radius, noSound, noParticle, true);
 	}
 
-    @ClientOnly
-	public static boolean circleSlamFracture(@Nullable LivingEntity caster, ClientLevel level, Vec3 center, double radius, boolean noSound, boolean noParticle) {
-		return circleSlamFracture(caster, level, center, radius, noSound, noParticle, true);
-	}
-	
 	public static boolean circleSlamFracture(@Nullable LivingEntity caster, Level level, Vec3 center, double radius, boolean noSound, boolean noParticle, boolean hurtEntities) {
 		Vec3 closestEdge = new Vec3(Math.round(center.x), Math.floor(center.y), Math.round(center.z));
 		Vec3 centerOfBlock = new Vec3(Math.floor(center.x) + 0.5D, Math.floor(center.y), Math.floor(center.z) + 0.5D);
