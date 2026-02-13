@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.15.5] - 2026-02-13
+
+### Added
+- Added a config option to disable ground slam effects
+
+### Fixed
+- Fixed a crash when a nearby player casts Demolition Leap and Meteor Slam in a dedicated server
+- Fixed modded HUDs not rendering
+
 ## [21.15.4] - 2026-02-06
 
 ### Fixed
