@@ -4,14 +4,11 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Gui;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
@@ -40,11 +37,9 @@ import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.client.event.*;
-import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -690,7 +685,7 @@ public class RenderEngine implements IEventBasedEngine {
             }
         });
     }
-
+/*
     private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
         if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
             CameraType cameraType = this.minecraft.options.getCameraType();
@@ -735,7 +730,7 @@ public class RenderEngine implements IEventBasedEngine {
             }
         }
     }
-
+*/
     /**********************
      * Forge EventHook listeners end
      **********************/
@@ -803,7 +798,6 @@ public class RenderEngine implements IEventBasedEngine {
         gameEventBus.addListener(this::epicfight$clientTick$Post);
         gameEventBus.addListener(this::epicfight$levelTickPost);
         gameEventBus.addListener(this::epicfight$renderBlockHighlight);
-        gameEventBus.addListener(this::epicfight$renderGuiLayer$Pre);
 
         EpicFightClientEventHooks.Render.RENDER_ENDER_DRAGON.registerEvent(this::epicfight$renderEnderDragon);
     }
