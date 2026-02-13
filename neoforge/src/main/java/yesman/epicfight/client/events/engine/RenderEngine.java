@@ -685,52 +685,7 @@ public class RenderEngine implements IEventBasedEngine {
             }
         });
     }
-/*
-    private void epicfight$renderGuiLayer$Pre(RenderGuiLayerEvent.Pre event) {
-        if (event.getName().equals(VanillaGuiLayers.CROSSHAIR)) {
-            CameraType cameraType = this.minecraft.options.getCameraType();
 
-            // Don't override crosshair in spectator mode (fix for 20.14)
-            if (this.minecraft.player != null && this.minecraft.player.isSpectator()) {
-                return;
-            }
-
-            // Cancel if a modified crosshair is rendered
-            if (event.isCanceled() && cameraType.isFirstPerson()) {
-                return;
-            }
-
-            if (cameraType.isFirstPerson() || EpicFightCameraAPI.getInstance().isTPSMode()) {
-                MutableBoolean itemAction = new MutableBoolean(true); // true: combat, false: mine
-
-                if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
-                    EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-                        itemAction.setValue(playerpatch.canPlayAttackAnimation());
-                    });
-                }
-
-                RenderSystem.enableBlend();
-                RenderSystem.blendFuncSeparate(
-                    GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR,
-                    GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR,
-                    GlStateManager.SourceFactor.ONE,
-                    GlStateManager.DestFactor.ZERO
-                );
-
-                if (itemAction.booleanValue()) {
-                    event.getGuiGraphics().blitSprite(Gui.CROSSHAIR_SPRITE, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 15, 15);
-                } else {
-                    event.getGuiGraphics().blit(EntityUI.BATTLE_ICON, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 0, 240, 15, 15);
-                }
-
-                RenderSystem.defaultBlendFunc();
-                RenderSystem.disableBlend();
-
-                event.setCanceled(true);
-            }
-        }
-    }
-*/
     /**********************
      * Forge EventHook listeners end
      **********************/
