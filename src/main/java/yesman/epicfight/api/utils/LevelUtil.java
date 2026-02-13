@@ -5,6 +5,7 @@ import java.util.Random;
 
 import javax.annotation.Nullable;
 
+import org.jetbrains.annotations.ApiStatus;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -38,6 +39,7 @@ import yesman.epicfight.api.utils.math.Vec2i;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.EpicFightSounds;
+import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPFracture;
 import yesman.epicfight.particle.EpicFightParticles;
@@ -282,6 +284,30 @@ public class LevelUtil {
 		}
 		
 		return true;
+	}
+	
+	@ApiStatus.Internal
+	public void handlePacket(SPFracture packet) {
+		// Do nothing in server side
+	}
+	
+	private static final LevelUtil INSTANCE = EpicFightSharedConstants.isPhysicalClient() ? new ClientLevelUtil() : new LevelUtil();
+	
+	public static LevelUtil getInstance() {
+		return INSTANCE;
+	}
+	
+	private LevelUtil() {}
+	
+	/**
+	 * Used sided handler to resolve invalid dist code hit error only happens in environment side
+	 * 1.21.1 is not affected by this issue since they already have sided packet handlers
+	 */
+	public static class ClientLevelUtil extends LevelUtil {
+		@ApiStatus.Internal @Override
+		public void handlePacket(SPFracture msg) {
+			LevelUtil.circleSlamFracture(null, Minecraft.getInstance().level, msg.location(), msg.radius(), msg.noSound(), msg.noParticle());
+		}
 	}
 	
 	public static boolean canTransferShockWave(Level level, BlockPos blockPos, BlockState blockState) {

@@ -2,31 +2,18 @@ package yesman.epicfight.network.server;
 
 import java.util.function.Supplier;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import yesman.epicfight.api.utils.LevelUtil;
 
-public class SPFracture {
-	private final double radius;
-	private final Vec3 location;
-	private final boolean noSound;
-	private final boolean noParticle;
-	
+public record SPFracture(Vec3 location, double radius, boolean noSound, boolean noParticle) {
 	public SPFracture() {
 		this(Vec3.ZERO, 0.0D);
 	}
 
 	public SPFracture(Vec3 location, double radius) {
 		this(location, radius, false, false);
-	}
-	
-	public SPFracture(Vec3 location, double radius, boolean noSound, boolean noParticle) {
-		this.location = location;
-		this.radius = radius;
-		this.noSound = noSound;
-		this.noParticle = noParticle;
 	}
 	
 	public static SPFracture fromBytes(FriendlyByteBuf buf) {
@@ -44,8 +31,7 @@ public class SPFracture {
 	
 	public static void handle(SPFracture msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			Minecraft mc = Minecraft.getInstance();
-			LevelUtil.circleSlamFracture(null, mc.level, msg.location, msg.radius, msg.noSound, msg.noParticle);
+			LevelUtil.getInstance().handlePacket(msg);
 		});
 		
 		ctx.get().setPacketHandled(true);
