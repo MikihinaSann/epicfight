@@ -14,6 +14,7 @@
 		"client.MixinEnderDragonRenderer",
 		"client.MixinEntityRenderer",
 		"client.MixinGameRenderer",
+		"client.MixinGui",
 		"client.MixinKeyboardHandler",
 		"client.MixinLevelRenderer",
 		"client.MixinLightTexture",

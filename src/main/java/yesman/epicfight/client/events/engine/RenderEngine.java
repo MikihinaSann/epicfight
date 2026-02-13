@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -17,7 +16,6 @@ import com.google.common.collect.HashBiMap;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -60,13 +58,11 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.CustomizeGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderGuiEvent;
-import net.minecraftforge.client.event.RenderGuiOverlayEvent;
 import net.minecraftforge.client.event.RenderHandEvent;
 import net.minecraftforge.client.event.RenderHighlightEvent;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.ViewportEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -693,48 +689,6 @@ public class RenderEngine {
 				
 				//Shows the epic fight version in beta
 				renderEngine.versionNotifier.render(event.getGuiGraphics(), true);
-			}
-		}
-		
-		private static final ResourceLocation GUI_ICONS = ResourceLocation.withDefaultNamespace("textures/gui/icons.png");
-		
-		@SubscribeEvent(receiveCanceled = true)
-	    public static void renderGuiOverlay(RenderGuiOverlayEvent.Pre event) {
-			if (event.getOverlay().id().equals(VanillaGuiOverlay.CROSSHAIR.id())) {
-				CameraType cameraType = renderEngine.minecraft.options.getCameraType();
-				
-				// Don't override crosshair in spectator mode (fix for 20.14)
-				if (renderEngine.minecraft.player != null && renderEngine.minecraft.player.isSpectator()) {
-					return;
-				}
-				
-				// Cancel if a modified crosshair is rendered
-				if (event.isCanceled() && cameraType.isFirstPerson()) {
-					return;
-				}
-				
-				if (cameraType.isFirstPerson() || cameraType == CameraType.THIRD_PERSON_BACK && EpicFightCameraAPI.getInstance().isTPSMode()) {
-					MutableBoolean itemAction = new MutableBoolean(true); // true: combat, false: mine
-					
-					if (ClientConfig.mineBlockGuideOption.switchCrosshair()) {
-						EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-							itemAction.setValue(playerpatch.canPlayAttackAnimation() || playerpatch.isVanillaMode());
-						});
-					}
-					
-					RenderSystem.enableBlend();
-		            RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.ONE_MINUS_DST_COLOR, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-					
-					if (itemAction.booleanValue()) {
-						event.getGuiGraphics().blit(GUI_ICONS, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 0, 0, 15, 15);
-					} else {
-						event.getGuiGraphics().blit(EntityUI.BATTLE_ICON, (event.getGuiGraphics().guiWidth() - 15) / 2, (event.getGuiGraphics().guiHeight() - 15) / 2, 0, 240, 15, 15);
-					}
-					
-		            RenderSystem.defaultBlendFunc();
-		            
-		            event.setCanceled(true);
-				}
 			}
 		}
 		
