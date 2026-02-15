@@ -1,10 +1,6 @@
 package yesman.epicfight.api.utils;
 
-import java.util.List;
-import java.util.function.BiFunction;
-
 import com.google.common.collect.Lists;
-
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import it.unimi.dsi.fastutil.doubles.DoubleList;
 import net.minecraft.world.entity.Entity;
@@ -14,6 +10,9 @@ import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+
+import java.util.List;
+import java.util.function.BiFunction;
 
 public class HitEntityList {
 	private final List<Entity> hitEntites;
@@ -102,7 +101,7 @@ public class HitEntityList {
 						
 						for (WrappedGoal goal : targetingAi.getAvailableGoals()) {
 							if (goal.getGoal() instanceof NearestAttackableTargetGoal<?> targetGoal) {
-								if (targetGoal.targetConditions.test(mob, attacker.getOriginal())) {
+								if (targetGoal.targetType.isAssignableFrom(attacker.getOriginal().getClass()) && targetGoal.targetConditions.test(mob, attacker.getOriginal())) {
 									secondTargets.add(mob);
 									continue Outer;
 								}
