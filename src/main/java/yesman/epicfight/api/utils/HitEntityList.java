@@ -102,7 +102,7 @@ public class HitEntityList {
 						
 						for (WrappedGoal goal : targetingAi.getAvailableGoals()) {
 							if (goal.getGoal() instanceof NearestAttackableTargetGoal<?> targetGoal) {
-								if (targetGoal.targetConditions.test(mob, attacker.getOriginal())) {
+								if (targetGoal.targetType.isAssignableFrom(attacker.getOriginal().getClass()) && targetGoal.targetConditions.test(mob, attacker.getOriginal())) {
 									secondTargets.add(mob);
 									continue Outer;
 								}
