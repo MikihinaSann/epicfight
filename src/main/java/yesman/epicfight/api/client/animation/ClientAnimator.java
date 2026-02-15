@@ -528,16 +528,19 @@ public class ClientAnimator extends Animator {
 		
 		if (animation instanceof StaticAnimation staticAnimation) {
 			Layer layer = staticAnimation.getLayerType() == Layer.LayerType.BASE_LAYER ? this.baseLayer : this.baseLayer.compositeLayers.get(staticAnimation.getPriority());
-			return Optional.ofNullable(layer.animationPlayer.getRealAnimation().equals(playingAnimation) ? layer.animationPlayer : null);
-		} else {
-			if (this.baseLayer.animationPlayer.getRealAnimation().equals(playingAnimation.get().getRealAnimation())) {
-				return Optional.of(this.baseLayer.animationPlayer);
-			}
 			
-			for (Layer layer : this.baseLayer.compositeLayers.values()) {
-				if (layer.animationPlayer.getRealAnimation().equals(playingAnimation.get().getRealAnimation())) {
-					return Optional.of(layer.animationPlayer);
-				}
+			if (layer.animationPlayer.getRealAnimation().equals(playingAnimation)) {
+				return Optional.of(layer.animationPlayer);
+			}
+		}
+		
+		if (this.baseLayer.animationPlayer.getRealAnimation().equals(playingAnimation.get().getRealAnimation())) {
+			return Optional.of(this.baseLayer.animationPlayer);
+		}
+		
+		for (Layer layer : this.baseLayer.compositeLayers.values()) {
+			if (layer.animationPlayer.getRealAnimation().equals(playingAnimation.get().getRealAnimation())) {
+				return Optional.of(layer.animationPlayer);
 			}
 		}
 		
