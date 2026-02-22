@@ -32,6 +32,7 @@ import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
@@ -359,6 +360,32 @@ public class RenderEngine implements IEventBasedEngine {
         return hitResult == null ? true : !hitType.equals(hitResult.getType());
     }
 
+    /// More strict type sensitive hit result getter by instanceof
+    public static BlockHitResult asBlockHitResult(@Nullable HitResult hitResult) {
+        if (hitResult == null) {
+            return null;
+        }
+
+        if (hitResult.getType() == HitResult.Type.BLOCK && hitResult instanceof BlockHitResult blockHitResult) {
+            return blockHitResult;
+        }
+
+        return null;
+    }
+
+    /// More strict type sensitive hit result getter by instanceof
+    public static EntityHitResult asEntityHitResult(@Nullable HitResult hitResult) {
+        if (hitResult == null) {
+            return null;
+        }
+
+        if (hitResult.getType() == HitResult.Type.ENTITY && hitResult instanceof EntityHitResult entityHitResult) {
+            return entityHitResult;
+        }
+
+        return null;
+    }
+
     /******************
      * Forge EventHook listeners
      ******************/
@@ -606,10 +633,12 @@ public class RenderEngine implements IEventBasedEngine {
 
     private void epicfight$renderAfterLevel(RenderLevelStageEvent event) {
         if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
-            if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
+            BlockHitResult blockHitResult = RenderEngine.asBlockHitResult(this.minecraft.hitResult);
+
+            if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && blockHitResult != null) {
                 EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
                     if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
-                        this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, ((BlockHitResult)this.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);
+                        this.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), this.minecraft.renderBuffers().bufferSource(), this.minecraft.level, blockHitResult.getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);
                     }
                 });
             }
