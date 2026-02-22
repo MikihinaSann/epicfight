@@ -53,6 +53,7 @@ import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.TridentItem;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.api.distmarker.Dist;
@@ -474,6 +475,32 @@ public class RenderEngine {
 		return hitResult == null ? true : !hitType.equals(hitResult.getType());
 	}
 	
+	/// More strict type sensitive hit result getter by instanceof
+    public static BlockHitResult asBlockHitResult(@Nullable HitResult hitResult) {
+        if (hitResult == null) {
+            return null;
+        }
+
+        if (hitResult.getType() == HitResult.Type.BLOCK && hitResult instanceof BlockHitResult blockHitResult) {
+            return blockHitResult;
+        }
+
+        return null;
+    }
+
+    /// More strict type sensitive hit result getter by instanceof
+    public static EntityHitResult asEntityHitResult(@Nullable HitResult hitResult) {
+        if (hitResult == null) {
+            return null;
+        }
+
+        if (hitResult.getType() == HitResult.Type.ENTITY && hitResult instanceof EntityHitResult entityHitResult) {
+            return entityHitResult;
+        }
+
+        return null;
+    }
+	
 	/** These methods will be removed in 1.21.1 **/
 	@Deprecated
 	public void correctCamera(ViewportEvent.ComputeCameraAngles event, float partialTicks) {
@@ -747,10 +774,12 @@ public class RenderEngine {
 		@SubscribeEvent
 		public static void renderWorldLast(RenderLevelStageEvent event) {
 			if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
-				if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && hitResultEquals(renderEngine.minecraft.hitResult, HitResult.Type.BLOCK)) {
+				BlockHitResult blockHitResult = asBlockHitResult(renderEngine.minecraft.hitResult);
+				
+				if (ClientConfig.mineBlockGuideOption.showBlockHighlight() && blockHitResult != null) {
 					EpicFightCapabilities.getUnparameterizedEntityPatch(renderEngine.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
 						if (!playerpatch.canPlayAttackAnimation() && playerpatch.isEpicFightMode()) {
-							renderEngine.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), renderEngine.minecraft.renderBuffers().bufferSource(), renderEngine.minecraft.level, ((BlockHitResult)renderEngine.minecraft.hitResult).getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
+							renderEngine.fakeBlockRenderer.render(event.getCamera(), event.getPoseStack(), renderEngine.minecraft.renderBuffers().bufferSource(), renderEngine.minecraft.level, blockHitResult.getBlockPos(), 1.0F, 1.0F, 1.0F, 0.4F);					
 						}
 					});
 				}

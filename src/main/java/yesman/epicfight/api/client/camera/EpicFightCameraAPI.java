@@ -521,9 +521,11 @@ public final class EpicFightCameraAPI {
 		}
 		
 		if (ClientConfig.combatPreferredItems.contains(this.minecraft.player.getMainHandItem().getItem())) {
+			BlockHitResult blockHitResult = RenderEngine.asBlockHitResult(this.minecraft.hitResult);
+			
 			// For the combat preferred items, checks if the holding item is the fastest tool to dig the block (e.g. sword <=> cobweb block)
-			if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK)) {
-				BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
+			if (blockHitResult != null) {
+				BlockPos bp = blockHitResult.getBlockPos();
 				BlockState bs = this.minecraft.level.getBlockState(bp);
 				return !this.minecraft.player.getMainHandItem().getItem().canAttackBlock(bs, this.minecraft.player.level(), bp, this.minecraft.player) || !this.minecraft.player.getMainHandItem().isCorrectToolForDrops(bs);
 			}

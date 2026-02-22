@@ -460,8 +460,10 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 			return true;
 		}
 		
-		if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.ENTITY)) {
-			Entity hitEntity = ((EntityHitResult)hitResult).getEntity();
+		EntityHitResult entityHitResult = RenderEngine.asEntityHitResult(hitResult);
+		
+		if (entityHitResult != null) {
+			Entity hitEntity = entityHitResult.getEntity();
 			
 			if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof PartEntity)) {
 				return false;
@@ -474,8 +476,10 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 		
 		if (ClientConfig.preferenceWork.checkHitResult()) {
 			if (ClientConfig.combatPreferredItems.contains(this.original.getMainHandItem().getItem())) {
-				if (RenderEngine.hitResultEquals(this.minecraft.hitResult, HitResult.Type.BLOCK) && this.minecraft.level != null) {
-					BlockPos bp = ((BlockHitResult) this.minecraft.hitResult).getBlockPos();
+				BlockHitResult blockHitResult = RenderEngine.asBlockHitResult(this.minecraft.hitResult);
+				
+				if (blockHitResult != null && this.minecraft.level != null) {
+					BlockPos bp = blockHitResult.getBlockPos();
 					BlockState bs = this.minecraft.level.getBlockState(bp);
 					return !this.original.getMainHandItem().getItem().canAttackBlock(bs, this.original.level(), bp, this.original) || !this.original.getMainHandItem().isCorrectToolForDrops(bs);
 				}
