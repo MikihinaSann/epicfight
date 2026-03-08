@@ -55,6 +55,7 @@ import yesman.epicfight.world.damagesource.StunType;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 /// EventHook hooks that must be triggered by either mod loader event or Mixins.
 ///
@@ -208,7 +209,7 @@ public final class VanillaEntityEventHooks {
     /// @param amount           the amount of damage
     ///
     /// @see LivingEntity#actuallyHurt
-    public static void onCalculateDamagePre(LivingEntity hitEntity, DamageSource damageSource, float amount) {
+    public static void onCalculateDamagePre(LivingEntity hitEntity, DamageSource damageSource, float amount, Consumer<Float> modifiedDamageApplier) {
         @Nullable EpicFightDamageSource epicfightDamageSource = damageSource instanceof EpicFightDamageSource ? (EpicFightDamageSource)damageSource : null;
         @Nullable Entity causingEntity = damageSource.getEntity();
         @Nullable LivingEntityPatch<?> hitEntityPatch = EpicFightCapabilities.getEntityPatch(hitEntity, LivingEntityPatch.class);
@@ -254,6 +255,8 @@ public final class VanillaEntityEventHooks {
             } else {
                 finalDamage = damageCalculator.getResult(finalDamage);
             }
+
+            modifiedDamageApplier.accept(finalDamage);
         }
 
         // Apply stun & knockback
