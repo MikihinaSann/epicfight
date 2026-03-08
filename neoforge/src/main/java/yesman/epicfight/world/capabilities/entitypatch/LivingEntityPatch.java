@@ -797,7 +797,16 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
     public void updateHeldItem(CapabilityItem fromCap, CapabilityItem toCap, ItemStack from, ItemStack to, InteractionHand hand) {
     }
 
-    public void updateArmor(ArmorCapability fromCap, ArmorCapability toCap, EquipmentSlot slotType) {
+    public void updateArmor(@Nullable ArmorCapability fromCap, @Nullable ArmorCapability toCap, EquipmentSlot slotType) {
+        if (this.original.getAttributes().hasAttribute(EpicFightAttributes.STUN_ARMOR)) {
+            if (fromCap != null) {
+                this.original.getAttributes().removeAttributeModifiers(fromCap.getAttributeModifiersForArmor());
+            }
+
+            if (toCap != null) {
+                this.original.getAttributes().addTransientAttributeModifiers(toCap.getAttributeModifiersForArmor());
+            }
+        }
     }
 
     /**

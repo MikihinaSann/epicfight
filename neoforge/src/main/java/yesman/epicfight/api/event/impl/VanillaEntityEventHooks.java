@@ -485,8 +485,11 @@ public final class VanillaEntityEventHooks {
                 InteractionHand hand = slot == EquipmentSlot.MAINHAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
                 entitypatch.updateHeldItem(fromCap, toCap, from, to, hand);
             } else if (slot.getType() == EquipmentSlot.Type.HUMANOID_ARMOR) {
-                if (fromCap instanceof ArmorCapability armorCapFrom && toCap instanceof ArmorCapability armorCapTo) {
-                    entitypatch.updateArmor(armorCapFrom, armorCapTo, slot);
+                boolean isFromItemArmor = fromCap instanceof ArmorCapability;
+                boolean isToItemArmor = toCap instanceof ArmorCapability;
+
+                if (isFromItemArmor || isToItemArmor) {
+                    entitypatch.updateArmor(isFromItemArmor ? (ArmorCapability)fromCap : null, isToItemArmor ? (ArmorCapability)toCap : null, slot);
                 }
             }
         }
