@@ -904,6 +904,15 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	}
 	
 	public void updateArmor(CapabilityItem fromCap, CapabilityItem toCap, EquipmentSlot slotType) {
+		if (this.original.getAttributes().hasAttribute(EpicFightAttributes.STUN_ARMOR.get())) {
+			if (fromCap != null) {
+				this.original.getAttributes().removeAttributeModifiers(fromCap.getAttributeModifiers(slotType, this));
+			}
+			
+			if (toCap != null) {
+				this.original.getAttributes().addTransientAttributeModifiers(toCap.getAttributeModifiers(slotType, this));
+			}
+		}
 	}
 	
 	/**

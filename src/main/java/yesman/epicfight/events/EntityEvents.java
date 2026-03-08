@@ -65,6 +65,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.mob.EndermanPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+import yesman.epicfight.world.capabilities.item.ArmorCapability;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.projectile.ProjectilePatch;
 import yesman.epicfight.world.damagesource.EpicFightDamageSource;
@@ -453,7 +454,12 @@ public class EntityEvents {
 				InteractionHand hand = event.getSlot() == EquipmentSlot.MAINHAND ? InteractionHand.MAIN_HAND : InteractionHand.OFF_HAND;
 				entitypatch.updateHeldItem(fromCap, toCap, event.getFrom(), event.getTo(), hand);
 			} else if (event.getSlot().getType() == EquipmentSlot.Type.ARMOR) {
-				entitypatch.updateArmor(fromCap, toCap, event.getSlot());
+				boolean isFromItemArmor = fromCap instanceof ArmorCapability;
+                boolean isToItemArmor = toCap instanceof ArmorCapability;
+
+                if (isFromItemArmor || isToItemArmor) {
+                    entitypatch.updateArmor(isFromItemArmor ? (ArmorCapability)fromCap : null, isToItemArmor ? (ArmorCapability)toCap : null, event.getSlot());
+                }
 			}
 		}
 	}

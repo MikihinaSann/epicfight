@@ -96,6 +96,10 @@ public class CapabilityItem {
 		return attributeModifiers;
 	}
 	
+	protected static boolean validateAttribute(LivingEntityPatch<?> patch, Attribute attributeHolder) {
+        return patch.getOriginal().getAttributes().hasAttribute(attributeHolder);
+    }
+	
 	protected Map<Style, Map<Attribute, AttributeModifier>> attributeMap;
 	protected Collider collider;
 	
@@ -181,7 +185,7 @@ public class CapabilityItem {
 		}
 	}
 
-	private Object findComponentArgument(Component component, String key) {
+	protected Object findComponentArgument(Component component, String key) {
 		// check the content.
 		if (component.getContents() instanceof TranslatableContents contents) {
 			// is self?
