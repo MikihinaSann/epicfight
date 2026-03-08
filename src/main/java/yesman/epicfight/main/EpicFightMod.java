@@ -64,6 +64,7 @@ import yesman.epicfight.compat.ICompatModule;
 import yesman.epicfight.compat.IRISCompat;
 import yesman.epicfight.compat.IceAndFireCompat;
 import yesman.epicfight.compat.PlayerAnimatorCompat;
+import yesman.epicfight.compat.PlayerReviveCompat;
 import yesman.epicfight.compat.SkinLayer3DCompat;
 import yesman.epicfight.compat.VampirismCompat;
 import yesman.epicfight.compat.WerewolvesCompat;
@@ -273,6 +274,10 @@ public class EpicFightMod {
 
         if (ModList.get().isLoaded("betterthirdperson")) {
             ICompatModule.loadCompatModule(context, BetterThirdPersonCompat.class);
+        }
+        
+        if (ModList.get().isLoaded("playerrevive")) {
+        	ICompatModule.loadCompatModule(context, PlayerReviveCompat.class);
         }
 	}
     

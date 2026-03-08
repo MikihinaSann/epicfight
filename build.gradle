@@ -182,10 +182,14 @@ dependencies {
     
     // Shoulder Surfing Reloaded compatibility (optional, uncomment runtimeOnly to test in-game)
     compileOnly fg.deobf("curse.maven:shoulder-surfing-reloaded-243190:7279955") // API only
-//    runtimeOnly fg.deobf("maven.modrinth:shoulder-surfing-reloaded:1.20.1-4.16.2+forge") // Actual mod file (for test)
+	// runtimeOnly fg.deobf("maven.modrinth:shoulder-surfing-reloaded:1.20.1-4.16.2+forge") // Actual mod file (for test)
     
     compileOnly fg.deobf("dev.echoellet:controlify-forgified:${project.controlify_version}")
     runtimeOnly fg.deobf("maven.modrinth:yacl:3.6.6+1.20.1-forge") // Required dependency to run Controlify
+    
+    // Player revive compatibility (optional)
+    compileOnly fg.deobf("curse.maven:creativecore-257814:7649757")
+    compileOnly fg.deobf("curse.maven:playerrevive-266890:6048921")
     
     annotationProcessor 'org.spongepowered:mixin:0.8.5:processor'
 }
