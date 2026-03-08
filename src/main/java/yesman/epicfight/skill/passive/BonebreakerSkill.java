@@ -13,7 +13,6 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.client.gui.BattleModeGui;
-import yesman.epicfight.gameasset.EpicFightSounds;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPEntityPairingPacket;
@@ -59,7 +58,6 @@ public class BonebreakerSkill extends PassiveSkill {
 				event.getDamageSource().attachDamageModifier(ValueModifier.multiplier(1.0F + this.damageBonus * stacks));
 				
 				if (stacks + 1 == this.maxDamageBonusStacks) {
-					event.getTarget().playSound(EpicFightSounds.OLD_FALL.get(), 50.0F, 1.0F);
 					EpicFightNetworkManager.sendToPlayer(new SPEntityPairingPacket(event.getTarget().getId(), EntityPairingPacketTypes.BONEBREAKER_MAX_STACK), event.getPlayerPatch().getOriginal());
 				}
 				

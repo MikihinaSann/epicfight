@@ -22,6 +22,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
@@ -74,6 +75,7 @@ import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.gameasset.Armatures;
+import yesman.epicfight.gameasset.EpicFightSounds;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.mixin.common.MixinMob;
@@ -282,6 +284,8 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 				});
 			}
 			case BONEBREAKER_MAX_STACK -> {
+				this.original.level().playLocalSound(getOriginal().blockPosition(), EpicFightSounds.OLD_FALL.get(), SoundSource.MASTER, 50.0F, 1.0F, false);
+				
 				this.entityDecorations.addDecorationOverlay(EntityDecorations.BONEBREAKER_OVERLAY, new DecorationOverlay() {
                     static final ResourceLocation TEXTURE = EpicFightMod.identifier("textures/entity/overlay/crack_level2.png");
 					
