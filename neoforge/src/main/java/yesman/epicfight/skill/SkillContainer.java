@@ -368,8 +368,6 @@ public class SkillContainer {
             event.setSkillExecutable(this.skill.canExecute(this));
             event.setStateExecutable(this.skill.isExecutableState(executor));
 
-            System.out.println("ever reached here? " + executor.getOriginal());
-
             EpicFightEventHooks.Player.CAST_SKILL.postWithListener(event, executor.getEventListener());
 
             if (!event.isCanceled() && event.isExecutable()) {
