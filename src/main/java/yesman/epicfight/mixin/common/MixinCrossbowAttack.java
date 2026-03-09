@@ -18,7 +18,7 @@ public abstract class MixinCrossbowAttack {
 			value = "INVOKE",
 			target = "Lnet/minecraft/world/entity/monster/RangedAttackMob;performRangedAttack(Lnet/minecraft/world/entity/LivingEntity;F)V"
 		),
-		method = "crossbowAttack"
+		method = "crossbowAttack(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/entity/LivingEntity;)V"
 	)
 	private void epicfight$crossbowAttack(RangedAttackMob self, LivingEntity target, float velocity) {
 		self.performRangedAttack(target, velocity);
