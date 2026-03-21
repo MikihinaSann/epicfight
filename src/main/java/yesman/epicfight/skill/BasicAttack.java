@@ -53,9 +53,12 @@ public class BasicAttack extends Skill {
 		ComboCounterHandleEvent comboResetEvent = new ComboCounterHandleEvent(reason, playerpatch, causalAnimation, prevValue, modifiedCombo);
 		container.getExecutor().getEventListener().triggerEvents(EventType.COMBO_COUNTER_HANDLE_EVENT, comboResetEvent);
 		
-		// Clamped combo counter value from 0 to last combo index
-		int comboCounterSafe = Mth.clamp(comboResetEvent.getNextValue(), 0, itemCapability.getAutoAttackMotion(playerpatch).size() - 3);
-		container.getDataManager().setData(SkillDataKeys.COMBO_COUNTER.get(), comboCounterSafe);
+		List<AnimationAccessor<? extends AttackAnimation>> comboMotions = itemCapability.getAutoAttackMotion(playerpatch);
+		
+        // Clamped combo counter value from 0 to last combo index
+        int comboCounterSafe = Mth.clamp(comboResetEvent.getNextValue(), 0, comboMotions == null ? 0 : comboMotions.size() - 3);
+        
+        container.getDataManager().setData(SkillDataKeys.COMBO_COUNTER.get(), comboCounterSafe);
 	}
 	
 	/// Consumption amount when basic attacks set to use stamina

@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [20.14.12] - 2026-03-21
+
+### Fixed
+- Fixed the players can't interact with non attackable entities in TPS mode
+- Fixed a crash when datapack item capability has no combo animation [#2496](https://github.com/Epic-Fight/epicfight/issues/2496)
+
+### Changed
+- Changed the default key of **Lock-on Free Shift** to mouse middle button
+
 ## [20.14.11] - 2026-03-09
 
 ### Fixed

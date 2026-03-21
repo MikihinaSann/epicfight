@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -140,6 +141,8 @@ import yesman.epicfight.world.entity.ai.attribute.EpicFightAttributes;
 @Mod.EventBusSubscriber(modid = EpicFightMod.MODID, bus = Bus.MOD)
 public class Animations {
 	public static DirectStaticAnimation EMPTY_ANIMATION = new DirectStaticAnimation() {
+		public static final ResourceLocation EMPTY_ANIMATION_REGISTRY_NAME = ResourceLocation.fromNamespaceAndPath(EpicFightMod.MODID, "empty");
+		
 		@Override
 		public void loadAnimation() {
 		}
@@ -147,6 +150,11 @@ public class Animations {
 		@Override
 		public AnimationClip getAnimationClip() {
 			return AnimationClip.EMPTY_CLIP;
+		}
+		
+		@Override
+		public ResourceLocation registryName() {
+			return EMPTY_ANIMATION_REGISTRY_NAME;
 		}
 	};
 	
