@@ -137,10 +137,11 @@ public class EpicFightServerConnectionHelper {
 	
 	private enum SupportedOS {
 		LINUX("linux", ".so"),
-		//SOLARIS("solaris", ".so"),
-		WINDOWS("windows", ".dll"),
-		//MAC_OS("mac", ".dylib")
-		;
+        //SOLARIS("solaris", ".so"),
+        WINDOWS("windows", ".dll"),
+        OSX("osx", ".dylib"),
+        MAC("mac", ".dylib")
+        ;
 		
 		public static SupportedOS getOS() {
 			try {
