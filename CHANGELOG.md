@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.16.1] - Unreleased
+
+### Added
+- ExCap (an Epic Fight addon for dynamic attack moveset) is now built-in
+- Added MacOS support to access Patreon capes
+
 ## [21.15.8] - 2026-03-21
 
 ### Fixed
