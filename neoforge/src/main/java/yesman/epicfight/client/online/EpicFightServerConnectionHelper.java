@@ -139,7 +139,8 @@ public class EpicFightServerConnectionHelper {
         LINUX("linux", ".so"),
         //SOLARIS("solaris", ".so"),
         WINDOWS("windows", ".dll"),
-        //MAC_OS("mac", ".dylib")
+        OSX("osx", ".dylib"),
+        MAC("mac", ".dylib")
         ;
 
         public static SupportedOS getOS() {
