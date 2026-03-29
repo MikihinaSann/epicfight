@@ -1,9 +1,12 @@
 package yesman.epicfight.api.event;
 
+import com.google.common.collect.Lists;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.event.subscription.DefaultEventSubscription;
 import yesman.epicfight.api.utils.side.LogicalSide;
 
+import java.util.Comparator;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 
@@ -17,7 +20,7 @@ import java.util.stream.Stream;
 /// and [EpicFightClientEventHooks] for client-side only events
 public class EventHook<T extends Event> {
 	/// Treemap to order subscribers in descending order
-	final TreeMap<Integer, EventListener<T>> subscribers = new TreeMap<> ((i1, i2) -> Integer.compare(i2, i1));
+	final TreeMap<Integer, List<EventListener<T>>> subscribers = new TreeMap<> ((i1, i2) -> Integer.compare(i2, i1));
 
     /// Determines if the event is only called in logical side
     protected final LogicalSide logicalSide;
@@ -28,12 +31,14 @@ public class EventHook<T extends Event> {
 
     /// Post the event to subscribers and execute tasks by their priority in descending order
     public T post(T event) {
-        for (EventListener<T> subscriber : this.subscribers.values()) {
-            if (subscriber.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
-                passiveSubscription.fire(event);
+
+        for (var subscriberList : this.subscribers.values()) {
+            for (var subscriber : subscriberList) {
+                if (subscriber.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
+                    passiveSubscription.fire(event);
+                }
             }
         }
-
         return event;
     }
 
@@ -43,14 +48,15 @@ public class EventHook<T extends Event> {
             throw new IllegalArgumentException("EventHook instance must be a subtype of LivingEntityPatchEvent to be posted with EntityEventListener");
         }
 
-        Stream.concat(this.subscribers.values().stream(), eventListener.getListenersFor(this))
-            .sorted((o1, o2) -> Integer.compare(o2.priority(), o1.priority()))
-            .forEach(subscriber -> {
-                if (subscriber.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
-                    passiveSubscription.fire(event);
-                }
-            });
-
+        List<EventListener<T>> buffer = Lists.newArrayList();
+        this.subscribers.values().forEach(buffer::addAll);
+        Stream.concat(buffer.stream(), eventListener.getListenersFor(this))
+                .sorted(Comparator.comparingInt(EventListener::priority))
+                .forEach(subs -> {
+                    if (subs.subscriptionType() instanceof DefaultEventSubscription<T> passiveSubscription) {
+                        passiveSubscription.fire(event);
+                    }
+                });
         return event;
     }
 
@@ -73,7 +79,7 @@ public class EventHook<T extends Event> {
 	
 	/// Registers an event with full parameters
 	public void registerEvent(DefaultEventSubscription<T> subscription, String name, int priority) {
-		this.subscribers.put(priority, new EventListener<> (name, priority, subscription));
+		this.subscribers.computeIfAbsent(priority, sub -> Lists.newArrayList()).add(new EventListener<>(name,priority,subscription));
 	}
 
     public final LogicalSide logicalSide() {
