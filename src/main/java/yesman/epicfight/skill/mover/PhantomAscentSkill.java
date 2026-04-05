@@ -19,7 +19,6 @@ import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.MovementDirection;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.utils.math.MathUtils;
-import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.skill.Skill;
@@ -122,12 +121,12 @@ public class PhantomAscentSkill extends Skill {
 			container.getDataManager().setData(SkillDataKeys.JUMP_KEY_PRESSED_LAST_TICK.get(), jumpPressed);
 		});
 		
-		listener.addEventListener(EventType.TAKE_DAMAGE_EVENT_HURT, EVENT_UUID, (event) -> {
+		listener.addEventListener(EventType.TAKE_DAMAGE_EVENT_ATTACK, EVENT_UUID, (event) -> {
 			if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && container.getDataManager().getDataValue(SkillDataKeys.PROTECT_NEXT_FALL.get())) { // This is not synced
 				float damage = event.getDamage();
 				
 				if (damage < 2.5F) {
-					event.attachValueModifier(ValueModifier.setter(0.0F));
+					event.setCanceled(true);
 				}
 				
 				container.getDataManager().setData(SkillDataKeys.PROTECT_NEXT_FALL.get(), false);
