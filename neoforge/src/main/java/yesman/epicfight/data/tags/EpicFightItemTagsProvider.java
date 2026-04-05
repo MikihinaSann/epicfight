@@ -53,6 +53,7 @@ public class EpicFightItemTagsProvider extends ItemTagsProvider {
 				EpicFightItems.STONE_LONGSWORD.get(),
 				EpicFightItems.STONE_SPEAR.get(),
 				EpicFightItems.STONE_TACHI.get(),
+                EpicFightItems.UCHIGATANA.get(),
 				EpicFightItems.WOODEN_DAGGER.get(),
 				EpicFightItems.WOODEN_GREATSWORD.get(),
 				EpicFightItems.WOODEN_LONGSWORD.get(),
