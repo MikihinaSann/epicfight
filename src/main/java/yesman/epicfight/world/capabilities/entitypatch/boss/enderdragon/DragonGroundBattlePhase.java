@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,9 +25,6 @@ import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.MobCombatBehaviors;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
-import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
-import yesman.epicfight.world.damagesource.EpicFightDamageSource;
 import yesman.epicfight.world.entity.ai.goal.CombatBehaviors;
 
 public class DragonGroundBattlePhase extends PatchedDragonPhase {
@@ -121,16 +117,8 @@ public class DragonGroundBattlePhase extends PatchedDragonPhase {
 	
 	@Override
 	public float onHurt(DamageSource damagesource, float amount) {
-		if (damagesource.is(DamageTypeTags.IS_PROJECTILE)) {
-			if (damagesource.getDirectEntity() instanceof AbstractArrow) {
-				damagesource.getDirectEntity().setSecondsOnFire(1);
-			}
-			return 0.0F;
-		}
-		
-		LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(damagesource.getEntity(), LivingEntityPatch.class);
-		
-		if (damagesource.getEntity() != null && (entitypatch == null || !(damagesource instanceof EpicFightDamageSource))) {
+		if (damagesource.getDirectEntity() instanceof AbstractArrow) {
+			damagesource.getDirectEntity().setSecondsOnFire(1);
 			return 0.0F;
 		} else {
 			return super.onHurt(damagesource, amount);
