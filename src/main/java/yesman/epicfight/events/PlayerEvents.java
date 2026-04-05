@@ -152,7 +152,7 @@ public class PlayerEvents {
 			}
 			
 			if (itemCap.getUseAnimation(playerpatch) == UseAnim.BLOCK) {
-				event.setDuration(Integer.MAX_VALUE);
+				event.setDuration(event.getItem().getUseDuration());
 			}
 		});
 	}
