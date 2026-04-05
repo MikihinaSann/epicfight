@@ -228,7 +228,7 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		TakeDamageEvent.Attack hurtEvent = new TakeDamageEvent.Attack(this, damageSource, amount);
 		
 		if (this.getEventListener().triggerEvents(EventType.TAKE_DAMAGE_EVENT_ATTACK, hurtEvent)) {
-			return new AttackResult(hurtEvent.getResult(), hurtEvent.getDamage());
+			return AttackResult.missed(hurtEvent.getDamage());
 		} else {
 			return super.tryHurt(damageSource, amount);
 		}
