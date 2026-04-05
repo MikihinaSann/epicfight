@@ -16,7 +16,6 @@ import yesman.epicfight.api.event.EntityEventListener;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.types.player.SkillCastEvent;
 import yesman.epicfight.api.utils.math.MathUtils;
-import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.events.engine.ControlEngine;
 import yesman.epicfight.gameasset.Animations;
@@ -128,13 +127,13 @@ public class PhantomAscentSkill extends Skill {
         );
 
         eventListener.registerEvent(
-            EpicFightEventHooks.Entity.TAKE_DAMAGE_PRE,
+            EpicFightEventHooks.Entity.TAKE_DAMAGE_INCOME,
             event -> {
                 if (event.getDamageSource().is(DamageTypeTags.IS_FALL) && skillContainer.getDataManager().getDataValue(EpicFightSkillDataKeys.PROTECT_NEXT_FALL)) {
                     float damage = event.getDamage();
 
                     if (damage < 2.5F) {
-                        event.attachValueModifier(ValueModifier.setter(0.0F));
+                        event.cancel();
                     }
 
                     skillContainer.getDataManager().setData(EpicFightSkillDataKeys.PROTECT_NEXT_FALL, false);
