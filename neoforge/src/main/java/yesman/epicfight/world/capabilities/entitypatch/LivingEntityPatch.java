@@ -388,7 +388,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
         EpicFightEventHooks.Entity.TAKE_DAMAGE_INCOME.postWithListener(takeDamageEvent$income, this.getEventListener());
 
         if (takeDamageEvent$income.isCanceled()) {
-            return new AttackResult(takeDamageEvent$income.getResult(), takeDamageEvent$income.getDamage());
+            return new AttackResult(ResultType.MISSED, takeDamageEvent$income.getDamage());
         } else {
             return AttackResult.of(this.getEntityState().attackResult(damageSource), amount);
         }
