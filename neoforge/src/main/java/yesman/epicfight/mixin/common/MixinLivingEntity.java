@@ -45,20 +45,17 @@ public abstract class MixinLivingEntity {
 				builder.add(k, v.getBaseValue());
 			});
 			
-			if (!builder.hasAttribute(Attributes.ATTACK_DAMAGE)) {
-				builder.add(Attributes.ATTACK_DAMAGE);
-			}
-			
-			builder.add(EpicFightAttributes.WEIGHT);
-			builder.add(EpicFightAttributes.IMPACT);
-			builder.add(EpicFightAttributes.ARMOR_NEGATION);
-			builder.add(EpicFightAttributes.MAX_STRIKES);
-			builder.add(EpicFightAttributes.STUN_ARMOR);
-			builder.add(EpicFightAttributes.ASSASSINATION_RESISTANCE);
-			builder.add(EpicFightAttributes.OFFHAND_ARMOR_NEGATION);
-			builder.add(EpicFightAttributes.OFFHAND_IMPACT);
-			builder.add(EpicFightAttributes.OFFHAND_MAX_STRIKES);
-			builder.add(EpicFightAttributes.OFFHAND_ATTACK_SPEED);
+			if (!builder.hasAttribute(Attributes.ATTACK_DAMAGE)) builder.add(Attributes.ATTACK_DAMAGE);
+            if (!builder.hasAttribute(EpicFightAttributes.WEIGHT)) builder.add(EpicFightAttributes.WEIGHT);
+            if (!builder.hasAttribute(EpicFightAttributes.IMPACT)) builder.add(EpicFightAttributes.IMPACT);
+            if (!builder.hasAttribute(EpicFightAttributes.ARMOR_NEGATION)) builder.add(EpicFightAttributes.ARMOR_NEGATION);
+            if (!builder.hasAttribute(EpicFightAttributes.MAX_STRIKES)) builder.add(EpicFightAttributes.MAX_STRIKES);
+            if (!builder.hasAttribute(EpicFightAttributes.STUN_ARMOR)) builder.add(EpicFightAttributes.STUN_ARMOR);
+            if (!builder.hasAttribute(EpicFightAttributes.ASSASSINATION_RESISTANCE)) builder.add(EpicFightAttributes.ASSASSINATION_RESISTANCE);
+            if (!builder.hasAttribute(EpicFightAttributes.OFFHAND_ARMOR_NEGATION)) builder.add(EpicFightAttributes.OFFHAND_ARMOR_NEGATION);
+            if (!builder.hasAttribute(EpicFightAttributes.OFFHAND_IMPACT)) builder.add(EpicFightAttributes.OFFHAND_IMPACT);
+            if (!builder.hasAttribute(EpicFightAttributes.OFFHAND_MAX_STRIKES)) builder.add(EpicFightAttributes.OFFHAND_MAX_STRIKES);
+            if (!builder.hasAttribute(EpicFightAttributes.OFFHAND_ATTACK_SPEED)) builder.add(EpicFightAttributes.OFFHAND_ATTACK_SPEED);
 			
 			self.getAttributes().supplier = builder.build();
 		});
