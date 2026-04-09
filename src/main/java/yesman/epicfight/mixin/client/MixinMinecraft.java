@@ -111,7 +111,11 @@ public abstract class MixinMinecraft {
 		method = "startUseItem"
 	)
 	private void startUseItem(CallbackInfo ci) {
-		EpicFightCameraAPI.getInstance().alignPlayerLookToCrosshair(false, true, false);
+		EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
+
+        if (cameraApi.isTPSMode()) {
+            cameraApi.alignPlayerLookToCrosshair(false, true, false);
+        }
 	}
 	
 	/**
