@@ -69,6 +69,7 @@ import yesman.epicfight.compat.mcreator.MCreatorPlayerAnimationsCompat;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.config.ServerConfig;
+import yesman.epicfight.data.loot.EpicFightLootTables;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.generated.LangKeys;
@@ -316,6 +317,7 @@ public class EpicFightMod {
         EpicFightEventHooks.Registry.EX_CAP_MOVESET_REGISTRY.registerEvent(ExCapRegistryHooks::registerExCapMovesets, 1);
         EpicFightEventHooks.Registry.EX_CAP_DATA_POPULATION.registerEvent(ExCapRegistryHooks::registerExCapMethods, 1);
         EpicFightEventHooks.Registry.WEAPON_CAPABILITY_PRESET.registerEvent(ExCapRegistryHooks::registerWeaponCapabilities, 1);
+        EpicFightEventHooks.Registry.SKILLBOOK_LOOT_TABLE.registerEvent(EpicFightLootTables::createSkillLootTable);
     }
 
 	/**
