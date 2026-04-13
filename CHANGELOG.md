@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.16.3] - 2026-04-13
+
+### Added
+- Added a Tag system for item capability data pack [#2526](https://github.com/Antikythera-Studios/epicfight/pull/2526)
+- Added Wildfire's Female Gender mod compatibility
+
+### Fixed
+- Fixed the player head jittering in TPS mode while blocking & looking at a nearby block at the same time [#2524](https://github.com/Antikythera-Studios/epicfight/issues/2524)
+- Fixed Skill Books not dropped by mobs [#2528](https://github.com/Antikythera-Studios/epicfight/issues/2528)
+
 ## [21.16.2] - 2026-04-05
 
 ### Fixed
