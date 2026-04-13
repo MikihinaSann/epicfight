@@ -379,7 +379,7 @@ public final class EpicFightCameraAPI {
         return next.isPresent();
     }
 
-     /// Creates a compact projection matrix without view, hurt bob
+    /// Creates a compact projection matrix without view, hurt bob
     private Matrix4f getCompactProjectionMatrix() {
         PoseStack posestack = new PoseStack();
         double fov = this.minecraft.gameRenderer.getFov(this.minecraft.gameRenderer.getMainCamera(), 1.0F, true);
@@ -390,7 +390,7 @@ public final class EpicFightCameraAPI {
     /// Aligns the player's look to have same rotations as camera
     /// @param noInterpolation	 resets old rotation values to new rotations
     /// @param syncBodyRot       whether tosync body rotation too. if you want natural movement give it false
-    /// @param syncToServer      whether to send a packet to synchronize rotations right away, consider not sending
+    /// @param syncToServer      whether to send a packet to synchronize rotations right away, consider not to send
     ///                          packets if you call this method in each tick for optimized networking
     public void alignPlayerLookToCameraRotation(boolean noInterpolation, boolean syncBodyRot, boolean syncToServer) {
         if (this.minecraft.player == null) return;

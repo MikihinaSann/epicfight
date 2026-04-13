@@ -34,12 +34,9 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.LogicalSide;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
@@ -657,30 +654,6 @@ public class RenderEngine implements IEventBasedEngine {
         }
     }
 
-    /**
-     * Turn the player toward the direction that the player is digging now
-     * Only needs to fire in TPS mode
-     */
-    private void epicfight$rightClickBlock(PlayerInteractEvent.RightClickBlock event) {
-        EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
-
-        if (event.getSide() == LogicalSide.SERVER || !cameraApi.isTPSMode()) return;
-
-        if (!cameraApi.isTPSMode()) {
-            return;
-        }
-
-        EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
-            Vec3 toHit = event.getHitVec().getLocation().subtract(playerpatch.getOriginal().getEyePosition());
-            float xRot = (float)MathUtils.getXRotOfVector(toHit);
-            float yRot = (float)MathUtils.getYRotOfVector(toHit);
-
-            playerpatch.getOriginal().setXRot(xRot);
-            playerpatch.getOriginal().setYRot(yRot);
-            playerpatch.getOriginal().setYHeadRot(yRot);
-        });
-    }
-
     private void epicfight$renderTickPre(RenderFrameEvent.Pre event) {
         EntityUI.HEALTH_BAR.reset();
     }
@@ -775,7 +748,6 @@ public class RenderEngine implements IEventBasedEngine {
         gameEventBus.addListener(this::epicfight$renderGuiPre);
         gameEventBus.addListener(this::epicfight$renderHand);
         gameEventBus.addListener(this::epicfight$renderAfterLevel);
-        gameEventBus.addListener(this::epicfight$rightClickBlock);
         gameEventBus.addListener(this::epicfight$renderTickPre);
         gameEventBus.addListener(this::epicfight$renderTickPost);
         gameEventBus.addListener(this::epicfight$clientTick$Pre);
