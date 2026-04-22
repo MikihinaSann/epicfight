@@ -20,7 +20,7 @@ jobs:
           
           stale-issue-label: "stale"
           
-          exempt-issue-labels: "confirmed,pinned,security,planned"
+          exempt-issue-labels: "confirmed,pinned,security,planned,core-contributor"
           
           days-before-pr-stale: -1
       
