@@ -25,7 +25,7 @@ jobs:
         
           days-before-pr-stale: -1
       - name: "Information Requested"
-        uses: action/stae@v9
+        uses: action/stale@v9
         with:
           days-before-stale: 0
           days-before-close: 7
