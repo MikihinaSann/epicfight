@@ -6,12 +6,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [21.17.1] - 2026-04-29
 ### Changes
+**ExCap**
+
+---
  - Introduced the Hybrid Registry System
    - The hybrid Registry system uses the DeferredRegister to register new data statically, while also allowing Datapacks to override it down the line.
      - DeferredRegister registers it upon static compile-time while datapacks then override it upon a world load or running /reload
  - Added Modifiers – A replacement of ExCap's system for Dynamic Overrides
  - Existing ExCap registration for Core Epic Fight content has been turned from event driven into Registry Driven via DeferredRegister.
  - Added the option to register a Weapon Capability monolithically via just the Builder. Modularity is no longer forced.
+ - Implemented Inheiritance for `WeaponCapability.Builder` allowing even faster prototyping and building of new weapons.
+ - Implemented `CustomData` a new way for addons to extend on weapon data using datapacks and code. All is done in DeferredRegister. Either as weapon data or as moveset data. Java can be used to extend both Weapon and Moveset data. Datapacks and JSON can only be used to extend Weapon data.
+ - **Experimental Change:** Introduced `WeaponCategory` inheiritance which uses multiple inheiritance for its weapon categories.
+ - Mass deprecation of as many old `WeaponCapabilityPresets` weapons and Old ExCap methods that were deemed extremely difficult to work with and extremely tedious to use.
+
+---
+
+- Added Hand switching item animation
+- Added max passive skills gamerule. `/gamerule maxPassiveSkills <value>`
+- Added animation mirroring for combo weapons and living animations.
+- Made it so roll/dodge skills cannot be performed midair.
+- Made it so you cannot spam dash attacks.
+- Tweaks to the Skill equipping window GUI. No longer closes when equipping a skill and some other tweaks here and there.
+
+### Fixes
+- Fixed biped entities mounted atop horses & other entities rendering all weird. The skeletons on top of spiders (spider jockeys) should be more visually pleasing. Same goes for the Chicken jockey.
+- Fixed the tools being misplaced on skeletons when they sit/mount on other entities
+- Fixed chicken jockey behavior, now it attacks the player and targets it properly.
 
 
 ## [21.16.4] - 2026-04-21

@@ -15,5 +15,5 @@ public class EpicFightMovesetData
 {
     public static final CustomDataRegister REGISTER = CustomDataRegister.createMoveset(EpicFight.MODID);
 
-    public static final DeferredCustomData<CustomData<BiFunction<SkillContainer, CompoundTag, AnimationManager.AnimationAccessor<? extends StaticAnimation>>>> DODGE_ANIMATION = REGISTER.registerCustomData("dodge_animation", () -> new CustomData<BiFunction<SkillContainer, CompoundTag, AnimationManager.AnimationAccessor<? extends StaticAnimation>>>((container, tag) -> null));
+    public static final DeferredCustomData<CustomData<BiFunction<SkillContainer, CompoundTag, AnimationManager.AnimationAccessor<? extends StaticAnimation>>>> DODGE_ANIMATION = REGISTER.registerCustomData("dodge_animation", () -> CustomData.of((container, tag) -> null));
 }
