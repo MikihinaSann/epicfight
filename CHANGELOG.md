@@ -22,6 +22,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+- Added Hand switching item animation
+- Added max passive skills gamerule. `/gamerule maxPassiveSkills <value>`
+- Added animation mirroring for combo weapons and living animations.
+- Made it so roll/dodge skills cannot be performed midair.
+- Made it so you cannot spam dash attacks.
+- Tweaks to the Skill equipping window GUI. No longer closes when equipping a skill and some other tweaks here and there.
+
+### Fixes
+- Fixed biped entities mounted atop horses & other entities rendering all weird. The skeletons on top of spiders (spider jockeys) should be more visually pleasing. Same goes for the Chicken jockey.
+- Fixed the tools being misplaced on skeletons when they sit/mount on other entities
+- Fixed chicken jockey behavior, now it attacks the player and targets it properly.
+
 
 ## [21.16.4] - 2026-04-21
 
