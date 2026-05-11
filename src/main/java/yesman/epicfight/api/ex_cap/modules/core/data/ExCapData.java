@@ -3,22 +3,30 @@ package yesman.epicfight.api.ex_cap.modules.core.data;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
-import yesman.epicfight.api.ex_cap.modules.core.managers.ConditionalManager;
-import yesman.epicfight.api.ex_cap.modules.core.managers.MovesetManager;
-import yesman.epicfight.api.ex_cap.modules.core.provider.ProviderConditional;
 import net.minecraft.resources.ResourceLocation;
+import org.jetbrains.annotations.ApiStatus;
+import yesman.epicfight.api.ex_cap.managers.ConditionalManager;
+import yesman.epicfight.api.ex_cap.managers.MovesetManager;
+import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
 import java.util.List;
 import java.util.Map;
 
-public record ExCapData(List<ProviderConditional> conditionals, Map<Style, ResourceLocation> sets) {
+/**
+ * This class is meant to be as an extensible way to add data.
+ * @param conditionals any conditionals
+ * @param sets any movesets
+ * @deprecated For Removal. Functions transferred to WeaponModifier
+ */
+@Deprecated(forRemoval = true)
+public record ExCapData(List<ProviderConditional.Builder> conditionals, Map<Style, ResourceLocation> sets) {
 
     public void apply(WeaponCapability.Builder cap)
     {
-        cap.addConditionals(conditionals);
-        sets.forEach( (style, builder) -> cap.addMoveSet(style, MovesetManager.getBuilder(builder)));
+        conditionals.forEach(cap::addConditionals);
+        sets.forEach( (style, builder) -> cap.addMoveset(style, MovesetManager.getBuilder(builder)));
     }
 
     public static Builder builder()
@@ -28,7 +36,7 @@ public record ExCapData(List<ProviderConditional> conditionals, Map<Style, Resou
 
     public static class Builder {
 
-        private final List<ProviderConditional> conditionals = Lists.newArrayList();
+        private final List<ProviderConditional.Builder> conditionals = Lists.newArrayList();
         private final Map<Style, ResourceLocation> moveSets = Maps.newHashMap();
 
         public static Builder deserialize(JsonElement jsonElement)
@@ -55,17 +63,17 @@ public record ExCapData(List<ProviderConditional> conditionals, Map<Style, Resou
             return builder;
         }
 
-        public Builder addConditional(ResourceLocation... conds) {
+        @ApiStatus.Internal
+        public void addConditional(ResourceLocation... conds) {
             for (ResourceLocation cond : conds) {
-                conditionals.add(ConditionalManager.get(cond).build());
+                conditionals.add(ConditionalManager.get(cond));
             }
-            return this;
         }
 
-        public Builder addMoveset(Style style, ResourceLocation builder)
+        @ApiStatus.Internal
+        public void addMoveset(Style style, ResourceLocation builder)
         {
             moveSets.put(style, builder);
-            return this;
         }
         public ExCapData build() {
             return new ExCapData(

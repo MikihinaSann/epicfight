@@ -5,6 +5,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -16,7 +17,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.types.AttackAnimation;
@@ -24,15 +27,17 @@ import yesman.epicfight.api.animation.types.MainFrameAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.event.types.player.ModifyComboCounter;
+import yesman.epicfight.api.ex_cap.managers.ItemPresetManager;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.ColliderPreset;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.EpicFightNetworkManager.PayloadBundleBuilder;
 import yesman.epicfight.network.server.SPChangeSkill;
 import yesman.epicfight.network.server.SPSetRemotePlayerSkill;
 import yesman.epicfight.network.server.SPSetSkillContainerValue;
 import yesman.epicfight.particle.HitParticleType;
+import yesman.epicfight.registry.deferred.holders.DeferredCustomData;
+import yesman.epicfight.registry.deferred.holders.DeferredPreset;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSounds;
@@ -44,12 +49,10 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
+import yesman.epicfight.world.capabilities.item.custom.CustomData;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 
@@ -101,12 +104,16 @@ public class CapabilityItem {
 
 	protected Map<Style, Map<Holder<Attribute>, AttributeModifier>> attributeMap;
 	protected Map<Style, ItemAttributeModifiers> modifiers;
+	protected final Map<Holder<CustomData<?>>, Object> customData;
+	///For debugging only
+	protected ResourceLocation id;
 	protected Collider collider;
 	
 	protected CapabilityItem(CapabilityItem.Builder<?> builder) {
 		this.weaponCategory = builder.category;
 		this.collider = builder.collider;
-		
+		this.id = builder.identifier;
+		this.customData = ImmutableMap.copyOf(builder.customData);
 		ImmutableMap.Builder<Style, Map<Holder<Attribute>, AttributeModifier>> attributeMapbuilder = ImmutableMap.builder();
 		
 		for (Map.Entry<Style, Map<Holder<Attribute>, AttributeModifier>> entry : builder.attributeMap.entrySet()) {
@@ -124,7 +131,7 @@ public class CapabilityItem {
             return;
         }
 
-		itemTooltip.add(1, Component.translatable(EpicFightMod.MODID + ".style." + style.toString().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_GRAY));
+		itemTooltip.add(1, Component.translatable(EpicFight.MODID + ".style." + style.toString().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_GRAY));
 		
 		int index = 0;
 		boolean modifyIn = false;
@@ -224,8 +231,15 @@ public class CapabilityItem {
 		return getMountAttackMotion();
 	}
 
-    /// Use {@link #getMountAttackMotion(PlayerPatch)} for dynamic assigning, this is used as legacy fallback.
-    @Deprecated()
+	@SuppressWarnings("unchecked")
+	public <T> Optional<T> getCustomData(DeferredCustomData<? extends CustomData<T>> data) {
+		Object result = customData.get(data);
+		return Optional.of((T) result);
+	}
+
+
+	/// Use {@link #getMountAttackMotion(PlayerPatch)} for dynamic assigning, this is used as legacy fallback.
+    @Deprecated(forRemoval = true)
     public List<AnimationAccessor<? extends AttackAnimation>> getMountAttackMotion()
     {
         return null;
@@ -242,14 +256,38 @@ public class CapabilityItem {
 	}
 
     /// Use {@link #getPassiveSkill(PlayerPatch)} for dynamic allocation, this is primarily a fallback.
-    @Deprecated @Nullable
+    @Deprecated(forRemoval = true) @Nullable
     public Skill getPassiveSkill()
     {
         return null;
     }
-	
+
 	public WeaponCategory getWeaponCategory() {
 		return this.weaponCategory;
+	}
+
+	public boolean isWeaponCategory(WeaponCategory target) {
+		if (this == target) return true;
+
+		// Population Phase: Use the ImmutableList directly
+		List<WeaponCategory> immediateParents = weaponCategory.getParents();
+		if (immediateParents.isEmpty()) return false;
+
+		Deque<WeaponCategory> stack = new ArrayDeque<>(immediateParents);
+		Set<WeaponCategory> visited = new HashSet<>();
+
+		while (!stack.isEmpty()) {
+			WeaponCategory current = stack.pop();
+			if (current == target) return true;
+
+			if (visited.add(current)) {
+				// Because of ImmutableList, we know getParents() is safe to loop
+				for (WeaponCategory p : current.getParents()) {
+					stack.push(p);
+				}
+			}
+		}
+		return false;
 	}
 	
 	public void changeWeaponInnateSkill(ServerPlayerPatch playerpatch, ItemStack itemstack) {
@@ -257,7 +295,7 @@ public class CapabilityItem {
 		SkillContainer weaponInnateSkillContainer = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
 		PayloadBundleBuilder toLocal = PayloadBundleBuilder.create();
 		PayloadBundleBuilder toRemote = PayloadBundleBuilder.create();
-		
+		EpicFight.LOGGER.info("Capability Item Preset: {}", id);
 		if (weaponInnateSkill != null) {
 			if (weaponInnateSkillContainer.getSkill() != weaponInnateSkill) {
 				weaponInnateSkillContainer.setSkill(weaponInnateSkill);
@@ -388,7 +426,7 @@ public class CapabilityItem {
 	}
 
     /// Use {@link #availableOnHorse(LivingEntityPatch)} instead for allowing living entity patch parameterization.
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public boolean availableOnHorse()
     {
         return true;
@@ -431,7 +469,7 @@ public class CapabilityItem {
 	public ZoomInType getZoomInType() {
 		return ZoomInType.NONE;
 	}
-	
+
 	public enum WeaponCategories implements WeaponCategory {
 		NOT_WEAPON(WEAPON_CATEGORY_NOT_WEAPON),
         AXE(WEAPON_CATEGORY_AXE),
@@ -448,18 +486,30 @@ public class CapabilityItem {
         LONGSWORD(WEAPON_CATEGORY_LONGSWORD),
         DAGGER(WEAPON_CATEGORY_DAGGER),
         SHIELD(WEAPON_CATEGORY_SHIELD),
-        RANGED(WEAPON_CATEGORY_RANGED)
-        ;
+		BOW(WEAPON_CATEGORY_RANGED);
 
         final Component translationKey;
+		final List<WeaponCategory> parent;
 		final int id;
 		
-		WeaponCategories(String translationKey) {
+		WeaponCategories(String translationKey, WeaponCategory... parents) {
             this.translationKey = Component.translatable(translationKey);
 			this.id = WeaponCategory.ENUM_MANAGER.assign(this);
+			this.parent = ImmutableList.copyOf(parents);
 		}
 
-        @Override
+		WeaponCategories(String translationKey) {
+			this.translationKey = Component.translatable(translationKey);
+			this.id = WeaponCategory.ENUM_MANAGER.assign(this);
+			this.parent = ImmutableList.of();
+		}
+
+		@Override
+		public List<WeaponCategory> getParents() {
+			return parent;
+		}
+
+		@Override
         public Component getTranslatable() {
             return this.translationKey;
         }
@@ -501,16 +551,58 @@ public class CapabilityItem {
 	
 	@SuppressWarnings("unchecked")
 	public static class Builder<T extends Builder<T>> {
-		Function<T, CapabilityItem> constructor;
-		Map<Style, Map<Holder<Attribute>, AttributeModifier>> attributeMap;
-		WeaponCategory category;
-		Collider collider;
-		
+		protected ResourceLocation parent;
+		protected Function<T, CapabilityItem> constructor;
+		protected Map<Style, Map<Holder<Attribute>, AttributeModifier>> attributeMap;
+		protected WeaponCategory category;
+		protected Collider collider;
+		protected ResourceLocation identifier;
+		protected Map<Holder<CustomData<?>>, Object> customData;
+
 		protected Builder() {
 			this.constructor = CapabilityItem::new;
 			this.attributeMap = Maps.newHashMap();
+			this.customData = Maps.newHashMap();
 			this.category = WeaponCategories.FIST;
 			this.collider = ColliderPreset.FIST;
+		}
+
+		public T copy()
+		{
+			Builder<T> result = new Builder<>();
+			result.parent = this.parent;
+			result.identifier = this.identifier;
+			result.attributeMap = this.attributeMap;
+			result.category = this.category;
+			result.collider = this.collider;
+			return (T) result;
+		}
+
+		protected void paste(T builder)
+		{
+			builder.parent = this.parent;
+			builder.identifier = this.identifier;
+			builder.attributeMap = this.attributeMap;
+			builder.category = this.category;
+			builder.collider = this.collider;
+			builder.customData = this.customData;
+		}
+
+		public T parent(ResourceLocation parent)
+		{
+			this.parent = parent;
+			return (T) this;
+		}
+
+		public T parent(DeferredPreset<T> preset)
+		{
+			return this.parent(preset.getId());
+		}
+
+		public T identifier(ResourceLocation id)
+		{
+			this.identifier = id;
+			return (T) this;
 		}
 		
 		public T constructor(Function<T, CapabilityItem> constructor) {
@@ -527,20 +619,85 @@ public class CapabilityItem {
 			this.collider = collider;
 			return (T)this;
 		}
+
+		public void setCustomDataInternal(DeferredCustomData<? extends CustomData<?>> data, Object obj) {
+			this.customData.put(data, obj);
+		}
+
+		public void setCustomDataInternal(Holder<CustomData<?>> data, Object obj) {
+			this.customData.put(data, obj);
+		}
 		
 		public T addStyleAttibutes(Style style, Holder<Attribute> attribute, AttributeModifier attributePair) {
 			Map<Holder<Attribute>, AttributeModifier> map = this.attributeMap.computeIfAbsent(style, (key) -> new HashMap<> ());
 			map.put(attribute, attributePair);
-			
 			return (T)this;
 		}
-		
+
+		//Only handles generics, if you want to make a full weapon capability you need a full override
+		protected T merge()
+		{
+			if (this.parent == null) {
+				return (T) this;
+			}
+			T result = (T) CapabilityItem.builder();
+			Deque<T> stack = new ArrayDeque<>();
+			Builder<T> current = this;
+
+			while (current != null) {
+				stack.push((T) current);
+				current = (T) ItemPresetManager.get(current.parent);
+			}
+			while (!stack.isEmpty()) {
+				T builder = stack.pop();
+				handleLayers(result, builder);
+			}
+			return (T)this;
+		}
+
+		protected void handleLayers(T result, T builder) {
+			apply(result, builder);
+		}
+
+		@ApiStatus.Internal
+		public void registerCustomData(Holder<CustomData<?>> data) {
+			customData.putIfAbsent(data, data.value().defaultValue());
+		}
+
+		public <R> T setCustomData(DeferredCustomData<? extends CustomData<R>> customData, R data) {
+			if (this.customData.containsKey(customData)) {
+				this.customData.put(customData, data);
+			}
+			else {
+				EpicFight.LOGGER.warn("Custom data type {} does not exist. Assigning {} failed.", customData.getId(), data);
+			}
+			return (T)this;
+		}
+
 		public final CapabilityItem build() {
-			return this.constructor.apply((T)this);
+			return this.constructor.apply(this.merge());
 		}
 		
 		public Collider getCollider() {
 			return this.collider;
 		}
+
+		protected void apply(T result, T builder)
+		{
+			if (builder.constructor != null) {
+				result.constructor = builder.constructor;
+			}
+			if (builder.attributeMap != null) {
+				result.attributeMap.putAll(builder.attributeMap);
+			}
+			if (builder.category != null) {
+				result.category = builder.category;
+			}
+			if (builder.collider != null) {
+				result.collider = builder.collider;
+			}
+		}
 	}
+
+
 }

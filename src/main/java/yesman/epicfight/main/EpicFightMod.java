@@ -1,7 +1,5 @@
 package yesman.epicfight.main;
 
-import yesman.epicfight.api.ex_cap.modules.core.listeners.*;
-import yesman.epicfight.api.ex_cap.modules.hooks.ExCapRegistryHooks;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -52,6 +50,10 @@ import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
 import yesman.epicfight.api.data.reloader.SkillReloadListener;
 import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.ex_cap.listeners.ConditionalReloadListener;
+import yesman.epicfight.api.ex_cap.listeners.ItemPresetReloadListener;
+import yesman.epicfight.api.ex_cap.listeners.MovesetReloadListener;
+import yesman.epicfight.api.ex_cap.listeners.WeaponModifierReloadListener;
 import yesman.epicfight.client.events.engine.IEventBasedEngine;
 import yesman.epicfight.client.gui.screen.SkillBookScreen;
 import yesman.epicfight.client.gui.screen.config.EpicFightSettingScreen;
@@ -291,12 +293,6 @@ public class EpicFightMod {
 
     private void addRegistries()
     {
-		EpicFightEventHooks.Registry.EX_CAP_DATA_CREATION.registerEvent(ExCapRegistryHooks::registerData, 1);
-		EpicFightEventHooks.Registry.EX_CAP_BUILDER_CREATION.registerEvent(ExCapRegistryHooks::registerExCapBuilders, 1);
-        EpicFightEventHooks.Registry.EX_CAP_CONDITIONAL_REGISTRATION.registerEvent(ExCapRegistryHooks::registerConditionals, 1);
-        EpicFightEventHooks.Registry.EX_CAP_MOVESET_REGISTRY.registerEvent(ExCapRegistryHooks::registerExCapMovesets, 1);
-        EpicFightEventHooks.Registry.EX_CAP_DATA_POPULATION.registerEvent(ExCapRegistryHooks::registerExCapMethods, 1);
-        EpicFightEventHooks.Registry.WEAPON_CAPABILITY_PRESET.registerEvent(ExCapRegistryHooks::registerWeaponCapabilities, 1);
         EpicFightEventHooks.Registry.SKILLBOOK_LOOT_TABLE.registerEvent(EpicFightLootTables::createSkillLootTable);
     }
 
@@ -329,11 +325,10 @@ public class EpicFightMod {
 		event.addListener(new ColliderPreset());
 		event.addListener(new SkillReloadListener());
 		//ExCap ------------------------------------
-		event.addListener(new ExCapBuilderReloadListener());
-        event.addListener(new ExCapConditionalReloadListener());
-        event.addListener(new ExCapMovesetReloadListener());
-		event.addListener(new ExCapDataCreationReloadListener());
-		event.addListener(new ExCapDataReloadListener());
+		event.addListener(new ItemPresetReloadListener());
+		event.addListener(new WeaponModifierReloadListener());
+		event.addListener(new ConditionalReloadListener());
+        event.addListener(new MovesetReloadListener());
 		// -----------------------------------------
 		event.addListener(new WeaponTypeReloadListener());
 		event.addListener(new ItemKeywordReloadListener());

@@ -12,7 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import yesman.epicfight.api.ex_cap.modules.core.data.MoveSet;
+import yesman.epicfight.api.ex_cap.data.Moveset;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.registry.entries.EpicFightItems;
@@ -55,7 +55,7 @@ public class RenderKatana extends RenderItemBase {
 		MathUtils.mulStack(poseStack, modelMatrix);
         itemRenderer.renderStatic(stack, ItemDisplayContext.THIRD_PERSON_RIGHT_HAND, packedLight, OverlayTexture.NO_OVERLAY, poseStack, buffer, null, 0);
         poseStack.popPose();
-        if (entitypatch.getHoldingItemCapability(hand) instanceof WeaponCapability wCap && wCap.getCurrentSet(entitypatch) instanceof MoveSet set && set.shouldRenderSheath().test(entitypatch))
+        if (entitypatch.getHoldingItemCapability(hand) instanceof WeaponCapability wCap && wCap.getCurrentSet(entitypatch) instanceof Moveset set && set.shouldRenderSheath().test(entitypatch))
         {
             modelMatrix = this.getCorrectionMatrix(entitypatch, sheathHand, poses);
             poseStack.pushPose();

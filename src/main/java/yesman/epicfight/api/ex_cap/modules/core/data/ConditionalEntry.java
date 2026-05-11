@@ -1,7 +1,7 @@
 package yesman.epicfight.api.ex_cap.modules.core.data;
 
-import yesman.epicfight.api.ex_cap.modules.core.provider.ProviderConditional;
 import net.minecraft.resources.ResourceLocation;
+import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 
-/// See {@link MoveSetEntry} same concept
-public record ConditionalEntry(ResourceLocation id, ProviderConditional.ProviderConditionalBuilder builder) { }
+@Deprecated(forRemoval = true)
+public record ConditionalEntry(ResourceLocation id, ProviderConditional.Builder builder) { }

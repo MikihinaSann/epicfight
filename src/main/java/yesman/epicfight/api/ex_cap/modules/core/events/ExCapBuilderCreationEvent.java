@@ -2,14 +2,15 @@ package yesman.epicfight.api.ex_cap.modules.core.events;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import yesman.epicfight.api.ex_cap.modules.core.data.BuilderEntry;
-import yesman.epicfight.api.ex_cap.modules.core.managers.ExCapManager;
 import net.minecraft.resources.ResourceLocation;
 import yesman.epicfight.api.event.Event;
+import yesman.epicfight.api.ex_cap.modules.core.data.BuilderEntry;
+import yesman.epicfight.api.ex_cap.managers.ExCapManager;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
 import java.util.Map;
 
+@Deprecated(forRemoval = true)
 public class ExCapBuilderCreationEvent extends Event
 {
     private final Map<ResourceLocation, WeaponCapability.Builder> builders = Maps.newHashMap();
@@ -23,6 +24,7 @@ public class ExCapBuilderCreationEvent extends Event
         builders.put(rl, builder);
     }
 
+    @Deprecated
     public void addBuilder(BuilderEntry... entries)
     {
         for (BuilderEntry entry : entries)
@@ -30,6 +32,4 @@ public class ExCapBuilderCreationEvent extends Event
             addBuilder(entry.id(), entry.template());
         }
     }
-
-
 }

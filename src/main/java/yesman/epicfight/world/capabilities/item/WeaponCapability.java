@@ -3,19 +3,14 @@ package yesman.epicfight.world.capabilities.item;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import io.netty.util.internal.StringUtil;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.EpicFight;
@@ -27,11 +22,15 @@ import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.MainFrameAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.event.types.player.ModifyComboCounter;
-import yesman.epicfight.api.ex_cap.modules.core.data.MoveSet;
-import yesman.epicfight.api.ex_cap.modules.core.provider.CoreWeaponCapabilityProvider;
-import yesman.epicfight.api.ex_cap.modules.core.provider.ProviderConditional;
-import yesman.epicfight.gameasset.ColliderPreset;
+import yesman.epicfight.api.ex_cap.data.Moveset;
+import yesman.epicfight.api.ex_cap.managers.ConditionalManager;
+import yesman.epicfight.api.ex_cap.managers.ItemPresetManager;
+import yesman.epicfight.api.ex_cap.managers.MovesetManager;
+import yesman.epicfight.api.ex_cap.provider.CoreWeaponCapabilityProvider;
+import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 import yesman.epicfight.particle.HitParticleType;
+import yesman.epicfight.registry.deferred.holders.DeferredConditional;
+import yesman.epicfight.registry.deferred.holders.DeferredMoveset;
 import yesman.epicfight.registry.entries.EpicFightAttributes;
 import yesman.epicfight.registry.entries.EpicFightParticles;
 import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
@@ -48,39 +47,40 @@ import java.util.function.Function;
 
 public class WeaponCapability extends CapabilityItem {
     protected final CoreWeaponCapabilityProvider coreProvider;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Function<LivingEntityPatch<?>, Style> stylegetter;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Function<LivingEntityPatch<?>, Boolean> weaponCombinationPredicator;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Skill passiveSkill;
     protected final boolean offHandAlone;
 	protected final SoundEvent smashingSound;
 	protected final SoundEvent hitSound;
 	protected final HitParticleType hitParticle;
-    protected final Map<Style, MoveSet> moveSets;
-    @Deprecated
+    protected final Map<Style, Moveset> moveSets;
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> autoAttackMotions;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Map<Style, Function<ItemStack, Skill>> innateSkill;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
 	protected final Map<Style, Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>>> livingMotionModifiers;
 	protected final boolean canBePlacedOffhand;
-    @Deprecated
+    @Deprecated(since = "26.1", forRemoval = true)
     protected final Function<Style, Boolean> comboCancel;
     protected final ModifyComboCounter.ComboCounterHandler comboCounterHandler;
 	protected final ZoomInType zoomInType;
 	protected final float reach;
 
-    /// A custom capability tag that ease identifying categories
-    ///
-    /// Weapon capabilities have registry name of their weapon type builder
+    /// A custom capability tag that eases identifying categories
+    /// Weapon capabilities have a registry name of their weapon type builder
     protected Set<ResourceLocation> customTags;
 
 	protected WeaponCapability(WeaponCapability.Builder builder) {
 		super(builder);
-        this.coreProvider = builder.provider;
-        this.moveSets = builder.moveSets;
+        this.coreProvider = new CoreWeaponCapabilityProvider();
+        builder.provider.forEach(rl  -> coreProvider.addConditional(ConditionalManager.get(rl).build()));
+        this.moveSets = Maps.newHashMap();
+        builder.moveSets.forEach( (style, set) -> this.moveSets.put(style, MovesetManager.getBuilder(set).build()));
         this.offHandAlone = builder.offHandAlone;
         this.autoAttackMotions = builder.autoAttackMotionMap;
 		this.innateSkill = builder.innateSkillByStyle;
@@ -88,20 +88,21 @@ public class WeaponCapability extends CapabilityItem {
 		this.stylegetter = builder.styleProvider;
 		this.weaponCombinationPredicator = builder.weaponCombinationPredicator;
 		this.passiveSkill = builder.passiveSkill;
-		this.smashingSound = builder.swingSound;
-		this.hitParticle = builder.hitParticle;
-		this.hitSound = builder.hitSound;
+		this.smashingSound = builder.swingSound.value();
+		this.hitParticle = builder.hitParticle.value() instanceof HitParticleType trueParticle ? trueParticle : EpicFightParticles.HIT_BLUNT.value();
+		this.hitSound = builder.hitSound.value();
 		this.canBePlacedOffhand = builder.canBePlacedOffhand;
 		this.comboCancel = builder.comboCancel;
         this.comboCounterHandler = builder.comboCounterHandler;
 		this.zoomInType = builder.zoomInType;
 		this.reach = builder.reach;
         this.customTags = Collections.unmodifiableSet(builder.customTags);
+        this.id = builder.identifier;
 	}
 
 
 
-    public MoveSet getCurrentSet(LivingEntityPatch<?> patch)
+    public Moveset getCurrentSet(LivingEntityPatch<?> patch)
     {
         // Offhand-only mirror mode: getStyle() goes through the cap's conditional list and the
         // dual-pair conditionals (DUAL_SWORDS / DUAL_DAGGERS) misfire because they only check
@@ -115,10 +116,10 @@ public class WeaponCapability extends CapabilityItem {
         if (patch.isMirrorMode() && patch.getHoldingItemCapability(InteractionHand.OFF_HAND) == this && this.moveSets != null) {
             Style natural = coreProvider.getNaturalSingleWieldStyle(patch);
             if (natural != null) {
-                MoveSet set = this.moveSets.get(natural);
+                Moveset set = this.moveSets.get(natural);
                 if (set != null) return set;
             }
-            MoveSet fallback = this.moveSets.get(Styles.COMMON);
+            Moveset fallback = this.moveSets.get(Styles.COMMON);
             if (fallback != null) return fallback;
         }
         Style style = getStyle(patch);
@@ -134,7 +135,7 @@ public class WeaponCapability extends CapabilityItem {
      * one-handed moveset so the single-weapon combo plays instead of the dual combo. Falls back
      * to the {@code COMMON} moveset, then null, when nothing is registered for the style.
      */
-    public MoveSet getMoveSetForStyle(Style style) {
+    public Moveset getMoveSetForStyle(Style style) {
         if (this.moveSets == null) return null;
         return this.moveSets.getOrDefault(style, this.moveSets.get(Styles.COMMON));
     }
@@ -155,7 +156,7 @@ public class WeaponCapability extends CapabilityItem {
     @Override
     public AnimationAccessor<? extends StaticAnimation> getGuardMotion(GuardSkill skill, GuardSkill.BlockType blockType, PlayerPatch<?> playerpatch)
     {
-        MoveSet currentSet = getCurrentSet(playerpatch);
+        Moveset currentSet = getCurrentSet(playerpatch);
         SkillContainer container = playerpatch.getSkill(SkillSlots.GUARD);
         int counter = blockType == GuardSkill.BlockType.ADVANCED_GUARD && container.getDataManager().hasData(EpicFightSkillDataKeys.PARRY_MOTION_COUNTER) ? container.getDataManager().getDataValue(EpicFightSkillDataKeys.PARRY_MOTION_COUNTER) : 0;
         if (currentSet != null) {
@@ -174,7 +175,7 @@ public class WeaponCapability extends CapabilityItem {
 
     @Override
 	public final List<AnimationAccessor<? extends AttackAnimation>> getAutoAttackMotion(PlayerPatch<?> playerpatch) {
-        MoveSet set = getCurrentSet(playerpatch);
+        Moveset set = getCurrentSet(playerpatch);
         if (set == null) {
             //Fallback
             List<AnimationAccessor<? extends AttackAnimation>> attacks = autoAttackMotions.getOrDefault(getStyle(playerpatch), autoAttackMotions.get(Styles.COMMON));
@@ -188,7 +189,7 @@ public class WeaponCapability extends CapabilityItem {
 	
 	@Override
 	public final Skill getInnateSkill(PlayerPatch<?> playerpatch, ItemStack itemstack) {
-        MoveSet set = getCurrentSet(playerpatch);
+        Moveset set = getCurrentSet(playerpatch);
         if (set == null) {
             //Fallback Logic
             if (innateSkill.get(getStyle(playerpatch)) == null)
@@ -200,15 +201,16 @@ public class WeaponCapability extends CapabilityItem {
 	
 	@Override
 	public Skill getPassiveSkill(PlayerPatch<?> playerPatch) {
-		MoveSet set = getCurrentSet(playerPatch);
+		Moveset set = getCurrentSet(playerPatch);
         if (set == null) {
             //Fallback logic
             return getPassiveSkill();
         }
-        return set.getWeaponPassiveSkill();
+        return set.getWeaponPassiveSkill() != null ? set.getWeaponPassiveSkill().value() : null;
 	}
 
     /// Legacy method
+    @Deprecated(forRemoval = true)
     public Skill getPassiveSkill()
     {
         return passiveSkill;
@@ -216,7 +218,7 @@ public class WeaponCapability extends CapabilityItem {
 
 	@Override
 	public final List<AnimationAccessor<? extends AttackAnimation>> getMountAttackMotion(PlayerPatch<?> playerpatch) {
-        MoveSet set = getCurrentSet(playerpatch);
+        Moveset set = getCurrentSet(playerpatch);
         if (set == null) {
             //Fallback logic
             return this.autoAttackMotions.get(Styles.MOUNT);
@@ -225,7 +227,7 @@ public class WeaponCapability extends CapabilityItem {
     }
 
     /// Legacy method used by addons
-    @Deprecated
+    @Deprecated(forRemoval = true, since = "1.1.0")
     public final List<AnimationAccessor<? extends AttackAnimation>> getMountAttackMotion()
     {
         return this.autoAttackMotions.get(Styles.MOUNT);
@@ -236,7 +238,6 @@ public class WeaponCapability extends CapabilityItem {
         Style style = coreProvider.getStyle(entityPatch);
         if (style == null)
         {
-            //Fallback
             return this.stylegetter.apply(entityPatch);
         }
         return style;
@@ -250,7 +251,7 @@ public class WeaponCapability extends CapabilityItem {
     public Style getNaturalSingleWieldStyle(LivingEntityPatch<?> entityPatch) {
         return coreProvider.getNaturalSingleWieldStyle(entityPatch);
     }
-	
+
 	@Override
 	public SoundEvent getSmashingSound() {
 		return this.smashingSound;
@@ -271,7 +272,7 @@ public class WeaponCapability extends CapabilityItem {
 		return this.canBePlacedOffhand;
 	}
 	
-	@Override
+	@Override @Deprecated(forRemoval = true)
 	public boolean shouldCancelCombo(LivingEntityPatch<?> entitypatch) {
 		return this.comboCancel.apply(this.getStyle(entitypatch));
 	}
@@ -288,6 +289,7 @@ public class WeaponCapability extends CapabilityItem {
 
     @Override
 	public Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>> getLivingMotionModifier(LivingEntityPatch<?> player, InteractionHand hand) {
+		Moveset set = getCurrentSet(player);
 		// getCurrentSet handles the offhand-only mirror-mode bypass centrally: it re-evaluates
 		// the cap's style providers while filtering out the dual-pair conditionals that misfire
 		// when this cap sits alone in the offhand. So the natural single-wield moveset comes
@@ -296,11 +298,9 @@ public class WeaponCapability extends CapabilityItem {
 		// they'd see with the weapon in mainhand. The visual flip is applied once at the
 		// renderer in ClientAnimator.getPose.
 		boolean offhandMirror = hand == InteractionHand.OFF_HAND && player.isMirrorMode();
-		MoveSet set = getCurrentSet(player);
         if (set == null || set.getLivingMotionModifiers() == null)
         {
-            //Fallback to legacy
-            if (this.livingMotionModifiers == null || (hand == InteractionHand.OFF_HAND && !offhandMirror)) {
+            if (this.livingMotionModifiers == null || hand == InteractionHand.OFF_HAND && !offhandMirror) {
                 return super.getLivingMotionModifier(player, hand);
             }
             Style legacyStyle = offhandMirror ? coreProvider.getNaturalSingleWieldStyle(player) : this.getStyle(player);
@@ -317,7 +317,7 @@ public class WeaponCapability extends CapabilityItem {
 	
 	@Override
 	public UseAnim getUseAnimation(LivingEntityPatch<?> entityPatch) {
-        MoveSet set = getCurrentSet(entityPatch);
+        Moveset set = getCurrentSet(entityPatch);
         if (set == null || set.getLivingMotionModifiers() == null)
         {
             //Fallback
@@ -354,7 +354,7 @@ public class WeaponCapability extends CapabilityItem {
 	
 	@Override
 	public boolean availableOnHorse(LivingEntityPatch<?> entityPatch) {
-        MoveSet set = getCurrentSet(entityPatch);
+        Moveset set = getCurrentSet(entityPatch);
         if (set == null || set.getMountAttackAnimations() == null || set.getMountAttackAnimations().isEmpty())
 		    return availableOnHorse();
         return true;
@@ -376,10 +376,10 @@ public class WeaponCapability extends CapabilityItem {
 
     @Override
     public LivingMotion getLivingMotion(LivingEntityPatch<?> entitypatch, InteractionHand hand) {
+        Moveset set = getCurrentSet(entitypatch);
         // getCurrentSet has the offhand-only mirror-mode bypass; it returns the natural
         // single-wield moveset for this cap so the custom motion (e.g. LIECHTENAUER hold) lines
         // up with what the player would see in mainhand.
-        MoveSet set = getCurrentSet(entitypatch);
         if (set == null || set.getCustomMotion().apply(entitypatch, hand) == null)
             return super.getLivingMotion(entitypatch, hand);
         return set.getCustomMotion().apply(entitypatch, hand);
@@ -393,31 +393,34 @@ public class WeaponCapability extends CapabilityItem {
         return customTags;
     }
 
-    /// All fields marked with {@link Deprecated} have been moved to {@link MoveSet} and exist as legacy fallback options to prevent addons from breaking.
+    /// All fields marked with {@link Deprecated} have been moved to {@link Moveset} and exist as legacy fallback options to prevent addons from breaking.
     public static class Builder extends CapabilityItem.Builder<WeaponCapability.Builder> {
-		CoreWeaponCapabilityProvider provider;
-        @Deprecated
-        Function<LivingEntityPatch<?>, Style> styleProvider;
-        @Deprecated
-		Function<LivingEntityPatch<?>, Boolean> weaponCombinationPredicator;
-        @Deprecated
-		Skill passiveSkill;
-		SoundEvent swingSound;
-		SoundEvent hitSound;
-		HitParticleType hitParticle;
-        Map<Style, MoveSet> moveSets;
+        /** List of resource locations for conditional logic providers. */
+        List<ResourceLocation> provider;
+        /** @deprecated Moved to {@link Moveset}. Fallback for determining the current combat style. */
+        @Deprecated(forRemoval = true) Function<LivingEntityPatch<?>, Style> styleProvider;
+        /** @deprecated Moved to {@link Moveset}. Determines if specific weapon combinations are valid. */
+        @Deprecated(forRemoval = true) Function<LivingEntityPatch<?>, Boolean> weaponCombinationPredicator;
+        /** @deprecated Moved to {@link Moveset}. The passive skill granted by this weapon. */
+        @Deprecated(forRemoval = true) Skill passiveSkill;
+		Holder<SoundEvent> swingSound;
+		Holder<SoundEvent> hitSound;
+		Holder<ParticleType<?>> hitParticle;
+        Map<Style, ResourceLocation> moveSets;
         double baseAP;
         double aPScaling;
+        final Map<Style, Moveset.Builder> pendingBuilders;
+        final List<ProviderConditional.Builder> pendingConditionals;
         double impactBase;
         double impactScaling;
-        @Deprecated
-		Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> autoAttackMotionMap;
-        @Deprecated
-		Map<Style, Function<ItemStack, Skill>> innateSkillByStyle;
-        @Deprecated
-		Map<Style, Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>>> livingMotionModifiers;
-        @Deprecated
-		Function<Style, Boolean> comboCancel;
+        /** @deprecated Use {@link Moveset}. Maps styles to auto-attack animation sequences. */
+        @Deprecated(forRemoval = true) Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> autoAttackMotionMap;
+        /** @deprecated Use {@link Moveset}. Maps styles to the innate skill they provide. */
+        @Deprecated(forRemoval = true) Map<Style, Function<ItemStack, Skill>> innateSkillByStyle;
+        /** @deprecated Use {@link Moveset}. Modifies living animations (walking, idling) based on style. */
+        @Deprecated(forRemoval = true) Map<Style, Map<LivingMotion, AnimationAccessor<? extends StaticAnimation>>> livingMotionModifiers;
+        /** @deprecated Use {@link #comboCounterHandler}. Logic for resetting/canceling combos. */
+        @Deprecated Function<Style, Boolean> comboCancel;
         ModifyComboCounter.ComboCounterHandler comboCounterHandler;
 		boolean canBePlacedOffhand;
 		ZoomInType zoomInType;
@@ -428,8 +431,9 @@ public class WeaponCapability extends CapabilityItem {
 
         public Builder copy() {
             Builder copy = new Builder();
+            super.paste(copy);
             copy.constructor = this.constructor;
-            copy.provider = this.provider.copy();
+            copy.provider.addAll(this.provider);
             copy.category = this.category;
             copy.styleProvider = this.styleProvider;
             copy.weaponCombinationPredicator = this.weaponCombinationPredicator;
@@ -483,21 +487,23 @@ public class WeaponCapability extends CapabilityItem {
             }
 
             copy.customTags.addAll(this.customTags);
-
             return copy;
         }
-		
+
+
 		protected Builder() {
-            this.provider = new CoreWeaponCapabilityProvider();
+            this.provider = Lists.newArrayList();
             this.offHandAlone = false;
+            this.pendingBuilders = Maps.newHashMap();
+            this.pendingConditionals = Lists.newArrayList();
 			this.constructor = WeaponCapability::new;
 			this.styleProvider = (entitypatch) -> Styles.ONE_HAND;
 			this.weaponCombinationPredicator = (entitypatch) -> false;
 			this.passiveSkill = null;
-			this.swingSound = EpicFightSounds.WHOOSH.get();
-			this.hitSound = EpicFightSounds.BLUNT_HIT.get();
+			this.swingSound = EpicFightSounds.WHOOSH;
+			this.hitSound = EpicFightSounds.BLUNT_HIT;
             this.moveSets = Maps.newHashMap();
-			this.hitParticle = EpicFightParticles.HIT_BLADE.get();
+			this.hitParticle = EpicFightParticles.HIT_BLADE;
 			this.autoAttackMotionMap = Maps.newHashMap();
 			this.innateSkillByStyle = Maps.newHashMap();
 			this.livingMotionModifiers = null;
@@ -512,16 +518,77 @@ public class WeaponCapability extends CapabilityItem {
             this.impactScaling = 1;
 		}
 
+        public Builder identifier(ResourceLocation id)
+        {
+            return super.identifier(id);
+        }
+
+        /**
+         * Configures whether the weapon functions independently in the off-hand.
+         * @param offHandAlone True for independent off-hand logic.
+         * @return This builder for chaining.
+         */
         public Builder offHandAlone(final boolean offHandAlone) {
             this.offHandAlone = offHandAlone;
             return this;
         }
-		
+
+        public void exportBuiltMovesets()
+        {
+            pendingBuilders.forEach(
+                    ((style, builder) -> {
+                        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
+                                identifier.getNamespace(),
+                                identifier.getPath() + "/generated/" + style.toString().toLowerCase(Locale.ROOT)
+                        );
+
+                        MovesetManager.addMoveset(id, builder);
+                        this.addMoveset(style, id);
+                    })
+            );
+        }
+
+        public void exportBuiltConditionals()
+        {
+            pendingConditionals.forEach(
+                    builder -> {
+                        ResourceLocation id = ResourceLocation.fromNamespaceAndPath(
+                                identifier.getNamespace(),
+                                identifier.getPath() + "/generated/" + builder.getWieldStyle().toString().toLowerCase(Locale.ROOT)
+                        );
+                        ConditionalManager.addConditional(id, builder);
+                        this.addConditionals(id);
+                    }
+            );
+        }
+
+        @ApiStatus.Internal
+        public void removeConditional(ResourceLocation rl)
+        {
+            this.provider.remove(rl);
+        }
+
+        @ApiStatus.Internal
+        public void removeMoveset(Style style)
+        {
+            this.moveSets.remove(style);
+        }
+
+
+        @Deprecated(forRemoval = true)
 		public Builder styleProvider(Function<LivingEntityPatch<?>, Style> styleProvider) {
 			this.styleProvider = styleProvider;
 			return this;
 		}
 
+        /**
+         * Sets the scaling values used to calculate attributes based on weapon tier.
+         * @param baseAP         Base Armor Penetration.
+         * @param aPScaling      Armor Penetration gained per tier.
+         * @param impactBase     Base Impact/Knockback.
+         * @param impactScaling  Impact gained per tier.
+         * @return This builder for chaining.
+         */
         public Builder setTierValues(double baseAP, double aPScaling, double impactBase, double impactScaling)
         {
             this.baseAP = baseAP;
@@ -532,52 +599,137 @@ public class WeaponCapability extends CapabilityItem {
         }
 
         /**
-         * This is not to be called statically and only called during registration.
-         * @param tier the tier value used by Yesman
+         * Calculates and applies attributes to the weapon based on its tier.
+         * <p>Internal use only during registry events.</p>
+         * @param tier The numerical tier of the item.
          */
+        @ApiStatus.Internal
         public void modifyTierAttributes(int tier)
         {
             if (tier != 0) this.addStyleAttibutes(Styles.COMMON, EpicFightAttributes.ARMOR_NEGATION, EpicFightAttributes.getArmorNegationModifier(baseAP + aPScaling * tier));
             this.addStyleAttibutes(Styles.COMMON, EpicFightAttributes.IMPACT, EpicFightAttributes.getImpactModifier(impactBase + impactScaling * tier));
         }
-		
+
+        @Deprecated(forRemoval = true)
 		public Builder passiveSkill(Skill passiveSkill) {
 			this.passiveSkill = passiveSkill;
 			return this;
 		}
-		
-		public Builder swingSound(SoundEvent swingSound) {
+
+		public Builder swingSound(Holder<SoundEvent> swingSound) {
 			this.swingSound = swingSound;
 			return this;
 		}
 
-        public Builder addConditionals(ProviderConditional... conditionals)
+        /**
+         * @deprecated Use {@link #swingSound(Holder)} instead for safely handling sound events.
+         * @param swingSound the raw object
+         * @return the builder
+         */
+        @Deprecated
+        public Builder swingSound(SoundEvent swingSound) {
+            return swingSound(Holder.direct(swingSound));
+        }
+
+        /**
+         * @deprecated Use {@link #swingSound(Holder)} instead for safely handling sound events.
+         * @param hitParticle the raw object
+         * @return the builder
+         */
+        @Deprecated
+        public Builder hitParticle(HitParticleType hitParticle) {
+            return hitParticle(Holder.direct(hitParticle));
+        }
+
+        /**
+         * Links an external conditional provider to this weapon.
+         * @param conditionals ResourceLocations of the conditionals.
+         * @return This builder for chaining.
+         */
+        public Builder addConditionals(ResourceLocation... conditionals)
         {
-            provider.addConditional(conditionals);
+            provider.addAll(Arrays.asList(conditionals));
             return this;
         }
 
-        public Builder addConditionals(List<ProviderConditional> conditionals)
+        /**
+         * Registers a conditional logic block and attaches it to this weapon.
+         * @param builders The builders for the conditional logic.
+         * @return This builder for chaining.
+         */
+        public Builder addConditionals(ProviderConditional.Builder... builders)
         {
-            provider.addConditional(conditionals);
+            this.pendingConditionals.addAll(Arrays.asList(builders));
             return this;
         }
-		
-		public Builder hitSound(SoundEvent hitSound) {
+
+        /**
+         * Registers a moveset anonymously by generating a ResourceLocation based on the style.
+         * <p>
+         * This method constructs a unique identifier using the pattern {@code [namespace]/[style_name]},
+         * registers the moveset via the {@link MovesetManager}, and appends it to this builder.
+         *
+         * @param style   The visual or functional {@link Style} to associate with this moveset.
+         * @param builder A builder containing the moveset data to be registered.
+         * @return This builder instance for method chaining (Fluent API).
+         * @throws NullPointerException if style or builder is null.
+         */
+        public Builder addMoveset(@NotNull Style style, @NotNull Moveset.Builder builder)
+        {
+            this.pendingBuilders.put(style, builder);
+            return this;
+        }
+
+        @ApiStatus.Internal
+        public void addMovesets(Map<Style, ResourceLocation> moveSets) {
+            this.moveSets.putAll(moveSets);
+        }
+
+        @ApiStatus.Internal
+        public Builder addConditionals(List<ResourceLocation> conditionals)
+        {
+            provider.addAll(conditionals);
+            return this;
+        }
+
+        public Builder addConditionals(DeferredConditional... conditionals)
+        {
+            List<DeferredConditional> rls = Arrays.asList(conditionals);
+            rls.forEach(conditionalEntry -> provider.add(conditionalEntry.getId()));
+            return this;
+        }
+
+
+		public Builder hitSound(Holder<SoundEvent> hitSound) {
 			this.hitSound = hitSound;
 			return this;
 		}
-		
-		public Builder hitParticle(HitParticleType hitParticle) {
+
+        /**
+         * @deprecated Use {@link #hitSound(Holder)} instead for safely handling sound events.
+         */
+        @Deprecated(forRemoval = true)
+        public Builder hitSound(SoundEvent hitSound) {
+            this.hitSound = Holder.direct(hitSound);
+            return this;
+        }
+
+		public Builder hitParticle(Holder<ParticleType<?>> hitParticle) {
 			this.hitParticle = hitParticle;
 			return this;
 		}
 
-        public Builder addMoveSet(Style style, MoveSet.MoveSetBuilder moveSet) {
-            moveSets.put(style, moveSet.build());
+
+        public Builder addMoveset(Style style, ResourceLocation moveSet) {
+            moveSets.put(style, moveSet);
             return this;
         }
-		
+
+        public Builder addMoveset(Style style, DeferredMoveset moveSet) {
+            this.addMoveset(style, moveSet.getId());
+            return this;
+        }
+
 		public Builder canBePlacedOffhand(boolean canBePlacedOffhand) {
 			this.canBePlacedOffhand = canBePlacedOffhand;
 			return this;
@@ -588,98 +740,67 @@ public class WeaponCapability extends CapabilityItem {
 			return this;
 		}
 
+        /**
+         * Adds a custom tag to this weapon for compatibility or filtering.
+         * @param customTag ResourceLocation of the tag.
+         * @return This builder for chaining.
+         */
         public Builder addTag(ResourceLocation customTag) {
             this.customTags.add(customTag);
             return this;
         }
 
-        public static WeaponCapability.Builder deserializeBuilder(ResourceLocation id, JsonElement element) throws JsonParseException
-        {
-            WeaponCapability.Builder builder = builder();
-            JsonObject tag = element.getAsJsonObject();
 
-            //Unlike the Legacy WeaponType deserialization method, this is much more simple and strict.
-
-            try {
-                if (!tag.has("category") || StringUtil.isNullOrEmpty(tag.get("category").getAsString())) {
-                    throw new IllegalArgumentException("Define weapon category.");
-                }
-
-                builder.category(WeaponCategory.ENUM_MANAGER.getOrThrow(tag.get("category").getAsString()));
-                builder.collider(ColliderPreset.deserializeSimpleCollider(TagParser.parseTag(tag.get("collider").getAsString())));
-
-                if (tag.has("hit_particle")) {
-                    ParticleType<?> particleType = BuiltInRegistries.PARTICLE_TYPE.get(ResourceLocation.parse(tag.get("hit_particle").getAsString()));
-                    builder.hitParticle((HitParticleType)particleType);
-                }
-
-                if (tag.has("swing_sound")) {
-                    SoundEvent sound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.get("swing_sound").getAsString()));
-                    builder.swingSound(sound);
-                }
-
-                if (tag.has("hit_sound")) {
-                    SoundEvent sound = BuiltInRegistries.SOUND_EVENT.get(ResourceLocation.parse(tag.get("hit_sound").getAsString()));
-                    builder.hitSound(sound);
-                }
-
-                if (tag.has("custom_tags")) {
-                    for (JsonElement customTagElement : tag.get("custom_tags").getAsJsonArray()) {
-                        builder.addTag(ResourceLocation.parse(customTagElement.getAsString()));
-                    }
-                }
-            } catch (Exception e) {
-                throw new JsonParseException(e.getMessage());
-            }
-
-            builder.addTag(id);
-
-            return builder;
-        }
-
-		
-		public Builder livingMotionModifier(Style wieldStyle, LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
+        @Deprecated(forRemoval = true)
+        public Builder livingMotionModifier(Style wieldStyle, LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
 			if (AnimationManager.checkNull(animation)) {
                 EpicFight.LOGGER.warn("Unable to put an empty animation to weapon capability builder: {}, {}", livingMotion, animation);
 				return this;
 			}
-			
+
 			if (this.livingMotionModifiers == null) {
 				this.livingMotionModifiers = Maps.newHashMap();
 			}
-			
+
 			if (!this.livingMotionModifiers.containsKey(wieldStyle)) {
 				this.livingMotionModifiers.put(wieldStyle, Maps.newHashMap());
 			}
-			
+
 			this.livingMotionModifiers.get(wieldStyle).put(livingMotion, animation);
-			
+
 			return this;
 		}
-		
-		@SafeVarargs
+
+		@SafeVarargs @Deprecated(forRemoval = true, since = "1.21.1")
 		public final Builder newStyleCombo(Style style, AnimationAccessor<? extends AttackAnimation>... animation) {
 			this.autoAttackMotionMap.put(style, Lists.newArrayList(animation));
 			return this;
 		}
-		
+
+        @Deprecated(forRemoval = true, since = "1.21.1")
 		public Builder weaponCombinationPredicator(Function<LivingEntityPatch<?>, Boolean> predicator) {
 			this.weaponCombinationPredicator = predicator;
 			return this;
 		}
-		
+
+        @Deprecated(forRemoval = true, since = "1.21.1")
 		public Builder innateSkill(Style style, Function<ItemStack, Skill> innateSkill) {
 			this.innateSkillByStyle.put(style, innateSkill);
 			return this;
 		}
 
-        /// @Deprecated - Use more sensitive version [#comboCounterHandler]
+        /// @deprecated - Use a more sensitive version [#comboCounterHandler]
         @Deprecated
 		public Builder comboCancel(Function<Style, Boolean> comboCancel) {
 			this.comboCancel = comboCancel;
 			return this;
 		}
 
+        /**
+         * Sets the handler responsible for managing combo counters.
+         * @param comboHandler The handler implementation.
+         * @return This builder for chaining.
+         */
         public Builder comboCounterHandler(ModifyComboCounter.ComboCounterHandler comboHandler) {
             this.comboCounterHandler = comboHandler;
             return this;
@@ -689,9 +810,88 @@ public class WeaponCapability extends CapabilityItem {
 			this.zoomInType = zoomInType;
 			return this;
 		}
-		
+
 		public Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> getComboAnimations() {
 			return ImmutableMap.copyOf(this.autoAttackMotionMap);
 		}
-	}
+
+        @Override
+        protected Builder merge() {
+            if (this.parent == null) {
+                return this;
+            }
+            Builder result = WeaponCapability.builder();
+            Deque<CapabilityItem.Builder<?>> stack = new ArrayDeque<>();
+            CapabilityItem.Builder<?> current = this;
+
+            while (current != null) {
+                stack.push(current);
+                current = ItemPresetManager.get(current.parent);
+            }
+            while (!stack.isEmpty()) {
+                CapabilityItem.Builder<?> builder = stack.pop();
+                applyWeapon(result, builder);
+            }
+            return result;
+        }
+    }
+
+    public static void applyWeapon(Builder result, CapabilityItem.Builder<?> builder) {
+        if (builder.attributeMap != null) {
+            result.attributeMap.putAll(builder.attributeMap);
+        }
+        if (builder.category != null) {
+            result.category = builder.category;
+        }
+        if (builder.collider != null) {
+            result.collider = builder.collider;
+        }
+        result.identifier = builder.identifier;
+        if (builder instanceof WeaponCapability.Builder weaponBuilder) {
+
+            if (weaponBuilder.swingSound != null) {
+                result.swingSound = weaponBuilder.swingSound;
+            }
+            if (weaponBuilder.hitSound != null) {
+                result.hitSound = weaponBuilder.hitSound;
+            }
+            if (weaponBuilder.hitParticle != null) {
+                result.hitParticle = weaponBuilder.hitParticle;
+            }
+
+            result.baseAP = weaponBuilder.baseAP;
+            result.aPScaling = weaponBuilder.aPScaling;
+            result.impactBase = weaponBuilder.impactBase;
+            result.impactScaling = weaponBuilder.impactScaling;
+            result.reach = weaponBuilder.reach;
+            result.zoomInType = weaponBuilder.zoomInType;
+            result.canBePlacedOffhand = weaponBuilder.canBePlacedOffhand;
+            result.offHandAlone = weaponBuilder.offHandAlone;
+
+            if (weaponBuilder.provider != null) result.provider.addAll(weaponBuilder.provider);
+            if (weaponBuilder.moveSets != null) result.moveSets.putAll(weaponBuilder.moveSets);
+            if (weaponBuilder.pendingBuilders != null) result.pendingBuilders.putAll(weaponBuilder.pendingBuilders);
+            if (weaponBuilder.pendingConditionals != null) result.pendingConditionals.addAll(weaponBuilder.pendingConditionals);
+            if (weaponBuilder.customData != null) result.customData.putAll(weaponBuilder.customData);
+
+            result.comboCounterHandler = weaponBuilder.comboCounterHandler;
+
+            if (weaponBuilder.styleProvider != null) result.styleProvider = weaponBuilder.styleProvider;
+            if (weaponBuilder.weaponCombinationPredicator != null) result.weaponCombinationPredicator = weaponBuilder.weaponCombinationPredicator;
+            if (weaponBuilder.passiveSkill != null) result.passiveSkill = weaponBuilder.passiveSkill;
+
+            if (weaponBuilder.autoAttackMotionMap != null) {
+                result.autoAttackMotionMap.putAll(weaponBuilder.autoAttackMotionMap);
+            }
+            if (weaponBuilder.innateSkillByStyle != null) {
+                result.innateSkillByStyle.putAll(weaponBuilder.innateSkillByStyle);
+            }
+            if (weaponBuilder.livingMotionModifiers != null) {
+                if (result.livingMotionModifiers == null) result.livingMotionModifiers = Maps.newHashMap();
+                result.livingMotionModifiers.putAll(weaponBuilder.livingMotionModifiers);
+            }
+            if (weaponBuilder.comboCancel != null) result.comboCancel = weaponBuilder.comboCancel;
+        }
+
+    }
 }
