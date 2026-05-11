@@ -166,7 +166,15 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 				for (var key : data.getAllKeys()) {
 					Optional<Holder.Reference<CustomData<?>>> trueData = EpicFightRegistries.WEAPON_DATA.getHolder(ResourceLocation.parse(key));
 					trueData.ifPresent(
-							d -> innerDefaultCapabilityBuilder.setCustomDataInternal(d, data.get(key))
+							d -> {
+								if (d.value().deserializer().isPresent()) {
+									innerDefaultCapabilityBuilder.setCustomDataInternal(d, d.value().deserializer().get().apply(data.get(key)));
+								}
+								else
+								{
+									EpicFight.LOGGER.warn("Custom Data does not contain a deserializer");
+								}
+							}
 					);
 				}
 			}
