@@ -17,7 +17,7 @@ public final class EpicFightModifiers {
     public static final ModifierRegister REGISTRY = ModifierRegister.create(EpicFight.MODID);
 
     public static final DeferredModifier GREATSWORD = REGISTRY.registerModifier("greatsword", () -> WeaponModifier.builder()
-            .target(EpicFightItemCapabilityPresets.GREATSWORD).overrideBuilder(builder -> builder.canBePlacedOffhand(true)));
+            .target(EpicFightItemCapabilityPresets.GREATSWORD).modifyBuilder(builder -> builder.canBePlacedOffhand(true)));
 
     public static final DeferredModifier BOKKEN = REGISTRY.registerModifier("bokken", () -> WeaponModifier.builder()
             .target(EpicFightItemCapabilityPresets.BOKKEN)

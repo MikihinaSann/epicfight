@@ -12,7 +12,6 @@ import yesman.epicfight.api.ex_cap.managers.ConditionalManager;
 import yesman.epicfight.api.ex_cap.managers.MovesetManager;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 import yesman.epicfight.registry.deferred.holders.*;
-import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.capabilities.item.custom.CustomData;
@@ -37,7 +36,7 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
         return new Builder();
     }
     public static class Builder {
-        private Consumer<WeaponCapability.Builder> overrideModifiers = EMPTY;
+        private Consumer<WeaponCapability.Builder> builderModifiers = EMPTY;
         private final List<ResourceLocation> target;
         private final Map<ResourceLocation, Operation> conditionalModifier;
         private final Map<Style, ResourceLocation> movesetModifier;
@@ -87,9 +86,9 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             return this;
         }
 
-        public Builder overrideBuilder(Consumer<WeaponCapability.Builder> builderConsumer)
+        public Builder modifyBuilder(Consumer<WeaponCapability.Builder> builderConsumer)
         {
-            this.overrideModifiers = builderConsumer;
+            this.builderModifiers = builderConsumer;
             return this;
         }
 
@@ -157,7 +156,7 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             assemble(builderId);
             Map<ResourceLocation, Map<DeferredCustomData<? extends CustomData<?>>, Object>> movesetCustomData = Maps.newHashMap();
             this.movesetCustomData.forEach((style, data) -> movesetCustomData.put(style, ImmutableMap.copyOf(data)));
-            return new WeaponModifier(ImmutableList.copyOf(target), ImmutableMap.copyOf(conditionalModifier), ImmutableMap.copyOf(movesetModifier), ImmutableMap.copyOf(movesetCustomData), ImmutableMap.copyOf(weaponCustomData), overrideModifiers);
+            return new WeaponModifier(ImmutableList.copyOf(target), ImmutableMap.copyOf(conditionalModifier), ImmutableMap.copyOf(movesetModifier), ImmutableMap.copyOf(movesetCustomData), ImmutableMap.copyOf(weaponCustomData), builderModifiers);
         }
     }
 }
