@@ -87,9 +87,10 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             return this;
         }
 
-        public void overrideBuilder(Consumer<WeaponCapability.Builder> builderConsumer)
+        public Builder overrideBuilder(Consumer<WeaponCapability.Builder> builderConsumer)
         {
             this.overrideModifiers = builderConsumer;
+            return this;
         }
 
 
