@@ -173,7 +173,7 @@ fun Project.configureModPublish(
         val optionalDependencies = emptyList<String>()
 
         curseforge {
-            accessToken.set(providers.environmentVariable("CURSEFORGE_TOKEN"))
+            accessToken.set(providers.environmentVariable("EPIC_FIGHT_CURSEFORGE_API"))
             projectId.set("405076")
             minecraftVersions.add(mcVersion)
             projectSlug.set("epic-fight-mod")
@@ -183,7 +183,7 @@ fun Project.configureModPublish(
         }
 
         modrinth {
-            accessToken.set(providers.environmentVariable("MODRINTH_TOKEN"))
+            accessToken.set(providers.environmentVariable("EPIC_FIGHT_MODRINTH_API"))
             projectId.set("vu3NZ5Ma")
             minecraftVersions.add(mcVersion)
 
@@ -192,7 +192,7 @@ fun Project.configureModPublish(
         }
 
         discord {
-            webhookUrl.set(providers.environmentVariable("DISCORD_WEBHOOK"))
+            webhookUrl.set(providers.environmentVariable("EPIC_FIGHT_DISCORD_WEBHOOK"))
             dryRunWebhookUrl.set(providers.environmentVariable("DRY_RUN_DISCORD_WEBHOOK"))
             username.set("Update Notification")
             avatarUrl.set("https://i.imgur.com/FrxDviN.png")

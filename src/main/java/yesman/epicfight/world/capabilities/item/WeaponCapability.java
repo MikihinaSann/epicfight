@@ -135,7 +135,7 @@ public class WeaponCapability extends CapabilityItem {
      * one-handed moveset so the single-weapon combo plays instead of the dual combo. Falls back
      * to the {@code COMMON} moveset, then null, when nothing is registered for the style.
      */
-    public Moveset getMoveSetForStyle(Style style) {
+    public Moveset getMovesetForStyle(Style style) {
         if (this.moveSets == null) return null;
         return this.moveSets.getOrDefault(style, this.moveSets.get(Styles.COMMON));
     }
@@ -492,6 +492,8 @@ public class WeaponCapability extends CapabilityItem {
 
 
 		protected Builder() {
+            super();
+            this.category = null;
             this.provider = Lists.newArrayList();
             this.offHandAlone = false;
             this.pendingBuilders = Maps.newHashMap();
@@ -831,6 +833,9 @@ public class WeaponCapability extends CapabilityItem {
             while (!stack.isEmpty()) {
                 CapabilityItem.Builder<?> builder = stack.pop();
                 applyWeapon(result, builder);
+            }
+            if (result.category == null) {
+                result.category(WeaponCategories.FIST);
             }
             return result;
         }

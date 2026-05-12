@@ -267,7 +267,7 @@ public class CapabilityItem {
 	}
 
 	public boolean isWeaponCategory(WeaponCategory target) {
-		if (this == target) return true;
+		if (this.weaponCategory == target) return true;
 
 		// Population Phase: Use the ImmutableList directly
 		List<WeaponCategory> immediateParents = weaponCategory.getParents();
@@ -486,7 +486,7 @@ public class CapabilityItem {
         LONGSWORD(WEAPON_CATEGORY_LONGSWORD),
         DAGGER(WEAPON_CATEGORY_DAGGER),
         SHIELD(WEAPON_CATEGORY_SHIELD),
-		BOW(WEAPON_CATEGORY_RANGED);
+		RANGED(WEAPON_CATEGORY_RANGED);
 
         final Component translationKey;
 		final List<WeaponCategory> parent;
