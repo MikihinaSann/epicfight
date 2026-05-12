@@ -110,7 +110,7 @@ public class CapabilityItem {
 	protected Collider collider;
 	
 	protected CapabilityItem(CapabilityItem.Builder<?> builder) {
-		this.weaponCategory = builder.category;
+        this.weaponCategory = Objects.requireNonNullElse(builder.category, WeaponCategories.FIST);
 		this.collider = builder.collider;
 		this.id = builder.identifier;
 		this.customData = ImmutableMap.copyOf(builder.customData);
@@ -563,8 +563,8 @@ public class CapabilityItem {
 			this.constructor = CapabilityItem::new;
 			this.attributeMap = Maps.newHashMap();
 			this.customData = Maps.newHashMap();
-			this.category = WeaponCategories.FIST;
-			this.collider = ColliderPreset.FIST;
+			this.category = null;
+			this.collider = null;
 		}
 
 		public T copy()
@@ -638,6 +638,12 @@ public class CapabilityItem {
 		protected T merge()
 		{
 			if (this.parent == null) {
+				if (this.category == null) {
+					this.category(WeaponCategories.FIST);
+				}
+				if (this.collider == null) {
+					this.collider(ColliderPreset.FIST);
+				}
 				return (T) this;
 			}
 			T result = (T) CapabilityItem.builder();
@@ -652,6 +658,12 @@ public class CapabilityItem {
 				T builder = stack.pop();
 				handleLayers(result, builder);
 			}
+            if (result.category == null) {
+                result.category(WeaponCategories.FIST);
+            }
+            if (result.collider == null) {
+                result.collider(ColliderPreset.FIST);
+            }
 			return (T)this;
 		}
 

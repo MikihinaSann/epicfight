@@ -28,6 +28,7 @@ import yesman.epicfight.api.ex_cap.managers.ItemPresetManager;
 import yesman.epicfight.api.ex_cap.managers.MovesetManager;
 import yesman.epicfight.api.ex_cap.provider.CoreWeaponCapabilityProvider;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
+import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.registry.deferred.holders.DeferredConditional;
 import yesman.epicfight.registry.deferred.holders.DeferredMoveset;
@@ -820,6 +821,12 @@ public class WeaponCapability extends CapabilityItem {
         @Override
         protected Builder merge() {
             if (this.parent == null) {
+                if (this.category == null) {
+                    this.category(WeaponCategories.FIST);
+                }
+                if (this.collider == null) {
+                    this.collider(ColliderPreset.FIST);
+                }
                 return this;
             }
             Builder result = WeaponCapability.builder();
@@ -836,6 +843,9 @@ public class WeaponCapability extends CapabilityItem {
             }
             if (result.category == null) {
                 result.category(WeaponCategories.FIST);
+            }
+            if (result.collider == null) {
+                result.collider(ColliderPreset.FIST);
             }
             return result;
         }

@@ -12,16 +12,22 @@ import yesman.epicfight.api.ex_cap.managers.ConditionalManager;
 import yesman.epicfight.api.ex_cap.managers.MovesetManager;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 import yesman.epicfight.registry.deferred.holders.*;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.Style;
+import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.capabilities.item.custom.CustomData;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @ApiStatus.Experimental
-public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocation, Operation> conditionalModifier, Map<Style, ResourceLocation> movesetModifier, Map<ResourceLocation, Map<DeferredCustomData<? extends CustomData<?>>, Object>> movesetCustomData, Map<DeferredCustomData<? extends CustomData<?>>, Object> weaponCustomData) {
+public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocation, Operation> conditionalModifier, Map<Style, ResourceLocation> movesetModifier, Map<ResourceLocation, Map<DeferredCustomData<? extends CustomData<?>>, Object>> movesetCustomData, Map<DeferredCustomData<? extends CustomData<?>>, Object> weaponCustomData, Consumer<WeaponCapability.Builder> overrideModifiers) {
+    public static final Consumer<WeaponCapability.Builder> EMPTY = builder -> {};
+
+
     public enum Operation {
         APPEND,
         REMOVE
@@ -31,6 +37,7 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
         return new Builder();
     }
     public static class Builder {
+        private Consumer<WeaponCapability.Builder> overrideModifiers = EMPTY;
         private final List<ResourceLocation> target;
         private final Map<ResourceLocation, Operation> conditionalModifier;
         private final Map<Style, ResourceLocation> movesetModifier;
@@ -79,6 +86,12 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             }
             return this;
         }
+
+        public void overrideBuilder(Consumer<WeaponCapability.Builder> builderConsumer)
+        {
+            this.overrideModifiers = builderConsumer;
+        }
+
 
         public void addConditionalModifier(ResourceLocation key) {
             this.conditionalModifier.put(key, Operation.APPEND);
@@ -143,7 +156,7 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             assemble(builderId);
             Map<ResourceLocation, Map<DeferredCustomData<? extends CustomData<?>>, Object>> movesetCustomData = Maps.newHashMap();
             this.movesetCustomData.forEach((style, data) -> movesetCustomData.put(style, ImmutableMap.copyOf(data)));
-            return new WeaponModifier(ImmutableList.copyOf(target), ImmutableMap.copyOf(conditionalModifier), ImmutableMap.copyOf(movesetModifier), ImmutableMap.copyOf(movesetCustomData), ImmutableMap.copyOf(weaponCustomData));
+            return new WeaponModifier(ImmutableList.copyOf(target), ImmutableMap.copyOf(conditionalModifier), ImmutableMap.copyOf(movesetModifier), ImmutableMap.copyOf(movesetCustomData), ImmutableMap.copyOf(weaponCustomData), overrideModifiers);
         }
     }
 }

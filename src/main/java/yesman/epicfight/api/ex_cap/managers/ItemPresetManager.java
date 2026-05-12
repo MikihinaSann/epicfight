@@ -86,9 +86,9 @@ public class ItemPresetManager {
                         weaponBuilder.removeConditional(resourceLocation);
                     }
                 });
+                modifier.overrideModifiers().accept(weaponBuilder);
                 weaponBuilder.addMovesets(modifier.movesetModifier());
             }
         }
-
     }
 }
