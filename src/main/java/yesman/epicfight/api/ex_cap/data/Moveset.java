@@ -386,9 +386,10 @@ public class Moveset
         @SafeVarargs
         public final Builder addGuardAnimations(GuardSkill.BlockType blockType, AnimationManager.AnimationAccessor<? extends StaticAnimation>... animation)
         {
-            defaultGuardAnimations.computeIfAbsent(blockType, (key) -> Lists.newArrayList()).addAll(Arrays.asList(animation));
+            defaultGuardAnimations.put(blockType, Lists.newArrayList(animation));
             return this;
         }
+
 
         /**
          * Assigns specialized guard animations that only trigger when a specific skill is active.
@@ -405,7 +406,7 @@ public class Moveset
         {
             if (guardSkill instanceof GuardSkill)
             {
-                skillSpecificGuardAnimations.computeIfAbsent(guardSkill, (key) -> Maps.newHashMap()).putAll(animations);
+                skillSpecificGuardAnimations.put(guardSkill, animations);
             }
             return this;
         }
