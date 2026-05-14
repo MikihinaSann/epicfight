@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [21.17.3] - 2026-5-14
+### Additions
+- Added Item Specific Overrides to Builder to allow any explicit tier configurations.
+### Changes
+- Used `@WrapOperation` instead of `@Redirect` to improve compatibility with other mods' mixins.
+
 ## [21.17.2] - 2026-05-12
 ### Additions
 - Added builder modifiers to `WeaponModifier` just a small addition that gives more power to addon developers.
