@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.EpicFight;
@@ -677,12 +678,9 @@ public class CapabilityItem {
 		}
 
 		public <R> T setCustomData(DeferredCustomData<? extends CustomData<R>> customData, R data) {
-			if (this.customData.containsKey(customData)) {
-				this.customData.put(customData, data);
-			}
-			else {
-				EpicFight.LOGGER.warn("Custom data type {} does not exist. Assigning {} failed.", customData.getId(), data);
-			}
+			String modId = customData.getId().getNamespace();
+			if (!ModList.get().isLoaded(modId)) return (T) this;
+            this.setCustomDataInternal(customData, data);
 			return (T)this;
 		}
 
