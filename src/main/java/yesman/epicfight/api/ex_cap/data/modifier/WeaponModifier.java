@@ -146,6 +146,14 @@ public record WeaponModifier(List<ResourceLocation> targets, Map<ResourceLocatio
             return this.setMovesetData(moveset.getId(), data, value);
         }
 
+        /**
+         * @deprecated modifyBuilder() made this redundant
+         * @param data weapon data
+         * @param value what value
+         * @return the builder
+         * @param <T> any type
+         */
+        @Deprecated(forRemoval = true)
         public <T> Builder setWeaponData(DeferredCustomData<? extends CustomData<T>> data, T value)
         {
             this.weaponCustomData.put(data, value);
