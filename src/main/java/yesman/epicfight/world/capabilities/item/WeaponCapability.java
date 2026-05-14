@@ -507,16 +507,16 @@ public class WeaponCapability extends CapabilityItem {
 			this.styleProvider = (entitypatch) -> Styles.ONE_HAND;
 			this.weaponCombinationPredicator = (entitypatch) -> false;
 			this.passiveSkill = null;
-			this.swingSound = EpicFightSounds.WHOOSH;
-			this.hitSound = EpicFightSounds.BLUNT_HIT;
+			this.swingSound = null;
+			this.hitSound = null;
             this.moveSets = Maps.newHashMap();
-			this.hitParticle = EpicFightParticles.HIT_BLADE;
+			this.hitParticle = null;
 			this.autoAttackMotionMap = Maps.newHashMap();
 			this.innateSkillByStyle = Maps.newHashMap();
 			this.livingMotionModifiers = null;
 			this.canBePlacedOffhand = true;
 			this.comboCancel = (style) -> true;
-            this.comboCounterHandler = ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER;
+            this.comboCounterHandler = null;
 			this.zoomInType = ZoomInType.NONE;
 			this.reach = 0.2F;
             this.baseAP = 0;
@@ -843,6 +843,21 @@ public class WeaponCapability extends CapabilityItem {
                 if (this.collider == null) {
                     this.collider(ColliderPreset.FIST);
                 }
+                if (this.swingSound == null) {
+                    this.swingSound(EpicFightSounds.WHOOSH);
+                }
+                if (this.hitSound == null) {
+                    this.hitSound(EpicFightSounds.BLUNT_HIT);
+                }
+                if (this.hitParticle == null) {
+                    this.hitParticle(EpicFightParticles.HIT_BLADE);
+                }
+                if (this.comboCounterHandler == null) {
+                    this.comboCounterHandler(ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER);
+                }
+                if (this.zoomInType == null) {
+                    this.zoomInType(ZoomInType.NONE);
+                }
                 return this;
             }
             Builder result = WeaponCapability.builder();
@@ -862,6 +877,22 @@ public class WeaponCapability extends CapabilityItem {
             }
             if (result.collider == null) {
                 result.collider(ColliderPreset.FIST);
+            }
+            if (result.swingSound == null) {
+                result.swingSound(EpicFightSounds.WHOOSH);
+            }
+            if (result.hitSound == null) {
+                result.hitSound(EpicFightSounds.BLUNT_HIT);
+            }
+            if (result.hitParticle == null)
+            {
+                result.hitParticle(EpicFightParticles.HIT_BLADE);
+            }
+            if (result.comboCounterHandler == null) {
+                result.comboCounterHandler(ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER);
+            }
+            if (result.zoomInType == null) {
+                result.zoomInType(ZoomInType.NONE);
             }
             return result;
         }
