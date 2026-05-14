@@ -6,10 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [21.17.2] - 2026-05-12
-### Hotfixes and a single small addition.
 ### Additions
-- Added builder additions to `WeaponModifier` just a small addition that gives more power to addon developers.
-### Fixes
+- Added builder modifiers to `WeaponModifier` just a small addition that gives more power to addon developers.
+### Hotfixes
 - Fixed Issue regarding dual wielding not working. Caused by a weapon category match being that just passing the entire weapon cap instead of just the category.
 - Fixed weapon category and collider inheritance by setting them to null and only adding the first categories if it stayed null from inheritance.
 

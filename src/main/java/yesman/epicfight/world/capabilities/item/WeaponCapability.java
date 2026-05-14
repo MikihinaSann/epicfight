@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import org.jetbrains.annotations.ApiStatus;
@@ -44,6 +45,8 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class WeaponCapability extends CapabilityItem {
@@ -407,6 +410,7 @@ public class WeaponCapability extends CapabilityItem {
 		Holder<SoundEvent> swingSound;
 		Holder<SoundEvent> hitSound;
 		Holder<ParticleType<?>> hitParticle;
+        protected BiConsumer<Item, Builder> explicitItemOverride = null;
         Map<Style, ResourceLocation> moveSets;
         double baseAP;
         double aPScaling;
@@ -817,6 +821,18 @@ public class WeaponCapability extends CapabilityItem {
 		public Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> getComboAnimations() {
 			return ImmutableMap.copyOf(this.autoAttackMotionMap);
 		}
+
+        public Builder explicitItemOverride(BiConsumer<Item, Builder> explicitItemOverride) {
+            this.explicitItemOverride = explicitItemOverride;
+            return this;
+        }
+
+        @ApiStatus.Internal
+        public void handleOverrides(Item item) {
+            if (explicitItemOverride != null) {
+                explicitItemOverride.accept(item, this);
+            }
+        }
 
         @Override
         protected Builder merge() {

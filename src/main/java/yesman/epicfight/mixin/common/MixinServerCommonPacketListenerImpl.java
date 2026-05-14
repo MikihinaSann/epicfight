@@ -1,5 +1,6 @@
 package yesman.epicfight.mixin.common;
 
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,10 +19,12 @@ import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
 
 @Mixin(value = ServerCommonPacketListenerImpl.class)
 public abstract class MixinServerCommonPacketListenerImpl {
-	@Shadow
-	public MinecraftServer server;
-	@Shadow
-	public Connection connection;
+	@Final
+    @Shadow
+    protected MinecraftServer server;
+	@Final
+    @Shadow
+    protected Connection connection;
 	@Shadow
 	protected abstract GameProfile playerProfile();
 	
