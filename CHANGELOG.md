@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Item Specific Overrides to Builder to allow any explicit tier configurations.
 ### Changes
 - Used `@WrapOperation` instead of `@Redirect` to improve compatibility with other mods' mixins.
+### Deprecations
+- Deprecated `setWeaponData()` as `modifyBuilder()` made the formet method redundant.
+### Fixes
+- More inheritance issues regarding `WeaponCapability`
+- Custom Data in Item Presets not working due to logic error.
+- Skills not using `isWeaponCategory()`
 
 ## [21.17.2] - 2026-05-12
 ### Additions
