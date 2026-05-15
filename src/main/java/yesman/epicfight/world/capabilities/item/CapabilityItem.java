@@ -296,7 +296,7 @@ public class CapabilityItem {
 		SkillContainer weaponInnateSkillContainer = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
 		PayloadBundleBuilder toLocal = PayloadBundleBuilder.create();
 		PayloadBundleBuilder toRemote = PayloadBundleBuilder.create();
-		EpicFight.LOGGER.info("Capability Item Preset: {}", id);
+		EpicFight.LOGGER.debug("Capability Item Preset: {}", id);
 		if (weaponInnateSkill != null) {
 			if (weaponInnateSkillContainer.getSkill() != weaponInnateSkill) {
 				weaponInnateSkillContainer.setSkill(weaponInnateSkill);
