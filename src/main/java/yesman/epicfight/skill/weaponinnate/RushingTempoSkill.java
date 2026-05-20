@@ -47,13 +47,18 @@ public class RushingTempoSkill extends WeaponInnateSkill {
     @Override
     public List<Component> getTooltipOnItem(ItemStack itemStack, CapabilityItem cap, PlayerPatch<?> playerCap) {
         List<Component> list = Lists.newArrayList();
-        String traslatableText = this.getTranslationKey();
+        String translatableText = this.getTranslationKey();
 
-        list.add(Component.translatable(traslatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
-        list.add(Component.translatable(traslatableText + ".tooltip", this.maxStackSize).withStyle(ChatFormatting.DARK_GRAY));
+        list.add(Component.translatable(translatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
+        list.add(Component.translatable(translatableText + ".tooltip", this.maxStackSize).withStyle(ChatFormatting.DARK_GRAY));
 
-        this.generateTooltipforPhase(list, itemStack, cap, playerCap, this.properties.get(0), "Each Strike:");
+        this.generateTooltipforPhase(list, itemStack, cap, playerCap, this.properties.getFirst(), "Each Strike:");
         return list;
+    }
+
+    @Override
+    public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+        return Component.translatable(getTranslationKey() + ".tooltip", this.maxStackSize).withStyle(ChatFormatting.DARK_GRAY);
     }
 
     @Override

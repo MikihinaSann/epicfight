@@ -84,7 +84,7 @@ public class WeaponCapability extends CapabilityItem {
         this.coreProvider = new CoreWeaponCapabilityProvider();
         builder.provider.forEach(rl  -> coreProvider.addConditional(ConditionalManager.get(rl).build()));
         this.moveSets = Maps.newHashMap();
-        builder.moveSets.forEach( (style, set) -> this.moveSets.put(style, MovesetManager.getBuilder(set).build()));
+        builder.moveSets.forEach( (style, set) -> this.moveSets.put(style, MovesetManager.getBuilder(set).build(set)));
         this.offHandAlone = builder.offHandAlone;
         this.autoAttackMotions = builder.autoAttackMotionMap;
 		this.innateSkill = builder.innateSkillByStyle;

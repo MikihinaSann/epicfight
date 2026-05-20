@@ -105,7 +105,9 @@ dependencies {
 
     compileOnly(libs.kubejs)
     compileOnly(libs.rhino)
-    compileOnly(libs.architectury)
+    implementation(libs.architectury)
+
+    implementation(libs.bundles.simply)
 
     // Libraries for tr7zw featured mods
     compileOnly("libs:TRansition:1.0.6")

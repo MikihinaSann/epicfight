@@ -38,6 +38,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.*;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
+import net.sweenus.simplytooltips.client.TooltipNavigationConfig;
+import net.sweenus.simplytooltips.client.render.ItemThemeRegistry;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -68,7 +70,9 @@ import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
 import yesman.epicfight.client.renderer.patched.entity.*;
 import yesman.epicfight.client.renderer.patched.item.*;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
+import yesman.epicfight.compat.MinecraftMod;
 import yesman.epicfight.config.ClientConfig;
+import yesman.epicfight.platform.ModPlatformProvider;
 import yesman.epicfight.registry.entries.EpicFightEntityTypes;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -441,13 +445,28 @@ public class RenderEngine implements IEventBasedEngine {
         }
     }
 
+    private boolean noSimplyTooltipsSupport(ItemTooltipEvent event) {
+        if (!ModPlatformProvider.get().isModLoaded(MinecraftMod.SIMPLY_TOOLTIPS.getModId())) {
+            return true;
+        }
+
+        ItemStack stack = event.getItemStack();
+        if (stack.isEmpty()) return true;
+
+        String namespace = BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace();
+        boolean isVanilla = namespace.equals("minecraft");
+        if (!isVanilla && !TooltipNavigationConfig.applyTooltipsToModItems()) return !ItemThemeRegistry.hasThemeForStack(stack);
+        if (isVanilla && !TooltipNavigationConfig.applyTooltipsToVanillaItems()) return !ItemThemeRegistry.hasThemeForStack(stack);
+
+        return !ItemThemeRegistry.hasThemeForStack(stack);
+    }
+
     private void epicfight$itemTooltip(ItemTooltipEvent event) {
         if (ClientConfig.showEpicFightAttributesInTooltip && event.getEntity() != null && event.getEntity().level().isClientSide) {
             EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), LocalPlayerPatch.class).ifPresent(playerpatch -> {
                 EpicFightCapabilities.getItemCapability(event.getItemStack()).ifPresent(itemCapability -> {
-                    if (InputManager.isActionPhysicallyActive(EpicFightInputAction.WEAPON_INNATE_SKILL_TOOLTIP)) {
+                    if (InputManager.isActionPhysicallyActive(EpicFightInputAction.WEAPON_INNATE_SKILL_TOOLTIP) && noSimplyTooltipsSupport(event)) {
                         Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
-
                         if (weaponInnateSkill != null) {
                             event.getToolTip().clear();
                             List<Component> skilltooltip = weaponInnateSkill.getTooltipOnItem(event.getItemStack(), itemCapability, playerpatch);
@@ -458,13 +477,19 @@ public class RenderEngine implements IEventBasedEngine {
                         }
                     } else {
                         List<Component> tooltip = event.getToolTip();
-                        itemCapability.modifyItemTooltip(event.getItemStack(), event.getToolTip(), playerpatch);
+                        if (noSimplyTooltipsSupport(event)) {
+                            itemCapability.modifyItemTooltip(event.getItemStack(), event.getToolTip(), playerpatch);
+                        }
+                        else
+                        {
+                            itemCapability.modifySimplyTooltip(event.getItemStack(), event.getToolTip(), playerpatch);
+                        }
 
                         for (int i = 0; i < tooltip.size(); i++) {
                             Component textComp = tooltip.get(i);
 
                             if (!textComp.getSiblings().isEmpty()) {
-                                Component sibling = textComp.getSiblings().get(0);
+                                Component sibling = textComp.getSiblings().getFirst();
 
                                 if (sibling instanceof MutableComponent mutableComponent && mutableComponent.getContents() instanceof TranslatableContents translatableContent) {
                                     if (translatableContent.getArgs().length > 1 && translatableContent.getArgs()[1] instanceof MutableComponent mutableComponent$2) {
@@ -491,8 +516,7 @@ public class RenderEngine implements IEventBasedEngine {
                         }
 
                         Skill weaponInnateSkill = itemCapability.getInnateSkill(playerpatch, event.getItemStack());
-
-                        if (weaponInnateSkill != null) {
+                        if (weaponInnateSkill != null && noSimplyTooltipsSupport(event)) {
                             event.getToolTip().add(Component.translatable("inventory.epicfight.guide_innate_tooltip", EpicFightKeyMappings.WEAPON_INNATE_SKILL_TOOLTIP.getKey().getDisplayName()).withStyle(ChatFormatting.DARK_GRAY));
                         }
                     }

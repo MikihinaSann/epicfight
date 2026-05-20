@@ -7,7 +7,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.core.Holder;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.api.ex_cap.data.modifier.RenderModifier;
 import yesman.epicfight.api.ex_cap.managers.MovesetManager;
@@ -47,6 +49,14 @@ public class Moveset
     private final BiFunction<LivingEntityPatch<?>, InteractionHand, LivingMotion> customMotion;
     private final Map<GuardSkill.BlockType, List<AnimationManager.AnimationAccessor<? extends StaticAnimation>>> defaultGuardAnimations;
     private final RenderModifier modifier;
+    private final ResourceLocation id;
+
+
+
+    public boolean languageExists(String languageKey)
+    {
+        return I18n.exists(languageKey);
+    }
 
     public Moveset(Builder builder)
     {
@@ -62,6 +72,7 @@ public class Moveset
         this.weaponInnateSkill = builder.weaponInnateSkill;
         this.weaponPassiveSkill = builder.weaponPassiveSkill;
         this.revelationAnimation = builder.revelationAnimation;
+        this.id = builder.id;
         this.customMotion = builder.motion;
     }
 
@@ -141,7 +152,41 @@ public class Moveset
         return livingMotionModifiers;
     }
 
+    public Component getDescription()
+    {
+        if (id == null)
+        {
+            return Component.translatable("moveset.epicfight.unknown.description");
+        }
+        return Component.translatable("moveset." + id.getNamespace() + "." + id.getPath() + ".description");
+    }
 
+    public String getRawDescription()
+    {
+        if (id == null)
+        {
+            return "moveset.epicfight.unknown.description";
+        }
+        return "moveset." + id.getNamespace() + "." + id.getPath() + ".description";
+    }
+
+    public Component getTranslatedName()
+    {
+        if (id == null)
+        {
+            return Component.translatable("moveset.epicfight.unknown");
+        }
+        return Component.translatable("moveset." + id.getNamespace() + "." + id.getPath());
+    }
+
+    public String getRawName()
+    {
+        if (id == null)
+        {
+            return "moveset.epicfight.unknown";
+        }
+        return "moveset." + id.getNamespace() + "." + id.getPath();
+    }
 
     /**
      * A fluent builder for creating {@link Moveset} instances.
@@ -173,6 +218,7 @@ public class Moveset
         protected BiFunction<LivingEntityPatch<?>, InteractionHand, LivingMotion> motion;
         protected ResourceLocation parent;
         protected RenderModifier modifier;
+        protected ResourceLocation id;
 
         public Builder()
         {
@@ -188,13 +234,14 @@ public class Moveset
             weaponInnateSkill = null;
             weaponPassiveSkill = null;
             revelationAnimation = null;
+            this.id = null;
             this.customData = Maps.newHashMap();
         }
 
         /**
          * Sets the parent moveset to inherit properties from.
          * <p>
-         * During the {@link #build()} process, the system will recursively merge properties from
+         * During the {@link #build(ResourceLocation)} process, the system will recursively merge properties from
          * the parent hierarchy. Local definitions in this builder will override parent values.
          * </p>
          * @param parent The {@link ResourceLocation} of the parent moveset.
@@ -206,6 +253,12 @@ public class Moveset
             return this;
         }
 
+        @ApiStatus.Internal
+        public Builder id(ResourceLocation id)
+        {
+            this.id = id;
+            return this;
+        }
 
         public void addCustomData(Map<DeferredCustomData<? extends CustomData<?>>, Object> dataMap)
         {
@@ -566,9 +619,9 @@ public class Moveset
             return result;
         }
 
-        public Moveset build()
+        public Moveset build(ResourceLocation id)
         {
-            return new Moveset(merge());
+            return new Moveset(merge().id(id));
         }
     }
 }

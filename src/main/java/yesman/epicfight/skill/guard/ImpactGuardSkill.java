@@ -1,12 +1,15 @@
 package yesman.epicfight.skill.guard;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import org.apache.commons.compress.utils.Lists;
 import yesman.epicfight.api.event.types.entity.TakeDamageEvent;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.side.ClientOnly;
@@ -150,7 +153,12 @@ public class ImpactGuardSkill extends GuardSkill {
 		
 		return list;
 	}
-	
+
+	@Override
+	public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+		return Component.translatable(this.getTranslationKey() + ".tooltip", getTooltipArgsOfScreen(Lists.newArrayList()).toArray(new Object[0]));
+	}
+
 	@Override
 	public Set<WeaponCategory> getAvailableWeaponCategories() {
 		return this.advancedGuardMotions.keySet();

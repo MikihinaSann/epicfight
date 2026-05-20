@@ -123,15 +123,70 @@ public class CapabilityItem {
 		
 		this.attributeMap = attributeMapbuilder.build();
 	}
-	
+
+	public void modifySimplyTooltip(ItemStack itemStack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
+		int index = 0;
+		boolean modifyIn = false;
+
+		for (int i = 0; i < itemTooltip.size(); i++) {
+			Component textComp = itemTooltip.get(i);
+			index = i;
+
+			if (this.findComponentArgument(textComp, Attributes.ATTACK_SPEED.value().getDescriptionId()) != null) {
+				modifyIn = true;
+				break;
+			}
+		}
+
+		index++;
+
+		Map<Holder<Attribute>, AttributeModifier> attribute = this.getDamageAttributesInCondition(getStyle(entitypatch));
+
+		if (attribute != null) {
+			if (!modifyIn) {
+				itemTooltip.add(index, Component.literal(""));
+				index++;
+				itemTooltip.add(index, Component.translatable("epicfight.gui.attribute").withStyle(ChatFormatting.GRAY));
+				index++;
+			}
+
+			Holder<Attribute> armorNegation = EpicFightAttributes.ARMOR_NEGATION;
+			Holder<Attribute> impact = EpicFightAttributes.IMPACT;
+			Holder<Attribute> maxStrikes = EpicFightAttributes.MAX_STRIKES;
+
+			if (attribute.containsKey(armorNegation) && validateAttribute(entitypatch, armorNegation)) {
+				double value = attribute.get(armorNegation).amount() + entitypatch.getOriginal().getAttribute(armorNegation).getBaseValue();
+
+				if (value > 0.0D) {
+					itemTooltip.add(index, Component.literal(" ").append(Component.translatable(armorNegation.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			}
+
+			if (attribute.containsKey(impact) && validateAttribute(entitypatch, impact)) {
+				double value = attribute.get(impact).amount() + entitypatch.getOriginal().getAttribute(impact).getBaseValue();
+
+				if (value > 0.0D) {
+					int i = itemStack.getEnchantmentLevel(entitypatch.getOriginal().level().holderOrThrow(Enchantments.KNOCKBACK));
+					value *= (1.0F + i * 0.12F);
+					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(impact.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			}
+
+			if (attribute.containsKey(maxStrikes) && validateAttribute(entitypatch, maxStrikes)) {
+				double value = attribute.get(maxStrikes).amount() + entitypatch.getOriginal().getAttribute(maxStrikes).getBaseValue();
+
+				if (value > 0.0D) {
+					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(maxStrikes.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			} else {
+				itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(maxStrikes.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(maxStrikes.value().getDefaultValue()))));
+			}
+		}
+	}
+
 	public void modifyItemTooltip(ItemStack itemstack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
+
 		Style style = this instanceof RangedWeaponCapability ? Styles.RANGED : this.getStyle(entitypatch);
-
-        /// TODO: Lazy Fix for crash #2406. Need more inspection what causes this
-        if (style == null) {
-            return;
-        }
-
 		itemTooltip.add(1, Component.translatable(EpicFight.MODID + ".style." + style.toString().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_GRAY));
 		
 		int index = 0;

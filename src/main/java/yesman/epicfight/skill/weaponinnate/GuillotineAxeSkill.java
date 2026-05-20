@@ -57,7 +57,7 @@ public class GuillotineAxeSkill extends SimpleWeaponInnateSkill {
     public List<Component> getTooltipOnItem(ItemStack itemstack, CapabilityItem cap, PlayerPatch<?> playerpatch) {
         List<Component> list = new ArrayList<> ();
         List<Object> tooltipArgs = new ArrayList<> ();
-        String traslatableText = this.getTranslationKey();
+        String translatableText = this.getTranslationKey();
         double itemBaseDamage = playerpatch.getOriginal().getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
 
         Set<AttributeModifier> attributeModifiers = new HashSet<> ();
@@ -73,11 +73,32 @@ public class GuillotineAxeSkill extends SimpleWeaponInnateSkill {
         executionMinHealth.multiply(0.8F);
 
         tooltipArgs.add(ChatFormatting.RED + ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(executionMinHealth.getResult((float)itemBaseDamage)));
-        list.add(Component.translatable(traslatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
-        list.add(Component.translatable(traslatableText + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY));
+        list.add(Component.translatable(translatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
+        list.add(Component.translatable(translatableText + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY));
 
-        this.generateTooltipforPhase(list, itemstack, cap, playerpatch, this.properties.get(0), "Each Strike:");
+        this.generateTooltipforPhase(list, itemstack, cap, playerpatch, this.properties.getFirst(), "Each Strike:");
 
         return list;
+    }
+
+    @Override
+    public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+        List<Object> tooltipArgs = new ArrayList<> ();
+        String translatableText = this.getTranslationKey();
+        double itemBaseDamage = playerPatch.getOriginal().getAttribute(Attributes.ATTACK_DAMAGE).getBaseValue();
+
+        Set<AttributeModifier> attributeModifiers = new HashSet<> ();
+        attributeModifiers.addAll(playerPatch.getOriginal().getAttribute(Attributes.ATTACK_DAMAGE).getModifiers());
+        attributeModifiers.addAll(CapabilityItem.getAttributeModifiersAsWeapon(Attributes.ATTACK_DAMAGE, EquipmentSlot.MAINHAND, itemStack, playerPatch));
+
+        for (AttributeModifier modifier : attributeModifiers) {
+            itemBaseDamage += modifier.amount();
+        }
+
+        ValueModifier.ResultCalculator executionMinHealth = ValueModifier.calculator();
+        getProperty(AttackPhaseProperty.DAMAGE_MODIFIER, this.properties.getFirst()).ifPresent(executionMinHealth::attach);
+        executionMinHealth.multiply(0.8F);
+        tooltipArgs.add(ChatFormatting.RED + ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(executionMinHealth.getResult((float)itemBaseDamage)));
+        return Component.translatable(translatableText + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY);
     }
 }

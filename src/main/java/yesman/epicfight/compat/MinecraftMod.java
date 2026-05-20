@@ -14,6 +14,7 @@ import yesman.epicfight.compat.geckolib.GeckolibCompat;
 import yesman.epicfight.compat.iris.IRISCompat;
 import yesman.epicfight.compat.playeranimator.PlayerAnimatorCompat;
 import yesman.epicfight.compat.playerrevive.PlayerReviveCompat;
+import yesman.epicfight.compat.simplytooltips.SimplyTooltipsModule;
 import yesman.epicfight.compat.skinlayer3d.SkinLayer3DCompat;
 import yesman.epicfight.compat.vampirism.VampirismCompat;
 import yesman.epicfight.compat.werewolves.WerewolvesCompat;
@@ -34,7 +35,8 @@ public enum MinecraftMod {
     PLAYER_ANIMATOR("playeranimator", true, PlayerAnimatorCompat.class),
     BETTER_THIRD_PERSON("betterthirdperson", true, BetterThirdPersonCompat.class),
     PLAYER_REVIVE("playerrevive", true, PlayerReviveCompat.class),
-    WILDFIRES_GENDER_MOD("wildfire_gender", true, WildfireFGMCompat.class);
+    WILDFIRES_GENDER_MOD("wildfire_gender", true, WildfireFGMCompat.class),
+    SIMPLY_TOOLTIPS("simplytooltips", true, SimplyTooltipsModule.class);
 
     private final @NotNull String modId;
     private final boolean isClientOnly;

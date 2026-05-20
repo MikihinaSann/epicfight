@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [21.17.3] - 2026-5-14
 ### Additions
 - Added Item Specific Overrides to Builder to allow any explicit tier configurations.
+- Added Simply Tooltips Compatibility with a plethora of Epic Fight's own features.
 ### Changes
 - Used `@WrapOperation` instead of `@Redirect` to improve compatibility with other mods' mixins.
 ### Deprecations
