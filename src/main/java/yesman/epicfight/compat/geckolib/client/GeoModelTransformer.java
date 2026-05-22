@@ -21,10 +21,13 @@ import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 import software.bernie.geckolib.animatable.GeoAnimatable;
+import software.bernie.geckolib.animatable.client.GeoRenderProvider;
 import software.bernie.geckolib.animation.state.BoneSnapshot;
 import software.bernie.geckolib.cache.object.GeoBone;
 import software.bernie.geckolib.cache.object.GeoCube;
@@ -63,29 +66,46 @@ public class GeoModelTransformer extends HumanoidModelTransformer {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({"unchecked", "rawtypes"})
 	public static void getGeoArmorTexturePath(AnimatedArmorTextureEvent event) {
-		IClientItemExtensions customRenderProperties = IClientItemExtensions.of(event.getItemStack());
-		
-		if (customRenderProperties != null) {
-			HumanoidModel<?> extensionRenderer = customRenderProperties.getHumanoidArmorModel(event.getLivingEntity(), event.getItemStack(), event.getEquipmentSlot(), event.getOriginalModel());
-			
-			if (extensionRenderer instanceof GeoArmorRenderer geoArmorRenderer && event.getItemStack().getItem() instanceof GeoAnimatable geoAnimatable) {
-				event.setResultLocation(geoArmorRenderer.getTextureLocation(geoAnimatable));
-			}
+		ItemStack stack = event.getItemStack();
+
+		if (!(stack.getItem() instanceof GeoAnimatable geoAnimatable)) {
+			return;
+		}
+
+		HumanoidModel<?> geoRenderer = GeoRenderProvider.of(stack).getGeoArmorRenderer(event.getLivingEntity(), stack, event.getEquipmentSlot(), (HumanoidModel) event.getOriginalModel());
+
+		if (geoRenderer instanceof GeoArmorRenderer geoArmorRenderer) {
+			geoArmorRenderer.prepForRender(event.getLivingEntity(), stack, event.getEquipmentSlot(), event.getOriginalModel(), Minecraft.getInstance().renderBuffers().bufferSource(), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+			event.setResultLocation(geoArmorRenderer.getTextureLocation(geoAnimatable));
 		}
 	}
-	
+
 	@Override
 	public SkinnedMesh transformArmorModel(HumanoidModel<?> humanoidModel) {
-		if (!(humanoidModel instanceof GeoArmorRenderer<?> geoArmorRenderer)) {
+		return null;
+	}
+
+	@SuppressWarnings({"unchecked", "rawtypes"})
+	@Override
+	public SkinnedMesh transformArmorModel(HumanoidModel<?> humanoidModel, LivingEntity livingEntity, ItemStack itemStack, EquipmentSlot equipmentSlot) {
+		if (!(itemStack.getItem() instanceof GeoAnimatable)) {
 			return null;
 		}
-		
+
+		HumanoidModel<?> geoRenderer = GeoRenderProvider.of(itemStack).getGeoArmorRenderer(livingEntity, itemStack, equipmentSlot, (HumanoidModel) humanoidModel);
+
+		if (!(geoRenderer instanceof GeoArmorRenderer<?> geoArmorRenderer)) {
+			return null;
+		}
+
+		geoArmorRenderer.prepForRender(livingEntity, itemStack, equipmentSlot, humanoidModel, Minecraft.getInstance().renderBuffers().bufferSource(), 0.0F, 0.0F, 0.0F, 0.0F, 0.0F);
+
 		PoseStack poseStack = new PoseStack();
 		poseStack.translate(0, 10000, 0);
 		geoArmorRenderer.renderToBuffer(poseStack, Minecraft.getInstance().renderBuffers().bufferSource().getBuffer(RenderType.armorEntityGlint()), 0, 0, 0);
-		
+
 		List<GeoModelPartition> boxes = Lists.newArrayList();
 		MixinGeoArmorRenderer accessor = (MixinGeoArmorRenderer)geoArmorRenderer;
 		
@@ -97,55 +117,16 @@ public class GeoModelTransformer extends HumanoidModelTransformer {
 		GeoBone leftLegBone = accessor.getLeftLeg();
 		GeoBone rightBootBone = accessor.getRightBoot();
 		GeoBone leftBootBone = accessor.getLeftBoot();
-		
-		if (headBone != null) {
-			headBone.setRotX(0);
-			headBone.setRotY(0);
-			headBone.setRotZ(0);
-		}
-		
-		if (bodyBone != null) {
-			bodyBone.setRotX(0);
-			bodyBone.setRotY(0);
-			bodyBone.setRotZ(0);
-		}
-		
-		if (rightArmBone != null) {
-			rightArmBone.setRotX(0);
-			rightArmBone.setRotY(0);
-			rightArmBone.setRotZ(0);
-		}
-		
-		if (leftArmBone != null) {
-			leftArmBone.setRotX(0);
-			leftArmBone.setRotY(0);
-			leftArmBone.setRotZ(0);
-		}
-		
-		if (rightLegBone != null) {
-			rightLegBone.setRotX(0);
-			rightLegBone.setRotY(0);
-			rightLegBone.setRotZ(0);
-		}
-		
-		if (leftLegBone != null) {
-			leftLegBone.setRotX(0);
-			leftLegBone.setRotY(0);
-			leftLegBone.setRotZ(0);
-		}
-		
-		if (rightBootBone != null) {
-			rightBootBone.setRotX(0);
-			rightBootBone.setRotY(0);
-			rightBootBone.setRotZ(0);
-		}
-		
-		if (leftBootBone != null) {
-			leftBootBone.setRotX(0);
-			leftBootBone.setRotY(0);
-			leftBootBone.setRotZ(0);
-		}
-		
+
+		resetBoneTreeToInitialSnapshot(headBone);
+		resetBoneTreeToInitialSnapshot(bodyBone);
+		resetBoneTreeToInitialSnapshot(rightArmBone);
+		resetBoneTreeToInitialSnapshot(leftArmBone);
+		resetBoneTreeToInitialSnapshot(rightLegBone);
+		resetBoneTreeToInitialSnapshot(leftLegBone);
+		resetBoneTreeToInitialSnapshot(rightBootBone);
+		resetBoneTreeToInitialSnapshot(leftBootBone);
+
 		if (headBone != null) boxes.add(new GeoModelPartition(HEAD, headBone));
 		if (bodyBone != null) boxes.add(new GeoModelPartition(CHEST, bodyBone));
 		if (rightArmBone != null) boxes.add(new GeoModelPartition(RIGHT_ARM, rightArmBone));
@@ -158,6 +139,30 @@ public class GeoModelTransformer extends HumanoidModelTransformer {
 		return bakeMeshFromCubes(boxes);
 	}
 	
+	private static void resetBoneTreeToInitialSnapshot(GeoBone bone) {
+		if (bone == null) {
+			return;
+		}
+
+		BoneSnapshot snapshot = bone.getInitialSnapshot();
+
+		if (snapshot != null) {
+			bone.setPosX(snapshot.getOffsetX());
+			bone.setPosY(snapshot.getOffsetY());
+			bone.setPosZ(snapshot.getOffsetZ());
+			bone.setRotX(snapshot.getRotX());
+			bone.setRotY(snapshot.getRotY());
+			bone.setRotZ(snapshot.getRotZ());
+			bone.setScaleX(snapshot.getScaleX());
+			bone.setScaleY(snapshot.getScaleY());
+			bone.setScaleZ(snapshot.getScaleZ());
+		}
+
+		for (GeoBone child : bone.getChildBones()) {
+			resetBoneTreeToInitialSnapshot(child);
+		}
+	}
+
 	private static SkinnedMesh bakeMeshFromCubes(List<GeoModelPartition> partitions) {
 		List<SingleGroupVertexBuilder> vertices = Lists.newArrayList();
 		Map<MeshPartDefinition, IntList> indices = Maps.newHashMap();
@@ -172,49 +177,47 @@ public class GeoModelTransformer extends HumanoidModelTransformer {
 	}
 	
 	private static void bake(PoseStack poseStack, GeoModelPartition modelpartition, String partName, GeoBone geoBone, List<SingleGroupVertexBuilder> vertices, Map<MeshPartDefinition, IntList> indices, List<String> path, PartTransformer.IndexCounter indexCounter, boolean bindPartAnimation) {
-		if (geoBone == null) {
+		if (geoBone == null || geoBone.isHidden()) {
 			return;
 		}
-		
+
 		poseStack.pushPose();
-		
+
 		RenderUtil.prepMatrixForBone(poseStack, geoBone);
-		
+
 		List<String> newList = new ArrayList<>(path);
-		
+
 		if (bindPartAnimation) {
 			newList.add(partName);
 		}
-		
-		if (!geoBone.isHidden()) {
-			for (GeoCube cube : geoBone.getCubes()) {
-				poseStack.pushPose();
-				
-				RenderUtil.translateToPivotPoint(poseStack, cube);
-				RenderUtil.rotateMatrixAroundCube(poseStack, cube);
-				RenderUtil.translateAwayFromPivotPoint(poseStack, cube);
-				MeshPartDefinition partDefinition = GeoMeshPartDefinition.of(partName);
-				
-				if (bindPartAnimation) {
-					OpenMatrix4f invertedParentTransform = OpenMatrix4f.importFromMojangMatrix(poseStack.last().pose());
-					invertedParentTransform.m30 *= 0.0625F;
-					invertedParentTransform.m31 *= 0.0625F;
-					invertedParentTransform.m32 *= 0.0625F;
-					invertedParentTransform.invert();
-					partDefinition = GeoMeshPartDefinition.of(partName, newList, invertedParentTransform, modelpartition.geoBone);
-				}
-				
-				modelpartition.partTransformer.bakeCube(poseStack, partDefinition, cube, vertices, indices, indexCounter);
-				poseStack.popPose();
+
+		for (GeoCube cube : geoBone.getCubes()) {
+			poseStack.pushPose();
+
+			RenderUtil.translateToPivotPoint(poseStack, cube);
+			RenderUtil.rotateMatrixAroundCube(poseStack, cube);
+			RenderUtil.translateAwayFromPivotPoint(poseStack, cube);
+			MeshPartDefinition partDefinition = GeoMeshPartDefinition.of(partName);
+
+			if (bindPartAnimation) {
+				OpenMatrix4f invertedParentTransform = OpenMatrix4f.importFromMojangMatrix(poseStack.last().pose());
+				invertedParentTransform.m30 *= 0.0625F;
+				invertedParentTransform.m31 *= 0.0625F;
+				invertedParentTransform.m32 *= 0.0625F;
+				invertedParentTransform.invert();
+				partDefinition = GeoMeshPartDefinition.of(partName, newList, invertedParentTransform, modelpartition.geoBone);
 			}
+
+			modelpartition.partTransformer.bakeCube(poseStack, partDefinition, cube, vertices, indices, indexCounter);
+			poseStack.popPose();
 		}
-		
+
 		if (!geoBone.isHidingChildren()) {
 			for (GeoBone childBone : geoBone.getChildBones()) {
 				bake(poseStack, modelpartition, partName, childBone, vertices, indices, newList, indexCounter, true);
 			}
 		}
-		
+
 		poseStack.popPose();
 	}
 	
