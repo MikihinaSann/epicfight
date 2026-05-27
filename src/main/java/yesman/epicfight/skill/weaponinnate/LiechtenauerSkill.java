@@ -164,9 +164,6 @@ public class LiechtenauerSkill extends WeaponInnateSkill {
         if (container.getExecutor().isLogicalClient()) {
             return super.canExecute(container);
         } else {
-            // Pull from the active combat hand so the offhand-only Liechtenauer carrier passes
-            // canExecute on the server. Without this, the server-side resolver would only see the
-            // bare mainhand and reject the activation that the client already sent.
             InteractionHand hand = container.getExecutor().getPrimaryHand();
             ItemStack itemstack = container.getExecutor().getOriginal().getItemInHand(hand);
             return EpicFightCapabilities.getItemStackCapability(itemstack).getInnateSkill(container.getExecutor(), itemstack) == this && container.getExecutor().getOriginal().getVehicle() == null;
@@ -186,14 +183,21 @@ public class LiechtenauerSkill extends WeaponInnateSkill {
     public List<Component> getTooltipOnItem(ItemStack itemstack, CapabilityItem cap, PlayerPatch<?> playerCap) {
         List<Component> list = Lists.newArrayList();
         List<Object> tooltipArgs = Lists.newArrayList();
-        String traslatableText = this.getTranslationKey();
+        String translatableText = this.getTranslationKey();
 
         tooltipArgs.add(this.maxDuration / 20);
         tooltipArgs.add(this.returnDuration / 20);
-
-        list.add(Component.translatable(traslatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
-        list.add(Component.translatable(traslatableText + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY));
+        list.add(Component.translatable(translatableText).withStyle(ChatFormatting.WHITE).append(Component.literal(String.format("[%.0f]", this.consumption)).withStyle(ChatFormatting.AQUA)));
+        list.add(Component.translatable(translatableText + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY));
 
         return list;
+    }
+
+    @Override
+    public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+        List<Object> tooltipArgs = Lists.newArrayList();
+        tooltipArgs.add(this.maxDuration / 20);
+        tooltipArgs.add(this.returnDuration / 20);
+        return Component.translatable(this.getTranslationKey() + ".tooltip", tooltipArgs.toArray(new Object[0])).withStyle(ChatFormatting.DARK_GRAY);
     }
 }

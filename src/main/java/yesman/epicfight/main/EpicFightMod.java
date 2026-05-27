@@ -32,6 +32,7 @@ import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.DataPackRegistryEvent;
+import net.sweenus.simplytooltips.api.TooltipProviderRegistry;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.EpicFight;
@@ -68,6 +69,7 @@ import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvi
 import yesman.epicfight.compat.ICompatModule;
 import yesman.epicfight.compat.MinecraftMod;
 import yesman.epicfight.compat.mcreator.MCreatorPlayerAnimationsCompat;
+import yesman.epicfight.compat.simplytooltips.EpicFightTooltipProvider;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.config.ServerConfig;
@@ -170,6 +172,7 @@ public class EpicFightMod {
 
     public EpicFightMod(IEventBus modEventBus, ModContainer modContainer) {
 		ModPlatformProvider.initialize(new NeoForgeModPlatform());
+		TooltipProviderRegistry.register(new EpicFightTooltipProvider(), 2);
     	if (EpicFightSharedConstants.isPhysicalClient()) {
 			EpicFightClient.initialize(new NeoForgeClientModPlatform(modEventBus));
 			// TODO: (MULTI_LOADER) EpicFightKeyMappings must be in common and not neoforge,

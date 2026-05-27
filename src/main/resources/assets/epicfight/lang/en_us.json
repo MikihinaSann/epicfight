@@ -346,7 +346,7 @@
   "item.minecraft.tipped_arrow.effect.blooming": "Arrow of Blooming",
 
   "item.epicfight.uchigatana.tooltip": "Sheathe Uchigatana after 5 seconds of inactivity and your next attack will be empowered.",
-  "itemGroup.epicfight.items": "EpicFight Items",
+  "itemGroup.epicfight.items": "Epic Fight Items",
 
   "inventory.epicfight.guide_innate_tooltip": "[%s] to see Innate skill",
   "inventory.epicfight.guide.show_innate_skill": "Show Innate Skill",
@@ -708,5 +708,22 @@
   "epicfight.messages.shader_transform_fail": "Failed to create shader %s. Don't turn on animation shader in your environment...",
   "epicfight.messages.mode_switching_disabled": "Switching vanilla/epicfight mode is disabled in this world. Enable the gamerule or ask for a server operator.",
 
-  "eof": "eof"
+  "eof": "eof",
+  "text.epicfight.consumption": "Innate Energy Required:",
+
+  "text.epicfight.armorNegation": "Armor Penetration:",
+  "text.epicfight.impact": "Impact:",
+  "text.epicfight.maxStrikes": "Max Strikes:",
+  "text.epicfight.innate_skill": "Weapon Innate Skill",
+  "text.epicfight.style": "Wield Style: ",
+  "text.epicfight.alt_key": "Hold [Left Alt] to see Moveset Details",
+  "moveset.epicfight.unknown.description": "Unknown Description",
+  "moveset.epicfight.unknown": "Unknown Moveset",
+
+  "moveset.epicfight.greatsword_2h": "Default Greatsword",
+  "moveset.epicfight.greatsword_2h.description": "The default two-handed greatsword.\n\nCombo Attacks: 2 powerful horizontal swings.\n\nDash Attack: A powerful downward sword smash.\n\nAir Attack: A sword chop that does large damage to an opponent.",
+  "text.epicfight.stun_reduction": "Reduces stun time by",
+  "text.epicfight.skill.category": "Skill Category: ",
+  "text.epicfight.skill.name": "Skill: ",
+  "text.epicfigt.guard_skill_consumption": "Skill Consumption: "
 }

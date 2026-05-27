@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import org.lwjgl.opengl.GL11;
@@ -110,6 +111,20 @@ public abstract class WeaponInnateSkill extends Skill {
 		
 		return list;
 	}
+
+	public List<Component> getSimplyTooltips(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+		List<Component> list = Lists.newArrayList();
+		String translatableText = this.getTranslationKey();
+		list.add(Component.translatable(translatableText).withStyle(ChatFormatting.WHITE));
+		list.add(Component.empty());
+		list.add(Component.translatable("text.epicfight.consumption").append(Component.literal(String.format(" %.0f", this.consumption)).withStyle(ChatFormatting.AQUA)));
+		list.add(Component.empty());
+		list.add(getTranslatedTooltip(itemStack, itemCap, playerPatch));
+
+		return list;
+	}
+
+
 	
 	protected void generateTooltipforPhase(List<Component> list, ItemStack itemstack, CapabilityItem itemcap, PlayerPatch<?> playerpatch, Map<AttackPhaseProperty<?>, Object> propertyMap, String title) {
 		double weaponBaseDamage = playerpatch.getWeaponAttribute(Attributes.ATTACK_DAMAGE, itemstack);

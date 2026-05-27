@@ -8,6 +8,7 @@ import net.minecraft.core.particles.ParticleType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import org.jetbrains.annotations.ApiStatus;
@@ -28,6 +29,7 @@ import yesman.epicfight.api.ex_cap.managers.ItemPresetManager;
 import yesman.epicfight.api.ex_cap.managers.MovesetManager;
 import yesman.epicfight.api.ex_cap.provider.CoreWeaponCapabilityProvider;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
+import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.registry.deferred.holders.DeferredConditional;
 import yesman.epicfight.registry.deferred.holders.DeferredMoveset;
@@ -43,6 +45,8 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class WeaponCapability extends CapabilityItem {
@@ -80,7 +84,7 @@ public class WeaponCapability extends CapabilityItem {
         this.coreProvider = new CoreWeaponCapabilityProvider();
         builder.provider.forEach(rl  -> coreProvider.addConditional(ConditionalManager.get(rl).build()));
         this.moveSets = Maps.newHashMap();
-        builder.moveSets.forEach( (style, set) -> this.moveSets.put(style, MovesetManager.getBuilder(set).build()));
+        builder.moveSets.forEach( (style, set) -> this.moveSets.put(style, MovesetManager.getBuilder(set).build(set)));
         this.offHandAlone = builder.offHandAlone;
         this.autoAttackMotions = builder.autoAttackMotionMap;
 		this.innateSkill = builder.innateSkillByStyle;
@@ -135,7 +139,7 @@ public class WeaponCapability extends CapabilityItem {
      * one-handed moveset so the single-weapon combo plays instead of the dual combo. Falls back
      * to the {@code COMMON} moveset, then null, when nothing is registered for the style.
      */
-    public Moveset getMoveSetForStyle(Style style) {
+    public Moveset getMovesetForStyle(Style style) {
         if (this.moveSets == null) return null;
         return this.moveSets.getOrDefault(style, this.moveSets.get(Styles.COMMON));
     }
@@ -406,6 +410,7 @@ public class WeaponCapability extends CapabilityItem {
 		Holder<SoundEvent> swingSound;
 		Holder<SoundEvent> hitSound;
 		Holder<ParticleType<?>> hitParticle;
+        protected BiConsumer<Item, Builder> explicitItemOverride = null;
         Map<Style, ResourceLocation> moveSets;
         double baseAP;
         double aPScaling;
@@ -492,6 +497,8 @@ public class WeaponCapability extends CapabilityItem {
 
 
 		protected Builder() {
+            super();
+            this.category = null;
             this.provider = Lists.newArrayList();
             this.offHandAlone = false;
             this.pendingBuilders = Maps.newHashMap();
@@ -500,16 +507,16 @@ public class WeaponCapability extends CapabilityItem {
 			this.styleProvider = (entitypatch) -> Styles.ONE_HAND;
 			this.weaponCombinationPredicator = (entitypatch) -> false;
 			this.passiveSkill = null;
-			this.swingSound = EpicFightSounds.WHOOSH;
-			this.hitSound = EpicFightSounds.BLUNT_HIT;
+			this.swingSound = null;
+			this.hitSound = null;
             this.moveSets = Maps.newHashMap();
-			this.hitParticle = EpicFightParticles.HIT_BLADE;
+			this.hitParticle = null;
 			this.autoAttackMotionMap = Maps.newHashMap();
 			this.innateSkillByStyle = Maps.newHashMap();
 			this.livingMotionModifiers = null;
 			this.canBePlacedOffhand = true;
 			this.comboCancel = (style) -> true;
-            this.comboCounterHandler = ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER;
+            this.comboCounterHandler = null;
 			this.zoomInType = ZoomInType.NONE;
 			this.reach = 0.2F;
             this.baseAP = 0;
@@ -815,9 +822,42 @@ public class WeaponCapability extends CapabilityItem {
 			return ImmutableMap.copyOf(this.autoAttackMotionMap);
 		}
 
+        public Builder explicitItemOverride(BiConsumer<Item, Builder> explicitItemOverride) {
+            this.explicitItemOverride = explicitItemOverride;
+            return this;
+        }
+
+        @ApiStatus.Internal
+        public void handleOverrides(Item item) {
+            if (explicitItemOverride != null) {
+                explicitItemOverride.accept(item, this);
+            }
+        }
+
         @Override
         protected Builder merge() {
             if (this.parent == null) {
+                if (this.category == null) {
+                    this.category(WeaponCategories.FIST);
+                }
+                if (this.collider == null) {
+                    this.collider(ColliderPreset.FIST);
+                }
+                if (this.swingSound == null) {
+                    this.swingSound(EpicFightSounds.WHOOSH);
+                }
+                if (this.hitSound == null) {
+                    this.hitSound(EpicFightSounds.BLUNT_HIT);
+                }
+                if (this.hitParticle == null) {
+                    this.hitParticle(EpicFightParticles.HIT_BLADE);
+                }
+                if (this.comboCounterHandler == null) {
+                    this.comboCounterHandler(ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER);
+                }
+                if (this.zoomInType == null) {
+                    this.zoomInType(ZoomInType.NONE);
+                }
                 return this;
             }
             Builder result = WeaponCapability.builder();
@@ -831,6 +871,28 @@ public class WeaponCapability extends CapabilityItem {
             while (!stack.isEmpty()) {
                 CapabilityItem.Builder<?> builder = stack.pop();
                 applyWeapon(result, builder);
+            }
+            if (result.category == null) {
+                result.category(WeaponCategories.FIST);
+            }
+            if (result.collider == null) {
+                result.collider(ColliderPreset.FIST);
+            }
+            if (result.swingSound == null) {
+                result.swingSound(EpicFightSounds.WHOOSH);
+            }
+            if (result.hitSound == null) {
+                result.hitSound(EpicFightSounds.BLUNT_HIT);
+            }
+            if (result.hitParticle == null)
+            {
+                result.hitParticle(EpicFightParticles.HIT_BLADE);
+            }
+            if (result.comboCounterHandler == null) {
+                result.comboCounterHandler(ModifyComboCounter.ComboCounterHandler.DEFAULT_COMBO_HANDLER);
+            }
+            if (result.zoomInType == null) {
+                result.zoomInType(ZoomInType.NONE);
             }
             return result;
         }

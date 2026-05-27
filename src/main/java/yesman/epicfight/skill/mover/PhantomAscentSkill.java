@@ -1,9 +1,12 @@
 package yesman.epicfight.skill.mover;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
+import org.apache.commons.compress.utils.Lists;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.StaticAnimation;
@@ -23,6 +26,8 @@ import yesman.epicfight.registry.entries.EpicFightSkillDataKeys;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -161,6 +166,11 @@ public class PhantomAscentSkill extends Skill {
     public List<Object> getTooltipArgsOfScreen(List<Object> list) {
         list.add(this.extraJumps);
         return list;
+    }
+
+    @Override
+    public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch) {
+        return Component.translatable(this.getTranslationKey() + ".tooltip", getTooltipArgsOfScreen(Lists.newArrayList()).toArray(new Object[0]));
     }
 
     private static boolean isJumpActionPressed() {

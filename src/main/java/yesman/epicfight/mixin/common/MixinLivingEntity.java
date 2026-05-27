@@ -1,5 +1,7 @@
 package yesman.epicfight.mixin.common;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.CombatRules;
 import net.minecraft.world.damagesource.DamageSource;
@@ -14,7 +16,6 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
@@ -130,14 +131,14 @@ public abstract class MixinLivingEntity {
 		});
 	}
 
-    @Redirect(
+    @WrapOperation(
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
         ),
         method = "jumpFromGround()V"
     )
-    private float epicfight$jumpFromGround(LivingEntity livingEntity) {
+    private float epicfight$jumpFromGround(LivingEntity livingEntity, Operation<Void> originalOperation) {
         if (livingEntity instanceof Player player && player.isLocalPlayer()) {
             EpicFightCameraAPI cameraApi = EpicFightCameraAPI.getInstance();
             return cameraApi.isTPSMode() ? cameraApi.getCameraYRot() : livingEntity.getYRot();
@@ -146,7 +147,7 @@ public abstract class MixinLivingEntity {
         return livingEntity.getYRot();
     }
 
-    @Redirect(
+    @WrapOperation(
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F",
@@ -154,7 +155,7 @@ public abstract class MixinLivingEntity {
         ),
         method = "tick()V"
     )
-    private float epicfight$tick(LivingEntity livingEntity) {
+    private float epicfight$tick(LivingEntity livingEntity, Operation<Void> originalOperation) {
         // returns the basis y rotation as camera in TPS mode
         if (livingEntity instanceof Player player && player.isLocalPlayer()) {
             return EpicFightCameraAPI.getInstance().getYRotForHead(player);
@@ -163,14 +164,14 @@ public abstract class MixinLivingEntity {
         return livingEntity.getYRot();
     }
 
-    @Redirect(
+    @WrapOperation(
         at = @At(
             value = "INVOKE",
             target = "Lnet/minecraft/world/entity/LivingEntity;getYRot()F"
         ),
         method = "tickHeadTurn(FF)F"
     )
-    protected float epicfight$tickHeadTurn(LivingEntity livingEntity) {
+    protected float epicfight$tickHeadTurn(LivingEntity livingEntity, Operation<Float> original) {
         // returns the basis y rotation as camera in TPS mode
         if (livingEntity instanceof Player player && player.isLocalPlayer()) {
             return EpicFightCameraAPI.getInstance().getYRotForHead(player);

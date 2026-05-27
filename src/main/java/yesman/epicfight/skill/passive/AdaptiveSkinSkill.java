@@ -1,6 +1,7 @@
 package yesman.epicfight.skill.passive;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
@@ -8,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import yesman.epicfight.api.event.EntityEventListener;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -23,6 +25,8 @@ import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.world.capabilities.entitypatch.EntityDecorations.DecorationOverlay;
+import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 
 import java.util.Collections;
@@ -214,7 +218,7 @@ public class AdaptiveSkinSkill extends PassiveSkill {
 
         for (TagKey<DamageType> tag : this.protectableDamageTypeTags.keySet()) {
             String tagKey = String.format("tag.%s.%s.%s", tag.registry().location().getPath(), tag.location().getNamespace(), tag.location().getPath());
-            sb.append("- " + Component.translatable(tagKey).getString() + "\n");
+            sb.append("- ").append(Component.translatable(tagKey).getString()).append("\n");
         }
 
         list.add(sb.toString());

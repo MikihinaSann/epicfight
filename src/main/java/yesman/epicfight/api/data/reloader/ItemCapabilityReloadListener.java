@@ -159,25 +159,6 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 					}
 				}
 			}
-
-			if (tag.contains("custom_data")) {
-				CompoundTag data = tag.getCompound("custom_data");
-
-				for (var key : data.getAllKeys()) {
-					Optional<Holder.Reference<CustomData<?>>> trueData = EpicFightRegistries.WEAPON_DATA.getHolder(ResourceLocation.parse(key));
-					trueData.ifPresent(
-							d -> {
-								if (d.value().deserializer().isPresent()) {
-									innerDefaultCapabilityBuilder.setCustomDataInternal(d, d.value().deserializer().get().apply(data.get(key)));
-								}
-								else
-								{
-									EpicFight.LOGGER.warn("Custom Data does not contain a deserializer");
-								}
-							}
-					);
-				}
-			}
 			
 			for (Tag jsonElement : jsonArray) {
 				CompoundTag innerTag = ((CompoundTag)jsonElement);
@@ -203,6 +184,25 @@ public class ItemCapabilityReloadListener extends SimpleJsonResourceReloadListen
 					
 					for (Map.Entry<Holder<Attribute>, AttributeModifier> attribute : attributeEntry.entrySet()) {
 						builder.addStyleAttibutes(style, attribute.getKey(), attribute.getValue());
+					}
+				}
+			}
+
+			if (tag.contains("custom_data")) {
+				CompoundTag data = tag.getCompound("custom_data");
+
+				for (var key : data.getAllKeys()) {
+					//Debugging
+					Optional<Holder.Reference<CustomData<?>>> trueData = EpicFightRegistries.WEAPON_DATA.getHolder(ResourceLocation.parse(key));
+					if (trueData.isPresent())
+					{
+						if (trueData.get().value().deserializer().isPresent()) {
+							builder.setCustomDataInternal(trueData.get(), trueData.get().value().deserializer().get().apply(data.get(key)));
+						}
+						else
+						{
+							EpicFight.LOGGER.warn("Custom Data does not contain a deserializer");
+						}
 					}
 				}
 			}

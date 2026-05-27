@@ -88,10 +88,9 @@ public class DodgeSkill extends Skill {
 		int i = args.getInt("direction");
 		float yRot = args.getFloat("yRot");
 		AnimationAccessor<? extends StaticAnimation> animation = this.animations[i];
-
 		//An example of custom data, this is from a moveset.
 		CapabilityItem item = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-		if (item instanceof WeaponCapability weaponCapability)
+		if (item instanceof WeaponCapability weaponCapability && weaponCapability.getCurrentSet(executor) != null)
 		{
 			BiFunction<SkillContainer, CompoundTag, AnimationManager.AnimationAccessor<? extends StaticAnimation>> function = weaponCapability.getCurrentSet(executor).getCustomData(EpicFightMovesetData.DODGE_ANIMATION);
 			if (function != null) {

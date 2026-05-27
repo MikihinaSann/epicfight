@@ -12,6 +12,7 @@ import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.CapabilityItem.WeaponCategories;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 
@@ -44,6 +45,18 @@ public class SwordmasterSkill extends PassiveSkill {
     private float speedBonus;
     private final Set<WeaponCategory> availableWeaponCategories;
 
+    private boolean isAvailableCategory(CapabilityItem item)
+    {
+        for (var setCategory : availableWeaponCategories)
+        {
+            if (item.isWeaponCategory(setCategory))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public SwordmasterSkill(SwordmasterSkill.Builder builder) {
         super(builder);
 
@@ -67,9 +80,8 @@ public class SwordmasterSkill extends PassiveSkill {
         eventListener.registerEvent(
             EpicFightEventHooks.Entity.MODIFY_ATTACK_SPEED,
             event -> {
-                WeaponCategory heldWeaponCategory = event.getItemCapability().getWeaponCategory();
 
-                if (this.availableWeaponCategories.contains(heldWeaponCategory)) {
+                if (this.isAvailableCategory(event.getItemCapability())) {
                     float attackSpeed = event.getAttackSpeed();
                     event.setAttackSpeed(attackSpeed * (1.0F + this.speedBonus * 0.01F));
                 }

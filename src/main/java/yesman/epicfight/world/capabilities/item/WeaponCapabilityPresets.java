@@ -29,7 +29,7 @@ public abstract class WeaponCapabilityPresets {
         if (builder instanceof WeaponCapability.Builder weaponBuilder)
         {
             WeaponCapability.Builder copy = weaponBuilder.copy();
-            handleTieredStats(copy, item);
+            handleItemOverrides(copy, item);
             ExCapManager.retrieveExCapData(builder.identifier).forEach(
                     data -> data.build().apply(copy)
             );
@@ -39,7 +39,7 @@ public abstract class WeaponCapabilityPresets {
         return CapabilityItem.builder();
     }
 
-    private static void handleTieredStats(WeaponCapability.Builder builder, Item item)
+    private static void handleItemOverrides(WeaponCapability.Builder builder, Item item)
     {
         if (item instanceof TieredItem tieredItem) {
             int tierLevel = vanillaTierToLevel(tieredItem.getTier());
@@ -53,5 +53,6 @@ public abstract class WeaponCapabilityPresets {
                 builder.hitSound(EpicFightSounds.BLUNT_HIT_HARD);
             }
         }
+        builder.handleOverrides(item);
     }
 }

@@ -16,6 +16,7 @@ import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
 import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
+import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
 
 import java.util.Arrays;
@@ -43,6 +44,18 @@ public class EmergencyEscapeSkill extends PassiveSkill {
 
     private final Set<WeaponCategory> availableWeapons;
 
+    private boolean isAvailableCategory(CapabilityItem item)
+    {
+        for (var setCategory : availableWeapons)
+        {
+            if (item.isWeaponCategory(setCategory))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public EmergencyEscapeSkill(EmergencyEscapeSkill.Builder builder) {
         super(builder);
 
@@ -63,9 +76,7 @@ public class EmergencyEscapeSkill extends PassiveSkill {
                     if (
                         (
                             !event.isStateExecutable() && animation instanceof AttackAnimation &&
-                            // Use the active combat cap so the offhand-only carrier can still
-                            // emergency-escape mid-attack with their weapon's category gate.
-                            this.availableWeapons.contains(container.getExecutor().getPrimaryItemCapability().getWeaponCategory())
+                                    this.isAvailableCategory(container.getExecutor().getPrimaryItemCapability())
                         ) ||
                         (
                             state.hurt() &&

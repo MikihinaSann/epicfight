@@ -518,6 +518,18 @@ public abstract class Skill implements IdentifierProvider {
         return this.getRegistryName();
     }
 
+	/**
+	 * For Simply Tooltips Compatibility
+	 * @param itemStack
+	 * @param itemCap
+	 * @param playerPatch
+	 * @return
+	 */
+	public Component getTranslatedTooltip(ItemStack itemStack, CapabilityItem itemCap, PlayerPatch<?> playerPatch)
+	{
+		return Component.translatable(this.getTranslationKey() + ".tooltip");
+	}
+
 	public Component getDisplayName() {
 		return Component.translatable(String.format("%s.%s.%s", "skill", this.getRegistryName().getNamespace(), this.getRegistryName().getPath()));
 	}

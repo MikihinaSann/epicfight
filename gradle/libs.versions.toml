@@ -1,5 +1,5 @@
 [versions]
-mod = "21.17.1"
+mod = "21.17.3"
 java = "21"
 
 # Minecraft
@@ -38,6 +38,12 @@ shoulderSurfing = "1.21.1-4.18.1+neoforge"
 creativecore = "2.13.35"
 playerrevive = "2.1.0"
 fgm = "3.2.2"
+simplytooltips = "0.1.3"
+fzzy = "0.7.6+1.21+neoforge"
+kotlin = "5.11.0"
+simplyswords = "1.63.0-1.21.1"
+
+
 
 # Helper Gradle-plugins
 mcSafeResources = "0.0.2"
@@ -61,6 +67,11 @@ iris = { module = "maven.modrinth:iris", version.ref = "iris" }
 werewolves = { module = "maven.modrinth:werewolves", version.ref = "werewolves" }
 vampirism = { module = "maven.modrinth:vampirism", version.ref = "vampirism" }
 
+simplytooltips = {group = "maven.modrinth", name = "simply-tooltips", version.ref = "simplytooltips"}
+kotlin = {group = "maven.modrinth", name = "kotlin-for-forge", version.ref = "kotlin"}
+fzzy = {group = "maven.modrinth", name = "fzzy-config", version.ref = "fzzy"}
+
+
 curios = { module = "top.theillusivec4.curios:curios-neoforge", version.ref = "curios" }
 playerAnimator = { module = "dev.kosmx.player-anim:player-animation-lib-forge", version.ref = "playerAnimator" }
 
@@ -78,6 +89,8 @@ creativeCore = { module = "maven.modrinth:creativecore", version.ref = "creative
 playerRevive = { module = "maven.modrinth:playerrevive", version.ref = "playerrevive" }
 
 fgm = {module = "maven.modrinth:female-gender", version.ref = "fgm"}
+simplyswords = { group = "maven.modrinth", name = "simply-swords", version.ref = "simplyswords"}
+
 
 # Declared only in libraries[], not plugins[], as it's used only by Gradle convention plugins.
 modPublish-gradle-plugin = { module = "me.modmuss50.mod-publish-plugin:me.modmuss50.mod-publish-plugin.gradle.plugin", version.ref = "modPublish" }
@@ -88,3 +101,8 @@ moddevgradle = { id = "net.neoforged.moddev", version.ref = "moddevgradle" }
 
 # Helper plugins
 mcSafeResources = { id = "dev.echoellet.mc-safe-resources", version.ref = "mcSafeResources" }
+
+[bundles]
+
+simply = ["simplytooltips", "fzzy", "kotlin", "simplyswords"]
+

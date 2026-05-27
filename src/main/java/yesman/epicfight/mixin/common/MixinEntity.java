@@ -1,5 +1,7 @@
 package yesman.epicfight.mixin.common;
 
+import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.entity.Entity;
@@ -11,7 +13,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -104,14 +105,14 @@ public abstract class MixinEntity {
         }
     }
 	
-	@Redirect(
+	@WrapOperation(
 		at = @At(
 			value = "INVOKE",
 			target = "Lnet/minecraft/world/entity/Entity;addAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"
 		),
 		method = "saveWithoutId(Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/nbt/CompoundTag;"
 	)
-	private void epicfight$saveWithoutId(Entity self, CompoundTag compoundTag) {
+	private void epicfight$saveWithoutId(Entity self, CompoundTag compoundTag, Operation<CompoundTag> operation) {
 		this.addAdditionalSaveData(compoundTag);
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
@@ -119,14 +120,14 @@ public abstract class MixinEntity {
 		});
 	}
 	
-	@Redirect(
+	@WrapOperation(
 		at = @At(
 			value = "INVOKE",
 			target = "Lnet/minecraft/world/entity/Entity;readAdditionalSaveData(Lnet/minecraft/nbt/CompoundTag;)V"
 		),
 		method = "load(Lnet/minecraft/nbt/CompoundTag;)V"
 	)
-	private void epicfight$load(Entity self, CompoundTag compoundTag) {
+	private void epicfight$load(Entity self, CompoundTag compoundTag, Operation<Void> operation) {
 		this.readAdditionalSaveData(compoundTag);
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
@@ -134,9 +135,9 @@ public abstract class MixinEntity {
 		});
 	}
 
-    /// Called when setting [Entity#onGround] according to the player's movement
+    /// Called when setting [Entity#onGround()] according to the player's movement
     ///
-    /// the onGround variable is synced from a server to a client. [ServerGamePacketListenerImpl#handleMovePlayer]
+    /// The onGround variable is synced from a server to a client. [ServerGamePacketListenerImpl#handleMovePlayer]
     @Inject(at = @At(value = "HEAD"), method = "setOnGroundWithMovement(ZLnet/minecraft/world/phys/Vec3;)V")
     public void epicfight$setOnGroundWithMovement(boolean pOnGround, Vec3 pMovement, CallbackInfo callbackInfo) {
         Entity self = (Entity)(Object)this;

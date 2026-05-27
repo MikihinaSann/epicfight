@@ -86,7 +86,21 @@ public class ArmorCapability extends CapabilityItem {
 		
         return map;
     }
-	
+
+	@Override
+	public void modifySimplyTooltip(ItemStack itemStack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
+		Holder<Attribute> stunArmor = EpicFightAttributes.STUN_ARMOR;
+		Holder<Attribute> weight = EpicFightAttributes.WEIGHT;
+
+		if (this.stunArmor != 0.0D && validateAttribute(entitypatch, stunArmor)) {
+			itemTooltip.add(Component.literal("+").append(Component.translatable(stunArmor.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(this.stunArmor))).withStyle(ChatFormatting.BLUE));
+		}
+
+		if (this.weight != 0.0D && validateAttribute(entitypatch, weight)) {
+			itemTooltip.add(Component.literal("+").append(Component.translatable(weight.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(this.weight))).withStyle(ChatFormatting.BLUE));
+		}
+	}
+
 	public static ArmorCapability.Builder builder() {
 		return new ArmorCapability.Builder();
 	}

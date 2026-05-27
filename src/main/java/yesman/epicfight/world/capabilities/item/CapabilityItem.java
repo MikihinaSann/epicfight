@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.neoforged.fml.ModList;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.EpicFight;
@@ -110,7 +111,7 @@ public class CapabilityItem {
 	protected Collider collider;
 	
 	protected CapabilityItem(CapabilityItem.Builder<?> builder) {
-		this.weaponCategory = builder.category;
+        this.weaponCategory = Objects.requireNonNullElse(builder.category, WeaponCategories.FIST);
 		this.collider = builder.collider;
 		this.id = builder.identifier;
 		this.customData = ImmutableMap.copyOf(builder.customData);
@@ -122,15 +123,70 @@ public class CapabilityItem {
 		
 		this.attributeMap = attributeMapbuilder.build();
 	}
-	
+
+	public void modifySimplyTooltip(ItemStack itemStack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
+		int index = 0;
+		boolean modifyIn = false;
+
+		for (int i = 0; i < itemTooltip.size(); i++) {
+			Component textComp = itemTooltip.get(i);
+			index = i;
+
+			if (this.findComponentArgument(textComp, Attributes.ATTACK_SPEED.value().getDescriptionId()) != null) {
+				modifyIn = true;
+				break;
+			}
+		}
+
+		index++;
+
+		Map<Holder<Attribute>, AttributeModifier> attribute = this.getDamageAttributesInCondition(getStyle(entitypatch));
+
+		if (attribute != null) {
+			if (!modifyIn) {
+				itemTooltip.add(index, Component.literal(""));
+				index++;
+				itemTooltip.add(index, Component.translatable("epicfight.gui.attribute").withStyle(ChatFormatting.GRAY));
+				index++;
+			}
+
+			Holder<Attribute> armorNegation = EpicFightAttributes.ARMOR_NEGATION;
+			Holder<Attribute> impact = EpicFightAttributes.IMPACT;
+			Holder<Attribute> maxStrikes = EpicFightAttributes.MAX_STRIKES;
+
+			if (attribute.containsKey(armorNegation) && validateAttribute(entitypatch, armorNegation)) {
+				double value = attribute.get(armorNegation).amount() + entitypatch.getOriginal().getAttribute(armorNegation).getBaseValue();
+
+				if (value > 0.0D) {
+					itemTooltip.add(index, Component.literal(" ").append(Component.translatable(armorNegation.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			}
+
+			if (attribute.containsKey(impact) && validateAttribute(entitypatch, impact)) {
+				double value = attribute.get(impact).amount() + entitypatch.getOriginal().getAttribute(impact).getBaseValue();
+
+				if (value > 0.0D) {
+					int i = itemStack.getEnchantmentLevel(entitypatch.getOriginal().level().holderOrThrow(Enchantments.KNOCKBACK));
+					value *= (1.0F + i * 0.12F);
+					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(impact.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			}
+
+			if (attribute.containsKey(maxStrikes) && validateAttribute(entitypatch, maxStrikes)) {
+				double value = attribute.get(maxStrikes).amount() + entitypatch.getOriginal().getAttribute(maxStrikes).getBaseValue();
+
+				if (value > 0.0D) {
+					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(maxStrikes.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
+				}
+			} else {
+				itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(maxStrikes.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(maxStrikes.value().getDefaultValue()))));
+			}
+		}
+	}
+
 	public void modifyItemTooltip(ItemStack itemstack, List<Component> itemTooltip, LivingEntityPatch<?> entitypatch) {
+
 		Style style = this instanceof RangedWeaponCapability ? Styles.RANGED : this.getStyle(entitypatch);
-
-        /// TODO: Lazy Fix for crash #2406. Need more inspection what causes this
-        if (style == null) {
-            return;
-        }
-
 		itemTooltip.add(1, Component.translatable(EpicFight.MODID + ".style." + style.toString().toLowerCase(Locale.ROOT)).withStyle(ChatFormatting.DARK_GRAY));
 		
 		int index = 0;
@@ -267,7 +323,7 @@ public class CapabilityItem {
 	}
 
 	public boolean isWeaponCategory(WeaponCategory target) {
-		if (this == target) return true;
+		if (this.weaponCategory == target) return true;
 
 		// Population Phase: Use the ImmutableList directly
 		List<WeaponCategory> immediateParents = weaponCategory.getParents();
@@ -295,7 +351,7 @@ public class CapabilityItem {
 		SkillContainer weaponInnateSkillContainer = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
 		PayloadBundleBuilder toLocal = PayloadBundleBuilder.create();
 		PayloadBundleBuilder toRemote = PayloadBundleBuilder.create();
-		EpicFight.LOGGER.info("Capability Item Preset: {}", id);
+		EpicFight.LOGGER.debug("Capability Item Preset: {}", id);
 		if (weaponInnateSkill != null) {
 			if (weaponInnateSkillContainer.getSkill() != weaponInnateSkill) {
 				weaponInnateSkillContainer.setSkill(weaponInnateSkill);
@@ -479,14 +535,14 @@ public class CapabilityItem {
         PICKAXE(WEAPON_CATEGORY_PICKAXE),
         SHOVEL(WEAPON_CATEGORY_SHOVEL),
         SWORD(WEAPON_CATEGORY_SWORD),
-        UCHIGATANA(WEAPON_CATEGORY_UCHIGATANA),
+        UCHIGATANA(WEAPON_CATEGORY_UCHIGATANA, SWORD),
         SPEAR(WEAPON_CATEGORY_SPEAR),
-        TACHI(WEAPON_CATEGORY_TACHI),
+        TACHI(WEAPON_CATEGORY_TACHI, SWORD),
         TRIDENT(WEAPON_CATEGORY_TRIDENT),
-        LONGSWORD(WEAPON_CATEGORY_LONGSWORD),
+        LONGSWORD(WEAPON_CATEGORY_LONGSWORD, SWORD),
         DAGGER(WEAPON_CATEGORY_DAGGER),
         SHIELD(WEAPON_CATEGORY_SHIELD),
-		BOW(WEAPON_CATEGORY_RANGED);
+		RANGED(WEAPON_CATEGORY_RANGED);
 
         final Component translationKey;
 		final List<WeaponCategory> parent;
@@ -563,8 +619,8 @@ public class CapabilityItem {
 			this.constructor = CapabilityItem::new;
 			this.attributeMap = Maps.newHashMap();
 			this.customData = Maps.newHashMap();
-			this.category = WeaponCategories.FIST;
-			this.collider = ColliderPreset.FIST;
+			this.category = null;
+			this.collider = null;
 		}
 
 		public T copy()
@@ -638,6 +694,12 @@ public class CapabilityItem {
 		protected T merge()
 		{
 			if (this.parent == null) {
+				if (this.category == null) {
+					this.category(WeaponCategories.FIST);
+				}
+				if (this.collider == null) {
+					this.collider(ColliderPreset.FIST);
+				}
 				return (T) this;
 			}
 			T result = (T) CapabilityItem.builder();
@@ -652,6 +714,12 @@ public class CapabilityItem {
 				T builder = stack.pop();
 				handleLayers(result, builder);
 			}
+            if (result.category == null) {
+                result.category(WeaponCategories.FIST);
+            }
+            if (result.collider == null) {
+                result.collider(ColliderPreset.FIST);
+            }
 			return (T)this;
 		}
 
@@ -665,12 +733,9 @@ public class CapabilityItem {
 		}
 
 		public <R> T setCustomData(DeferredCustomData<? extends CustomData<R>> customData, R data) {
-			if (this.customData.containsKey(customData)) {
-				this.customData.put(customData, data);
-			}
-			else {
-				EpicFight.LOGGER.warn("Custom data type {} does not exist. Assigning {} failed.", customData.getId(), data);
-			}
+			String modId = customData.getId().getNamespace();
+			if (!ModList.get().isLoaded(modId)) return (T) this;
+            this.setCustomDataInternal(customData, data);
 			return (T)this;
 		}
 
