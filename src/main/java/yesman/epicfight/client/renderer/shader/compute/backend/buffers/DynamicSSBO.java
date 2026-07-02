@@ -37,28 +37,22 @@ public class DynamicSSBO<T> implements Closeable, IArrayBufferProxy {
     
     @Override
     public void updateAll() {
-    	GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, this.glSSBO);
-    	
-        for (T s : this.src) {
-        	this.uploader.accept(s, this.buffer);
-        }
-        
-        this.buffer.position(0);
-        
-		GL15C.glBufferSubData(GL43C.GL_SHADER_STORAGE_BUFFER, 0, this.buffer);
-        GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, 0);
+    	this.updateFromTo(0, this.src.length);
     }
-    
+
     @Override
     public void updateFromTo(int from, int to) {
-    	GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, this.glSSBO);
-    	
+    	// Upload exactly the written range - flipping the staging buffer keeps a partial
+    	// update from re-sending the whole (MAX_JOINTS-sized) buffer every frame
+    	this.buffer.clear();
+
         for (int i = from; i < to; i++) {
         	this.uploader.accept(this.src[i], this.buffer);
         }
-        
-        this.buffer.position(0);
-        
+
+        this.buffer.flip();
+
+        GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, this.glSSBO);
 		GL15C.glBufferSubData(GL43C.GL_SHADER_STORAGE_BUFFER, (long) srcSize * 4 * from, this.buffer);
         GL15C.glBindBuffer(GL43C.GL_SHADER_STORAGE_BUFFER, 0);
     }

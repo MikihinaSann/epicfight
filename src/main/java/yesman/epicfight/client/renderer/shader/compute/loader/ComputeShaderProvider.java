@@ -68,10 +68,12 @@ public class ComputeShaderProvider {
     public static void clear() {
         if (meshComputeVanilla != null) {
         	meshComputeVanilla.delete();
+        	meshComputeVanilla = null;
         }
-        
+
         if (meshComputeIris != null) {
         	meshComputeIris.delete();
+        	meshComputeIris = null;
         }
     }
     

@@ -51,6 +51,7 @@ public abstract class ComputeShaderSetup {
     
     protected final IArrayBufferProxy hiddenFlagsBO;
     protected final Integer[] hiddenFlags;
+    private final int[] hiddenFlagsScratch;
     
     protected final int arrayObjectId;
     protected final int vcount;
@@ -66,6 +67,7 @@ public abstract class ComputeShaderSetup {
         
         List<Float> uvList = Lists.newArrayList();
         this.hiddenFlags = new Integer[(skinnedMesh.getAllParts().size() + 31) / 32];
+        this.hiddenFlagsScratch = new int[this.hiddenFlags.length];
         this.hiddenFlagsBO = ComputeShaderProvider.createDynamicBuffer(this.hiddenFlags, 1, (v, b) -> b.put(Float.intBitsToFloat(v)));
         
         MutableInt partIdx = new MutableInt(0);
@@ -117,6 +119,49 @@ public abstract class ComputeShaderSetup {
     }
     
     protected void initAttachmentSSBO(List<ElemInfo> elements, List<Float> uvList) {
+    }
+
+    /**
+     * Loads joint poses and per-part transforms into the shared pose buffer and refreshes
+     * part visibility. The visibility bitfield rarely changes between frames, so it's only
+     * re-uploaded when it actually did; the pose upload is capped to the used matrix range.
+     */
+    protected void updatePosesAndVisibility(SkinnedMesh skinnedMesh, @Nullable Armature armature, OpenMatrix4f[] poses) {
+        for (int i = 0; i < poses.length; i++) {
+            TOTAL_POSES[i].load(poses[i]);
+
+            if (armature != null) {
+                TOTAL_POSES[i].mulBack(armature.searchJointById(i).getToOrigin());
+            }
+        }
+
+        java.util.Arrays.fill(this.hiddenFlagsScratch, 0);
+
+        for (SkinnedMesh.SkinnedMeshPart part : skinnedMesh.getAllParts()) {
+            OpenMatrix4f mat = part.getVanillaPartTransform();
+            if (mat == null) mat = OpenMatrix4f.IDENTITY;
+            int partIdx = part.getPartVBO().partIdx();
+            TOTAL_POSES[poses.length + partIdx].load(mat);
+
+            if (part.isHidden()) {
+                this.hiddenFlagsScratch[partIdx / 32] |= 1 << (partIdx % 32);
+            }
+        }
+
+        boolean flagsChanged = false;
+
+        for (int i = 0; i < this.hiddenFlagsScratch.length; i++) {
+            if (this.hiddenFlags[i] == null || this.hiddenFlags[i].intValue() != this.hiddenFlagsScratch[i]) {
+                this.hiddenFlags[i] = this.hiddenFlagsScratch[i];
+                flagsChanged = true;
+            }
+        }
+
+        if (flagsChanged) {
+            this.hiddenFlagsBO.updateAll();
+        }
+
+        POSE_BO.updateFromTo(0, poses.length + skinnedMesh.getAllParts().size());
     }
     
 	public static void setShaderDefaultUniforms(Matrix4f frustumMatrix, ShaderInstance shader, VertexFormat.Mode mode, Window window) {

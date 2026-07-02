@@ -246,7 +246,7 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 		RenderPipelineHooks.preSkinnedMeshDraw();
 
 		try {
-			if (ClientConfig.activateComputeShader && this.computerShaderSetup != null) {
+			if (ClientConfig.activateComputeShader && this.computerShaderSetup != null && ComputeShaderProvider.supportComputeShader()) {
 				this.computerShaderSetup.drawWithShader(this, poseStack, bufferSources, EpicFightRenderTypes.getTriangulated(renderType), packedLight, r, g, b, a, overlay, armature, poses);
 			} else {
 				this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);

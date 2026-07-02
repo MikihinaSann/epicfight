@@ -174,31 +174,7 @@ public class IrisComputeShaderSetup extends ComputeShaderSetup {
 	@Override
 	public void drawWithShader(SkinnedMesh skinnedMesh, PoseStack poseStack, MultiBufferSource buffers, RenderType renderType, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
 		// pose setup and upload
-		for (int i = 0; i < poses.length; i++) {
-			TOTAL_POSES[i].load(poses[i]);
-			
-			if (armature != null) {
-				TOTAL_POSES[i].mulBack(armature.searchJointById(i).getToOrigin());
-			}
-		}
-		
-        Arrays.fill(this.hiddenFlags, 0);
-        
-		for (SkinnedMeshPart part : skinnedMesh.getAllParts()) {
-			OpenMatrix4f mat = part.getVanillaPartTransform();
-			if (mat == null) mat = OpenMatrix4f.IDENTITY;
-			TOTAL_POSES[poses.length + part.getPartVBO().partIdx()].load(mat);
-			
-			if (!part.isHidden()) continue;
-			
-			int flagPos = part.getPartVBO().partIdx() / 32;
-			int flagOffset = part.getPartVBO().partIdx() % 32;
-			int flag = this.hiddenFlags[flagPos];
-			this.hiddenFlags[flagPos] = flag | ((part.isHidden() ? 1:0) << flagOffset);
-		}
-		
-		this.hiddenFlagsBO.updateAll();
-		POSE_BO.updateFromTo(0, poses.length + skinnedMesh.getAllParts().size());
+		this.updatePosesAndVisibility(skinnedMesh, armature, poses);
 		
 		// state trace
 		int currentBoundVao = GlStateManager._getInteger(GLConstants.GL_VERTEX_ARRAY_BINDING);

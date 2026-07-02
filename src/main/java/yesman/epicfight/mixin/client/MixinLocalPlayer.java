@@ -32,7 +32,9 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		if (localPlayerPatch != null) {
 			localPlayerPatch.dx = epicfight$entity.xxa;
 			localPlayerPatch.dz = epicfight$entity.zza;
-			localPlayerPatch.sendPlayerInput(epicfight$entity.xxa, epicfight$entity.zza);
+			// (zza, xxa) matches sendPlayerInput's (forward, strafe): the relay handlers assign
+			// dx = strafe, dz = forward, so this keeps remote patches' dx/dz aligned with local
+			localPlayerPatch.sendPlayerInput(epicfight$entity.zza, epicfight$entity.xxa);
 		}
 	}
 	

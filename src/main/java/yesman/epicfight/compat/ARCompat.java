@@ -6,6 +6,7 @@ import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import yesman.epicfight.client.renderer.RenderPipelineHooks;
 import yesman.epicfight.config.ClientConfig;
+import yesman.epicfight.main.EpicFightMod;
 
 /**
  * Compatibility with Argon4W's AcceleratedRendering. Epic Fight draws
@@ -27,7 +28,15 @@ public class ARCompat implements ICompatModule {
 	@OnlyIn(Dist.CLIENT)
 	@Override
 	public void onModEventBusClient(IEventBus eventBus) {
-		eventBus.<FMLClientSetupEvent>addListener(event -> event.enqueueWork(ARCompat::bindHooks));
+		eventBus.<FMLClientSetupEvent>addListener(event -> event.enqueueWork(() -> {
+			try {
+				bindHooks();
+			} catch (Throwable t) {
+				// AcceleratedRendering is alpha-stage; an AR build without the expected pipeline
+				// API must degrade to "compat disabled", not crash mod loading
+				EpicFightMod.LOGGER.error("Incompatible AcceleratedRendering version detected, disabling Epic Fight's AR compat", t);
+			}
+		}));
 	}
 
 	@OnlyIn(Dist.CLIENT)
