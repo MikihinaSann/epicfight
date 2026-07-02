@@ -20,7 +20,7 @@ import yesman.epicfight.network.client.*;
 import yesman.epicfight.network.server.*;
 
 public class EpicFightNetworkManager {
-	private static final String PROTOCOL_VERSION = "1";
+	private static final String PROTOCOL_VERSION = "2";
 	public static final SimpleChannel INSTANCE =
 		NetworkRegistry.newSimpleChannel(
                 EpicFightMod.identifier("network_manager"),

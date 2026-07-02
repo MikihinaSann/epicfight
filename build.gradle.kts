@@ -177,6 +177,8 @@ dependencies {
     // Modrinth-migrated dependencies
     modCompileOnly(libs.embeddium)
     modCompileOnly(libs.oculus)
+    // Client-only, runtime-optional; latest 1.20.1 alpha needs Java 21 to boot, so no modRuntimeOnly here
+    modCompileOnly(libs.acceleratedrendering)
 
 }
 

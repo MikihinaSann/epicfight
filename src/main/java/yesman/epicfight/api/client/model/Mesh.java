@@ -26,6 +26,7 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
+import yesman.epicfight.client.renderer.RenderPipelineHooks;
 
 public interface Mesh {
 	
@@ -39,7 +40,14 @@ public interface Mesh {
 	
 	/* Universal method */
 	default void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
-		this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
+		// Posed vertices are pre-transformed on our side - keep acceleration mods from re-transforming them
+		RenderPipelineHooks.preSkinnedMeshDraw();
+
+		try {
+			this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
+		} finally {
+			RenderPipelineHooks.postSkinnedMeshDraw();
+		}
 	}
 	
 	public static record RenderProperties(ResourceLocation customTexturePath, Vec3f customColor, boolean isTransparent) {

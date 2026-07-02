@@ -91,6 +91,7 @@ import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.mesh.HumanoidMesh;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.FakeBlockRenderer;
+import yesman.epicfight.client.renderer.RenderPipelineHooks;
 import yesman.epicfight.client.renderer.FirstPersonRenderer;
 import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
 import yesman.epicfight.client.renderer.patched.entity.PCreeperRenderer;
@@ -371,7 +372,13 @@ public class RenderEngine {
 	
 	@SuppressWarnings("unchecked")
 	public void renderEntityArmatureModel(LivingEntity livingEntity, LivingEntityPatch<?> entitypatch, EntityRenderer<? extends Entity> renderer, MultiBufferSource buffer, PoseStack matStack, int packedLight, float partialTicks) {
-		this.getEntityRenderer(livingEntity).render(livingEntity, entitypatch, renderer, buffer, matStack, packedLight, partialTicks);
+		RenderPipelineHooks.preEntityRender();
+
+		try {
+			this.getEntityRenderer(livingEntity).render(livingEntity, entitypatch, renderer, buffer, matStack, packedLight, partialTicks);
+		} finally {
+			RenderPipelineHooks.postEntityRender();
+		}
 	}
 	
 	public PatchedEntityRenderer getEntityRenderer(Entity entity) {

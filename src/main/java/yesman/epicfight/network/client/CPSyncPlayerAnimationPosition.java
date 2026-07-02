@@ -7,6 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.SyncAnimationPositionPacket;
 import yesman.epicfight.network.server.SPSyncAnimationPosition;
@@ -17,16 +18,16 @@ public class CPSyncPlayerAnimationPosition extends SyncAnimationPositionPacket {
 	}
 	
 	public static CPSyncPlayerAnimationPosition fromBytes(FriendlyByteBuf buf) {
-		return new CPSyncPlayerAnimationPosition(buf.readInt(), buf.readFloat(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readInt());
+		return new CPSyncPlayerAnimationPosition(EpicFightByteBufs.readEntityId(buf), buf.readFloat(), new Vec3(buf.readDouble(), buf.readDouble(), buf.readDouble()), buf.readByte());
 	}
-	
+
 	public static void toBytes(CPSyncPlayerAnimationPosition msg, FriendlyByteBuf buf) {
-		buf.writeInt(msg.entityId);
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId);
 		buf.writeFloat(msg.elapsedTime);
 		buf.writeDouble(msg.position.x);
 		buf.writeDouble(msg.position.y);
 		buf.writeDouble(msg.position.z);
-		buf.writeInt(msg.lerpSteps);
+		buf.writeByte(msg.lerpSteps);
 	}
 	
 	public static void handle(CPSyncPlayerAnimationPosition msg, Supplier<NetworkEvent.Context> ctx) {

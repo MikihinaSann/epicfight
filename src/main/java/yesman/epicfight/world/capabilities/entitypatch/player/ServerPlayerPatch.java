@@ -33,6 +33,7 @@ import yesman.epicfight.network.server.SPChangeLivingMotion;
 import yesman.epicfight.network.server.SPInitSkills;
 import yesman.epicfight.network.server.SPModifyPlayerData;
 import yesman.epicfight.network.server.SPSkillExecutionFeedback;
+import yesman.epicfight.network.server.SPUpdatePlayerInput;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlots;
 import yesman.epicfight.skill.modules.HoldableSkill;
@@ -69,9 +70,32 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		}, 10);
 	}
 	
+	private float lastBroadcastInputForward = Float.NaN;
+	private float lastBroadcastInputStrafe = Float.NaN;
+
+	/**
+	 * Remembers the last input state relayed to trackers so unchanged (keepalive)
+	 * input packets from the client aren't rebroadcast every tick.
+	 */
+	public boolean updateBroadcastPlayerInput(float forward, float strafe) {
+		if (forward != this.lastBroadcastInputForward || strafe != this.lastBroadcastInputStrafe) {
+			this.lastBroadcastInputForward = forward;
+			this.lastBroadcastInputStrafe = strafe;
+
+			return true;
+		}
+
+		return false;
+	}
+
 	@Override
 	public void onStartTracking(ServerPlayer trackingPlayer) {
 		PayloadBundleBuilder payloadBundleBuilder = PayloadBundleBuilder.create();
+
+		// Input packets are only relayed on change, so late trackers need the latched state
+		if (!Float.isNaN(this.lastBroadcastInputForward)) {
+			payloadBundleBuilder.and(new SPUpdatePlayerInput(this.getOriginal().getId(), this.lastBroadcastInputForward, this.lastBroadcastInputStrafe));
+		}
 		SPChangeLivingMotion msg = new SPChangeLivingMotion(this.getOriginal().getId());
 		msg.putEntries(this.getAnimator().getLivingAnimations().entrySet());
 		

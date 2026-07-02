@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.network.NetworkEvent;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
@@ -24,11 +25,11 @@ public class SPUpdatePlayerInput {
 	}
 
 	public static SPUpdatePlayerInput fromBytes(FriendlyByteBuf buf) {
-		return new SPUpdatePlayerInput(buf.readInt(), buf.readFloat(), buf.readFloat());
+		return new SPUpdatePlayerInput(EpicFightByteBufs.readEntityId(buf), buf.readFloat(), buf.readFloat());
 	}
 
 	public static void toBytes(SPUpdatePlayerInput msg, FriendlyByteBuf buf) {
-		buf.writeInt(msg.entityId);
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId);
 		buf.writeFloat(msg.forward);
 		buf.writeFloat(msg.strafe);
 	}
@@ -37,7 +38,11 @@ public class SPUpdatePlayerInput {
 		ctx.get().enqueueWork(() -> {
 			Minecraft mc = Minecraft.getInstance();
 			Entity entity = mc.player.level().getEntity(msg.entityId);
-			
+
+			if (entity == null) {
+				return;
+			}
+
 			entity.getCapability(EpicFightCapabilities.CAPABILITY_ENTITY).ifPresent((entitypatch) -> {
 				if (entitypatch instanceof PlayerPatch<?> plyaerpatch) {
 					plyaerpatch.dx = msg.strafe;

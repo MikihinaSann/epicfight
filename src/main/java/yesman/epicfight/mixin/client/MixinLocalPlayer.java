@@ -15,8 +15,6 @@ import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.network.EpicFightNetworkManager;
-import yesman.epicfight.network.client.CPUpdatePlayerInput;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 @Mixin(value = LocalPlayer.class)
@@ -34,9 +32,8 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		if (localPlayerPatch != null) {
 			localPlayerPatch.dx = epicfight$entity.xxa;
 			localPlayerPatch.dz = epicfight$entity.zza;
+			localPlayerPatch.sendPlayerInput(epicfight$entity.xxa, epicfight$entity.zza);
 		}
-		
-		EpicFightNetworkManager.sendToServer(new CPUpdatePlayerInput(epicfight$entity.getId(), epicfight$entity.xxa, epicfight$entity.zza));
 	}
 	
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)

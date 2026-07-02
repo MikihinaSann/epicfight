@@ -61,6 +61,7 @@ import yesman.epicfight.compat.CuriosCompat;
 import yesman.epicfight.compat.FirstPersonCompat;
 import yesman.epicfight.compat.GeckolibCompat;
 import yesman.epicfight.compat.ICompatModule;
+import yesman.epicfight.compat.ARCompat;
 import yesman.epicfight.compat.IRISCompat;
 import yesman.epicfight.compat.IceAndFireCompat;
 import yesman.epicfight.compat.PlayerAnimatorCompat;
@@ -284,6 +285,10 @@ public class EpicFightMod {
 		if (ModList.get().isLoaded("wildfire_gender"))
 		{
 			ICompatModule.loadCompatModule(context, WildfireFGMCompat.class);
+		}
+
+		if (ModList.get().isLoaded("acceleratedrendering")) {
+			ICompatModule.loadCompatModule(context, ARCompat.class);
 		}
 	}
     

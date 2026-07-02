@@ -66,7 +66,14 @@ public class ClientConfig {
 	public static final BooleanValue ENABLE_COSMETICS = BUILDER.define("ingame.enable_cosmetics", () -> true);
 	
 	// Performance
-	public static final BooleanValue ACTIVATE_COMPUTE_SHADER = BUILDER.define("ingame.use_compute_shader", () -> false);
+	public static final BooleanValue ACTIVATE_COMPUTE_SHADER = BUILDER.define("ingame.use_compute_shader", () -> true);
+	// AUTO excludes only Epic Fight's pre-transformed mesh draws from AcceleratedRendering's pipeline;
+	// FORCE_VANILLA_PIPELINE excludes whole patched-entity renders (use if visual corruption appears); OFF disables the compat. Needs restart.
+	public static final EnumValue<ARCompatMode> AR_COMPAT_MODE = BUILDER.defineEnum("ingame.accelerated_rendering_compat_mode", ARCompatMode.AUTO);
+
+	public enum ARCompatMode {
+		AUTO, FORCE_VANILLA_PIPELINE, OFF
+	}
 	
 	// Camera
 	public static final BooleanValue ENABLE_POV_ACTION = BUILDER.define("ingame.enable_pov_action", () -> true);

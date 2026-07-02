@@ -28,6 +28,7 @@ import yesman.epicfight.api.utils.ParseUtil;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec4f;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
+import yesman.epicfight.client.renderer.RenderPipelineHooks;
 import yesman.epicfight.client.renderer.shader.compute.ComputeShaderSetup;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
 import yesman.epicfight.config.ClientConfig;
@@ -241,10 +242,17 @@ public class SkinnedMesh extends StaticMesh<SkinnedMeshPart> {
 
 	@Override
 	public void draw(PoseStack poseStack, MultiBufferSource bufferSources, RenderType renderType, Mesh.DrawingFunction drawingFunction, int packedLight, float r, float g, float b, float a, int overlay, @Nullable Armature armature, OpenMatrix4f[] poses) {
-		if (ClientConfig.activateComputeShader && this.computerShaderSetup != null) {
-			this.computerShaderSetup.drawWithShader(this, poseStack, bufferSources, EpicFightRenderTypes.getTriangulated(renderType), packedLight, r, g, b, a, overlay, armature, poses);
-		} else {
-			this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
+		// Vertices leaving here are already fully posed - acceleration mods must not transform them again
+		RenderPipelineHooks.preSkinnedMeshDraw();
+
+		try {
+			if (ClientConfig.activateComputeShader && this.computerShaderSetup != null) {
+				this.computerShaderSetup.drawWithShader(this, poseStack, bufferSources, EpicFightRenderTypes.getTriangulated(renderType), packedLight, r, g, b, a, overlay, armature, poses);
+			} else {
+				this.drawPosed(poseStack, bufferSources.getBuffer(EpicFightRenderTypes.getTriangulated(renderType)), drawingFunction, packedLight, r, g, b, a, overlay, armature, poses);
+			}
+		} finally {
+			RenderPipelineHooks.postSkinnedMeshDraw();
 		}
 	}
 	

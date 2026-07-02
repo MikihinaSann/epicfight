@@ -22,6 +22,7 @@ skinlayer3d = "BBnR3V86"
 firstperson = "2.3.0"
 shouldersurfing = "1.20.1-4.22.5+forge"
 creativecore = "2.11.24"
+acceleratedrendering = "1.0.10.1-1.20.1-alpha"
 
 
 mcSafeResources = "0.0.2"
@@ -58,6 +59,7 @@ skinlayer3d = { group = "maven.modrinth", name = "3dskinlayers", version.ref = "
 firstperson = { group = "maven.modrinth", name = "first-person-model", version.ref = "firstperson" }
 shouldersurfing = { group = "maven.modrinth", name = "shoulder-surfing-reloaded", version.ref = "shouldersurfing" }
 creativecore = { group = "maven.modrinth", name = "creativecore", version.ref = "creativecore" }
+acceleratedrendering = { group = "maven.modrinth", name = "acceleratedrendering", version.ref = "acceleratedrendering" }
 
 azurelib-armor = { group = "curse.maven", name = "azurelib-armor-912767", version = "5500370" }
 werewolves = { group = "curse.maven", name = "werewolves-become-a-beast-417851", version = "5406832" }

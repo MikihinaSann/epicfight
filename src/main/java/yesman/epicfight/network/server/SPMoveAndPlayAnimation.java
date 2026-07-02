@@ -9,6 +9,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public class SPMoveAndPlayAnimation extends SPPlayAnimationAndSetTarget {
@@ -52,16 +53,16 @@ public class SPMoveAndPlayAnimation extends SPPlayAnimationAndSetTarget {
 	}
 	
 	public static SPMoveAndPlayAnimation fromBytes(FriendlyByteBuf buf) {
-		return new SPMoveAndPlayAnimation(buf.readEnum(Action.class), buf.readInt(), buf.readInt(), buf.readFloat(), buf.readBoolean(), buf.readInt(), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readFloat());
+		return new SPMoveAndPlayAnimation(buf.readEnum(Action.class), EpicFightByteBufs.readSignedVarInt(buf), EpicFightByteBufs.readEntityId(buf), buf.readFloat(), buf.readBoolean(), EpicFightByteBufs.readSignedVarInt(buf), buf.readDouble(), buf.readDouble(), buf.readDouble(), buf.readFloat());
 	}
-	
+
 	public static void toBytes(SPMoveAndPlayAnimation msg, FriendlyByteBuf buf) {
 		buf.writeEnum(msg.action);
-		buf.writeInt(msg.animationId);
-		buf.writeInt(msg.entityId);
+		EpicFightByteBufs.writeSignedVarInt(buf, msg.animationId);
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId);
 		buf.writeFloat(msg.transitionTimeModifier);
 		buf.writeBoolean(msg.pause);
-		buf.writeInt(msg.targetId);
+		EpicFightByteBufs.writeSignedVarInt(buf, msg.targetId);
 		buf.writeDouble(msg.posX);
 		buf.writeDouble(msg.posY);
 		buf.writeDouble(msg.posZ);

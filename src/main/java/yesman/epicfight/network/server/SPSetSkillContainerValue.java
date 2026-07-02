@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.skill.SkillContainer;
 import yesman.epicfight.skill.SkillSlot;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
@@ -44,15 +45,15 @@ public record SPSetSkillContainerValue(Target target, SkillSlot skillSlot, float
 	}
 	
 	public static SPSetSkillContainerValue fromBytes(FriendlyByteBuf buf) {
-		return new SPSetSkillContainerValue(buf.readEnum(Target.class), SkillSlot.ENUM_MANAGER.getOrThrow(buf.readInt()), buf.readFloat(), buf.readBoolean(), buf.readInt());
+		return new SPSetSkillContainerValue(buf.readEnum(Target.class), SkillSlot.ENUM_MANAGER.getOrThrow(EpicFightByteBufs.readUniversalOrdinal(buf)), buf.readFloat(), buf.readBoolean(), EpicFightByteBufs.readEntityId(buf));
 	}
-	
+
 	public static void toBytes(SPSetSkillContainerValue msg, FriendlyByteBuf buf) {
 		buf.writeEnum(msg.target());
-		buf.writeInt(msg.skillSlot().universalOrdinal());
+		EpicFightByteBufs.writeUniversalOrdinal(buf, msg.skillSlot().universalOrdinal());
 		buf.writeFloat(msg.floatVal());
 		buf.writeBoolean(msg.boolVal());
-		buf.writeInt(msg.entityId());
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId());
 	}
 	
 	public static void handle(SPSetSkillContainerValue msg, Supplier<NetworkEvent.Context> ctx) {

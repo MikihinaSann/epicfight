@@ -11,6 +11,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.network.NetworkEvent;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
@@ -52,15 +53,15 @@ public class SPModifyPlayerData {
 	
 	public static SPModifyPlayerData fromBytes(FriendlyByteBuf buf) {
 		PacketType packetType = buf.readEnum(PacketType.class);
-		SPModifyPlayerData packet = new SPModifyPlayerData(packetType, buf.readInt());
+		SPModifyPlayerData packet = new SPModifyPlayerData(packetType, EpicFightByteBufs.readEntityId(buf));
 		packetType.decoder.accept(packet, buf);
-		
+
 		return packet;
 	}
 
 	public static void toBytes(SPModifyPlayerData msg, FriendlyByteBuf buf) {
 		buf.writeEnum(msg.packetType);
-		buf.writeInt(msg.entityId);
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId);
 		msg.packetType.encoder.accept(msg, buf);
 	}
 	
@@ -111,9 +112,9 @@ public class SPModifyPlayerData {
 		}, (packet, buffer) -> {
 		}),
 		MODE((packet, buffer) -> {
-			buffer.writeInt(((PlayerPatch.PlayerMode)packet.data.get("mode")).ordinal());
+			buffer.writeByte(((PlayerPatch.PlayerMode)packet.data.get("mode")).ordinal());
 		}, (packet, buffer) -> {
-			packet.addData("mode", PlayerPatch.PlayerMode.values()[buffer.readInt()]);
+			packet.addData("mode", PlayerPatch.PlayerMode.values()[buffer.readByte()]);
 		}),
 		LAST_ATTACK_RESULT((packet, buffer) -> {
 			buffer.writeBoolean((boolean)packet.data.get("lastAttackSuccess"));
@@ -121,9 +122,9 @@ public class SPModifyPlayerData {
 			packet.addData("lastAttackSuccess", buffer.readBoolean());
 		}),
 		SET_GRAPPLE_TARGET((packet, buffer) -> {
-			buffer.writeInt((int)packet.data.get("grapplingTarget"));
+			EpicFightByteBufs.writeSignedVarInt(buffer, (int)packet.data.get("grapplingTarget"));
 		}, (packet, buffer) -> {
-			packet.addData("grapplingTarget", buffer.readInt());
+			packet.addData("grapplingTarget", EpicFightByteBufs.readSignedVarInt(buffer));
 		})
 		;
 		

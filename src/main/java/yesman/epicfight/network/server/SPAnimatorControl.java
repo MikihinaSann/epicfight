@@ -8,6 +8,7 @@ import net.minecraftforge.network.NetworkEvent;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.network.common.AnimatorControlPacket;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -57,17 +58,31 @@ public class SPAnimatorControl extends AnimatorControlPacket {
 	}
 	
 	public static SPAnimatorControl fromBytes(FriendlyByteBuf buf) {
-		return new SPAnimatorControl(buf.readEnum(Action.class), buf.readInt(), buf.readInt(), buf.readFloat(), buf.readBoolean(), buf.readEnum(Layer.class), buf.readEnum(Priority.class));
+		Action action = buf.readEnum(Action.class);
+		int animationId = EpicFightByteBufs.readSignedVarInt(buf);
+		int entityId = EpicFightByteBufs.readEntityId(buf);
+		float transitionTimeModifier = buf.readFloat();
+		boolean pause = buf.readBoolean();
+
+		// Layer/Priority are only consumed by the PLAY_CLIENT path in onArrive, so they're only on the wire for that action
+		if (action == Action.PLAY_CLIENT) {
+			return new SPAnimatorControl(action, animationId, entityId, transitionTimeModifier, pause, buf.readEnum(Layer.class), buf.readEnum(Priority.class));
+		}
+
+		return new SPAnimatorControl(action, animationId, entityId, transitionTimeModifier, pause);
 	}
-	
+
 	public static void toBytes(SPAnimatorControl msg, FriendlyByteBuf buf) {
 		buf.writeEnum(msg.action);
-		buf.writeInt(msg.animationId);
-		buf.writeInt(msg.entityId);
+		EpicFightByteBufs.writeSignedVarInt(buf, msg.animationId);
+		EpicFightByteBufs.writeEntityId(buf, msg.entityId);
 		buf.writeFloat(msg.transitionTimeModifier);
 		buf.writeBoolean(msg.pause);
-		buf.writeEnum(msg.layer);
-		buf.writeEnum(msg.priority);
+
+		if (msg.action == Action.PLAY_CLIENT) {
+			buf.writeEnum(msg.layer);
+			buf.writeEnum(msg.priority);
+		}
 	}
 	
 	public static void handle(SPAnimatorControl msg, Supplier<NetworkEvent.Context> ctx) {

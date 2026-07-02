@@ -3,8 +3,11 @@ package yesman.epicfight.network.server;
 import java.util.function.Supplier;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
+import yesman.epicfight.network.EpicFightByteBufs;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
@@ -44,22 +47,30 @@ public class SPDatapackSync {
 	}
 	
 	public static SPDatapackSync fromBytes(FriendlyByteBuf buf) {
-		SPDatapackSync msg = new SPDatapackSync(buf.readInt(), SPDatapackSync.Type.values()[buf.readInt()]);
-		
+		SPDatapackSync msg = new SPDatapackSync(buf.readVarInt(), SPDatapackSync.Type.values()[buf.readByte()]);
+		ListTag list = EpicFightByteBufs.readCompressedNbt(buf).getList("tags", Tag.TAG_COMPOUND);
+
 		for (int i = 0; i < msg.count; i++) {
-			msg.tags[i] = buf.readNbt();
+			msg.tags[i] = list.getCompound(i);
 		}
-		
+
 		return msg;
 	}
-	
+
 	public static void toBytes(SPDatapackSync msg, FriendlyByteBuf buf) {
-		buf.writeInt(msg.count);
-		buf.writeInt(msg.type.ordinal());
-		
+		buf.writeVarInt(msg.count);
+		buf.writeByte(msg.type.ordinal());
+
+		// Datapack payloads are large and highly repetitive - one compressed blob instead of raw per-tag NBT
+		ListTag list = new ListTag();
+
 		for (CompoundTag tag : msg.tags) {
-			buf.writeNbt(tag);
+			list.add(tag);
 		}
+
+		CompoundTag root = new CompoundTag();
+		root.put("tags", list);
+		EpicFightByteBufs.writeCompressedNbt(buf, root);
 	}
 	
 	public static void handle(SPDatapackSync msg, Supplier<NetworkEvent.Context> ctx) {

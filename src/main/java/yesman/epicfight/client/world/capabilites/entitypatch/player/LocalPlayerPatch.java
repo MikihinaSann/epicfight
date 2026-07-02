@@ -48,6 +48,7 @@ import yesman.epicfight.network.client.CPAnimatorControl;
 import yesman.epicfight.network.client.CPChangePlayerMode;
 import yesman.epicfight.network.client.CPModifyEntityModelYRot;
 import yesman.epicfight.network.client.CPSetStamina;
+import yesman.epicfight.network.client.CPUpdatePlayerInput;
 import yesman.epicfight.network.common.AnimatorControlPacket;
 import yesman.epicfight.skill.modules.ChargeableSkill;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
@@ -65,6 +66,9 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	private Minecraft minecraft;
 	private float staminaO;
 	private int prevChargingAmount;
+	private float lastSentForward = Float.NaN;
+	private float lastSentStrafe = Float.NaN;
+	private int ticksSinceInputSend;
 	
 	private AnimationSubFileReader.PovSettings povSettings;
 	private FirstPersonLayer firstPersonLayer = new FirstPersonLayer();
@@ -86,6 +90,22 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	
 	public void onRespawnLocalPlayer(ClientPlayerNetworkEvent.Clone event) {
 		this.onJoinWorld(event.getNewPlayer(), new EntityJoinLevelEvent(event.getNewPlayer(), event.getNewPlayer().level()));
+	}
+
+	/**
+	 * Sends the movement input to the server only when it changed, plus a periodic
+	 * keepalive so a lost packet can't leave remote players stuck in a walk blend.
+	 */
+	public void sendPlayerInput(float forward, float strafe) {
+		this.ticksSinceInputSend++;
+
+		if (forward != this.lastSentForward || strafe != this.lastSentStrafe || this.ticksSinceInputSend >= 20) {
+			this.lastSentForward = forward;
+			this.lastSentStrafe = strafe;
+			this.ticksSinceInputSend = 0;
+
+			EpicFightNetworkManager.sendToServer(new CPUpdatePlayerInput(forward, strafe));
+		}
 	}
 	
 	@Override
