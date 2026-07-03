@@ -3,8 +3,7 @@ package yesman.epicfight.network.client;
 import java.util.function.Supplier;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.network.NetworkEvent;
 import yesman.epicfight.network.EpicFightByteBufs;
@@ -32,11 +31,16 @@ public class CPSyncPlayerAnimationPosition extends SyncAnimationPositionPacket {
 	
 	public static void handle(CPSyncPlayerAnimationPosition msg, Supplier<NetworkEvent.Context> ctx) {
 		ctx.get().enqueueWork(() -> {
-			Entity entity = ctx.get().getSender().level().getEntity(msg.entityId);
-			
-			if (entity != null && entity instanceof Player player) {
-				EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(new SPSyncAnimationPosition(entity.getId(), msg.elapsedTime, msg.position, msg.lerpSteps), player);
+			ServerPlayer sender = ctx.get().getSender();
+
+			// Only allow a client to sync the position of ITS OWN player entity. Without this
+			// check a client could spoof any entity id and broadcast arbitrary position/animation
+			// state to everyone tracking that victim (teleport/desync griefing).
+			if (sender == null || msg.entityId != sender.getId()) {
+				return;
 			}
+
+			EpicFightNetworkManager.sendToAllPlayerTrackingThisEntity(new SPSyncAnimationPosition(sender.getId(), msg.elapsedTime, msg.position, msg.lerpSteps), sender);
 		});
 		ctx.get().setPacketHandled(true);
 	}

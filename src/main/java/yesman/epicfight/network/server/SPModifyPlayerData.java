@@ -78,6 +78,7 @@ public class SPModifyPlayerData {
 						break;
 					case YROT_TURN_OFF:
 						playerpatch.disableModelYRot(false);
+						break;
 					case MODE:
 						playerpatch.toMode((PlayerPatch.PlayerMode)msg.data.get("mode"), false);
 						break;
