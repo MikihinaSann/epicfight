@@ -34,6 +34,10 @@ public abstract class MixinGameRenderer {
 		method = "renderLevel(FJLcom/mojang/blaze3d/vertex/PoseStack;)V"
 	)
 	private void epicfight$renderLevel(GameRenderer gameRenderer, float partialTick) {
+		if (this.minecraft.player == null) {
+			return;
+		}
+		
 		if (EpicFightCameraAPI.getInstance().isTPSMode()) {
 			this.pickInTPSPerspective(partialTick);
 		} else {
