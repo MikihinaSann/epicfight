@@ -1,6 +1,7 @@
 package yesman.epicfight.mixin.client;
 
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -26,17 +27,28 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayer {
 		super(arg1, arg2);
 	}
 
+	@Unique private float epicfight$lastXxa = Float.NaN;
+	@Unique private float epicfight$lastZza = Float.NaN;
+
 	@Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/LocalPlayer;sendPosition()V", shift = At.Shift.BEFORE), method = "tick()V")
 	private void epicfight$tick(CallbackInfo callbackInfo) {
 		LocalPlayer epicfight$entity = (LocalPlayer)(Object)this;
 		LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getEntityPatch(epicfight$entity, LocalPlayerPatch.class);
-		
+
 		if (localPlayerPatch != null) {
 			localPlayerPatch.dx = epicfight$entity.xxa;
 			localPlayerPatch.dz = epicfight$entity.zza;
 		}
-		
-		EpicFightNetworkManager.sendToServer(new CPUpdatePlayerInput(epicfight$entity.getId(), epicfight$entity.xxa, epicfight$entity.zza));
+
+		// ponytail: only stream input on change. Steady/stationary input (the common case) was re-sent identical 20x/s,
+		// each re-broadcast to every tracker and flushed — this chain dominated the server-thread profile (eventfd_write).
+		// NaN init forces the first tick to send, so initial state is always synced. Ceiling: a player who *starts*
+		// tracking mid-hold gets dx/dz on the next input edge; upgrade path = sync dx/dz on start-tracking if it matters.
+		if (epicfight$entity.xxa != this.epicfight$lastXxa || epicfight$entity.zza != this.epicfight$lastZza) {
+			this.epicfight$lastXxa = epicfight$entity.xxa;
+			this.epicfight$lastZza = epicfight$entity.zza;
+			EpicFightNetworkManager.sendToServer(new CPUpdatePlayerInput(epicfight$entity.getId(), epicfight$entity.xxa, epicfight$entity.zza));
+		}
 	}
 	
     @Inject(method = "drop", at = @At("HEAD"), cancellable = true)
