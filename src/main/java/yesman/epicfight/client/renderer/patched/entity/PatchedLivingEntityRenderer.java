@@ -118,12 +118,15 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 		super.render(entity, entitypatch, renderer, buffer, poseStack, packedLight, partialTicks);
 		
 		Minecraft mc = Minecraft.getInstance();
-		MixinLivingEntityRenderer livingEntityRendererAccessor = (MixinLivingEntityRenderer)renderer;
-		
-		boolean isVisible = livingEntityRendererAccessor.invokeIsBodyVisible(entity);
+
+		boolean isVisible = InvokerCompat.callBoolean(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeIsBodyVisible(entity),
+			"isBodyVisible", InvokerCompat.IS_BODY_VISIBLE_PARAMS, new Object[]{entity});
 		boolean isVisibleToPlayer = !isVisible && !entity.isInvisibleTo(mc.player);
 		boolean isGlowing = mc.shouldEntityAppearGlowing(entity);
-		RenderType renderType = livingEntityRendererAccessor.invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing);
+		RenderType renderType = InvokerCompat.callObject(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing),
+			"getRenderType", InvokerCompat.GET_RENDER_TYPE_PARAMS, new Object[]{entity, isVisible, isVisibleToPlayer, isGlowing}, null);
 		Armature armature = entitypatch.getArmature();
 		poseStack.pushPose();
 		this.mulPoseStack(poseStack, armature, entity, entitypatch, partialTicks);
@@ -204,7 +207,9 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 			f2 *= -1.0F;
 		}
 		
-		float f7 = ((MixinLivingEntityRenderer)renderer).invokeGetBob(entity, partialTicks);
+		float f7 = InvokerCompat.callFloat(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetBob(entity, partialTicks),
+			"getBob", InvokerCompat.GET_BOB_PARAMS, new Object[]{entity, partialTicks});
 		float f8 = 0.0F;
 		float f5 = 0.0F;
 		
@@ -233,7 +238,9 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
         float f1 = MathUtils.lerpBetween(entity.yHeadRotO, entity.yHeadRot, partialTicks);
         float f2 = f1 - f;
 		float f7 = entity.getViewXRot(partialTicks);
-		float bob = ((MixinLivingEntityRenderer)renderer).invokeGetBob(entity, partialTicks);
+		float bob = InvokerCompat.callFloat(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetBob(entity, partialTicks),
+			"getBob", InvokerCompat.GET_BOB_PARAMS, new Object[]{entity, partialTicks});
 		
 		for (RenderLayer<E, M> layer : renderer.layers) {
 			Class<?> layerClass = layer.getClass();

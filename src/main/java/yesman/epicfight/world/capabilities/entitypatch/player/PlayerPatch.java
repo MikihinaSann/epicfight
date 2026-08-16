@@ -71,6 +71,12 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	public static EntityDataAccessor<Float> STAMINA;
 	
 	public static void initPlayerDataAccessor() {
+		// ponytail: idempotent — the <clinit> mixin is the primary initializer, but on
+		// some modpacks that injection doesn't fire before EntityJoinLevelEvent, leaving
+		// STAMINA null and kicking the player on join (NPE in hasItem). Safe to re-call.
+		if (STAMINA != null) {
+			return;
+		}
 		STAMINA = SynchedEntityData.defineId(Player.class, EntityDataSerializers.FLOAT);
 	}
 	
@@ -431,7 +437,12 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public float getStamina() {
-		return this.getMaxStamina() <= 0.0F ? 0.0F : this.original.getEntityData().hasItem(STAMINA) ? this.original.getEntityData().get(STAMINA) : 0.0F;
+		// ponytail: guard null accessor — if the <clinit> mixin didn't fire, STAMINA is null.
+		// Returning 0 keeps the player from being kicked on join instead of NPE-ing in hasItem.
+		if (STAMINA == null || this.getMaxStamina() <= 0.0F) {
+			return 0.0F;
+		}
+		return this.original.getEntityData().hasItem(STAMINA) ? this.original.getEntityData().get(STAMINA) : 0.0F;
 	}
 	
 	public float getModifiedStaminaConsume(float amount) {
@@ -446,7 +457,7 @@ public abstract class PlayerPatch<T extends Player> extends LivingEntityPatch<T>
 	}
 	
 	public void setStamina(float value) {
-		if (this.original.getEntityData().hasItem(STAMINA)) {
+		if (STAMINA != null && this.original.getEntityData().hasItem(STAMINA)) {
 			float f1 = Mth.clamp(value, 0.0F, this.getMaxStamina());
 			this.original.getEntityData().set(STAMINA, f1);
 		}

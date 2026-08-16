@@ -88,12 +88,16 @@ public class PresetRenderer extends PatchedEntityRenderer<LivingEntity, LivingEn
 		super.render(entity, entitypatch, renderer, buffer, poseStack, packedLight, partialTicks);
 		
 		Minecraft mc = Minecraft.getInstance();
-		MixinLivingEntityRenderer livingEntityRendererAccessor = (MixinLivingEntityRenderer)this.presetRenderer;
-		
-		boolean isVisible = livingEntityRendererAccessor.invokeIsBodyVisible(entity);
+		LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>> presetRenderer = this.presetRenderer;
+
+		boolean isVisible = InvokerCompat.callBoolean(presetRenderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeIsBodyVisible(entity),
+			"isBodyVisible", InvokerCompat.IS_BODY_VISIBLE_PARAMS, new Object[]{entity});
 		boolean isVisibleToPlayer = !isVisible && !entity.isInvisibleTo(mc.player);
 		boolean isGlowing = mc.shouldEntityAppearGlowing(entity);
-		RenderType renderType = livingEntityRendererAccessor.invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing);
+		RenderType renderType = InvokerCompat.callObject(presetRenderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing),
+			"getRenderType", InvokerCompat.GET_RENDER_TYPE_PARAMS, new Object[]{entity, isVisible, isVisibleToPlayer, isGlowing}, null);
 		Armature armature = entitypatch.getArmature();
 		poseStack.pushPose();
 		this.mulPoseStack(poseStack, armature, entity, entitypatch, partialTicks);

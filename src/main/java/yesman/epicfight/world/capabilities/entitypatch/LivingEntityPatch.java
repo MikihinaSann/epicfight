@@ -107,6 +107,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	protected static EntityDataAccessor<Boolean> AIRBORNE;
 	
 	public static void initLivingEntityDataAccessor() {
+		// ponytail: idempotent — same reason as PlayerPatch.initPlayerDataAccessor; the
+		// <clinit> mixin can fail to fire on some modpacks, leaving these null.
+		if (STUN_SHIELD != null) {
+			return;
+		}
 		STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
 		MAX_STUN_SHIELD = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.FLOAT);
 		EXECUTION_RESISTANCE = SynchedEntityData.defineId(LivingEntity.class, EntityDataSerializers.INT);
@@ -554,29 +559,32 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	
 	@Override
 	public final float getStunShield() {
-		return this.original.getEntityData().get(STUN_SHIELD).floatValue();
+		return STUN_SHIELD == null ? 0.0F : this.original.getEntityData().get(STUN_SHIELD).floatValue();
 	}
-	
+
 	@Override
 	public final void setStunShield(float value) {
+		if (STUN_SHIELD == null) return;
 		value = Mth.clamp(value, 0, this.getMaxStunShield());
 		this.original.getEntityData().set(STUN_SHIELD, value);
 	}
-	
+
 	public float getMaxStunShield() {
-		return this.original.getEntityData().get(MAX_STUN_SHIELD).floatValue();
+		return MAX_STUN_SHIELD == null ? 0.0F : this.original.getEntityData().get(MAX_STUN_SHIELD).floatValue();
 	}
-	
+
 	public void setMaxStunShield(float value) {
+		if (MAX_STUN_SHIELD == null) return;
 		value = Math.max(value, 0);
 		this.original.getEntityData().set(MAX_STUN_SHIELD, value);
 	}
-	
+
 	public int getExecutionResistance() {
-		return this.original.getEntityData().get(EXECUTION_RESISTANCE).intValue();
+		return EXECUTION_RESISTANCE == null ? 0 : this.original.getEntityData().get(EXECUTION_RESISTANCE).intValue();
 	}
-	
+
 	public void setExecutionResistance(int value) {
+		if (EXECUTION_RESISTANCE == null) return;
 		int maxExecutionResistance = (int)this.original.getAttributeValue(EpicFightAttributes.EXECUTION_RESISTANCE.get());
 		value = Math.min(maxExecutionResistance, value);
 		this.original.getEntityData().set(EXECUTION_RESISTANCE, value);
@@ -1080,11 +1088,12 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 	}
 	
 	public void setAirborneState(boolean airborne) {
+		if (AIRBORNE == null) return;
 		this.original.getEntityData().set(AIRBORNE, airborne);
 	}
-	
+
 	public boolean isAirborneState() {
-		return this.original.getEntityData().get(AIRBORNE);
+		return AIRBORNE != null && this.original.getEntityData().get(AIRBORNE);
 	}
 	
 	public void setLastAttackSuccess(boolean setter) {

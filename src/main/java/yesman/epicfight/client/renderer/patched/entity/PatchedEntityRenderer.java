@@ -5,6 +5,8 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraftforge.client.event.RenderNameTagEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -20,17 +22,30 @@ import yesman.epicfight.mixin.client.MixinEntityRenderer;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public abstract class PatchedEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, R extends EntityRenderer<E>, AM extends SkinnedMesh> {
+	private static final Class<?>[] SHOULD_SHOW_NAME_PARAMS = {Entity.class};
+	private static final Class<?>[] RENDER_NAME_TAG_PARAMS = {Entity.class, Component.class, PoseStack.class, MultiBufferSource.class, int.class};
+
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTicks) {
 		RenderNameTagEvent renderNameplateEvent = new RenderNameTagEvent(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTicks);
 		MinecraftForge.EVENT_BUS.post(renderNameplateEvent);
-		
-		MixinEntityRenderer entityRendererAccessor = (MixinEntityRenderer)renderer;
-		
-		if ((entityRendererAccessor.invokeShouldShowName(entity) || renderNameplateEvent.getResult() == Result.ALLOW) && renderNameplateEvent.getResult() != Result.DENY) {
-			entityRendererAccessor.invokeRenderNameTag(entity, renderNameplateEvent.getContent(), poseStack, buffer, packedLight);
+
+		// ponytail: @Invoker interface calls are wrapped via InvokerCompat so a missing synthetic method
+		// (modpack class-finalize-before-mixin race) falls back to reflection instead of AbstractMethodError.
+		boolean showName = InvokerCompat.callBoolean(renderer,
+			r -> ((MixinEntityRenderer)r).invokeShouldShowName(entity),
+			"shouldShowName", SHOULD_SHOW_NAME_PARAMS, new Object[]{entity});
+
+		if ((showName || renderNameplateEvent.getResult() == Result.ALLOW) && renderNameplateEvent.getResult() != Result.DENY) {
+			Component content = renderNameplateEvent.getContent();
+			InvokerCompat.callVoid(renderer,
+				r -> {
+					((MixinEntityRenderer)r).invokeRenderNameTag(entity, content, poseStack, buffer, packedLight);
+					return null;
+				},
+				"renderNameTag", RENDER_NAME_TAG_PARAMS, new Object[]{entity, content, poseStack, buffer, packedLight});
 		}
 	}
-	
+
 	public void mulPoseStack(PoseStack poseStack, Armature armature, E entity, T entitypatch, float partialTicks) {
 		OpenMatrix4f modelMatrix = entitypatch.getModelMatrix(partialTicks);
         poseStack.mulPose(QuaternionUtils.YP.rotationDegrees(180.0F));

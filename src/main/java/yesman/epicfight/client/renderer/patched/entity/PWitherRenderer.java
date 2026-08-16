@@ -34,11 +34,12 @@ public class PWitherRenderer extends PatchedLivingEntityRenderer<WitherBoss, Wit
 	@Override
 	public void render(WitherBoss entity, WitherPatch entitypatch, WitherBossRenderer renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTicks) {
 		Minecraft mc = Minecraft.getInstance();
-		MixinLivingEntityRenderer livingEntityRendererAccessor = (MixinLivingEntityRenderer)renderer;
 		boolean isVisible = this.isVisible(entity, entitypatch);
 		boolean isVisibleToPlayer = !isVisible && !entity.isInvisibleTo(mc.player);
 		boolean isGlowing = mc.shouldEntityAppearGlowing(entity);
-		RenderType renderType = livingEntityRendererAccessor.invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing);
+		RenderType renderType = InvokerCompat.callObject(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing),
+			"getRenderType", InvokerCompat.GET_RENDER_TYPE_PARAMS, new Object[]{entity, isVisible, isVisibleToPlayer, isGlowing}, null);
 		WitherMesh mesh = this.getMeshProvider(entitypatch).get();
 		Armature armature = entitypatch.getArmature();
 		

@@ -35,6 +35,7 @@ import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.mesh.HumanoidMesh;
 import yesman.epicfight.client.renderer.patched.entity.PatchedLivingEntityRenderer;
+import yesman.epicfight.client.renderer.patched.entity.InvokerCompat;
 import yesman.epicfight.client.renderer.patched.layer.EmptyLayer;
 import yesman.epicfight.client.renderer.patched.layer.PatchedItemInHandLayer;
 import yesman.epicfight.client.renderer.patched.layer.WearableItemLayer;
@@ -173,7 +174,9 @@ public class FirstPersonRenderer extends PatchedLivingEntityRenderer<LocalPlayer
         float f1 = MathUtils.lerpBetween(entity.yHeadRotO, entity.yHeadRot, partialTicks);
         float f2 = f1 - f;
 		float f7 = entity.getViewXRot(partialTicks);
-		float bob = ((MixinLivingEntityRenderer)renderer).invokeGetBob(entity, partialTicks);
+		float bob = InvokerCompat.callFloat(renderer,
+			r -> ((MixinLivingEntityRenderer)r).invokeGetBob(entity, partialTicks),
+			"getBob", InvokerCompat.GET_BOB_PARAMS, new Object[]{entity, partialTicks});
 		
 		while (iter.hasNext()) {
 			RenderLayer<LocalPlayer, PlayerModel<LocalPlayer>> layer = iter.next();
