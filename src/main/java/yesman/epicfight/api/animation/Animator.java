@@ -1,5 +1,6 @@
 package yesman.epicfight.api.animation;
 
+import yesman.epicfight.EpicFight;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.util.Pair;

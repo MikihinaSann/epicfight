@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;

@@ -8,6 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.level.LevelReader;
 
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.world.capabilities.item.WeaponCapabilityPresets;

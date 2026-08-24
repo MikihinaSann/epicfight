@@ -1,4 +1,5 @@
 package yesman.epicfight.data.conditions.entity;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import com.ibm.icu.text.MessageFormat;
 import net.minecraft.client.gui.components.AbstractWidget;

@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui;
+import yesman.epicfight.EpicFight;
 
 import com.mojang.blaze3d.platform.Window;
 import net.minecraft.client.Minecraft;

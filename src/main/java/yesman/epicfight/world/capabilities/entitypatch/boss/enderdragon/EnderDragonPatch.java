@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon;
+import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;

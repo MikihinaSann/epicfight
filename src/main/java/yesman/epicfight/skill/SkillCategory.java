@@ -1,4 +1,5 @@
 package yesman.epicfight.skill;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;

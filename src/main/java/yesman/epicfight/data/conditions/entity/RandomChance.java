@@ -1,4 +1,5 @@
 package yesman.epicfight.data.conditions.entity;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.screens.Screen;

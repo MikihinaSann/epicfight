@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;

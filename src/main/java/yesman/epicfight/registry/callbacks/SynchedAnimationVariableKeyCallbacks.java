@@ -7,7 +7,7 @@ import net.minecraft.core.Registry;
 import yesman.epicfight.api.animation.SynchedAnimationVariableKey;
 import yesman.epicfight.api.utils.datastructure.ClearableIdMapper;
 
-public class SynchedAnimationVariableKeyCallbacks implements Object<SynchedAnimationVariableKey<?>>, Object<SynchedAnimationVariableKey<?>> {
+public class SynchedAnimationVariableKeyCallbacks implements RegistryCallback.BakeCallback<SynchedAnimationVariableKey<?>>, RegistryCallback.ClearCallback<SynchedAnimationVariableKey<?>> {
 	private static final SynchedAnimationVariableKeyCallbacks INSTANCE = new SynchedAnimationVariableKeyCallbacks();
 	
 	public static SynchedAnimationVariableKeyCallbacks getRegistryCallback() {

@@ -1,4 +1,5 @@
 package yesman.epicfight.client.camera;
+import yesman.epicfight.EpicFight;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

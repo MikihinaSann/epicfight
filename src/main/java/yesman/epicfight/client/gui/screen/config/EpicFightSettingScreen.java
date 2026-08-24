@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui.screen.config;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;

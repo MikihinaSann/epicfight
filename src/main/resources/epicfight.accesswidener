@@ -2,6 +2,7 @@ accessWidener v2 named
 
 accessible method com/mojang/blaze3d/vertex/VertexFormat <init> (Ljava/util/List;Ljava/util/List;Lit/unimi/dsi/fastutil/ints/IntList;I)V
 accessible method net/minecraft/world/item/Rarity <init> (Ljava/lang/String;ILjava/util/function/UnaryOperator;)V
+accessible method net/minecraft/world/damagesource/DamageSource <init> (Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)V
 accessible field net/minecraft/client/Camera eyeHeight F
 accessible field net/minecraft/client/Camera eyeHeightOld F
 accessible method net/minecraft/client/Camera getMaxZoom (F)F
@@ -24,6 +25,7 @@ accessible method net/minecraft/client/gui/components/AbstractSliderButton setVa
 accessible field net/minecraft/client/gui/components/EditBox responder Ljava/util/function/Consumer;
 accessible field net/minecraft/client/gui/screens/Screen INWORLD_MENU_BACKGROUND Lnet/minecraft/resources/ResourceLocation;
 accessible field net/minecraft/client/gui/screens/Screen initialized Z
+accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
 accessible field net/minecraft/client/model/geom/ModelPart cubes Ljava/util/List;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
 accessible field net/minecraft/client/gui/components/ContainerObjectSelectionList$Entry focused Lnet/minecraft/client/gui/components/AbstractSelectionList$Entry;
@@ -69,6 +71,7 @@ accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShar
 accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
 accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard texture Ljava/util/Optional;
 accessible class net/minecraft/client/renderer/RenderType$CompositeState
+extendable class net/minecraft/client/renderer/RenderType$CompositeState
 accessible field net/minecraft/client/renderer/RenderType$CompositeState textureState Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState textureState Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 accessible field net/minecraft/client/renderer/RenderType$CompositeState shaderState Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
@@ -100,6 +103,7 @@ mutable field net/minecraft/client/renderer/RenderType$CompositeState outlinePro
 accessible field net/minecraft/client/renderer/RenderType$CompositeState states Lcom/google/common/collect/ImmutableList;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState states Lcom/google/common/collect/ImmutableList;
 accessible class net/minecraft/client/renderer/RenderType$CompositeRenderType
+extendable class net/minecraft/client/renderer/RenderType$CompositeRenderType
 accessible field net/minecraft/client/renderer/RenderType$CompositeRenderType outline Ljava/util/Optional;
 mutable field net/minecraft/client/renderer/RenderType$CompositeRenderType outline Ljava/util/Optional;
 accessible field net/minecraft/client/renderer/RenderType$CompositeRenderType state Lnet/minecraft/client/renderer/RenderType$CompositeState;
@@ -119,6 +123,8 @@ mutable field net/minecraft/world/entity/ai/attributes/AttributeMap supplier Lne
 accessible field net/minecraft/world/entity/ai/attributes/AttributeSupplier instances Ljava/util/Map;
 accessible field net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal targetType Ljava/lang/Class;
 accessible field net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal targetConditions Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;
+accessible field net/minecraft/world/entity/Mob targetSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
+accessible field net/minecraft/world/entity/Mob goalSelector Lnet/minecraft/world/entity/ai/goal/GoalSelector;
 accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon growlTime I
 accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon phaseManager Lnet/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager;
 mutable field net/minecraft/world/entity/boss/enderdragon/EnderDragon phaseManager Lnet/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager;
@@ -142,3 +148,6 @@ accessible method net/minecraft/world/entity/projectile/AbstractArrow setPierceL
 accessible field net/minecraft/world/entity/projectile/ThrownTrident dealtDamage Z
 accessible method net/minecraft/world/item/ItemStack <init> (Ljava/lang/Void;)V
 accessible field net/minecraft/world/level/dimension/end/EndDragonFight dragonEvent Lnet/minecraft/world/level/dimension/end/EndDragonFight;
+accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
+accessible field net/minecraft/core/IdMapper tToId Lit/unimi/dsi/fastutil/objects/Object2IntMap;
+accessible field net/minecraft/core/IdMapper nextId I

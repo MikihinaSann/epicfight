@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.phys.Vec3;

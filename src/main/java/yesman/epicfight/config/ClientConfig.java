@@ -1,4 +1,5 @@
 package yesman.epicfight.config;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -10,6 +11,7 @@ import net.fabricmc.api.EnvType;
 
 
 import fuzs.forgeconfigapiport.api.config.v3.ModConfig;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvent;
 
 import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
 import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec.*;

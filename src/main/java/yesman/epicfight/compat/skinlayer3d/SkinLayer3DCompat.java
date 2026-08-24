@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.skinlayer3d;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.NativeImage;

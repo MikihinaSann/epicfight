@@ -1,4 +1,5 @@
 package yesman.epicfight.api.utils;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

@@ -1,4 +1,5 @@
 package yesman.epicfight.epicskins.animation;
+import yesman.epicfight.EpicFight;
 
 
 

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
+import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;

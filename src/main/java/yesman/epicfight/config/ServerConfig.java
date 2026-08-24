@@ -1,4 +1,5 @@
 package yesman.epicfight.config;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvent;
 
 import net.fabricmc.api.EnvType;
 

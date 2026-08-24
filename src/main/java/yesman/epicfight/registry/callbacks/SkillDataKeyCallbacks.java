@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.callbacks;
+import yesman.epicfight.EpicFight;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -18,7 +19,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillDataKey;
 
-public class SkillDataKeyCallbacks implements Object<SkillDataKey<?>>, Object<SkillDataKey<?>>, Object<SkillDataKey<?>> {
+public class SkillDataKeyCallbacks implements RegistryCallback.AddCallback<SkillDataKey<?>>, RegistryCallback.BakeCallback<SkillDataKey<?>>, RegistryCallback.ClearCallback<SkillDataKey<?>> {
 	private static final SkillDataKeyCallbacks INSTANCE = new SkillDataKeyCallbacks();
 	
 	public static SkillDataKeyCallbacks getRegistryCallback() {

@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;

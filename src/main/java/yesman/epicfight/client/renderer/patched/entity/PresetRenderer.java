@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.entity;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

@@ -1,4 +1,6 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
+import yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;

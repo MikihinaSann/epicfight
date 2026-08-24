@@ -1,5 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.10.5'
+    id 'fabric-loom' version '1.17.19'
     id 'maven-publish'
 }
 
@@ -54,24 +54,24 @@ dependencies {
     // For now, compileOnly to allow compilation
     // modImplementation "maven.modrinth:forge-config-api-port:${project.forgeconfigapiport_version}"
 
-    // Compat mods (compile-only) — temporarily disabled for initial build
-    // modCompileOnly "curse.maven:azurelib-817423:${project.azurelib_file_id}"
-    // modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
-    // modCompileOnly "curse.maven:controlify-835847:${project.controlify_file_id}"
-    // modCompileOnly "curse.maven:trinkets-341284:${project.trinkets_file_id}"
-    // modCompileOnly "curse.maven:female-gender-456319:${project.fgm_file_id}"
-    // modCompileOnly "curse.maven:first-person-model-333287:${project.firstperson_file_id}"
-    // modCompileOnly "curse.maven:geckolib-388172:${project.geckolib_file_id}"
-    // modCompileOnly "curse.maven:irisshaders-455508:${project.iris_file_id}"
-    // modCompileOnly "curse.maven:jei-238222:${project.jei_file_id}"
-    // modCompileOnly "curse.maven:playeranimator-658587:${project.playeranimator_file_id}"
-    // modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
-    // modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
-    // modCompileOnly "curse.maven:skin-layers-3d-521480:${project.skinlayers_file_id}"
-    // modCompileOnly "curse.maven:sodium-394468:${project.sodium_file_id}"
+    // Compat mods (compile-only)
+    modCompileOnly "curse.maven:azurelib-817423:${project.azurelib_file_id}"
+    modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
+    // modCompileOnly "curse.maven:controlify-835847:${project.controlify_file_id}" — has malformed access widener
+    modCompileOnly "curse.maven:trinkets-341284:${project.trinkets_file_id}"
+    modCompileOnly "curse.maven:female-gender-456319:${project.fgm_file_id}"
+    modCompileOnly "curse.maven:first-person-model-333287:${project.firstperson_file_id}"
+    modCompileOnly "curse.maven:geckolib-388172:${project.geckolib_file_id}"
+    modCompileOnly "curse.maven:irisshaders-455508:${project.iris_file_id}"
+    modCompileOnly "curse.maven:jei-238222:${project.jei_file_id}"
+    modCompileOnly "curse.maven:playeranimator-658587:${project.playeranimator_file_id}"
+    modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
+    modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
+    modCompileOnly "curse.maven:skin-layers-3d-521480:${project.skinlayers_file_id}"
+    modCompileOnly "curse.maven:sodium-394468:${project.sodium_file_id}"
 
     // PlayerRevive — local project dependency
-    // modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
+    modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
 
     // JSR-305 (javax.annotation) — used for @Nullable etc.
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

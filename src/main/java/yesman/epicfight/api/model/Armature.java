@@ -1,5 +1,6 @@
 package yesman.epicfight.api.model;
 
+import yesman.epicfight.EpicFight;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;

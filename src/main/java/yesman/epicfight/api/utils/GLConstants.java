@@ -1,4 +1,5 @@
 package yesman.epicfight.api.utils;
+import yesman.epicfight.EpicFight;
 
 public class GLConstants {
 	/**

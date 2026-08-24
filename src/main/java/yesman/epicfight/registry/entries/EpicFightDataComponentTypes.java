@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentType;

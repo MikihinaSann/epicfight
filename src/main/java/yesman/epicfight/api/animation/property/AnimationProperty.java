@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.property;
+import yesman.epicfight.EpicFight;
 
 import java.util.List;
 import java.util.Map;

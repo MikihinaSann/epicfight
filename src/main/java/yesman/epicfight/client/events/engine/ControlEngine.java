@@ -652,18 +652,8 @@ public class ControlEngine implements IEventBasedEngine {
     @SuppressWarnings({"JavadocReference", "removal"})
     @Deprecated(forRemoval = true)
 	private static boolean isKeyPressed(KeyMapping key, boolean eventCheck) {
-		boolean consumes = key.consumeClick();
-
-		if (consumes && eventCheck) {
-			int mouseButton = InputConstants.Type.MOUSE == key.getKey().getType() ? key.getKey().getValue() : -1;
-			Object.InteractionKeyMappingTriggered Object = ClientHooks.onClickInput(mouseButton, key, InteractionHand.MAIN_HAND);
-
-	        if (Object.isCanceled()) {
-	        	return false;
-	        }
-		}
-
-    	return consumes;
+		// TODO: Port to Fabric callback (was ClientHooks.onClickInput / InputEvent.InteractionKeyMappingTriggered)
+		return key.consumeClick();
 	}
 
     /**
@@ -966,146 +956,24 @@ public class ControlEngine implements IEventBasedEngine {
 	/******************
 	 * Event listeners
 	 ******************/
-	private void epicfight$mouseScrollEvent(Object.MouseScrollingEvent event) {
-        // Disables item switching for the vanilla mouse input
-        if (isHotbarCyclingDisabled()) {
-            event.setCanceled(true);
-        }
+	// TODO: Port to Fabric callback (was InputEvent.MouseScrollingEvent)
+	private void epicfight$mouseScrollEvent(Object event) {
 	}
 
+	// TODO: Port to Fabric callback (was MovementInputUpdateEvent)
 	private void epicfight$moveObject(Object event) {
-		if (this.playerpatch == null) {
-			return;
-		}
-
-		PlayerInputState playerinputstate = this.inputTick(event.getInput());
-		MappedMovementInputUpdateEvent mappedEvent = new MappedMovementInputUpdateEvent(this.playerpatch, playerinputstate);
-        EpicFightClientEventHooks.Control.MAPPED_MOVEMENT_INPUT_UPDATE.postWithListener(mappedEvent, this.playerpatch.getEventListener());
 	}
 
-	private void epicfight$clientTickEndEvent(ClientTickEvent.Post event) {
-		if (this.player == null) {
-			return;
-		}
-
-		this.packetsToSend.forEach(EpicFightNetworkManager::sendToServer);
-		this.packetsToSend.clear();
+	// TODO: Port to Fabric callback (was ClientTickEvent.Post)
+	private void epicfight$clientTickEndEvent(Object event) {
 	}
 
-	private void epicfight$interactionKeyMappingTriggered(Object.InteractionKeyMappingTriggered event) {
-        if (this.minecraft.player == null || this.minecraft.hitResult == null) return;
-
-        final InputAction triggeredAction = mapKeyMappingToAction(event.getKeyMapping());
-
-        if (triggeredAction == null) {
-            // The key mapping corresponds to a fixed vanilla action (attack, pick block, or use item).
-            // These are predictable, so it's safe to map the key mapping to an input action.
-            return;
-        }
-
-		// Pick whichever hand is carrying the combat-categorized item so the swing-cancel rule
-		// also fires when the weapon sits in the offhand (mirror mode). Without this, a longsword
-		// held in the offhand against a stone block let the swing through and broke the block.
-		net.minecraft.world.item.ItemStack combatItemForSwing;
-		if (ClientConfig.combatCategorizedItems.contains(this.player.getMainHandItem().getItem())) {
-			combatItemForSwing = this.player.getMainHandItem();
-		} else if (ClientConfig.combatCategorizedItems.contains(this.player.getOffhandItem().getItem())) {
-			combatItemForSwing = this.player.getOffhandItem();
-		} else {
-			combatItemForSwing = net.minecraft.world.item.ItemStack.EMPTY;
-		}
-
-		if (
-            triggeredAction == MinecraftInputAction.ATTACK_DESTROY &&
-            InputManager.isBoundToSamePhysicalInput(EpicFightInputAction.ATTACK, MinecraftInputAction.ATTACK_DESTROY) &&
-			this.minecraft.hitResult.getType() == HitResult.Type.BLOCK &&
-			!combatItemForSwing.isEmpty()
-		) {
-			BlockPos bp = ((BlockHitResult)this.minecraft.hitResult).getBlockPos();
-			BlockState bs = this.minecraft.level.getBlockState(bp);
-
-			if (!combatItemForSwing.getItem().canAttackBlock(bs, this.player.level(), bp, this.player) || combatItemForSwing.getDestroySpeed(bs) <= 1.0F) {
-				event.setSwingHand(false);
-				event.setCanceled(true);
-			}
-		}
-
-        LocalPlayerPatch playerpatch = EpicFightCapabilities.getEntityPatch(this.minecraft.player, LocalPlayerPatch.class);
-
-        if (playerpatch == null) {
-            return;
-        }
-
-        if (playerpatch.isVanillaMode() && triggeredAction == MinecraftInputAction.ATTACK_DESTROY) {
-            // Blocks vanilla attacks against living entities
-            if (
-                !EpicFightGameRules.ALLOW_VANILLA_MELEE.getRuleValue(playerpatch.getOriginal().level()) &&
-                    this.minecraft.hitResult instanceof EntityHitResult entityHitResult &&
-                    (entityHitResult.getEntity() instanceof LivingEntity || entityHitResult.getEntity() instanceof net.minecraft.world.entity.Entity)
-            ) {
-                event.setSwingHand(false);
-                event.setCanceled(true);
-            }
-        }
-
-		if (
-			triggeredAction == MinecraftInputAction.USE &&
-			InputManager.isBoundToSamePhysicalInput(MinecraftInputAction.USE, EpicFightInputAction.GUARD) &&
-			(
-				ClientConfig.canceledVanillaActions.cancelInteraction() ||
-				ClientConfig.canceledVanillaActions.cancelItemUse()
-			)
-		) {
-			boolean canGuard = false;
-            SkillContainer skillcontainer = playerpatch.getSkill(SkillSlots.GUARD);
-
-            if (skillcontainer.getSkill() != null && skillcontainer.getSkill().canExecute(skillcontainer)) {
-                canGuard = true;
-            }
-
-            if (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT) {
-                if (this.minecraft.hitResult.getType() == HitResult.Type.MISS) {
-                    if (canGuard && ClientConfig.canceledVanillaActions.cancelItemUse()) {
-                        event.setSwingHand(false);
-                        event.setCanceled(true);
-                    }
-                } else {
-                    if (canGuard) {
-                        InteractionResult interactionResult = switch (this.minecraft.hitResult.getType()) {
-                            case ENTITY -> {
-                                yield ((EntityHitResult) this.minecraft.hitResult).getEntity().interact(this.minecraft.player, event.getHand());
-                            }
-                            case BLOCK -> {
-                                BlockHitResult blockHitResult = ((BlockHitResult) this.minecraft.hitResult);
-                                BlockPos blockpos = blockHitResult.getBlockPos();
-                                BlockState blockstate = this.minecraft.level.getBlockState(blockpos);
-                                FakeLevel fakeLevelForSimulation = FakeLevel.getFakeLevel(this.minecraft.level);
-                                FakeLevel.FakeClientPlayer fakePlayerForSimulation = FakeLevel.getFakePlayer(this.minecraft.player.getGameProfile());
-
-                                InteractionResult useItemInteractionResult = blockstate.useItemOn(this.player.getItemInHand(event.getHand()), fakeLevelForSimulation, fakePlayerForSimulation, event.getHand(), blockHitResult).result();
-                                if (useItemInteractionResult != InteractionResult.PASS) yield useItemInteractionResult;
-                                yield blockstate.useWithoutItem(fakeLevelForSimulation, fakePlayerForSimulation, blockHitResult);
-                            }
-                            default -> throw new IllegalArgumentException();
-                        };
-
-                        if (interactionResult != InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelInteraction()) {
-                            event.setSwingHand(false);
-                            event.setCanceled(true);
-                        } else if (interactionResult == InteractionResult.PASS && ClientConfig.canceledVanillaActions.cancelItemUse()) {
-                            event.setSwingHand(false);
-                            event.setCanceled(true);
-                        }
-                    }
-                }
-            }
-		}
+	// TODO: Port to Fabric callback (was InputEvent.InteractionKeyMappingTriggered)
+	private void epicfight$interactionKeyMappingTriggered(Object event) {
 	}
 
-	private void epicfight$livingJumpEvent(LivingJumpEvent event) {
-		if (event.getEntity() == this.player) {
-			this.tickSinceLastJump = 5;
-		}
+	// TODO: Port to Fabric callback (was LivingJumpEvent)
+	private void epicfight$livingJumpEvent(Object event) {
 	}
 
 	/**********************
@@ -1113,11 +981,7 @@ public class ControlEngine implements IEventBasedEngine {
 	 **********************/
 	@Override
 	public void gameEventBus(Object gameEventBus) {
-		gameEventBus.addListener(this::epicfight$mouseScrollEvent);
-		gameEventBus.addListener(this::epicfight$moveObject);
-		gameEventBus.addListener(this::epicfight$clientTickEndEvent);
-		gameEventBus.addListener(this::epicfight$interactionKeyMappingTriggered);
-		gameEventBus.addListener(this::epicfight$livingJumpEvent);
+		// TODO: Port to Fabric callbacks (was NeoForge IEventBus.addListener)
 	}
 
 	@Override

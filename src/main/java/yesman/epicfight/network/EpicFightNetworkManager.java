@@ -24,19 +24,6 @@ import java.util.function.BiConsumer;
 
 public class EpicFightNetworkManager {
 
-    /// Registers all network payloads. Called from EpicFightFabric.onInitialize() and
-    /// EpicFightFabricClient.onInitializeClient().
-    public static void registerServerPayloads() {
-        // Server-bound (client → server) payloads are registered on the client side
-        // Client-bound (server → client) payloads are registered on the server side
-        // Fabric handles this differently from NeoForge — we register receivers
-    }
-
-    public static void registerClientPayloads() {
-        // Register client-bound payload receivers
-        // These are registered via ClientPlayNetworking.registerGlobalReceiver()
-    }
-
     @SuppressWarnings("unchecked")
     public static FriendlyByteBuf encodeObjectToBuffer(StreamEncoder<ByteBuf, ?> encoder, Object value) {
         FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
@@ -46,22 +33,24 @@ public class EpicFightNetworkManager {
 
     public static void sendToServer(CustomPacketPayload message, CustomPacketPayload... others) {
         ClientPlayNetworking.send(message);
-        // Note: Fabric doesn't support sending multiple payloads in one call like NeoForge
         for (CustomPacketPayload other : others) {
             ClientPlayNetworking.send(other);
         }
     }
 
     public static void sendToAll(CustomPacketPayload message, CustomPacketPayload... others) {
-        // Iterate all players and send
-        // This is called from server side — need server instance
-        // For now, this is a placeholder; the actual implementation needs the server context
+        // Placeholder — needs server context to iterate players
     }
 
     public static void sendToAllPlayerTrackingThisEntity(CustomPacketPayload message, Entity entity, CustomPacketPayload... others) {
-        ServerPlayNetworking.sendToPlayersTrackingEntity(entity, message);
-        for (CustomPacketPayload other : others) {
-            ServerPlayNetworking.sendToPlayersTrackingEntity(entity, other);
+        // Iterate tracking players manually
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getChunkSource().chunkMap.getPlayers(entity.chunkPosition(), false).forEach(player -> {
+                ServerPlayNetworking.send(player, message);
+                for (CustomPacketPayload other : others) {
+                    ServerPlayNetworking.send(player, other);
+                }
+            });
         }
     }
 
@@ -73,14 +62,25 @@ public class EpicFightNetworkManager {
     }
 
     public static void sendToAllPlayerTrackingThisEntityWithSelf(CustomPacketPayload message, ServerPlayer entity, CustomPacketPayload... others) {
-        ServerPlayNetworking.sendToPlayersTrackingEntityAndSelf(entity, message);
+        // Send to self
+        ServerPlayNetworking.send(entity, message);
         for (CustomPacketPayload other : others) {
-            ServerPlayNetworking.sendToPlayersTrackingEntityAndSelf(entity, other);
+            ServerPlayNetworking.send(entity, other);
+        }
+        // Send to tracking players (excluding self)
+        if (entity.level() instanceof ServerLevel serverLevel) {
+            serverLevel.getChunkSource().chunkMap.getPlayers(entity.chunkPosition(), false).forEach(player -> {
+                if (player != entity) {
+                    ServerPlayNetworking.send(player, message);
+                    for (CustomPacketPayload other : others) {
+                        ServerPlayNetworking.send(player, other);
+                    }
+                }
+            });
         }
     }
 
     public static void sendToAllPlayerTrackingThisChunkWithSelf(CustomPacketPayload message, ServerLevel serverLevel, ChunkPos chunkPos, CustomPacketPayload... others) {
-        // Fabric doesn't have a direct sendToPlayersTrackingChunk — iterate players
         serverLevel.getServer().getPlayerList().getPlayers().forEach(player -> {
             if (player.level().hasChunk(chunkPos.x, chunkPos.z)) {
                 ServerPlayNetworking.send(player, message);

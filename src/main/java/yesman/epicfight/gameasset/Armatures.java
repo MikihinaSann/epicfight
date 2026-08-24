@@ -1,4 +1,5 @@
 package yesman.epicfight.gameasset;
+import yesman.epicfight.EpicFight;
 
 import java.util.HashMap;
 import java.util.Map;

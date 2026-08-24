@@ -41,8 +41,8 @@ public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends Deferre
      * global capability registry.
      */
     @ApiStatus.Internal
-    public DeferredPreset(ResourceKey<CapabilityItem.Builder<?>> key) {
-        super(key);
+    public DeferredPreset(ResourceKey<CapabilityItem.Builder<?>> key, java.util.function.Supplier<T> supplier) {
+        super(null, key.location(), supplier);
     }
 
     /**

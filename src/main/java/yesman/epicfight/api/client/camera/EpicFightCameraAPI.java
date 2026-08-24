@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.camera;
+import net.neoforged.api.distmarker.OnlyIn;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;

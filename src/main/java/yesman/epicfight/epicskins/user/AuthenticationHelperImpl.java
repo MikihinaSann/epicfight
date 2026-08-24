@@ -1,4 +1,5 @@
 package yesman.epicfight.epicskins.user;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Maps;

@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.tags.DamageTypeTags;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;

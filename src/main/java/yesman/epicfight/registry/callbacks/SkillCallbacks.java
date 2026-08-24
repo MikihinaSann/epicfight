@@ -4,7 +4,7 @@ import net.minecraft.core.Registry;
 
 import yesman.epicfight.skill.Skill;
 
-public class SkillCallbacks implements Object<Skill> {
+public class SkillCallbacks implements RegistryCallback.BakeCallback<Skill> {
 	private static final SkillCallbacks INSTANCE = new SkillCallbacks();
 	
 	public static SkillCallbacks getSkillCallback() {

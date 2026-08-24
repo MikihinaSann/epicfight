@@ -1,4 +1,5 @@
 package yesman.epicfight.api.asset;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

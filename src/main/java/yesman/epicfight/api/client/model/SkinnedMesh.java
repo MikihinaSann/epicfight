@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.model;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;

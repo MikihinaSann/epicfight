@@ -476,7 +476,7 @@ public class AnimationManager extends SimplePreparableReloadListener<List<Resour
 		}
 	}
 	
-	public static class AnimationRegistryEvent extends Event implements Object {
+	public static class AnimationRegistryEvent {
 		private final List<AnimationBuilder> builders = Lists.newArrayList();
 		private final Set<String> namespaces = Sets.newHashSet();
 		

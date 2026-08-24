@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.render;
+import yesman.epicfight.EpicFight;
 
 import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.resources.ResourceLocation;

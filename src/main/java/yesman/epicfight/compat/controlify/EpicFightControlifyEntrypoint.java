@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.controlify;
+import yesman.epicfight.EpicFight;
 
 import dev.isxander.controlify.api.ControlifyApi;
 import dev.isxander.controlify.api.bind.ControlifyBindApi;

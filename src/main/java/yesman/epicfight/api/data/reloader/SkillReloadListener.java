@@ -1,4 +1,5 @@
 package yesman.epicfight.api.data.reloader;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
 import com.google.gson.Gson;

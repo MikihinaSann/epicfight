@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.identity;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;
 import net.minecraft.client.gui.GuiGraphics;

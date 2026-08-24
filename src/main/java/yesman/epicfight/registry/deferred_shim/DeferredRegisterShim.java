@@ -19,7 +19,7 @@ import java.util.function.Supplier;
 public class DeferredRegisterShim<T> {
     private final ResourceKey<Registry<T>> registryKey;
     private final String modId;
-    private final List<DeferredHolderShim<T>> entries = new ArrayList<>();
+    private final List<DeferredHolderShim<T, ?>> entries = new ArrayList<>();
     private boolean accepted = false;
 
     public DeferredRegisterShim(ResourceKey<Registry<T>> registryKey, String modId) {

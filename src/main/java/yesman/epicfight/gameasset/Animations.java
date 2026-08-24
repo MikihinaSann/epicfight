@@ -1,4 +1,5 @@
 package yesman.epicfight.gameasset;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntIntPair;

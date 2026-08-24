@@ -1,4 +1,5 @@
 package yesman.epicfight.world.entity.ai.brain;
+import yesman.epicfight.EpicFight;
 
 import java.util.Map;
 import java.util.Set;

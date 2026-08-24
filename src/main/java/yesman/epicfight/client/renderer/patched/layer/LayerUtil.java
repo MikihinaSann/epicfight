@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.layer;
+import yesman.epicfight.EpicFight;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;

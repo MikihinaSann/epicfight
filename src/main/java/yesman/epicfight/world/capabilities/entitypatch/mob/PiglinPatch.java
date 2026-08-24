@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
+import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.ItemTags;

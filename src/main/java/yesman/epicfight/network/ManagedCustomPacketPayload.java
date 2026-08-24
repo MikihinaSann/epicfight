@@ -3,7 +3,7 @@ package yesman.epicfight.network;
 import com.google.common.collect.Maps;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.network.client.*;
 import yesman.epicfight.network.common.BiDirectionalAnimationVariable;
 import yesman.epicfight.network.common.BiDirectionalSyncAnimationPositionPacket;

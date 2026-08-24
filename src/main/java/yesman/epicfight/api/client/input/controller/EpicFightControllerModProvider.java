@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.input.controller;
+import yesman.epicfight.EpicFight;
 
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
