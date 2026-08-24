@@ -249,7 +249,7 @@ public class EpicFightGameRules {
 	) {
 		private static final RuleType<Boolean, GameRules.BooleanValue> BOOLEAN = new RuleType<> (
 			 (def, callback) -> GameRules.BooleanValue.create(def)
-		   , GameRules.BooleanValue::create
+		   , (def) -> GameRules.BooleanValue.create(def)
 		   , GameRules.BooleanValue::get
 		   , (ruleValue, value) -> ruleValue.set(value, null)
 		   , ByteBufCodecs.BOOL
@@ -257,7 +257,7 @@ public class EpicFightGameRules {
 
 		private static final RuleType<Integer, GameRules.IntegerValue> INTEGER = new RuleType<> (
 			 (def, callback) -> GameRules.IntegerValue.create(def)
-		   , GameRules.IntegerValue::create
+		   , (def) -> GameRules.IntegerValue.create(def)
 		   , GameRules.IntegerValue::get
 		   , (ruleValue, value) -> ruleValue.tryDeserialize(value.toString())
 		   , ByteBufCodecs.INT

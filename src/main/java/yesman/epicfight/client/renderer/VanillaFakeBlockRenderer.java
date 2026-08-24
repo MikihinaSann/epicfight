@@ -55,7 +55,7 @@ public class VanillaFakeBlockRenderer implements FakeBlockRenderer {
 		BlockPos.MutableBlockPos mutablepos = bp.mutable();
 		
 		for (Direction d : DIRECTIONS) {
-			List<BakedQuad> culledFaces = model.getQuads(bs, d, randomsource, null.EMPTY, null);
+			List<BakedQuad> culledFaces = model.getQuads(bs, d, randomsource);
 			mutablepos.setWithOffset(bp, d);
 			
 			if (Block.shouldRenderFace(bs, level, bp, d, mutablepos)) {
@@ -63,7 +63,7 @@ public class VanillaFakeBlockRenderer implements FakeBlockRenderer {
 			}
 		}
 		
-		this.renderPreviewBlocks(poseStack2, buffer, level, model.getQuads(bs, null, randomsource, null.EMPTY, null), r, g, b, a);
+		this.renderPreviewBlocks(poseStack2, buffer, level, model.getQuads(bs, null, randomsource), r, g, b, a);
 		
 		poseStack2.popPose();
 		

@@ -276,7 +276,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 		if (pack$resourcessupplier != null) {
 			String s = path.getFileName().toString();
 			PackLocationInfo packlocationinfo = new PackLocationInfo("file/" + s, Component.literal(s), PackSource.WORLD, Optional.empty());
-            Pack pack = Pack.readMetaAndCreate(packlocationinfo, pack$resourcessupplier, PackType.SERVER_DATA, FolderRepositorySource.DISCOVERED_PACK_SELECTION_CONFIG);
+            Pack pack = Pack.readMetaAndCreate(packlocationinfo, pack$resourcessupplier, PackType.SERVER_DATA, new Pack.SelectionConfig(false, Pack.Position.TOP, false));
             
 			PackResources packResources = pack.open();
 			

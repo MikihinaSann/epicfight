@@ -150,6 +150,8 @@ accessible field net/minecraft/world/entity/projectile/ThrownTrident dealtDamage
 accessible method net/minecraft/world/item/ItemStack <init> (Ljava/lang/Void;)V
 accessible field net/minecraft/world/level/dimension/end/EndDragonFight dragonEvent Lnet/minecraft/world/level/dimension/end/EndDragonFight;
 accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
+accessible method net/minecraft/world/level/GameRules$BooleanValue create (Z)Lnet/minecraft/world/level/GameRules$Type;
+accessible method net/minecraft/world/level/GameRules$IntegerValue create (I)Lnet/minecraft/world/level/GameRules$Type;
 accessible field net/minecraft/client/renderer/RenderType format Lcom/mojang/blaze3d/vertex/VertexFormat;
 accessible method net/minecraft/core/IdMapper <init> (I)V
 accessible method net/minecraft/world/entity/Entity canRiderInteract ()Z
