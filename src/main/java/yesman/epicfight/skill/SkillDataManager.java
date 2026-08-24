@@ -87,7 +87,7 @@ public class SkillDataManager {
 	
 	private <T> void syncServerPlayerData(DeferredHolderShim<SkillDataKey<?>, ? extends SkillDataKey<T>> key, ServerPlayer serverplayer) {
 		SPHandleSkillData msg = new SPHandleSkillData(SPHandleSkillData.WorkType.MODIFY, this.container.getSlot(), serverplayer.getId(), key);
-		key.value().encode(msg.buffer(), this.getDataValue(key));
+		key.value().encode(msg.buffer(), this.getDataValue((DeferredHolderShim<SkillDataKey<?>, SkillDataKey<T>>) (DeferredHolderShim) key));
 		EpicFightNetworkManager.sendToPlayer(msg, serverplayer);
 		
 		if (key.value().syncronizeToRemotePlayers()) {
@@ -98,7 +98,7 @@ public class SkillDataManager {
     @ClientOnly
 	private <T> void syncLocalPlayerData(DeferredHolderShim<SkillDataKey<?>, ? extends SkillDataKey<T>> key, LocalPlayer player) {
 		CPHandleSkillData msg = new CPHandleSkillData(this.container.getSlot(), key);
-		key.value().encode(msg.buffer(), this.getDataValue(key));
+		key.value().encode(msg.buffer(), this.getDataValue((DeferredHolderShim<SkillDataKey<?>, SkillDataKey<T>>) (DeferredHolderShim) key));
 		EpicFightNetworkManager.sendToServer(msg);
 	}
 	

@@ -202,7 +202,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				 */
 				ArmorMaterial armormaterial = armorItem.getMaterial().value();
 				Object extensions = null;
-				int fallbackColor = extensions.getDefaultDyeColor(itemstack);
+				int fallbackColor = -1; // TODO: getDefaultDyeColor
 				boolean innerModel = innerModel(slot);
 
 				AnimatedArmorTextureEvent textureEvent = EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.post(new AnimatedArmorTextureEvent(livingentity, itemstack, slot, vanillaModel));
@@ -210,7 +210,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 
 				for (int layerIdx = 0; layerIdx < armormaterial.layers().size(); layerIdx++) {
 					ArmorMaterial.Layer armormaterial$layer = armormaterial.layers().get(layerIdx);
-					int packedColor = extensions.getArmorLayerTintColor(itemstack, livingentity, armormaterial$layer, layerIdx, fallbackColor);
+					int packedColor = ClientHooks.getArmorLayerTintColor(itemstack, livingentity, armormaterial$layer, layerIdx, fallbackColor);
 
 					if (packedColor != 0) {
 						Vector4f color = ColorUtil.unpackToARGBF(packedColor);

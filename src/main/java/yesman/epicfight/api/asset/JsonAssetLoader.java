@@ -87,14 +87,14 @@ public class JsonAssetLoader {
                 this.rootJson = Streams.parse(jsonReader).getAsJsonObject();
             } catch (NoSuchElementException e) {
                 // In this case, reads the animation data from mod.jar (Especially in a server)
-                Object = FabricLoader.getInstance().getModContainer(resourceLocation.getNamespace()).orElseThrow(() -> new AssetLoadingException("No mod Id: " + resourceLocation));
+                Object modContainer = FabricLoader.getInstance().getModContainer(resourceLocation.getNamespace()).orElseThrow(() -> new AssetLoadingException("No mod Id: " + resourceLocation));
                 InputStream inputstream = null;
 
-                if (Object instanceof Object Object) {
-                    Field modClassesField = Object.class.getDeclaredField("modClasses");
-                    modClassesField.setAccessible(true);
+                if (modContainer != null) {
+                    // TODO: modClasses field not accessible on Fabric;
+                    // TODO;
                     @SuppressWarnings("unchecked")
-                    List<Class<?>> modClasses = (List<Class<?>>) modClassesField.get(Object);
+                    List<Class<?>> modClasses = java.util.List.of(); // TODO
 
                     for (Class<?> modClass : modClasses) {
                         inputstream = modClass.getResourceAsStream("/assets/" + resourceLocation.getNamespace() + "/" + resourceLocation.getPath());

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.provider;
+import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
@@ -120,7 +121,6 @@ public final class CommonItemCapabilityProvider implements ICapabilityProvider<I
 		});
 	}
 	
-	@Override
 	public @Nullable CapabilityItem getCapability(ItemStack itemstack, Void context) {
 		if (this.capabilities.containsKey(itemstack.getItem())) {
 			CapabilityItem itemCapability = this.capabilities.get(itemstack.getItem());

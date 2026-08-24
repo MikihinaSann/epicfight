@@ -19,7 +19,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
     private Holder<T> holder;
 
     @SuppressWarnings("unchecked")
-    public DeferredHolderShim(ResourceKey<? extends Registry<T>> registryKey, ResourceLocation location, Supplier<I> supplier) {
+    public DeferredHolderShim(Object registryKey, ResourceLocation location, Supplier<I> supplier) {
         this.key = ResourceKey.create((ResourceKey<Registry<T>>) (Object) registryKey, location);
         this.supplier = supplier;
     }
@@ -29,7 +29,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
         I supplied = supplier.get();
         this.value = supplied;
         Registry.register(registry, key.location(), supplied);
-        this.holder = registry.getOrCreateHolder(key);
+        this.holder = registry.getHolder((net.minecraft.resources.ResourceKey<T>) key).orElse(null);
     }
 
     public I get() {

@@ -12,4 +12,5 @@ public class AzArmorBoneProvider {
     public AzBone getRightArmBone(AzBakedModel model) { return null; }
     public AzBone getLeftArmBone(AzBakedModel model) { return null; }
     public AzBone getBodyBone(AzBakedModel model) { return null; }
+    public AzBone getHeadBone(AzBakedModel model) { return null; }
 }

@@ -76,7 +76,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	
 	@Override
 	public void onInitializeClient() {
-		REGISTRY.register(eventBus);
+		// TODO: register eventBus
 
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
             if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {

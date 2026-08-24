@@ -1,5 +1,7 @@
 package net.neoforged.neoforge.common.data;
-
-/// Stub for NeoForge's BlockTagsProvider.
+import net.minecraft.data.PackOutput;
+import net.minecraft.core.HolderLookup;
+import java.util.concurrent.CompletableFuture;
 public class BlockTagsProvider {
+    public BlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, ExistingFileHelper existingFileHelper) {}
 }

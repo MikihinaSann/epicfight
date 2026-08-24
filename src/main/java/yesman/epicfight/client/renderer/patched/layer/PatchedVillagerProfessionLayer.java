@@ -32,8 +32,8 @@ public class PatchedVillagerProfessionLayer extends ModelRenderLayer<ZombieVilla
 		if (!entityliving.isInvisible()) {
 			VillagerData villagerdata = ((VillagerDataHolder)entitypatch.getOriginal()).getVillagerData();
 			
-			VillagerMetaDataSection.Hat typeHat = vanillaLayer.getHatData(((yesman.epicfight.mixin.client.VillagerProfessionLayerAccessor) vanillaLayer).epicfight$getTypeHatCache(), "type", BuiltInRegistries.VILLAGER_TYPE, villagerdata.getType());
-	        VillagerMetaDataSection.Hat professionHat = vanillaLayer.getHatData(((yesman.epicfight.mixin.client.VillagerProfessionLayerAccessor) vanillaLayer).epicfight$getProfessionHatCache(), "profession", BuiltInRegistries.VILLAGER_PROFESSION, villagerdata.getProfession());
+			VillagerMetaDataSection.Hat typeHat = VillagerMetaDataSection.Hat.NONE; // TODO: Port getHatData
+	        VillagerMetaDataSection.Hat professionHat = VillagerMetaDataSection.Hat.NONE; // TODO: Port getHatData
 	        
 	        if (!(typeHat == VillagerMetaDataSection.Hat.NONE || typeHat == VillagerMetaDataSection.Hat.PARTIAL && professionHat != VillagerMetaDataSection.Hat.FULL)
 	        		|| !entityliving.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {

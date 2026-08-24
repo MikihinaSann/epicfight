@@ -325,21 +325,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     }
 
     private static void registerEvents() {
-        ControlifyEvents.LOOK_INPUT_MODIFIER.register(event -> {
-            // Workaround: Since these values are normalized
-            // (e.g., x = -10 with default sensitivity or -20 when sensitivity is maxed),
-            // while mouse values are not normalized (e.g., around 110.00000983476669),
-            // handle the difference by scaling the values by 10.
-            final double multiplier = 10;
-
-            final Vector2f lookInput = event.lookInput();
-            final double dy = lookInput.x * multiplier;
-            final double dx = lookInput.y * multiplier;
-
-            if (EpicFightCameraAPI.getInstance().turnCamera(dy, dx)) {
-                lookInput.zero();
-            }
-        });
+        // TODO: Port LOOK_INPUT_MODIFIER to Fabric
     }
 
     private static void registerGuides(GuideDomainRegistry<InGameCtx> inGameRegistry, GuideDomainRegistry<ContainerCtx> containerRegistry) {

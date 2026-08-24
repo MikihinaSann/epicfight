@@ -35,6 +35,6 @@ public final class CustomDataRegister extends DeferredRegisterShim<CustomData<?>
                 ResourceLocation.fromNamespaceAndPath(this.getNamespace(), name)
         );
 
-        return new DeferredCustomData<>(key);
+        return new DeferredCustomData<>(key, () -> null);
     }
 }

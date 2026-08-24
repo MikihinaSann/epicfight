@@ -22,7 +22,6 @@ import mod.azure.azurelibarmor.common.cache.object.GeoVertex;
 import mod.azure.azurelibarmor.common.model.AzBakedModel;
 import mod.azure.azurelibarmor.common.model.AzBone;
 import mod.azure.azurelibarmor.common.model.AzBoneSnapshot;
-import mod.azure.azurelibarmor.common.render.armor.AzArmorRenderer;
 import mod.azure.azurelibarmor.common.render.armor.AzArmorRendererRegistry;
 import mod.azure.azurelibarmor.common.render.armor.bone.AzArmorBoneProvider;
 import mod.azure.azurelibarmor.common.util.client.RenderUtils;
@@ -66,7 +65,7 @@ public class AzureArmorTransformer extends HumanoidModelTransformer {
 	}
 
 	public static void getGeoArmorTexturePath(AnimatedArmorTextureEvent event) {
-		AzArmorRenderer renderer = AzArmorRendererRegistry.getOrNull(event.getItemStack());
+		mod.azure.azurelibarmor.common.render.armor.AzArmorRenderer renderer = mod.azure.azurelibarmor.common.render.armor.AzArmorRendererRegistry.getOrNull(event.getItemStack());
 
 		if (renderer != null) {
 			renderer.prepForRender(event.getLivingEntity(), event.getItemStack(), event.getEquipmentSlot(), event.getOriginalModel());
@@ -81,13 +80,13 @@ public class AzureArmorTransformer extends HumanoidModelTransformer {
 
 	@Override
 	public SkinnedMesh transformArmorModel(HumanoidModel<?> humanoidModel, LivingEntity livingEntity, ItemStack itemStack, EquipmentSlot equipmentSlot) {
-		AzArmorRenderer renderer = AzArmorRendererRegistry.getOrNull(itemStack);
+		mod.azure.azurelibarmor.common.render.armor.AzArmorRenderer renderer = mod.azure.azurelibarmor.common.render.armor.AzArmorRendererRegistry.getOrNull(itemStack);
 
 		if (renderer == null) {
 			return null;
 		}
 
-		AzBakedModel bakedModel = renderer.provider().provideBakedModel(livingEntity, itemStack);
+		AzBakedModel bakedModel = ((mod.azure.azurelibarmor.common.render.armor.AzArmorRenderer) (Object) renderer.provider()).provideBakedModel(livingEntity, itemStack);
 
 		if (bakedModel == null) {
 			return null;
@@ -222,7 +221,7 @@ public class AzureArmorTransformer extends HumanoidModelTransformer {
 					vertices.add(new SingleGroupVertexBuilder()
 						.setPosition(new Vec3f(pos.x(), pos.y(), pos.z()))
 						.setNormal(new Vec3f(norm.x(), norm.y(), norm.z()))
-						.setTextureCoordinate(new Vec2f(vertex.texU(), vertex.texV()))
+						.setTextureCoordinate(new Vec2f(vertex.u, vertex.v))
 						.setEffectiveJointIDs(new Vec3f(this.jointId, 0, 0))
 						.setEffectiveJointWeights(new Vec3f(1.0F, 0.0F, 0.0F))
 						.setEffectiveJointNumber(1)
@@ -625,7 +624,7 @@ public class AzureArmorTransformer extends HumanoidModelTransformer {
 		Vector4f translatedPosition = new Vector4f(original.position(), 1.0F);
 		translatedPosition.mul(matrix);
 
-		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), original.texU(), original.texV());
+		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), original.u, original.v);
 	}
 
 	static class AnimatedVertex extends ModelPart.Vertex {

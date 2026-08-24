@@ -338,7 +338,7 @@ public class WildfireFGMCompat implements ICompatModule {
                 vector3f.mul(matrix3f);
 
                 for(WildfireModelRenderer.PositionTextureVertex vertex : quad.vertexPositions) {
-                    bufferIn.addVertex(matrix4f, vertex.x() / 16.0F, vertex.y() / 16.0F, vertex.z() / 16.0F).setColor(color).setUv(vertex.texU(), vertex.texV()).setOverlay(overlay).setLight(light).setNormal(vector3f.x(), vector3f.y(), vector3f.z());
+                    bufferIn.addVertex(matrix4f, vertex.x() / 16.0F, vertex.y() / 16.0F, vertex.z() / 16.0F).setColor(color).setUv(vertex.u(), vertex.v()).setOverlay(overlay).setLight(light).setNormal(vector3f.x(), vector3f.y(), vector3f.z());
                 }
             }
         }

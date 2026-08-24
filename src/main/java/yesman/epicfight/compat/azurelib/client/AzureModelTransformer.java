@@ -87,7 +87,7 @@ public class AzureModelTransformer extends HumanoidModelTransformer {
 			return null;
 		}
 
-		AzBakedModel bakedModel = renderer.provider().provideBakedModel(livingEntity, itemStack);
+		AzBakedModel bakedModel = ((AzArmorRenderer) (Object) renderer.provider()).provideBakedModel(livingEntity, itemStack);
 
 		if (bakedModel == null) {
 			return null;
@@ -222,7 +222,7 @@ public class AzureModelTransformer extends HumanoidModelTransformer {
 					vertices.add(new SingleGroupVertexBuilder()
 						.setPosition(new Vec3f(pos.x(), pos.y(), pos.z()))
 						.setNormal(new Vec3f(norm.x(), norm.y(), norm.z()))
-						.setTextureCoordinate(new Vec2f(vertex.texU(), vertex.texV()))
+						.setTextureCoordinate(new Vec2f(vertex.u, vertex.v))
 						.setEffectiveJointIDs(new Vec3f(this.jointId, 0, 0))
 						.setEffectiveJointWeights(new Vec3f(1.0F, 0.0F, 0.0F))
 						.setEffectiveJointNumber(1)
@@ -625,7 +625,7 @@ public class AzureModelTransformer extends HumanoidModelTransformer {
 		Vector4f translatedPosition = new Vector4f(original.position(), 1.0F);
 		translatedPosition.mul(matrix);
 
-		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), original.texU(), original.texV());
+		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), original.u, original.v);
 	}
 
 	static class AnimatedVertex extends ModelPart.Vertex {

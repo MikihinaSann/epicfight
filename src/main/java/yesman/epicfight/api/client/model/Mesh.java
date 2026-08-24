@@ -182,7 +182,7 @@ public interface Mesh {
 		static int applyBakedLighting(int packedLight, ByteBuffer data) {
 	        int bl = packedLight & 0xFFFF;
 	        int sl = (packedLight >> 16) & 0xFFFF;
-	        int offset = com.mojang.blaze3d.vertex.VertexFormatElement.UV.getIndex() * 4; // int offset for vertex 0 * 4 bytes per int
+	        int offset = 4 * 4; // int offset for vertex 0 * 4 bytes per int
 	        int blBaked = Short.toUnsignedInt(data.getShort(offset));
 	        int slBaked = Short.toUnsignedInt(data.getShort(offset + 2));
 	        bl = Math.max(bl, blBaked);

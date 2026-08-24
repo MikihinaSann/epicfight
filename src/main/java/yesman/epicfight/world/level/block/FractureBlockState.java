@@ -80,7 +80,7 @@ public class FractureBlockState extends BlockState {
 	}
 	
 		public int getLightEmission() {
-		return ORIGINAL_BLOCK_STATE_CACHE.isEmpty() ? this.owner.getLightEmission() : 0;
+		return 0; // TODO: getLightEmission
 	}
 	
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos) {

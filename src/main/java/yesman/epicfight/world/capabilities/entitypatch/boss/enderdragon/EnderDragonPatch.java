@@ -235,7 +235,7 @@ public class EnderDragonPatch extends MobPatch<EnderDragon> implements InverseKi
 		this.ikSimulator.tick(null);
 		this.setIKHeightAndRootRotation();
 		
-		Entity bodyPart = ((net.minecraft.world.entity.boss.enderdragon.EnderDragon) this.original).getParts()[2];
+		Entity bodyPart = ((net.minecraft.world.entity.boss.enderdragon.EnderDragon) this.original).getSubEntities()[2];
 		AABB bodyBoundingBox = bodyPart.getBoundingBox();
 		List<Entity> list = this.original.level().getEntities(this.original, bodyBoundingBox, EntitySelector.pushableBy(this.original));
 		

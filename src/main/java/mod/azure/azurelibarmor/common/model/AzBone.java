@@ -22,4 +22,5 @@ public class AzBone {
     public float getPosZ() { return 0; }
     public AzBoneSnapshot getInitialAzSnapshot() { return new AzBoneSnapshot(); }
     public String getName() { return ""; }
+    public java.util.List<mod.azure.azurelibarmor.common.cache.object.GeoCube> getCubes() { return java.util.List.of(); }
 }

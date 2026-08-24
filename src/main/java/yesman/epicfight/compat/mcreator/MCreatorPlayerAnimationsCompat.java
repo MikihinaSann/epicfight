@@ -21,7 +21,7 @@ public class MCreatorPlayerAnimationsCompat implements ICompatModule {
     }
 
     private void renderEvent(ValidatePlayerModelEvent event) {
-        String animation = event.getPlayerPatch().getOriginal().getPersistentData().getString("PlayerCurrentAnimation");
+        String animation = ""; // TODO: getPersistentData NeoForge addition
         if (!animation.isEmpty()) event.setShouldRender(false);
     }
 }

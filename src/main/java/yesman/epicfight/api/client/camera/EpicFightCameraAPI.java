@@ -363,7 +363,7 @@ public final class EpicFightCameraAPI {
                 !entity.is(this.focusingEntity) &&
                 MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
                 (
-                    this.minecraft.getEntityRenderDispatcher().shouldRender(entity, this.minecraft.levelRenderer.getFrustum(), cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
+                    this.minecraft.getEntityRenderDispatcher().shouldRender(entity, null, cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
                         entity.hasIndirectPassenger(this.minecraft.player)    // Excludes riding entities
                 ) &&
                 entity.distanceToSqr(this.minecraft.player) < lockOnRange * lockOnRange

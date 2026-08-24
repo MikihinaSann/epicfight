@@ -52,6 +52,6 @@ public final class ItemPresetRegister extends DeferredRegisterShim<CapabilityIte
 
         this.register(name, builder);
 
-        return new DeferredPreset<>(key);
+        return new DeferredPreset<>(key, () -> null);
     }
 }

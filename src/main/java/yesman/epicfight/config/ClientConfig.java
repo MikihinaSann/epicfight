@@ -98,7 +98,7 @@ public class ClientConfig {
         return false;
     });
 
-    public static final ConfigValue<List<? extends String>> MINING_CATEGORIZED_ITEMS = BUILDER.defineListAllowEmpty("ingame.mining_preferred_items", Lists.newArrayList(), null, (element) -> {
+    public static final ConfigValue<List<? extends String>> MINING_CATEGORIZED_ITEMS = BUILDER.defineList("ingame.mining_preferred_items", Lists.newArrayList(), null, (element) -> {
         if (element instanceof String str) {
             return str.contains(":");
         }

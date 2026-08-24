@@ -7,6 +7,9 @@ public class InputBinding {
     public boolean digitalNow() { return false; }
     public float analogueNow() { return 0; }
     public boolean justPressed() { return false; }
+    public boolean digitalPrev() { return false; }
+    public void fakePress() {}
+    public Object boundInput() { return null; }
     public boolean justReleased() { return false; }
     public boolean pressed() { return false; }
     public Optional<Boolean> guiPressed() { return Optional.empty(); }

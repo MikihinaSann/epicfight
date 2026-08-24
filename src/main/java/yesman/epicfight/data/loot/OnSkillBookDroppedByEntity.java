@@ -1,4 +1,8 @@
 package yesman.epicfight.data.loot;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.common.loot.LootModifier;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
@@ -63,7 +67,7 @@ public class OnSkillBookDroppedByEntity extends LootModifier {
 		return generatedLoot;
 	}
 
-	public MapCodec<? extends Object> codec() {
+	public MapCodec<? extends LootModifier> codec() {
 		return SKILL_CODEC;
 	}
 }

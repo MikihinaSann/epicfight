@@ -1,4 +1,8 @@
 package yesman.epicfight.data.loot;
+import net.neoforged.neoforge.event.LootTableLoadEvent;
+import net.neoforged.neoforge.common.loot.LootModifier;
+import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EntityType;
