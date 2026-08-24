@@ -88,36 +88,38 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 0, argsOnly = true)
 	private double epicfight$turnParam1(double yRot) {
 		Entity e = (Entity)(Object)this;
-		PlayerPatch<?> playerpatch = EpicFightCapabilities.getEntityPatch(e, PlayerPatch.class);
-		
+		PlayerPatch<?> playerpatch = safeGetEntityPatch(e, PlayerPatch.class);
+
 		if (playerpatch != null) {
 			return playerpatch.checkYTurn(yRot);
 		}
-		
+
 		return yRot;
 	}
-	
+
 	@ModifyVariable(method = "turn(DD)V", at = @At("HEAD"), ordinal = 1, argsOnly = true)
 	private double epicfight$turnParam2(double xRot) {
 		Entity e = (Entity)(Object)this;
-		PlayerPatch<?> playerpatch = EpicFightCapabilities.getEntityPatch(e, PlayerPatch.class);
-		
+		PlayerPatch<?> playerpatch = safeGetEntityPatch(e, PlayerPatch.class);
+
 		if (playerpatch != null) {
 			return playerpatch.checkXTurn(xRot);
 		}
-		
+
 		return xRot;
 	}
-	
+
 	/// Maintain this mixin until neoforge provides an event hook when entity is removed
     /// [Entity#remove(net.minecraft.world.entity.Entity.RemovalReason)]
 	@Inject(at = @At(value = "HEAD"), method = "remove(Lnet/minecraft/world/entity/Entity$RemovalReason;)V")
 	public void epicfight$remove(Entity.RemovalReason reason, CallbackInfo callback) {
 		Entity self = (Entity)(Object)this;
-        LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, LivingEntityPatch.class);
+        LivingEntityPatch<?> entitypatch = safeGetEntityPatch(self, LivingEntityPatch.class);
 
         if (entitypatch != null) {
-            EpicFightEventHooks.Entity.ON_REMOVED.postWithListener(new EntityRemovedEvent(reason, entitypatch), entitypatch.getEventListener());
+            try {
+                EpicFightEventHooks.Entity.ON_REMOVED.postWithListener(new EntityRemovedEvent(reason, entitypatch), entitypatch.getEventListener());
+            } catch (Throwable ignored) {}
         }
     }
 	
@@ -162,9 +164,11 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 
         if (!onGround && pOnGround) { // When a player touches a ground from air.
             if (self.tickCount - lastOnGroundTick >= 4) { // 4 ticks are noise guard for floating point calculation error
-                EpicFightCapabilities.<LivingEntity, LivingEntityPatch<LivingEntity>>getParameterizedEntityPatch(self, LivingEntity.class, LivingEntityPatch.class).ifPresent(entitypatch -> {
-                    entitypatch.onFall(entitypatch.getOriginal().fallDistance, 1.0F);
-                });
+                try {
+                    EpicFightCapabilities.<LivingEntity, LivingEntityPatch<LivingEntity>>getParameterizedEntityPatch(self, LivingEntity.class, LivingEntityPatch.class).ifPresent(entitypatch -> {
+                        entitypatch.onFall(entitypatch.getOriginal().fallDistance, 1.0F);
+                    });
+                } catch (Throwable ignored) {}
             }
         }
     }
