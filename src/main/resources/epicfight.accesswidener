@@ -1,7 +1,6 @@
 accessWidener v2 named
 
 accessible method com/mojang/blaze3d/vertex/VertexFormat <init> (Ljava/util/List;Ljava/util/List;Lit/unimi/dsi/fastutil/ints/IntList;I)V
-accessible method net/minecraft/world/item/Rarity <init> (Ljava/lang/String;ILjava/util/function/UnaryOperator;)V
 accessible method net/minecraft/world/damagesource/DamageSource <init> (Lnet/minecraft/core/Holder;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)V
 accessible field net/minecraft/client/Camera eyeHeight F
 accessible field net/minecraft/client/Camera eyeHeightOld F
@@ -28,43 +27,18 @@ accessible field net/minecraft/client/gui/screens/Screen initialized Z
 accessible field net/minecraft/client/gui/screens/Screen renderables Ljava/util/List;
 accessible field net/minecraft/client/model/geom/ModelPart cubes Ljava/util/List;
 accessible field net/minecraft/client/model/geom/ModelPart children Ljava/util/Map;
-accessible field net/minecraft/client/gui/components/ContainerObjectSelectionList$Entry focused Lnet/minecraft/client/gui/components/AbstractSelectionList$Entry;
-mutable field net/minecraft/client/gui/components/ContainerObjectSelectionList$Entry focused Lnet/minecraft/client/gui/components/AbstractSelectionList$Entry;
 accessible field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
-mutable field net/minecraft/client/model/geom/ModelPart$Cube polygons [Lnet/minecraft/client/model/geom/ModelPart$Polygon;
-accessible field net/minecraft/client/model/geom/ModelPart$Polygon normal Lcom/mojang/blaze3d/vertex/Vector3f;
-mutable field net/minecraft/client/model/geom/ModelPart$Polygon normal Lcom/mojang/blaze3d/vertex/Vector3f;
 accessible field net/minecraft/client/model/geom/ModelPart$Polygon vertices [Lnet/minecraft/client/model/geom/ModelPart$Vertex;
-mutable field net/minecraft/client/model/geom/ModelPart$Polygon vertices [Lnet/minecraft/client/model/geom/ModelPart$Vertex;
 accessible class net/minecraft/client/model/geom/ModelPart$Polygon
-accessible class net/minecraft/client/model/geom/ModelPart$Vertex
-accessible field net/minecraft/client/multiplayer/ClientLevel connection Lnet/minecraft/client/multiplayer/ClientLevel$ClientLevelConnection;
 accessible method net/minecraft/client/multiplayer/MultiPlayerGameMode performUseItemOn (Lnet/minecraft/client/player/LocalPlayer;Lnet/minecraft/world/InteractionHand;Lnet/minecraft/world/phys/BlockHitResult;)Lnet/minecraft/world/InteractionResult;
 accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/client/player/LocalPlayer sprintTriggerTime I
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)D
-accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/texture/DynamicTexture;
-accessible field net/minecraft/client/renderer/OutlineBufferSource teamR F
-accessible field net/minecraft/client/renderer/OutlineBufferSource teamG F
-accessible field net/minecraft/client/renderer/OutlineBufferSource teamB F
-accessible field net/minecraft/client/renderer/OutlineBufferSource teamA F
-accessible field net/minecraft/client/renderer/block/model/ItemOverrides overrides Lnet/minecraft/client/renderer/block/model/ItemOverrides$BakedOverride;
-mutable field net/minecraft/client/renderer/block/model/ItemOverrides overrides Lnet/minecraft/client/renderer/block/model/ItemOverrides$BakedOverride;
-accessible field net/minecraft/client/renderer/block/model/ItemOverrides properties Ljava/util/List;
-mutable field net/minecraft/client/renderer/block/model/ItemOverrides properties Ljava/util/List;
-accessible method net/minecraft/client/renderer/block/model/ItemOverrides$BakedOverride <init> ([Lnet/minecraft/client/renderer/block/model/ItemOverrides$PropertyMatcher;Lnet/minecraft/client/resources/model/BakedModel;)V
 accessible method net/minecraft/client/renderer/block/model/ItemOverrides$PropertyMatcher <init> (IF)V
-accessible class net/minecraft/client/renderer/block/model/ItemOverrides$PropertyMatcher
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher renderers Ljava/util/Map;
-accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher playerRenderers Ljava/util/Map;
 accessible field net/minecraft/client/renderer/entity/LivingEntityRenderer layers Ljava/util/List;
-accessible field net/minecraft/client/renderer/entity/layers/ElytraLayer elytraModel Lnet/minecraft/client/model/HumanoidModel;
 accessible field net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer ARMOR_LOCATION_CACHE Ljava/util/Map;
-accessible method net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer getArmorModel (Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/client/model/HumanoidModel;
-accessible field net/minecraft/client/renderer/entity/layers/VillagerProfessionLayer typeHatCache Ljava/util/Map;
-accessible field net/minecraft/client/renderer/entity/layers/VillagerProfessionLayer professionHatCache Ljava/util/Map;
 accessible method net/minecraft/client/renderer/entity/layers/VillagerProfessionLayer getResourceLocation (Ljava/lang/String;Lnet/minecraft/resources/ResourceLocation;)Lnet/minecraft/resources/ResourceLocation;
-accessible method net/minecraft/client/renderer/entity/layers/VillagerProfessionLayer getHatData (Lit/unimi/dsi/fastutil/objects/Object2ObjectMap;Ljava/lang/String;Lnet/minecraft/core/DefaultedRegistry;Ljava/lang/Object;)Lnet/minecraft/world/entity/npc/VillagerMetaDataSection$Hat;
 accessible method net/minecraft/client/renderer/entity/player/PlayerRenderer setModelProperties (Lnet/minecraft/client/player/AbstractClientPlayer;)V
 accessible method net/minecraft/client/renderer/ItemInHandRenderer renderMap (Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;ILnet/minecraft/world/item/ItemStack;)V
 accessible field net/minecraft/client/renderer/RenderStateShard$ShaderStateShard shader Ljava/util/Optional;
@@ -72,16 +46,12 @@ accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShar
 accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard mipmap Z
 accessible field net/minecraft/client/renderer/RenderStateShard$TextureStateShard texture Ljava/util/Optional;
 accessible class net/minecraft/client/renderer/RenderType$CompositeState
-extendable class net/minecraft/client/renderer/RenderType$CompositeState
 accessible field net/minecraft/client/renderer/RenderType$CompositeState textureState Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState textureState Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;
 accessible field net/minecraft/client/renderer/RenderType$CompositeState shaderState Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
-mutable field net/minecraft/client/renderer/RenderType$CompositeState shaderState Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;
 accessible field net/minecraft/client/renderer/RenderType$CompositeState transparencyState Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
-mutable field net/minecraft/client/renderer/RenderType$CompositeState transparencyState Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;
 accessible field net/minecraft/client/renderer/RenderType$CompositeState depthTestState Lnet/minecraft/client/renderer/RenderStateShard$DepthTestStateShard;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState depthTestState Lnet/minecraft/client/renderer/RenderStateShard$DepthTestStateShard;
-accessible field net/minecraft/client/renderer/RenderType$CompositeState cullState Lnet/minecraft/client/renderer/RenderStateShard$CullStateShard;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState cullState Lnet/minecraft/client/renderer/RenderStateShard$CullStateShard;
 accessible field net/minecraft/client/renderer/RenderType$CompositeState lightmapState Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;
 mutable field net/minecraft/client/renderer/RenderType$CompositeState lightmapState Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;
@@ -112,12 +82,9 @@ accessible method net/minecraft/client/renderer/RenderType$CompositeRenderType <
 accessible method net/minecraft/client/renderer/RenderType$CompositeState <init> (Lnet/minecraft/client/renderer/RenderStateShard$EmptyTextureStateShard;Lnet/minecraft/client/renderer/RenderStateShard$ShaderStateShard;Lnet/minecraft/client/renderer/RenderStateShard$TransparencyStateShard;Lnet/minecraft/client/renderer/RenderStateShard$DepthTestStateShard;Lnet/minecraft/client/renderer/RenderStateShard$CullStateShard;Lnet/minecraft/client/renderer/RenderStateShard$LightmapStateShard;Lnet/minecraft/client/renderer/RenderStateShard$OverlayStateShard;Lnet/minecraft/client/renderer/RenderStateShard$LayeringStateShard;Lnet/minecraft/client/renderer/RenderStateShard$OutputStateShard;Lnet/minecraft/client/renderer/RenderStateShard$TexturingStateShard;Lnet/minecraft/client/renderer/RenderStateShard$WriteMaskStateShard;Lnet/minecraft/client/renderer/RenderStateShard$LineStateShard;Lnet/minecraft/client/renderer/RenderStateShard$ColorLogicStateShard;Lnet/minecraft/client/renderer/RenderType$OutlineProperty;)V
 accessible class net/minecraft/client/renderer/RenderType$OutlineProperty
 accessible field net/minecraft/nbt/CompoundTag tags Ljava/util/Map;
-accessible field net/minecraft/server/packs/repository/FolderRepositorySource DISCOVERED_PACK_SELECTION_CONFIG Lnet/minecraft/server/packs/repository/Pack$SelectionConfig;
-accessible method net/minecraft/server/packs/repository/FolderRepositorySource createDiscoveredFilePackInfo (Ljava/nio/file/Path;)V
 accessible class net/minecraft/server/packs/repository/FolderRepositorySource$FolderPackDetector
 accessible method net/minecraft/server/packs/repository/FolderRepositorySource$FolderPackDetector <init> (Lnet/minecraft/world/level/validation/DirectoryValidator;)V
 accessible field net/minecraft/world/damagesource/CombatTracker mob Lnet/minecraft/world/entity/LivingEntity;
-accessible field net/minecraft/world/entity/AreaEffectCloud victims Ljava/util/List;
 accessible field net/minecraft/world/entity/ai/Brain availableBehaviorsByPriority Ljava/util/Map;
 accessible field net/minecraft/world/entity/ai/attributes/AttributeMap supplier Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier;
 mutable field net/minecraft/world/entity/ai/attributes/AttributeMap supplier Lnet/minecraft/world/entity/ai/attributes/AttributeSupplier;
@@ -130,45 +97,32 @@ accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon growlTi
 accessible field net/minecraft/world/entity/boss/enderdragon/EnderDragon phaseManager Lnet/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager;
 mutable field net/minecraft/world/entity/boss/enderdragon/EnderDragon phaseManager Lnet/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager;
 accessible method net/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhase create (Ljava/lang/Class;Ljava/lang/String;)Lnet/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhase;
-accessible field net/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager dragon Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;
 accessible field net/minecraft/world/entity/boss/wither/WitherBoss TARGETING_CONDITIONS Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;
-accessible field net/minecraft/world/entity/projectile/AbstractArrow inGround Z
 accessible field net/minecraft/world/entity/Entity dimensions Lnet/minecraft/world/entity/EntityDimensions;
 accessible method net/minecraft/world/entity/Entity getInputVector (Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;
 accessible field net/minecraft/world/entity/LivingEntity attackStrengthTicker I
 accessible field net/minecraft/world/entity/LivingEntity lastHurt F
-accessible field net/minecraft/world/entity/LivingEntity lerpSteps I
 accessible field net/minecraft/world/entity/LivingEntity lerpX D
 accessible field net/minecraft/world/entity/LivingEntity lerpY D
 accessible field net/minecraft/world/entity/LivingEntity lerpZ D
-accessible field net/minecraft/world/entity/LivingEntity lerpYRot F
 accessible field net/minecraft/world/entity/LivingEntity noJumpDelay I
 accessible field net/minecraft/world/entity/monster/EnderMan DATA_CREEPY Lnet/minecraft/network/syncher/EntityDataAccessor;
 accessible method net/minecraft/world/entity/monster/EnderMan teleport ()Z
 accessible method net/minecraft/world/entity/projectile/AbstractArrow setPierceLevel (B)V
 accessible field net/minecraft/world/entity/projectile/ThrownTrident dealtDamage Z
 accessible method net/minecraft/world/item/ItemStack <init> (Ljava/lang/Void;)V
-accessible field net/minecraft/world/level/dimension/end/EndDragonFight dragonEvent Lnet/minecraft/world/level/dimension/end/EndDragonFight;
 accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
 accessible method net/minecraft/world/level/GameRules$BooleanValue create (Z)Lnet/minecraft/world/level/GameRules$Type;
 accessible method net/minecraft/world/level/GameRules$IntegerValue create (I)Lnet/minecraft/world/level/GameRules$Type;
-accessible method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder hasAttribute (Lnet/minecraft/core/Holder;)Z
-accessible method net/minecraft/commands/synchronization/ArgumentTypeInfos registerByClass (Ljava/lang/Class;Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;)V
 accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
 accessible field net/minecraft/client/renderer/RenderType format Lcom/mojang/blaze3d/vertex/VertexFormat;
 accessible method net/minecraft/core/IdMapper <init> (I)V
-accessible method net/minecraft/world/entity/Entity canRiderInteract ()Z
-accessible method net/minecraft/world/entity/Entity shouldRiderSit ()Z
-accessible method net/minecraft/world/level/block/state/BlockBehaviour getLightEmission (Lnet/minecraft/world/level/block/state/BlockState;)I
-accessible method net/minecraft/client/renderer/ItemBlockRenderTypes getRenderPasses (Lnet/minecraft/world/item/ItemStack;Z)Ljava/util/List;
-accessible method net/minecraft/client/color/item/ItemColors getItemColors ()Lnet/minecraft/client/color/item/ItemColors;
 accessible field net/minecraft/client/renderer/RenderStateShard name Ljava/lang/String;
 accessible field net/minecraft/client/renderer/RenderType sortOnUpload Z
 accessible field net/minecraft/client/renderer/RenderType mode Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;
 accessible field net/minecraft/client/gui/components/Button$Builder x I
 accessible field net/minecraft/client/gui/components/Button$Builder y I
 accessible field net/minecraft/client/gui/components/Button$Builder width I
-accessible field net/minecraft/client/gui/components/Button$Builder height I
 accessible field net/minecraft/client/gui/components/Button$Builder message Lnet/minecraft/network/chat/Component;
 accessible field net/minecraft/client/gui/components/Button$Builder onPress Lnet/minecraft/client/gui/components/Button$OnPress;
 accessible field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
@@ -176,3 +130,18 @@ accessible field net/minecraft/client/model/geom/ModelPart$Vertex u F
 accessible field net/minecraft/client/model/geom/ModelPart$Vertex v F
 accessible field net/minecraft/client/model/geom/ModelPart$Vertex u F
 accessible field net/minecraft/client/model/geom/ModelPart$Vertex v F
+extendable class net/minecraft/client/renderer/RenderType$CompositeState
+extendable class net/minecraft/client/renderer/RenderType$CompositeRenderType
+accessible field net/minecraft/client/gui/components/Button$Builder height I
+accessible field net/minecraft/client/gui/components/Button$Builder width I
+accessible field net/minecraft/client/gui/components/Button$Builder x I
+accessible field net/minecraft/client/gui/components/Button$Builder y I
+accessible field net/minecraft/client/gui/components/Button$Builder message Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/components/Button$Builder onPress Lnet/minecraft/client/gui/components/Button$OnPress;
+accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher playerRenderers Ljava/util/Map;
+accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/texture/DynamicTexture;
+accessible field net/minecraft/world/entity/projectile/AbstractArrow inGround Z
+accessible method net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer getArmorModel (Lnet/minecraft/world/entity/EquipmentSlot;)Lnet/minecraft/client/model/HumanoidModel;
+accessible field net/minecraft/client/renderer/RenderType$CompositeState cullState Lnet/minecraft/client/renderer/RenderStateShard$CullStateShard;
+accessible field net/minecraft/world/entity/LivingEntity lerpSteps I
+accessible field net/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager dragon Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;
