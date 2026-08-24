@@ -53,7 +53,7 @@ public enum MinecraftMod {
     }
 
     public String versionString() {
-        return FabricLoader.getInstance().getObject(modId)
+        return FabricLoader.getInstance().getModContainer(modId)
             .map(container -> container.getMetadata().getVersion().getFriendlyString())
             .orElse("0.0.0");
     }

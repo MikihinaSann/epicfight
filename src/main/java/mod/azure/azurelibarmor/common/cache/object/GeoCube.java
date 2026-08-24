@@ -1,5 +1,10 @@
 package mod.azure.azurelibarmor.common.cache.object;
 
-/// Stub class for AzureLibArmor — the Fabric version uses different package names.
+import com.mojang.blaze3d.vertex.PoseStack;
+
+/// Stub for AzureLibArmor's GeoCube.
 public class GeoCube {
+    public static void translateToPivotPoint(PoseStack poseStack, GeoCube cube) {}
+    public static void translateAwayFromPivotPoint(PoseStack poseStack, GeoCube cube) {}
+    public static void rotateMatrixAroundCube(PoseStack poseStack, GeoCube cube) {}
 }

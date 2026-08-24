@@ -154,7 +154,7 @@ public class EpicFightSettingScreen extends Screen {
     @Override
     public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.drawString(this.font, "EpicFight " + FabricLoader.getInstance().getObject(EpicFight.MODID).versionString(), 4, this.height - 16, 0xFF9F9F9F);
+        guiGraphics.drawString(this.font, "EpicFight " + FabricLoader.getInstance().getModContainer(EpicFight.MODID).map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("0.0.0.0"), 4, this.height - 16, 0xFF9F9F9F);
     }
 
     @Override

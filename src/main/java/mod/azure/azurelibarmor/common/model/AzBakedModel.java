@@ -1,5 +1,11 @@
 package mod.azure.azurelibarmor.common.model;
 
-/// Stub class for AzureLibArmor — the Fabric version uses different package names.
+import mod.azure.azurelibarmor.common.cache.object.GeoCube;
+
+import java.util.List;
+
+/// Stub for AzureLibArmor's AzBakedModel.
 public class AzBakedModel {
+    public List<GeoCube> quads() { return List.of(); }
+    public List<AzBone> getBones() { return List.of(); }
 }
