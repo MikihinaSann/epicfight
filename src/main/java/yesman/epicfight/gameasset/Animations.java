@@ -1,4 +1,5 @@
 package yesman.epicfight.gameasset;
+import net.neoforged.neoforge.common.NeoForgeConfig;
 import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
@@ -2529,7 +2530,7 @@ public class Animations {
 
         public static final AnimationEvent.E0 PLAY_STEPPING_SOUND = (entitypatch, animation, params) -> {
             BlockState state = entitypatch.getLevel().getBlockState(entitypatch.getOriginal().getOnPos());
-            entitypatch.playSound(state.getSoundType(entitypatch.getLevel(), entitypatch.getOriginal().blockPosition(), entitypatch.getOriginal()).getHitSound(), 0, 0);
+            entitypatch.playSound(state.getSoundType().getHitSound(), 0, 0);
         };
 
         public static final AnimationEvent.E0 TELEPORT_ATTACK_SERVER = (entitypatch, self, param) -> {

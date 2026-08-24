@@ -18,7 +18,6 @@ public class EpicFightBlockTagsProvider extends BlockTagsProvider {
         super(output, lookupProvider, EpicFight.MODID, existingFileHelper);
     }
 	
-	@Override
 	protected void addTags(Provider provider) {
 	}
 }

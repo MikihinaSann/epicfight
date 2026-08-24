@@ -52,7 +52,6 @@ public class OnSkillBookDroppedByEntity extends LootModifier {
     /// @param context       the LootContext, identical to what is passed to loot tables
     /// @return modified loot drops
 	@SuppressWarnings("deprecation")
-	@Override
 	protected @NotNull ObjectArrayList<ItemStack> doApply(ObjectArrayList<ItemStack> generatedLoot, LootContext context) {
 		Entity entity = context.getParamOrNull(LootContextParams.THIS_ENTITY);
 
@@ -64,7 +63,6 @@ public class OnSkillBookDroppedByEntity extends LootModifier {
 		return generatedLoot;
 	}
 
-	@Override
 	public MapCodec<? extends Object> codec() {
 		return SKILL_CODEC;
 	}

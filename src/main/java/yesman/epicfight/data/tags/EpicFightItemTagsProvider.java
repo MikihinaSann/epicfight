@@ -21,7 +21,7 @@ public class EpicFightItemTagsProvider extends ItemTagsProvider {
         CompletableFuture<TagsProvider.TagLookup<Block>> blockTags,
         @org.jetbrains.annotations.Nullable net.neoforged.neoforge.common.data.ExistingFileHelper existingFileHelper
 	) {
-		super(output, lookupProvider, blockTags, EpicFight.MODID, existingFileHelper);
+		super(output, lookupProvider, blockTags);
 	}
 	
 	@Override
