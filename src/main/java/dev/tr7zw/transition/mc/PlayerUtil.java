@@ -1,5 +1,8 @@
 package dev.tr7zw.transition.mc;
 
-/// Stub for TRansition library.
+import net.minecraft.nbt.CompoundTag;
+
+/// Stub for TRansition's PlayerUtil.
 public class PlayerUtil {
+    public CompoundTag getPersistentData() { return new CompoundTag(); }
 }

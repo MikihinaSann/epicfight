@@ -52,7 +52,8 @@
     "common.MixinWitherBoss",
     "common.MixinWitherBossAccessor",
     "common.IdMapperAccessor",
-    "common.EndDragonFightAccessor"
+    "common.EndDragonFightAccessor",
+    "common.AttributeSupplierBuilderAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -1,6 +1,8 @@
 package dev.isxander.controlify.api.guide;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+import net.minecraft.world.inventory.Slot;
+
+/// Stub for Controlify's ContainerCtx.
 public class ContainerCtx {
+    public Slot hoveredSlot() { return null; }
 }
