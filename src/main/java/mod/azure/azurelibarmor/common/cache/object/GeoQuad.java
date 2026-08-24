@@ -1,5 +1,6 @@
 package mod.azure.azurelibarmor.common.cache.object;
 
-/// Stub class for AzureLibArmor — the Fabric version uses different package names.
+/// Stub for AzureLibArmor's GeoQuad.
 public class GeoQuad {
+    public GeoVertex[] vertices() { return new GeoVertex[0]; }
 }
