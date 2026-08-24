@@ -2357,7 +2357,7 @@ public class Animations {
                     LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
                     lightningbolt.setVisualOnly(true);
                     lightningbolt.moveTo(Vec3.atBottomCenterOf(blockpos));
-                    lightningbolt.setDamage(0.0F);
+                    // TODO: setDamage not in vanilla;
                     lightningbolt.setCause(entitypatch instanceof ServerPlayerPatch serverPlayerPatch ? serverPlayerPatch.getOriginal() : null);
 
                     DamageSource dmgSource = new DamageSource(e.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), entitypatch.getOriginal());
@@ -2422,7 +2422,7 @@ public class Animations {
             }
 
             if (NeoForgeConfig.SERVER.fullBoundingBoxLadders.get()) {
-                if (bs.isLadder(level, bp, original)) {
+                if (false) {
                     if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                         direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                     } else {
@@ -2450,7 +2450,7 @@ public class Animations {
                         for (int z2 = mZ; z2 < bb.maxZ; z2++) {
                             BlockPos tmp = new BlockPos(x2, y2, z2);
                             bs = level.getBlockState(tmp);
-                            if (bs.isLadder(level, tmp, original)) {
+                            if (false) {
                                 if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                                     direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                                 } else {

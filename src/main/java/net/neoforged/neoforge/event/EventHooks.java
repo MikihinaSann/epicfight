@@ -1,6 +1,7 @@
 package net.neoforged.neoforge.event;
 
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.core.BlockPos;
@@ -15,4 +16,5 @@ public class EventHooks {
     public static boolean onUseItemStop(LivingEntity entity, ItemStack stack, int duration) { return false; }
     public static boolean onEntityDestroyBlock(WitherBoss boss, BlockPos pos, BlockState state) { return false; }
     public static boolean onEntityDestroyBlock(Level level, BlockPos pos, BlockState state) { return false; }
+    public static boolean canEntityGrief(Level level, Mob mob) { return mob != null; }
 }

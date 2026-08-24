@@ -61,7 +61,7 @@ public class GeckolibCompat implements ICompatModule {
 				}
 				
 				if (entitypatch != null && entitypatch.overrideRender()) {
-					event.setCanceled(true);
+					// TODO: Port setCanceled to Fabric;
 					renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
 					
 					if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
