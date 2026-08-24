@@ -14,7 +14,7 @@ public class EventHooks {
     public static void onLivingJump(LivingEntity entity) {}
     public static boolean onLivingUseItem(LivingEntity entity, ItemStack stack, int duration) { return false; }
     public static boolean onUseItemStop(LivingEntity entity, ItemStack stack, int duration) { return false; }
-    public static boolean onEntityDestroyBlock(WitherBoss boss, BlockPos pos, BlockState state) { return false; }
+    public static boolean onEntityDestroyBlock(Object boss, BlockPos pos, BlockState state) { return false; }
     public static boolean onEntityDestroyBlock(Level level, BlockPos pos, BlockState state) { return false; }
     public static boolean canEntityGrief(Level level, Mob mob) { return mob != null; }
 }

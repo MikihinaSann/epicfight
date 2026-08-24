@@ -1,4 +1,5 @@
 package yesman.epicfight.gameasset;
+import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.common.NeoForgeConfig;
 import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
