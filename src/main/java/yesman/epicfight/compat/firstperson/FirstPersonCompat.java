@@ -12,19 +12,18 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 public class FirstPersonCompat implements ICompatModule {
 	@Override
 	public void onInitializeClient() {
-		eventBus.<Object>addListener(event -> event.enqueueWork(() -> {
-			FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
-				public boolean preventFirstperson() {
-					PlayerPatch<?> playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
-					
-					if (playerpatch != null && (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT || !ClientConfig.enableOriginalModel) && ClientConfig.enableAnimatedFirstPersonModel) {
-						return true;
-					}
-					
-					return false;
+		// TODO: Port event listener to Fabric callback
+		FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
+			public boolean preventFirstperson() {
+				PlayerPatch<?> playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+
+				if (playerpatch != null && (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT || !ClientConfig.enableOriginalModel) && ClientConfig.enableAnimatedFirstPersonModel) {
+					return true;
 				}
-			});
-		}));
+
+				return false;
+			}
+		});
 	}
 	
 	@Override

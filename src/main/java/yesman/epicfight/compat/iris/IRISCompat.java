@@ -18,10 +18,8 @@ public class IRISCompat implements ICompatModule {
 	
 	@Override
 	public void onInitializeClient() {
-		eventBus.<Object>addListener(event -> {
-			ComputeShaderProvider.initIris();
-			event.enqueueWork(() -> RenderEngine.getInstance().reloadFakeBlockRenderer(new SodiumFakeBlockRenderer()));
-		});
+		// TODO: Port event listener to Fabric callback
+		ComputeShaderProvider.initIris();
 	}
 	
 	@Override

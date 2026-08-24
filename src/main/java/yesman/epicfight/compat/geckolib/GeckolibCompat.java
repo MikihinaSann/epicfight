@@ -20,14 +20,14 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 public class GeckolibCompat implements ICompatModule {
 	@Override
 	public void onInitializeClient() {
-		eventBus.<Object>addListener(event -> event.enqueueWork(() -> HumanoidModelBaker.registerNewTransformer(new GeoModelTransformer())));
+		// TODO: Port event listener to Fabric callback
 	}
 	
 	@Override
 	public void onInitializeClientServer() {
         EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(GeoModelTransformer::getGeoArmorTexturePath);
-		eventBus.addListener(this::geoEntityRenderPreEvent);
-		eventBus.addListener(this::geoEntityRenderPostEvent);
+		// TODO: Port event listener to Fabric callback
+		// TODO: Port event listener to Fabric callback
 	}
 	
 	@Override

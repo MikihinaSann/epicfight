@@ -18,18 +18,8 @@ public class PlayerReviveCompat implements ICompatModule {
 
     @Override
 	public void onInitializeServer() {
-        eventBus.<Object>addListener(event -> {
-            if (event.getEntity() instanceof Player player) {
-                EpicFightCapabilities.getPlayerPatchAsOptional(player).ifPresent(playerPatch -> {
-                    playerPatch.getEventListener().registerEvent(EpicFightEventHooks.Player.CAST_SKILL, skillCastEvent -> {
-                        if (PlayerReviveServer.isBleeding(player)) {
-                            skillCastEvent.cancel();
-                        }
-                    },
-                    IdentifierProvider.PERMANENT_LISTENER);
-                });
-            }
-        });
+        // TODO: Port EntityJoinLevelEvent to Fabric callback
+        // Original code registered on EntityJoinLevelEvent to add skill cancel listener
     }
 
     @Override
