@@ -209,6 +209,6 @@ public class RevelationSkill extends Skill {
 	public void drawOnGui(BattleModeGui gui, SkillContainer container, GuiGraphics guiGraphics, float x, float y, float partialTick) {
 		guiGraphics.blit(this.getSkillTexture(), (int)x, (int)y, 24, 24, 0, 0, 1, 1, 1, 1);
 		int stacks = container.getRemainDuration() > 0 ? 0 : this.maxRevelationStacks.getOrDefault(container.getExecutor().getTarget().getType(), this.defaultRevelationStacks) - container.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS);
-		guiGraphics.drawString(gui.getFont(), String.format("%d", stacks), x + 18, y + 14, 16777215, true);
+		guiGraphics.drawString(gui.getFont(), String.format("%d", stacks), (int)(x + 18), (int)(y + 14), 16777215, true);
 	}
 }

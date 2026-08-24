@@ -136,7 +136,7 @@ public class BonebreakerSkill extends PassiveSkill {
 	@Override @ClientOnly
 	public void drawOnGui(BattleModeGui gui, SkillContainer container, GuiGraphics guiGraphics, float x, float y, float partialTick) {
 		guiGraphics.blit(this.getSkillTexture(), (int)x, (int)y, 24, 24, 0, 0, 1, 1, 1, 1);
-		guiGraphics.drawString(gui.getFont(), String.valueOf(container.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS)), x + 10, y + 10, 16777215, true);
+		guiGraphics.drawString(gui.getFont(), String.valueOf(container.getDataManager().getDataValue(EpicFightSkillDataKeys.STACKS)), (int)(x + 10), (int)(y + 10), 16777215, true);
 	}
 	
 	@Override @ClientOnly

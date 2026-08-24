@@ -201,10 +201,10 @@ public class VengeanceSkill extends PassiveSkill {
 
         if (container.isActivated()) {
             float f = Math.round(this.damageBonus * 100.0F * container.getDurationRatio(1.0F));
-            guiGraphics.drawString(gui.getFont(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f) + "%", x + 6, y + 8, 16777215, true);
+            guiGraphics.drawString(gui.getFont(), ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(f) + "%", (int)(x + 6), (int)(y + 8), 16777215, true);
         } else if (canResetTarget(container)) {
             int seconds = 4 - ((container.getExecutor().getOriginal().tickCount - container.getDataManager().getDataValue(EpicFightSkillDataKeys.TICK_RECORD)) - 80) / 20;
-            guiGraphics.drawString(gui.getFont(), String.valueOf(seconds), x + 6, y + 8, 16777215, true);
+            guiGraphics.drawString(gui.getFont(), String.valueOf(seconds), (int)(x + 6), (int)(y + 8), 16777215, true);
         }
     }
 

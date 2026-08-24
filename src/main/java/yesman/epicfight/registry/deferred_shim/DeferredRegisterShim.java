@@ -46,6 +46,17 @@ public class DeferredRegisterShim<T> {
         return holder;
     }
 
+    /// Overload that accepts a Function<ResourceLocation, I> like NeoForge's DeferredRegister.
+    public <I extends T> DeferredHolderShim<T, I> register(String name, java.util.function.Function<ResourceLocation, I> factory) {
+        if (accepted) {
+            throw new IllegalStateException("Cannot register after accept() has been called");
+        }
+        ResourceLocation location = ResourceLocation.fromNamespaceAndPath(modId, name);
+        DeferredHolderShim<T, I> holder = new DeferredHolderShim<>(registryKey, location, () -> factory.apply(location));
+        entries.add(holder);
+        return holder;
+    }
+
     public void accept() {
         if (accepted) {
             return;

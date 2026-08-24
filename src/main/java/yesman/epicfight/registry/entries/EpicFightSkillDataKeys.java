@@ -34,7 +34,7 @@ import yesman.epicfight.world.damagesource.EpicFightDamageTypeTags;
 public final class EpicFightSkillDataKeys {
 	private EpicFightSkillDataKeys() {}
 	
-	public static final DeferredRegisterShim<SkillDataKey<?>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.SKILL_DATA_KEY, EpicFight.MODID);
+	public static final DeferredRegisterShim<SkillDataKey<?>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.Keys.SKILL_DATA_KEY, EpicFight.MODID);
 	
 	public static final DeferredHolderShim<SkillDataKey<?>, SkillDataKey<Integer>> COMBO_COUNTER = REGISTRY.register("combo_counter", () -> 
 		SkillDataKey.createSkillDataKey(ByteBufCodecs.INT, 0, false, ComboAttacks.class, BladeRushSkill.class)
