@@ -162,7 +162,7 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 	
 	@Override
 	public AABB getRenderBoundingBox(float partialTicks) {
-        return AABB.INFINITE;
+        return new AABB(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 	
 	@Override

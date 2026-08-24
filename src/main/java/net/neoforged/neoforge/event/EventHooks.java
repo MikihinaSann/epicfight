@@ -1,9 +1,18 @@
 package net.neoforged.neoforge.event;
-import net.minecraft.client.Minecraft;
+
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.Level;
 
 /// Stub for NeoForge's EventHooks.
 public class EventHooks {
-    public static boolean onLivingTick(net.minecraft.world.entity.LivingEntity entity) { return false; }
-    public static void onLivingJump(net.minecraft.world.entity.LivingEntity entity) {}
-    public static boolean onLivingUseItem(net.minecraft.world.entity.LivingEntity entity, net.minecraft.world.item.ItemStack stack, int duration) { return false; }
+    public static boolean onLivingTick(LivingEntity entity) { return false; }
+    public static void onLivingJump(LivingEntity entity) {}
+    public static boolean onLivingUseItem(LivingEntity entity, ItemStack stack, int duration) { return false; }
+    public static boolean onUseItemStop(LivingEntity entity, ItemStack stack, int duration) { return false; }
+    public static boolean onEntityDestroyBlock(WitherBoss boss, BlockPos pos, BlockState state) { return false; }
+    public static boolean onEntityDestroyBlock(Level level, BlockPos pos, BlockState state) { return false; }
 }

@@ -335,7 +335,7 @@ public class AttackAnimation extends ActionAnimation {
 	
 	protected void spawnHitParticle(ServerLevel world, LivingEntityPatch<?> attacker, Entity hit, Phase phase) {
 		Optional<DeferredHolderShim<ParticleType<?>, HitParticleType>> particleOptional = phase.getProperty(AttackPhaseProperty.PARTICLE);
-		HitParticleType particle = particleOptional.map(DeferredHolder::get).orElseGet(() -> attacker.getWeaponHitParticle(phase.effectiveHand(attacker)));
+		HitParticleType particle = particleOptional.map(DeferredHolderShim::get).orElseGet(() -> attacker.getWeaponHitParticle(phase.effectiveHand(attacker)));
 		particle.spawnParticleWithArgument(world, null, null, hit, attacker.getOriginal());
 	}
 	

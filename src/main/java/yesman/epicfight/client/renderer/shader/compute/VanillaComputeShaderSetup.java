@@ -62,7 +62,7 @@ public class VanillaComputeShaderSetup extends ComputeShaderSetup {
 			} else if (elem == VertexFormatElement.UV1) {
 				glVertexAttribIPointer(i, 2, GL_UNSIGNED_SHORT, 48, 40);
 				glEnableVertexAttribArray(i);
-			} else if (elem == VertexFormatElement.UV2) {
+			} else if (elem == VertexFormatElement.UV) {
 				glVertexAttribIPointer(i, 2, GL_UNSIGNED_SHORT, 48, 44);
 				glEnableVertexAttribArray(i);
 			}
