@@ -1,4 +1,5 @@
 package yesman.epicfight.world.item;
+import yesman.epicfight.EpicFight;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.BlockPos;

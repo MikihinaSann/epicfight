@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.fgm;
+import yesman.epicfight.EpicFight;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
