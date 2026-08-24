@@ -1,4 +1,5 @@
 package yesman.epicfight.world.entity;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.tags.EntityTypeTags;

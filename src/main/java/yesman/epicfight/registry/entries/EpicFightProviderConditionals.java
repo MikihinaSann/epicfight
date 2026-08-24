@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.InteractionHand;
 import yesman.epicfight.EpicFight;

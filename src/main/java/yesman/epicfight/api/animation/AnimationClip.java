@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableInt;

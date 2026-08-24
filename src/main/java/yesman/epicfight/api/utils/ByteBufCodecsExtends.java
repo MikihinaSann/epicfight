@@ -1,4 +1,5 @@
 package yesman.epicfight.api.utils;
+import net.minecraft.client.Minecraft;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.client;
+import net.minecraft.client.Minecraft;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.types;
+import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.MultiBufferSource;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.types;
+import net.minecraft.client.Minecraft;
 
 import org.jetbrains.annotations.ApiStatus;
 

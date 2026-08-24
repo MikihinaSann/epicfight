@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.animation;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.ImmutableMap;

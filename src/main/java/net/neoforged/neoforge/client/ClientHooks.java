@@ -1,4 +1,5 @@
 package net.neoforged.neoforge.client;
+import net.minecraft.client.Minecraft;
 
 /// Stub for NeoForge's ClientHooks.
 public class ClientHooks {

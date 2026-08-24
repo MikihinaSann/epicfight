@@ -1,4 +1,5 @@
 package yesman.epicfight.client.input;
+import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.platform.InputConstants;
 

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.provider;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.item.Item;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;

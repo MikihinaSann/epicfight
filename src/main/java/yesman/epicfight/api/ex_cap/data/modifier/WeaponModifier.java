@@ -1,4 +1,5 @@
 package yesman.epicfight.api.ex_cap.data.modifier;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

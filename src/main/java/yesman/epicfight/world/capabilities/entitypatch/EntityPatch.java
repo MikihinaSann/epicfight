@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.nbt.CompoundTag;

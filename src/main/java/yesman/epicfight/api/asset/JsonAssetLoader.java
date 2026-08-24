@@ -1,4 +1,5 @@
 package yesman.epicfight.api.asset;
+import net.minecraft.client.Minecraft;
 import net.neoforged.fml.loading.FMLEnvironment;
 import yesman.epicfight.EpicFight;
 

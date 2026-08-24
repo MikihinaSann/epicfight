@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;

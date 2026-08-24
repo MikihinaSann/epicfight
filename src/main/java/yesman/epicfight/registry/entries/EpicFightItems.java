@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import net.minecraft.core.registries.Registries;

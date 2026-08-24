@@ -1,4 +1,5 @@
 package yesman.epicfight.api.event.types.registry;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.loot.LootPool;

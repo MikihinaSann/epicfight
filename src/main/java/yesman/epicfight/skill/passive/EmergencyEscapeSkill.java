@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.passive;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Sets;
 import net.minecraft.nbt.CompoundTag;

@@ -1,4 +1,5 @@
 package yesman.epicfight.network;
+import net.minecraft.client.Minecraft;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

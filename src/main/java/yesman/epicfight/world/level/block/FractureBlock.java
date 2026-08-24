@@ -1,4 +1,5 @@
 package yesman.epicfight.world.level.block;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.MapCodec;

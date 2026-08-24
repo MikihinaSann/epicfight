@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer;
+import net.minecraft.client.Minecraft;
 
 import java.io.IOException;
 

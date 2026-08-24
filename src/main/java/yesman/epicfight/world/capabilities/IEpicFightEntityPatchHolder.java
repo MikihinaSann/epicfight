@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities;
+import net.minecraft.client.Minecraft;
 
 import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvider;
 

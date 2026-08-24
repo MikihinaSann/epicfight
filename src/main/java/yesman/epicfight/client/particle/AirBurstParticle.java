@@ -1,4 +1,5 @@
 package yesman.epicfight.client.particle;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;

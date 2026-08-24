@@ -1,4 +1,5 @@
 package yesman.epicfight.world.gamerule;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;

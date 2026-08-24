@@ -1,4 +1,5 @@
 package yesman.epicfight.api.utils;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;

@@ -1,4 +1,5 @@
 package yesman.epicfight.data.loot;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;

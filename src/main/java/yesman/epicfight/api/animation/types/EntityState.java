@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.types;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.projectile.Projectile;

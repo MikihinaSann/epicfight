@@ -1,4 +1,5 @@
 package yesman.epicfight.epicskins.client.widget;
+import net.minecraft.client.Minecraft;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.gui.Font;

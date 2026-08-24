@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import java.util.Optional;

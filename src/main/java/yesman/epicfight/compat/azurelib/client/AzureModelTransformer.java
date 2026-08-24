@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.azurelib.client;
+import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.List;

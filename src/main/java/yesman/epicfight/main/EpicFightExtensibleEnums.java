@@ -1,4 +1,5 @@
 package yesman.epicfight.main;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import net.minecraft.ChatFormatting;

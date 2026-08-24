@@ -1,4 +1,5 @@
 package yesman.epicfight.world.entity.ai.goal;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;

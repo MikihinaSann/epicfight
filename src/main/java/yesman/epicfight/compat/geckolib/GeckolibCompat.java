@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.geckolib;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;

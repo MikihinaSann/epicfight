@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.render;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import net.minecraft.client.model.HumanoidModel;

@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.fgm.mixin;
+import net.minecraft.client.Minecraft;
 
 import com.wildfire.render.GenderLayer;
 import net.minecraft.client.model.HumanoidModel;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.registry;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

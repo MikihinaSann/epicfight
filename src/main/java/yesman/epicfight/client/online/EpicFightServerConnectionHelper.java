@@ -1,4 +1,5 @@
 package yesman.epicfight.client.online;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.Util;
 import yesman.epicfight.EpicFight;

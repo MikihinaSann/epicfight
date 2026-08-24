@@ -1,4 +1,5 @@
 package yesman.epicfight.server.commands;
+import net.minecraft.client.Minecraft;
 
 import java.util.Collection;
 

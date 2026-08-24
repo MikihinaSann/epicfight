@@ -1,4 +1,5 @@
 package yesman.epicfight.platform.fabric.mixin;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import org.spongepowered.asm.mixin.Mixin;

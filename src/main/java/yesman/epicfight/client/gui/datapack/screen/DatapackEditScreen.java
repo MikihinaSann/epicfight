@@ -2341,12 +2341,12 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				this.packList.get(this.packListGrid.getRowposition()).getValue().putString("armature", pair.getFirst());
 			});
 			
-			final ResizableEditBox impactEditBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("impact"), null, null);
-			final ResizableEditBox armorNegationEditBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("armor_negation"), null, null);
-			final ResizableEditBox maxStrikesEditBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("max_strikes"), null, null);
-			final ResizableEditBox chasingSpeedEditBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("chasing_speed"), null, null);
-			final ResizableEditBox scaleEditBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("scale"), null, null);
-			final ResizableEditBox stunArmorBox = new ResizableEditBox(DatapackEditScreen.Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("stun_armor"), null, null);
+			final ResizableEditBox impactEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("impact"), null, null);
+			final ResizableEditBox armorNegationEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("armor_negation"), null, null);
+			final ResizableEditBox maxStrikesEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("max_strikes"), null, null);
+			final ResizableEditBox chasingSpeedEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("chasing_speed"), null, null);
+			final ResizableEditBox scaleEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("scale"), null, null);
+			final ResizableEditBox stunArmorBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("stun_armor"), null, null);
 			
 			impactEditBox.setFilter((context) -> StringUtil.isNullOrEmpty(context) || ParseUtil.isParsableAllowingMinus(context, Double::parseDouble));
 			armorNegationEditBox.setFilter((context) -> StringUtil.isNullOrEmpty(context) || ParseUtil.isParsableAllowingMinus(context, Double::parseDouble));
@@ -2592,7 +2592,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 					this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 140, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.humanoid_weapon_motions"));
 					this.inputComponentsList.addComponentCurrentRow(SubScreenOpenButton.builder().subScreen(() -> {
 						if (this.armaturePopupBox._getValue() == null || this.meshPopupBox._getValue() == null) {
-							return new MessageScreen<>("", "Define model and armature first.", DatapackEditScreen.this, (button2) -> DatapackEditScreen.Minecraft.getInstance().setScreen(DatapackEditScreen.this), 180, 60);
+							return new MessageScreen<>("", "Define model and armature first.", DatapackEditScreen.this, (button2) -> Minecraft.getInstance().setScreen(DatapackEditScreen.this), 180, 60);
 						} else {
 							return new HumanoidWeaponMotionScreen(DatapackEditScreen.this, this.packList.get(this.packListGrid.getRowposition()).getValue(), this.armaturePopupBox._getValue(), this.meshPopupBox._getValue());
 						}
@@ -2603,7 +2603,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 140, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.combat_behavior"));
 				this.inputComponentsList.addComponentCurrentRow(SubScreenOpenButton.builder().subScreen(() -> {
 					if (this.armaturePopupBox._getValue() == null || this.meshPopupBox._getValue() == null) {
-						return new MessageScreen<>("", "Define model and armature first.", DatapackEditScreen.this, (button2) -> DatapackEditScreen.Minecraft.getInstance().setScreen(DatapackEditScreen.this), 180, 60);
+						return new MessageScreen<>("", "Define model and armature first.", DatapackEditScreen.this, (button2) -> Minecraft.getInstance().setScreen(DatapackEditScreen.this), 180, 60);
 					} else if (isHumanoid) {
 						return new HumanoidCombatBehaviorScreen(DatapackEditScreen.this, this.packList.get(this.packListGrid.getRowposition()).getValue(), this.armaturePopupBox._getValue(), this.meshPopupBox._getValue());
 					} else {

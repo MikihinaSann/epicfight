@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableList;
 import net.minecraft.network.chat.Component;

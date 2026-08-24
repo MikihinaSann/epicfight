@@ -1,4 +1,5 @@
 package net.neoforged.neoforge.event;
+import net.minecraft.client.Minecraft;
 
 /// Stub for NeoForge's LootTableLoadEvent.
 public class LootTableLoadEvent {

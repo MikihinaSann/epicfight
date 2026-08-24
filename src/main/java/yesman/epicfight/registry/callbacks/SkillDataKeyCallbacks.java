@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.callbacks;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import java.util.HashSet;

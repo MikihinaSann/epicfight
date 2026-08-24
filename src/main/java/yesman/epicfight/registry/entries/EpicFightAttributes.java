@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 import yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent;
 

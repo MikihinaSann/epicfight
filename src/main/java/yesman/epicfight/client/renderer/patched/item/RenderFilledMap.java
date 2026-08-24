@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.item;
+import net.minecraft.client.Minecraft;
 
 import org.joml.Matrix4f;
 

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch.player;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;

@@ -1,4 +1,5 @@
 package yesman.epicfight.network;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;

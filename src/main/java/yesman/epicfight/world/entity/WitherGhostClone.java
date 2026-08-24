@@ -1,4 +1,5 @@
 package yesman.epicfight.world.entity;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.commands.arguments.EntityAnchorArgument.Anchor;
 import net.minecraft.server.level.ServerLevel;

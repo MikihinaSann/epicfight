@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.common;
+import net.minecraft.client.Minecraft;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;

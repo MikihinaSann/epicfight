@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui.widgets.common;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;

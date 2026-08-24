@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.common;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.level.dimension.end.EndDragonFight;
 import org.spongepowered.asm.mixin.Mixin;

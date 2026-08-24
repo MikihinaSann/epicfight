@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.common;
+import net.minecraft.client.Minecraft;
 
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;

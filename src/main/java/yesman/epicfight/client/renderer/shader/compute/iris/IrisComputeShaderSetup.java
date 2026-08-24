@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.shader.compute.iris;
+import net.minecraft.client.Minecraft;
 
 import static org.lwjgl.opengl.GL11C.GL_BYTE;
 import static org.lwjgl.opengl.GL11C.GL_FLOAT;

@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.item;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.core.Holder;

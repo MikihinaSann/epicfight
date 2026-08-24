@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.controlify;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import dev.isxander.controlify.api.ControlifyApi;

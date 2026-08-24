@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.sounds.SoundEvent;

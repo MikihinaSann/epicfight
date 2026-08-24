@@ -1,4 +1,5 @@
 package yesman.epicfight.api.physics;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import yesman.epicfight.api.animation.Joint;

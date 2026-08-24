@@ -1,4 +1,5 @@
 package yesman.epicfight.platform.fabric.event;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;

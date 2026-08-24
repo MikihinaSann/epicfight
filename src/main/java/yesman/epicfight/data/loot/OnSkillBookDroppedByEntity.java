@@ -1,4 +1,5 @@
 package yesman.epicfight.data.loot;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;

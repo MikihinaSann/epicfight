@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.deferred_shim;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;

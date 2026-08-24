@@ -1,4 +1,5 @@
 package yesman.epicfight.api.event.impl;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerPlayer;

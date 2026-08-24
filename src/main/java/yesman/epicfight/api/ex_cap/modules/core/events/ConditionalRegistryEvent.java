@@ -1,4 +1,5 @@
 package yesman.epicfight.api.ex_cap.modules.core.events;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;

@@ -1,4 +1,5 @@
 package yesman.epicfight.registry;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;

@@ -1,4 +1,5 @@
 package yesman.epicfight.epicskins.user;
+import net.minecraft.client.Minecraft;
 
 import com.google.gson.JsonObject;
 import net.minecraft.resources.ResourceLocation;

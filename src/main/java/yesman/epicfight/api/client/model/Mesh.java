@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.model;
+import net.minecraft.client.Minecraft;
 
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;

@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.client;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.world.inventory.Slot;

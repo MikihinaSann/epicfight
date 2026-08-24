@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.control;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.player.Input;
 import org.jetbrains.annotations.ApiStatus;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.event.types.player;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import yesman.epicfight.api.event.CancelableEvent;

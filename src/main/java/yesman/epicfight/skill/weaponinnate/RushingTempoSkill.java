@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.weaponinnate;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

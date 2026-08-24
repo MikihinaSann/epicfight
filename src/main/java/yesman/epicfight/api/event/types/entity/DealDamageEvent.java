@@ -1,4 +1,5 @@
 package yesman.epicfight.api.event.types.entity;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.LivingEntity;
 import yesman.epicfight.api.event.CancelableEvent;

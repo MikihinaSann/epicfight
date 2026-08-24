@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.UseAnim;

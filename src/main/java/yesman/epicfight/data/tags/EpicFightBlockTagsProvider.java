@@ -1,4 +1,5 @@
 package yesman.epicfight.data.tags;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import java.util.concurrent.CompletableFuture;

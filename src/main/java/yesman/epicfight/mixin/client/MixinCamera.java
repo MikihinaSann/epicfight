@@ -1,4 +1,5 @@
 package yesman.epicfight.mixin.client;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.Camera;
 import net.minecraft.world.entity.Entity;

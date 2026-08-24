@@ -1,4 +1,5 @@
 package yesman.epicfight.world.entity.data;
+import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
 import java.util.HashSet;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.model.transformer;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import java.io.File;

@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.entity;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.model.IronGolemModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import net.minecraft.client.Minecraft;
 
 import com.mojang.datafixers.util.Pair;
 

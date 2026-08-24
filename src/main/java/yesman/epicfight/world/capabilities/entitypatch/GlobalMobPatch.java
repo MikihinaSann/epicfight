@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.Mob;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;

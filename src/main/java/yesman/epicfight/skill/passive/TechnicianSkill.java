@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.passive;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.particles.ParticleTypes;
 import yesman.epicfight.api.animation.types.DodgeAnimation;

@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.registry;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.ai.attributes.Attribute;

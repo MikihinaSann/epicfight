@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.shader.compute.backend.utils;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.util.Mth;
 import org.joml.Matrix3f;

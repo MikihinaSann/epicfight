@@ -1,4 +1,5 @@
 package yesman.epicfight.epicskins.client.screen;
+import net.minecraft.client.Minecraft;
 
 import com.mojang.math.Axis;
 import net.minecraft.client.gui.GuiGraphics;

@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.passive;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.provider;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.player.RemotePlayer;

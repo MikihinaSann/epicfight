@@ -1,4 +1,5 @@
 package yesman.epicfight.api.asset;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 

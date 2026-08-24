@@ -1,4 +1,5 @@
 package yesman.epicfight.client.renderer.patched.layer;
+import net.minecraft.client.Minecraft;
 
 import java.util.Map;
 

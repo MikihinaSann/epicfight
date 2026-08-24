@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.types;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;

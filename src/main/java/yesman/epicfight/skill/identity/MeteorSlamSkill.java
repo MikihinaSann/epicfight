@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.identity;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import net.minecraft.network.chat.Component;

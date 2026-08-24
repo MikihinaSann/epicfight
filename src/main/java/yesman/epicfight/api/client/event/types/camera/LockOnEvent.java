@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.types.camera;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.LivingEntity;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;

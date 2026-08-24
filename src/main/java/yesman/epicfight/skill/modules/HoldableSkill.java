@@ -1,4 +1,5 @@
 package yesman.epicfight.skill.modules;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.nbt.CompoundTag;

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.level.block.entity;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;

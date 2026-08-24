@@ -1,4 +1,5 @@
 package yesman.epicfight.api.client.event.impl;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;

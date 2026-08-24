@@ -1,4 +1,5 @@
 package yesman.epicfight.api.event.impl;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.arguments.EntityAnchorArgument;

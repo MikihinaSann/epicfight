@@ -1,4 +1,5 @@
 package net.neoforged.neoforge.registries;
+import net.minecraft.client.Minecraft;
 
 /// Stub — use yesman.epicfight.registry.deferred_shim.DeferredHolderShim instead.
 public class DeferredHolder<T, I extends T> extends yesman.epicfight.registry.deferred_shim.DeferredHolderShim<T, I> {

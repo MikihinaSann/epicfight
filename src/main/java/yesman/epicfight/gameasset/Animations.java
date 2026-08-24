@@ -1,4 +1,5 @@
 package yesman.epicfight.gameasset;
+import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;

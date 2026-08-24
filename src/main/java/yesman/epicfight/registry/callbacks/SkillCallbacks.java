@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.callbacks;
+import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 

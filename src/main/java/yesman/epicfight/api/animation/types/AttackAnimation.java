@@ -1,4 +1,5 @@
 package yesman.epicfight.api.animation.types;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
