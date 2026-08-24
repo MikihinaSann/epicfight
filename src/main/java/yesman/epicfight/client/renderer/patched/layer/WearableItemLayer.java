@@ -149,7 +149,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				}
 				
 				if (armorModel instanceof HumanoidModel humanoidModel) {
-					boolean shouldSit = livingentity.isPassenger() && (livingentity.getVehicle() != null && livingentity.getVehicle().shouldRiderSit());
+					boolean shouldSit = livingentity.isPassenger() && (livingentity.getVehicle() != null && livingentity.getVehicle() != null && false);
 					float f8 = 0.0F;
 					float f5 = 0.0F;
 					

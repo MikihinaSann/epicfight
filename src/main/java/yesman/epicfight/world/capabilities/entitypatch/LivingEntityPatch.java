@@ -1079,7 +1079,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
             return true;
         }
 
-        if (this.original.getRootVehicle() == target.getRootVehicle() && !target.canRiderInteract()) {
+        if (this.original.getRootVehicle() == target.getRootVehicle() && !targettrue) {
             return true;
         }
 

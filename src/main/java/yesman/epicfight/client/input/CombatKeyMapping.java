@@ -41,11 +41,11 @@ public class CombatKeyMapping extends KeyMapping {
 
     /// This key mapping only applies [KeyConflictContext#IN_GAME] since it represents player moves.
     public CombatKeyMapping(String description, InputConstants.Type type, int code, String category) {
-        super(description, net.minecraft.client.KeyMapping.CATEGORY, type, code, category);
+        super(description, type, code, category);
     }
 
     @Override
     public boolean isActiveAndMatches(@NotNull InputConstants.Key keyCode) {
-        return super.isActiveAndMatches(keyCode) && ClientEngine.getInstance().isEpicFightMode();
+        return super.matches(keyCode, 0) && ClientEngine.getInstance().isEpicFightMode();
     }
 }

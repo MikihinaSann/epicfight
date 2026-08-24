@@ -22,7 +22,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 public abstract class PatchedEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, R extends EntityRenderer<E>, AM extends SkinnedMesh> {
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTick) {
 		Object renderNameplateEvent = new Object(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
-		null.post(renderNameplateEvent);
+		
 		
 		MixinEntityRenderer entityRendererAccessor = (MixinEntityRenderer)renderer;
 		

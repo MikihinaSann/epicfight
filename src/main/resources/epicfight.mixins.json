@@ -27,7 +27,9 @@
     "client.MixinParticleEngine",
     "client.MixinThrownTridentRenderer",
     "client.LightTextureAccessor",
-    "client.AbstractContainerScreenAccessor"
+    "client.AbstractContainerScreenAccessor",
+    "client.OutlineBufferSourceAccessor",
+    "client.VillagerProfessionLayerAccessor"
   ],
   "mixins": [
     "common.MixinCrossbowAttack",

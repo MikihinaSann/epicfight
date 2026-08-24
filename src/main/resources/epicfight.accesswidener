@@ -43,7 +43,7 @@ accessible method net/minecraft/client/multiplayer/MultiPlayerGameMode performUs
 accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/client/player/LocalPlayer sprintTriggerTime I
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)D
-accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/DynamicTexture;
+accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/texture/DynamicTexture;
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamR F
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamG F
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamB F
@@ -151,3 +151,11 @@ accessible field net/minecraft/world/level/dimension/end/EndDragonFight dragonEv
 accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
 accessible field net/minecraft/client/renderer/RenderType format Lcom/mojang/blaze3d/vertex/VertexFormat;
 accessible method net/minecraft/core/IdMapper <init> (I)V
+accessible method net/minecraft/world/entity/Entity canRiderInteract ()Z
+accessible method net/minecraft/world/entity/Entity shouldRiderSit ()Z
+accessible method net/minecraft/world/level/block/state/BlockBehaviour getLightEmission (Lnet/minecraft/world/level/block/state/BlockState;)I
+accessible method net/minecraft/client/renderer/ItemBlockRenderTypes getRenderPasses (Lnet/minecraft/world/item/ItemStack;Z)Ljava/util/List;
+accessible method net/minecraft/client/color/item/ItemColors getItemColors ()Lnet/minecraft/client/color/item/ItemColors;
+accessible field net/minecraft/client/renderer/RenderStateShard name Ljava/lang/String;
+accessible field net/minecraft/client/renderer/RenderType sortOnUpload Z
+accessible field net/minecraft/client/renderer/RenderType mode Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;
