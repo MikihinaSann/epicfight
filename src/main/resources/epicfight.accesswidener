@@ -153,6 +153,8 @@ accessible method net/minecraft/world/level/GameRules register (Ljava/lang/Strin
 accessible method net/minecraft/world/level/GameRules$BooleanValue create (Z)Lnet/minecraft/world/level/GameRules$Type;
 accessible method net/minecraft/world/level/GameRules$IntegerValue create (I)Lnet/minecraft/world/level/GameRules$Type;
 accessible method net/minecraft/world/entity/ai/attributes/AttributeSupplier$Builder hasAttribute (Lnet/minecraft/core/Holder;)Z
+accessible method net/minecraft/commands/synchronization/ArgumentTypeInfos registerByClass (Ljava/lang/Class;Lnet/minecraft/commands/synchronization/ArgumentTypeInfo;)V
+accessible method net/minecraft/core/particles/SimpleParticleType <init> (Z)V
 accessible field net/minecraft/client/renderer/RenderType format Lcom/mojang/blaze3d/vertex/VertexFormat;
 accessible method net/minecraft/core/IdMapper <init> (I)V
 accessible method net/minecraft/world/entity/Entity canRiderInteract ()Z

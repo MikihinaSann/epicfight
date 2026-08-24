@@ -109,8 +109,8 @@ public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
         final float camXRot = Mth.rotLerp(event.getPartialTick(), event.getCameraApi().getCameraXRotO(), event.getCameraApi().getCameraXRot());
         final float camYRot = Mth.rotLerp(event.getPartialTick(), event.getCameraApi().getCameraYRotO(), event.getCameraApi().getCameraYRot());
 
-        shoulderSurfing.getCamera().setXRot(camXRot);
-        shoulderSurfing.getCamera().setYRot(camYRot);
+        shoulderSurfing.getCamera().setRotation(camYRot, camXRot);
+        
     }
 
     private static void lockOnTick(LockOnEvent.Tick event) {

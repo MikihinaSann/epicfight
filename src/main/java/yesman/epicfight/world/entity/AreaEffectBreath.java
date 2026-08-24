@@ -84,7 +84,7 @@ public class AreaEffectBreath extends AreaEffectCloud {
 						double d3 = d8 * d8 + d1 * d1;
 						
 						if (d3 <= (double) (f * f)) {
-							((yesman.epicfight.mixin.common.AreaEffectCloudAccessor) this).epicfight$getVictims().put(livingentity, this.tickCount + 3);
+							((yesman.epicfight.mixin.common.AreaEffectCloudAccessor) this).epicfight$getVictims().add(livingentity);
 							livingentity.invulnerableTime = 0;
 							
 							damageSource.setInitialPosition(this.initialFirePosition);

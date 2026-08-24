@@ -28,6 +28,15 @@ public class DeferredRegisterShim<T> {
         this.modId = modId;
     }
 
+    public String getNamespace() {
+        return modId;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <R> ResourceKey<Registry<R>> getRegistryKey() {
+        return (ResourceKey<Registry<R>>) registryKey;
+    }
+
     public <I extends T> DeferredHolderShim<T, I> register(String name, Supplier<I> supplier) {
         if (accepted) {
             throw new IllegalStateException("Cannot register after accept() has been called");

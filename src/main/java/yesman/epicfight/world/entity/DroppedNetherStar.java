@@ -22,7 +22,7 @@ public class DroppedNetherStar extends ItemEntity {
 		this.setPos(x, y, z);
 		this.setDeltaMovement(dx, dy, dz);
 		this.setItem(itemstack);
-		this.lifespan = (itemstack.getItem() == null ? 6000 : itemstack.getEntityLifespan(level));
+		// TODO: lifespan is private in vanilla
 		this.noPhysics = true;
 		this.setPickUpDelay(30);
 		this.setNoGravity(true);
