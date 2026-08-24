@@ -16,6 +16,7 @@ public class InputBindingBuilder {
     public InputBindingBuilder allowedContexts(BindContext... contexts) { return this; }
     public InputBindingBuilder radialCandidate(net.minecraft.resources.ResourceLocation id) { return this; }
     public InputBindingBuilder always() { return this; }
+    public InputBindingBuilder addKeyCorrelation(net.minecraft.client.KeyMapping key) { return this; }
     public InputBindingBuilder description(net.minecraft.network.chat.Component desc) { return this; }
     public InputBinding build() { return new InputBinding(); }
 }

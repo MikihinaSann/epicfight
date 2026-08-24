@@ -20,7 +20,7 @@ public class AzArmorRenderer {
     public AzBone getRightBootBone(AzBakedModel model) { return null; }
     public AzBone getLeftBootBone(AzBakedModel model) { return null; }
     public AzBone getBodyBone(AzBakedModel model) { return null; }
-    public Object provider() { return null; }
+    public AzArmorRenderer provider() { return this; }
     public AzBakedModel provideBakedModel(LivingEntity entity, ItemStack stack) { return null; }
     public RendererPipelineStub rendererPipeline() { return new RendererPipelineStub(); }
 

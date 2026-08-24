@@ -1,4 +1,5 @@
 package yesman.epicfight.data;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.minecraft.client.Minecraft;
 
 import java.util.concurrent.CompletableFuture;
@@ -26,9 +27,12 @@ public final class DataEvents {
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         
-        gen.addProvider(event.includeServer(), new EpicFightRecipeProvider(packOutput, lookupProvider));
+        // TODO: addProvider
+        // gen.addProvider(event.includeServer(), new EpicFightRecipeProvider(packOutput, lookupProvider));
         EpicFightBlockTagsProvider blockTagsProvider = new EpicFightBlockTagsProvider(packOutput, lookupProvider, existingFileHelper);;
-        gen.addProvider(event.includeServer(), blockTagsProvider);
-        gen.addProvider(event.includeServer(), new EpicFightItemTagsProvider(packOutput, lookupProvider, null, existingFileHelper));
+        // TODO: addProvider
+        // gen.addProvider(event.includeServer(), blockTagsProvider);
+        // TODO: addProvider
+        // gen.addProvider(event.includeServer(), new EpicFightItemTagsProvider(packOutput, lookupProvider, null, existingFileHelper));
 	}
 }

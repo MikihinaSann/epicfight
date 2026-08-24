@@ -57,6 +57,9 @@ public class DeferredRegisterShim<T> {
         return holder;
     }
 
+    public java.util.Set<DeferredHolderShim<T, ?>> getEntries() {
+        return new java.util.HashSet<>(entries);
+    }
     public void accept() {
         if (accepted) {
             return;

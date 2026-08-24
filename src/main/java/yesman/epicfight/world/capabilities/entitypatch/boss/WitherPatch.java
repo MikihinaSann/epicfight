@@ -244,7 +244,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 						BlockPos blockpos = new BlockPos(l2, l, i1);
 						BlockState blockstate = this.original.level().getBlockState(blockpos);
 						
-						if (blockstate.canEntityDestroy(this.original.level(), blockpos, this.original) && EventHooks.onEntityDestroyBlock(this.original, blockpos, blockstate)) {
+						if (false && EventHooks.onEntityDestroyBlock(this.original, blockpos, blockstate)) {
 							flag = this.original.level().destroyBlock(blockpos, true, this.original) || flag;
 						}
 					}

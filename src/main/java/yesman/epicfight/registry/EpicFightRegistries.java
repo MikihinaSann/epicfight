@@ -1,7 +1,5 @@
 package yesman.epicfight.registry;
-
 import net.minecraft.core.Registry;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import yesman.epicfight.EpicFight;
@@ -11,75 +9,55 @@ import yesman.epicfight.api.ex_cap.data.modifier.WeaponModifier;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 import yesman.epicfight.client.online.cosmetics.Emote;
 import yesman.epicfight.data.conditions.Condition;
-import yesman.epicfight.registry.callbacks.SkillCallbacks;
-import yesman.epicfight.registry.callbacks.SkillDataKeyCallbacks;
-import yesman.epicfight.registry.callbacks.SynchedAnimationVariableKeyCallbacks;
 import yesman.epicfight.registry.entries.*;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillDataKey;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.custom.CustomData;
 import yesman.epicfight.world.entity.data.ExpandedEntityDataAccessor;
-
 import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class EpicFightRegistries {
-    // Custom registries — created via Registry.register
     @SuppressWarnings("unchecked")
-    public static final Registry<Supplier<Condition<?>>> CONDITION = registerSimple(Keys.CONDITION);
+    public static final Registry<Supplier<Condition<?>>> CONDITION = createRegistry(Keys.CONDITION);
     @SuppressWarnings("unchecked")
-    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = registerSimple(Keys.EXPANDED_ENTITY_DATA_ACCESSOR);
+    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = createRegistry(Keys.EXPANDED_ENTITY_DATA_ACCESSOR);
     @SuppressWarnings("unchecked")
-    public static final Registry<Skill> SKILL = registerSimple(Keys.SKILL);
+    public static final Registry<Skill> SKILL = createRegistry(Keys.SKILL);
     @SuppressWarnings("unchecked")
-    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = registerSimple(Keys.SKILL_DATA_KEY);
+    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = createRegistry(Keys.SKILL_DATA_KEY);
     @SuppressWarnings("unchecked")
-    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = registerSimple(Keys.SYNCHED_ANIMATION_VARIABLE_KEY);
+    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = createRegistry(Keys.SYNCHED_ANIMATION_VARIABLE_KEY);
     @SuppressWarnings("unchecked")
-    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = registerSimple(Keys.BUILDERS);
+    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = createRegistry(Keys.BUILDERS);
     @SuppressWarnings("unchecked")
-    public static final Registry<Moveset.Builder> MOVESETS = registerSimple(Keys.MOVESETS);
+    public static final Registry<Moveset.Builder> MOVESETS = createRegistry(Keys.MOVESETS);
     @SuppressWarnings("unchecked")
-    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = registerSimple(Keys.PROVIDER_CONDITIONALS);
+    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = createRegistry(Keys.PROVIDER_CONDITIONALS);
     @SuppressWarnings("unchecked")
-    public static final Registry<WeaponModifier.Builder> MODIFIERS = registerSimple(Keys.MODIFIERS);
+    public static final Registry<WeaponModifier.Builder> MODIFIERS = createRegistry(Keys.MODIFIERS);
     @SuppressWarnings("unchecked")
-    public static final Registry<CustomData<?>> WEAPON_DATA = registerSimple(Keys.WEAPON_DATA);
+    public static final Registry<CustomData<?>> WEAPON_DATA = createRegistry(Keys.WEAPON_DATA);
     @SuppressWarnings("unchecked")
-    public static final Registry<CustomData<?>> MOVESET_DATA = registerSimple(Keys.MOVESET_DATA);
+    public static final Registry<CustomData<?>> MOVESET_DATA = createRegistry(Keys.MOVESET_DATA);
 
     @SuppressWarnings("unchecked")
-    private static <T> Registry<T> registerSimple(ResourceKey<Registry<T>> key) {
-        return Registry.register((ResourceKey<Registry<T>>) (Object) key, new net.minecraft.core.SimpleRegistry<>(key));
+    private static <T> Registry<T> createRegistry(ResourceKey<Registry<T>> key) {
+        // TODO: Create proper Fabric registry
+        return null;
     }
 
-    // Deferred Registries
     public static final List<DeferredRegisterShim<?>> DEFERRED_REGISTRIES = List.of(
-        EpicFightArmorMaterials.REGISTRY,
-        EpicFightAttributes.REGISTRY,
-        EpicFightBlockEntities.REGISTRY,
-        EpicFightBlocks.REGISTRY,
-        EpicFightCommandArgumentTypes.REGISTRY,
-        EpicFightConditions.REGISTRY,
-        EpicFightCreativeTabs.REGISTRY,
-        EpicFightDataComponentTypes.REGISTRY,
-        EpicFightEntityTypes.REGISTRY,
-        EpicFightExpandedEntityDataAccessors.REGISTRY,
-        EpicFightItems.REGISTRY,
-        EpicFightLootItemFunctions.REGISTRY,
-        EpicFightMobEffects.REGISTRY,
-        EpicFightParticles.REGISTRY,
-        EpicFightPotions.REGISTRY,
-        EpicFightSkillDataKeys.REGISTRY,
-        EpicFightSkills.REGISTRY,
-        EpicFightSounds.REGISTRY,
-        EpicFightSynchedAnimationVariableKeys.REGISTRY,
-        EpicFightMovesets.REGISTRY,
-        EpicFightProviderConditionals.REGISTRY,
-        EpicFightItemCapabilityPresets.REGISTRY,
-        EpicFightModifiers.REGISTRY,
-        EpicFightMovesetData.REGISTER
+        EpicFightArmorMaterials.REGISTRY, EpicFightAttributes.REGISTRY, EpicFightBlockEntities.REGISTRY,
+        EpicFightBlocks.REGISTRY, EpicFightCommandArgumentTypes.REGISTRY, EpicFightConditions.REGISTRY,
+        EpicFightCreativeTabs.REGISTRY, EpicFightDataComponentTypes.REGISTRY, EpicFightEntityTypes.REGISTRY,
+        EpicFightExpandedEntityDataAccessors.REGISTRY, EpicFightItems.REGISTRY, EpicFightLootItemFunctions.REGISTRY,
+        EpicFightMobEffects.REGISTRY, EpicFightParticles.REGISTRY, EpicFightPotions.REGISTRY,
+        EpicFightSkillDataKeys.REGISTRY, EpicFightSkills.REGISTRY, EpicFightSounds.REGISTRY,
+        EpicFightSynchedAnimationVariableKeys.REGISTRY, EpicFightMovesets.REGISTRY,
+        EpicFightProviderConditionals.REGISTRY, EpicFightItemCapabilityPresets.REGISTRY,
+        EpicFightModifiers.REGISTRY, EpicFightMovesetData.REGISTER
     );
 
     public interface Keys {
@@ -94,12 +72,7 @@ public abstract class EpicFightRegistries {
         ResourceKey<Registry<SynchedAnimationVariableKey<?>>> SYNCHED_ANIMATION_VARIABLE_KEY = key("synched_animation_variable_key");
         ResourceKey<Registry<Skill>> SKILL = key("skill");
         ResourceKey<Registry<SkillDataKey<?>>> SKILL_DATA_KEY = key("skill_data_key");
-
-        // Data Pack Registries
         ResourceKey<Registry<Emote>> EMOTE = key("emote");
-
-        private static <T> ResourceKey<Registry<T>> key(String name) {
-            return ResourceKey.createRegistryKey(EpicFight.identifier(name));
-        }
+        private static <T> ResourceKey<Registry<T>> key(String name) { return ResourceKey.createRegistryKey(EpicFight.identifier(name)); }
     }
 }

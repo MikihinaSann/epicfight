@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.fgm;
+import net.neoforged.neoforge.client.ClientHooks;
 import yesman.epicfight.EpicFight;
 
 import com.mojang.blaze3d.systems.RenderSystem;

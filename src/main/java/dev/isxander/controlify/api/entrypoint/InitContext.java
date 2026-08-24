@@ -1,6 +1,7 @@
 package dev.isxander.controlify.api.entrypoint;
-
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
 public class InitContext {
+    public static final Object KEYBOARD_MOUSE = new Object();
+    public static final Object CONTROLLER = new Object();
+    public static final Object MIXED = new Object();
+    public dev.isxander.controlify.api.InputMode currentInputMode() { return dev.isxander.controlify.api.InputMode.KEYBOARD_MOUSE; }
 }

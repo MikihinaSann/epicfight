@@ -9,6 +9,7 @@ public class InputBinding {
     public boolean justPressed() { return false; }
     public boolean digitalPrev() { return false; }
     public void fakePress() {}
+    public java.util.List<Object> getRelevantInputs() { return java.util.List.of(); }
     public Object boundInput() { return null; }
     public boolean justReleased() { return false; }
     public boolean pressed() { return false; }

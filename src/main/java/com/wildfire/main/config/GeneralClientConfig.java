@@ -1,5 +1,6 @@
 package com.wildfire.main.config;
-
-/// Stub for FGM's GeneralClientConfig.
 public class GeneralClientConfig {
+    public static GeneralClientConfig INSTANCE = new GeneralClientConfig();
+    public Object disableRendering = new Object() { public boolean get() { return false; } };
+    public boolean canBreathe() { return true; }
 }

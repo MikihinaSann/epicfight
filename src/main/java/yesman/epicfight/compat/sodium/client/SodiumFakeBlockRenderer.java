@@ -153,10 +153,10 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 					f5 = afloat[k] * pBlue;
 				}
 
-				int l = vertexConsumer.applyBakedLighting(pCombinedLights[k], bytebuffer);
+				// TODO: int l was from applyBakedLighting
 				float f9 = bytebuffer.getFloat(16);
 				float f10 = bytebuffer.getFloat(20);
-				vertexConsumer.applyBakedNormals(vector3f, bytebuffer, new Matrix3f());
+				// TODO: applyBakedLighting/applyBakedNormals removed
 				float vertexAlpha = pMulColor ? alpha * (float) (bytebuffer.get(15) & 255) / 255.0F : alpha;
 				
 				vertexConsumer.addVertex(outX, outY, outZ)

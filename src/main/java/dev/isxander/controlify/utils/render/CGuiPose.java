@@ -1,6 +1,7 @@
 package dev.isxander.controlify.utils.render;
-
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
 public class CGuiPose {
+    public static CGuiPose ofPush(Object... args) { return new CGuiPose(); }
+    public CGuiPose translate(float x, float y) { return this; }
+    public CGuiPose scale(float x, float y) { return this; }
+    public CGuiPose pop() { return this; }
 }
