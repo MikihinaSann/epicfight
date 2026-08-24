@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui.screen.config;
+import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Sets;
 import net.minecraft.ChatFormatting;

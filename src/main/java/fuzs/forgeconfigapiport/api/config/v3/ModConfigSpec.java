@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /// Stub ModConfigSpec — minimal implementation to allow compilation.
-/// Will be replaced by the real ForgeConfigAPIPort library at runtime.
 public class ModConfigSpec {
     private final Builder builder;
 
@@ -21,26 +20,21 @@ public class ModConfigSpec {
         public Builder comment(String comment) { return this; }
         public Builder translation(String translationKey) { return this; }
 
-        public <T> ConfigValue<T> define(String path, T defaultValue) {
-            ConfigValue<T> value = new ConfigValue<>(this, path, defaultValue);
-            values.add(value);
-            return value;
-        }
-
-        public <T> ConfigValue<T> define(String path, T defaultValue, Predicate<T> validator) {
-            ConfigValue<T> value = new ConfigValue<>(this, path, defaultValue);
-            values.add(value);
-            return value;
-        }
-
-        public <T extends Enum<T>> EnumValue<T> defineEnum(String path, T defaultValue) {
-            EnumValue<T> value = new EnumValue<>(this, path, defaultValue);
-            values.add(value);
-            return value;
-        }
-
+        // Type-specific define methods — must come before generic to avoid ambiguity
         public BooleanValue define(String path, boolean defaultValue) {
             BooleanValue value = new BooleanValue(this, path, defaultValue);
+            values.add(value);
+            return value;
+        }
+
+        public BooleanValue define(String path, java.util.function.Supplier<Boolean> defaultValue) {
+            BooleanValue value = new BooleanValue(this, path, defaultValue.get());
+            values.add(value);
+            return value;
+        }
+
+        public IntValue define(String path, int defaultValue) {
+            IntValue value = new IntValue(this, path, defaultValue, Integer.MIN_VALUE, Integer.MAX_VALUE);
             values.add(value);
             return value;
         }
@@ -59,6 +53,38 @@ public class ModConfigSpec {
 
         public LongValue defineInRange(String path, long defaultValue, long min, long max) {
             LongValue value = new LongValue(this, path, defaultValue, min, max);
+            values.add(value);
+            return value;
+        }
+
+        // Generic define for non-primitive types — use define(String, Object) to avoid
+        // conflicting with primitive overloads
+        public ConfigValue<String> define(String path, String defaultValue) {
+            ConfigValue<String> value = new ConfigValue<>(this, path, defaultValue);
+            values.add(value);
+            return value;
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> ConfigValue<T> define(String path, T defaultValue) {
+            if (defaultValue instanceof Boolean) {
+                return (ConfigValue<T>) define(path, (Boolean) defaultValue);
+            } else if (defaultValue instanceof Integer) {
+                return (ConfigValue<T>) define(path, (Integer) defaultValue);
+            }
+            ConfigValue<T> value = new ConfigValue<>(this, path, defaultValue);
+            values.add(value);
+            return value;
+        }
+
+        public <T> ConfigValue<T> define(String path, T defaultValue, Predicate<T> validator) {
+            ConfigValue<T> value = new ConfigValue<>(this, path, defaultValue);
+            values.add(value);
+            return value;
+        }
+
+        public <T extends Enum<T>> EnumValue<T> defineEnum(String path, T defaultValue) {
+            EnumValue<T> value = new EnumValue<>(this, path, defaultValue);
             values.add(value);
             return value;
         }
