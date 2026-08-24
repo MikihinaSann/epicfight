@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.event.EventHooks;
 
@@ -915,11 +916,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 
         if (hand == InteractionHand.MAIN_HAND) {
             impact = (float)this.original.getAttributeValue(EpicFightAttributes.IMPACT);
-            i = this.getOriginal().getMainHandItem().getEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow());
+            i = EnchantmentHelper.getItemEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow(), this.getOriginal().getMainHandItem());
         } else {
             if (this.isOffhandItemValid()) {
                 impact = (float)this.original.getAttributeValue(EpicFightAttributes.OFFHAND_IMPACT);
-                i = this.getOriginal().getOffhandItem().getEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow());
+                i = EnchantmentHelper.getItemEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow(), this.getOriginal().getOffhandItem());
             } else {
                 impact = (float)this.original.getAttribute(EpicFightAttributes.IMPACT).getBaseValue();
             }

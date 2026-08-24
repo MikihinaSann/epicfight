@@ -104,17 +104,20 @@ public class ModConfigSpec {
         protected final Builder builder;
         protected final String path;
         protected T value;
+        protected final T defaultValue;
 
         public Value(Builder builder, String path, T defaultValue) {
             this.builder = builder;
             this.path = path;
             this.value = defaultValue;
+            this.defaultValue = defaultValue;
         }
 
         public T get() { return value; }
         public void set(T value) { this.value = value; }
         public String getPath() { return path; }
         public void save() {}
+        public T getDefault() { return defaultValue; }
     }
 
     public static class ConfigValue<T> extends Value<T> {

@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.sounds.SoundEvent;
@@ -67,11 +68,11 @@ public class TridentCapability extends RangedWeaponCapability {
     @Nullable
     @Override
     public Skill getInnateSkill(PlayerPatch<?> playerpatch, ItemStack itemstack) {
-        if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.RIPTIDE).orElseThrow()) > 0) {
+        if (EnchantmentHelper.getItemEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.RIPTIDE).orElseThrow(), itemstack) > 0) {
             return EpicFightSkills.TSUNAMI.get();
-        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.CHANNELING).orElseThrow()) > 0) {
+        } else if (EnchantmentHelper.getItemEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.CHANNELING).orElseThrow(), itemstack) > 0) {
             return EpicFightSkills.WRATHFUL_LIGHTING.get();
-        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.LOYALTY).orElseThrow()) > 0) {
+        } else if (EnchantmentHelper.getItemEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.LOYALTY).orElseThrow(), itemstack) > 0) {
             return EpicFightSkills.EVERLASTING_ALLEGIANCE.get();
         } else {
             return null;
