@@ -22,4 +22,5 @@ public class AzArmorRenderer {
     public AzBone getBodyBone(AzBakedModel model) { return null; }
     public Object provider() { return null; }
     public AzBakedModel provideBakedModel(LivingEntity entity, ItemStack stack) { return null; }
+    public Object rendererPipeline() { return new Object(); }
 }

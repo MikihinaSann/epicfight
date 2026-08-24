@@ -15,7 +15,6 @@ public class SkillEditScreenProcessor extends ScreenProcessor<SkillEditScreen> {
 
     private static final InputBindingSupplier OPEN_SKILL_INFO = ControlifyBindings.GUI_ABSTRACT_ACTION_1;
 
-    @Override
     protected void handleButtons(ControllerEntity controller) {
         super.handleButtons(controller);
 
@@ -25,12 +24,10 @@ public class SkillEditScreenProcessor extends ScreenProcessor<SkillEditScreen> {
         }
     }
 
-    @Override
     protected void setInitialFocus() {
         // Intentionally empty. Do NOT call super.setInitialFocus().
     }
 
-    @Override
     public void onWidgetRebuild() {
         super.onWidgetRebuild();
         setInputTypeWorkaround();

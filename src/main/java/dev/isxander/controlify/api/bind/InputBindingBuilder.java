@@ -14,5 +14,7 @@ public class InputBindingBuilder {
     public InputBindingBuilder id(net.minecraft.resources.ResourceLocation id) { return this; }
     public InputBindingBuilder id(String id) { return this; }
     public InputBindingBuilder allowedContexts(BindContext... contexts) { return this; }
+    public InputBindingBuilder radialCandidate(net.minecraft.resources.ResourceLocation id) { return this; }
+    public InputBindingBuilder always() { return this; }
     public InputBinding build() { return new InputBinding(); }
 }

@@ -51,9 +51,8 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 @SuppressWarnings("unused") // Referenced in src/main/resources/shouldersurfing_plugin.json
 public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
     @Override
-    public void register(IShoulderSurfingRegistrar registrar) {
+    public void register(com.github.exopandora.shouldersurfing.api.plugin.IEventBus eventBus) {
         disableEpicFightCamera();
-        registerShoulderSurfingEvents(registrar);
         registerEpicFightEvents();
     }
 

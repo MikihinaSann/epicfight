@@ -20,4 +20,6 @@ public class AzBone {
     public float getPosX() { return 0; }
     public float getPosY() { return 0; }
     public float getPosZ() { return 0; }
+    public AzBoneSnapshot getInitialAzSnapshot() { return new AzBoneSnapshot(); }
+    public String getName() { return ""; }
 }

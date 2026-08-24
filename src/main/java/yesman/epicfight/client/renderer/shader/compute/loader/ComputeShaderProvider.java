@@ -64,7 +64,7 @@ public class ComputeShaderProvider {
         EpicFight.LOGGER.warn("[Computer Shader Acceleration] Compute Shader: {}", (supportComputeShader ? "Supported" : "Unsupported"));
     }
     
-    public static void epicfight$registerComputeShaders(Object event) {
+    public static void epicfight$registerComputeShaders(net.neoforged.neoforge.client.event.RegisterShadersEvent event) {
         if (!supportComputeShader) return;
         
         clear();

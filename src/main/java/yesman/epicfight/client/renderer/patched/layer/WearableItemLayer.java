@@ -201,7 +201,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				 * Copy from {@link HumanoidArmorLayer#renderArmorPiece}
 				 */
 				ArmorMaterial armormaterial = armorItem.getMaterial().value();
-				Object extensions = Object.of(itemstack);
+				Object extensions = null;
 				int fallbackColor = extensions.getDefaultDyeColor(itemstack);
 				boolean innerModel = innerModel(slot);
 

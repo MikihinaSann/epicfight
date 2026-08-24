@@ -1,6 +1,8 @@
 package dev.isxander.controlify.screenop;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+import java.util.function.Function;
+
+/// Stub for Controlify's ScreenProcessorProvider.
 public class ScreenProcessorProvider {
+    public static <T extends net.minecraft.client.gui.screens.Screen> void registerProvider(Class<T> screenClass, Function<T, ScreenProcessor<T>> factory) {}
 }

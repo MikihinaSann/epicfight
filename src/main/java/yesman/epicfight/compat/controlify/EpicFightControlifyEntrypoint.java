@@ -57,11 +57,9 @@ import java.util.Optional;
 // EpicFightItems.UCHIGATANA.get() in onControlifyPreInit.
 @ApiStatus.Internal
 public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
-    @Override
     public void onControllersDiscovered(ControlifyApi controlify) {
     }
 
-    @Override
     public void onControlifyInit(InitContext context) {
         // It's best to call this method in onControlifyInit,
         // ensuring that Epic Fight can use Controlify input bindings
@@ -69,7 +67,6 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
         registerModIntegration();
     }
 
-    @Override
     public void onControlifyPreInit(PreInitContext context) {
         final ControlifyBindApi registrar = ControlifyBindApi.get();
         registerCustomRadialIcons();
