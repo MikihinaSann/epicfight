@@ -66,11 +66,11 @@ public class TridentCapability extends RangedWeaponCapability {
     @Nullable
     @Override
     public Skill getInnateSkill(PlayerPatch<?> playerpatch, ItemStack itemstack) {
-        if (itemstack.getEnchantmentLevel(playerpatch.getLevel().holderOrThrow(Enchantments.RIPTIDE)) > 0) {
+        if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.RIPTIDE).orElseThrow()) > 0) {
             return EpicFightSkills.TSUNAMI.get();
-        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().holderOrThrow(Enchantments.CHANNELING)) > 0) {
+        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.CHANNELING).orElseThrow()) > 0) {
             return EpicFightSkills.WRATHFUL_LIGHTING.get();
-        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().holderOrThrow(Enchantments.LOYALTY)) > 0) {
+        } else if (itemstack.getEnchantmentLevel(playerpatch.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.LOYALTY).orElseThrow()) > 0) {
             return EpicFightSkills.EVERLASTING_ALLEGIANCE.get();
         } else {
             return null;

@@ -37,12 +37,12 @@ public class ExtraDamageInstance {
 	
 	public static final ExtraDamage SWEEPING_EDGE_ENCHANTMENT = new ExtraDamage(
 		(attacker, itemstack, target, baseDamage, params) -> {
-			int i = itemstack.getEnchantmentLevel(attacker.level().holderOrThrow(Enchantments.SWEEPING_EDGE));
+			int i = itemstack.getEnchantmentLevel(attacker.level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.SWEEPING_EDGE).orElseThrow());
 			float modifier = (i > 0) ? (float)i / (i + 1.0F) : 0.0F;
 			
 			return baseDamage * modifier;
 		}, (levelReader, itemstack, tooltips, baseDamage, params) -> {
-			int i = itemstack.getEnchantmentLevel(levelReader.holderOrThrow(Enchantments.SWEEPING_EDGE));
+			int i = itemstack.getEnchantmentLevel(levelReader.registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.SWEEPING_EDGE).orElseThrow());
 			
 			if (i > 0) {
 				double modifier = (double)i / (i + 1.0D);

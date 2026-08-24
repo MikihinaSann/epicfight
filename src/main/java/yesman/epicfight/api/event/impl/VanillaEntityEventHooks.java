@@ -440,7 +440,7 @@ public final class VanillaEntityEventHooks {
                 }
 
                 if (rayResult.getEntity() instanceof net.minecraft.world.entity.Entity) {
-                    Entity parent = net.minecraft.world.entity.Entity.getParent();
+                    Entity parent = null;
 
                     if (projectile.getOwner().is(parent)) {
                         shouldCancel = true;

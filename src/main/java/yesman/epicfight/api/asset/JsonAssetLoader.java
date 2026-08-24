@@ -1,4 +1,5 @@
 package yesman.epicfight.api.asset;
+import net.neoforged.fml.loading.FMLEnvironment;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
@@ -560,7 +561,7 @@ public class JsonAssetLoader {
         JsonArray array = this.rootJson.get("animation").getAsJsonArray();
         boolean action = animation instanceof MainFrameAnimation;
         boolean attack = animation instanceof AttackAnimation;
-        boolean noTransformData = !action && !attack && FMLEnvironment.dist == EnvType.SERVER;
+        boolean noTransformData = !action && !attack && FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER;
         boolean root = true;
         Armature armature = animation.getArmature().get();
         Set<String> allowedJoints = Sets.newLinkedHashSet();
@@ -581,7 +582,7 @@ public class JsonAssetLoader {
             JsonObject jObject = element.getAsJsonObject();
             String name = jObject.get("name").getAsString();
 
-            if (attack && FMLEnvironment.dist == EnvType.SERVER && !allowedJoints.contains(name)) {
+            if (attack && FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER && !allowedJoints.contains(name)) {
                 if (name.equals(COORD_BONE)) {
                     root = false;
                 }

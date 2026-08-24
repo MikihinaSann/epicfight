@@ -628,7 +628,7 @@ public final class EpicFightCameraAPI {
                         this.setFocusingEntity(livingentity);
                     }
                 } else if (entityHitResult.getEntity() instanceof net.minecraft.world.entity.Entity) {
-                    Entity parent = net.minecraft.world.entity.Entity.getParent();
+                    Entity parent = null;
 
                     if (parent instanceof LivingEntity parentLivingEntity && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY))) {
                         this.setFocusingEntity(parentLivingEntity);

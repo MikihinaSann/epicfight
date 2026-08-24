@@ -156,7 +156,7 @@ public final class InputManager {
 
         final KeyMapping keyMapping1 = action.keyMapping();
         final KeyMapping keyMapping2 = action2.keyMapping();
-        return keyMapping1.getKey() == keyMapping2.getKey();
+        return keyMapping1.getDefaultKey() == keyMapping2.getDefaultKey();
     }
 
     /// Retrieves the current input state for the current player (client-side).
@@ -214,7 +214,7 @@ public final class InputManager {
     /// The exact behavior varied from one Minecraft version to another.
     private static boolean isKeyDown(@NotNull KeyMapping keyMapping) {
         final boolean isDown = keyMapping.isDown();
-        if (!isDown && keyMapping.getKey().getType() == InputConstants.Type.MOUSE) {
+        if (!isDown && keyMapping.getDefaultKey().getType() == InputConstants.Type.MOUSE) {
             // TODO: (WORKAROUND) Remove this entire "if" statement when
             //  porting to Minecraft 1.21.10 or a newer version.
             //  This exists only due to inconsistent behavior in older Minecraft versions,
@@ -263,7 +263,7 @@ public final class InputManager {
     /// See [issue #2170](https://github.com/Epic-Fight/epicfight/issues/2170) for details.
     @ApiStatus.Internal
     private static boolean isPhysicalKeyDown(@NotNull KeyMapping keyMapping) {
-        final InputConstants.Key key = keyMapping.getKey();
+        final InputConstants.Key key = keyMapping.getDefaultKey();
         final int keyValue = key.getValue();
         final long windowPointer = Minecraft.getInstance().getWindow().getWindow();
 

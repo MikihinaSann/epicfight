@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui.screen;
+import net.neoforged.neoforge.client.ClientHooks;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;

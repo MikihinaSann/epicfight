@@ -47,8 +47,8 @@ public class StaticAnimationPropertyScreen extends Screen {
 		super(Component.translatable("datapack_edit.import_animation.client_data"));
 		
 		this.parentScreen = parentScreen;
-		this.minecraft = parentScreen.getMinecraft();
-		this.font = parentScreen.getMinecraft().font;
+		this.minecraft = Minecraft.getInstance();
+		this.font = Minecraft.getInstance().font;
 		this.animation = animation;
 		
 		this.inputComponentsList = new InputComponentList<> (this, 0, 0, 0, 30) {
@@ -190,7 +190,7 @@ public class StaticAnimationPropertyScreen extends Screen {
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.addComponentCurrentRow(
-					Grid.builder(this, parentScreen.getMinecraft())
+					Grid.builder(this, Minecraft.getInstance())
 						.xy1(5, 120)
 						.xy2(16, 80)
 						.horizontalSizing(HorizontalSizing.LEFT_RIGHT)
@@ -230,7 +230,7 @@ public class StaticAnimationPropertyScreen extends Screen {
 			this.inputComponentsList.newRow();
 			this.inputComponentsList.newRow();
 			this.inputComponentsList.addComponentCurrentRow(
-				Grid.builder(this, parentScreen.getMinecraft())
+				Grid.builder(this, Minecraft.getInstance())
 					.xy1(26, 120)
 					.xy2(16, 80)
 					.horizontalSizing(HorizontalSizing.LEFT_RIGHT)
@@ -269,7 +269,7 @@ public class StaticAnimationPropertyScreen extends Screen {
 			this.inputComponentsList.newRow();
 			this.inputComponentsList.newRow();
 			this.inputComponentsList.addComponentCurrentRow(
-				Grid.builder(this, parentScreen.getMinecraft())
+				Grid.builder(this, Minecraft.getInstance())
 					.xy1(26, 120)
 					.xy2(16, 80)
 					.horizontalSizing(HorizontalSizing.LEFT_RIGHT)

@@ -91,7 +91,7 @@ public abstract class Collider {
 	public List<Entity> getCollideEntities(Entity entity) {
 		List<Entity> list = entity.level().getEntities(entity, this.getHitboxAABB(), (e) -> {
 			if (e instanceof net.minecraft.world.entity.Entity) {
-				if (net.minecraft.world.entity.Entity.getParent().is(entity)) {
+				if (false) {
 					return false;
 				}
 			}

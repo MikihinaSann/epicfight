@@ -270,7 +270,7 @@ public class AttackAnimation extends ActionAnimation {
 		if (entity instanceof LivingEntity livingEntity) {
 			return livingEntity;
 		} else if (entity instanceof net.minecraft.world.entity.Entity) {
-			Entity parentEntity = net.minecraft.world.entity.Entity.getParent();
+			Entity parentEntity = null;
 			
 			if (parentEntity instanceof LivingEntity livingEntity) {
 				return livingEntity;

@@ -16,7 +16,7 @@ public class VersionNotifier {
 
     public VersionNotifier(Minecraft minecraft) {
         this.minecraft = minecraft;
-        this.visible = FabricLoader.getInstance().getObject(EpicFight.MODID).versionString().matches("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
+        this.visible = FabricLoader.getInstance().getModContainer(EpicFight.MODID).map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("0.0.0.0").matches("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
     }
 
     public void init() {
@@ -38,12 +38,12 @@ public class VersionNotifier {
 
         if (inWorld) {
             String l1 = Component.translatable(LangKeys.GUI_MESSAGE_VERSION_NOTIFIER_TEST_VERSION_WARNING_LINE1).getString();
-            String l2 = Component.translatable(LangKeys.GUI_MESSAGE_VERSION_NOTIFIER_TEST_VERSION_WARNING_LINE2, FabricLoader.getInstance().getObject(EpicFight.MODID).versionString()).getString();
+            String l2 = Component.translatable(LangKeys.GUI_MESSAGE_VERSION_NOTIFIER_TEST_VERSION_WARNING_LINE2, FabricLoader.getInstance().getModContainer(EpicFight.MODID).map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("0.0.0.0")).getString();
 
             guiGraphics.drawString(this.minecraft.font, l1, (width - this.minecraft.font.width(l1) - 2), 8, 16777215);
             guiGraphics.drawString(this.minecraft.font, l2, (width - this.minecraft.font.width(l2) - 2), 20, 16777215);
         } else {
-            String l1 = Component.translatable(LangKeys.GUI_MESSAGE_VERSION_NOTIFIER, FabricLoader.getInstance().getObject(EpicFight.MODID).versionString()).getString();
+            String l1 = Component.translatable(LangKeys.GUI_MESSAGE_VERSION_NOTIFIER, FabricLoader.getInstance().getModContainer(EpicFight.MODID).map(c -> c.getMetadata().getVersion().getFriendlyString()).orElse("0.0.0.0")).getString();
             guiGraphics.drawString(this.minecraft.font, l1, (width - this.minecraft.font.width(l1) - 2), 8, 16777215);
         }
     }

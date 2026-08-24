@@ -1,4 +1,5 @@
 package yesman.epicfight.compat.skinlayer3d;
+import net.neoforged.neoforge.attachment.AttachmentType;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;

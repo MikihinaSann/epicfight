@@ -166,7 +166,7 @@ public class CapabilityItem {
 				double value = attribute.get(impact).amount() + entitypatch.getOriginal().getAttribute(impact).getBaseValue();
 
 				if (value > 0.0D) {
-					int i = itemStack.getEnchantmentLevel(entitypatch.getOriginal().level().holderOrThrow(Enchantments.KNOCKBACK));
+					int i = itemStack.getEnchantmentLevel(entitypatch.getOriginal().level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow());
 					value *= (1.0F + i * 0.12F);
 					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(impact.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
 				}
@@ -230,7 +230,7 @@ public class CapabilityItem {
 				double value = attribute.get(impact).amount() + entitypatch.getOriginal().getAttribute(impact).getBaseValue();
 
 				if (value > 0.0D) {
-					int i = itemstack.getEnchantmentLevel(entitypatch.getOriginal().level().holderOrThrow(Enchantments.KNOCKBACK));
+					int i = itemstack.getEnchantmentLevel(entitypatch.getOriginal().level().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolder(Enchantments.KNOCKBACK).orElseThrow());
 					value *= (1.0F + i * 0.12F);
 					itemTooltip.add(index++, Component.literal(" ").append(Component.translatable(impact.value().getDescriptionId() + ".value", ItemAttributeModifiers.ATTRIBUTE_MODIFIER_FORMAT.format(value))));
 				}

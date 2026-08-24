@@ -250,7 +250,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 		super(Component.translatable(LangKeys.GUI_TITLE_DATAPACK_EDITOR));
 
 		this.parentScreen = parentScreen;
-		this.minecraft = parentScreen == null ? Minecraft.getInstance() : parentScreen.getMinecraft();
+		this.minecraft = parentScreen == null ? Minecraft.getInstance() : Minecraft.getInstance();
 		this.font = this.minecraft.font;
 		
 		this.weaponTypeTab = new DatapackEditScreen.WeaponTypeTab();
@@ -923,7 +923,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 			
 			this.inputComponentsList.newRow();
 			this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 100, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.weapon_type.category"));
-			this.inputComponentsList.addComponentCurrentRow(new ComboBox<>(parentScreen, parentScreen.getMinecraft().font, this.inputComponentsList.nextStart(5), 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8,
+			this.inputComponentsList.addComponentCurrentRow(new ComboBox<>(parentScreen, Minecraft.getInstance().font, this.inputComponentsList.nextStart(5), 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8,
 																			Component.translatable("datapack_edit.weapon_type.category"), new ArrayList<>(WeaponCategory.ENUM_MANAGER.universalValues()), ParseUtil::snakeToSpacedCamel,
 																			(weaponCategory) -> this.packList.get(this.packListGrid.getRowposition()).getValue().putString("category", ParseUtil.nullParam(weaponCategory).toLowerCase(Locale.ROOT))));
 			
@@ -1350,7 +1350,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				}
 			};
 			
-			this.itemTypeCombo = new ComboBox<> (parentScreen, parentScreen.getMinecraft().font, 0, 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8, Component.translatable("datapack_edit.item_capability.item_type"),
+			this.itemTypeCombo = new ComboBox<> (parentScreen, Minecraft.getInstance().font, 0, 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8, Component.translatable("datapack_edit.item_capability.item_type"),
 													List.of(ItemType.values()), ParseUtil::snakeToSpacedCamel, this.responder);
 			
 			this.inputComponentsList = new InputComponentList<>(DatapackEditScreen.this, 0, 0, 0, 30) {
@@ -2417,21 +2417,21 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 100, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.faction"));
-				this.inputComponentsList.addComponentCurrentRow(new ComboBox<>(parentScreen, parentScreen.getMinecraft().font, this.inputComponentsList.nextStart(5), 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8,
+				this.inputComponentsList.addComponentCurrentRow(new ComboBox<>(parentScreen, Minecraft.getInstance().font, this.inputComponentsList.nextStart(5), 124, 100, 15, HorizontalSizing.LEFT_WIDTH, null, 8,
 					Component.translatable("datapack_edit.mob_patch.faction"), Faction.ENUM_MANAGER.universalValues(), (faction) -> ParseUtil.snakeToSpacedCamel(faction), (faction) -> {
 						this.packList.get(this.packListGrid.getRowposition()).getValue().putString("faction", ParseUtil.nullOrToString(faction, (value) -> value.toString().toLowerCase(Locale.ROOT)));
 					}));
 				
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 100, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.swing_sound"));
-				this.inputComponentsList.addComponentCurrentRow(new PopupBox.SoundPopupBox(parentScreen, parentScreen.getMinecraft().font, this.inputComponentsList.nextStart(5), 15, 0, 15, HorizontalSizing.LEFT_RIGHT, null,
+				this.inputComponentsList.addComponentCurrentRow(new PopupBox.SoundPopupBox(parentScreen, Minecraft.getInstance().font, this.inputComponentsList.nextStart(5), 15, 0, 15, HorizontalSizing.LEFT_RIGHT, null,
 					Component.translatable("datapack_edit.mob_patch.swing_sound"), (soundevent) -> {
 						this.packList.get(this.packListGrid.getRowposition()).getValue().putString("swing_sound", ParseUtil.getRegistryName(soundevent.getSecond(), BuiltInRegistries.SOUND_EVENT));
 					}));
 				
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 100, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.hit_sound"));
-				this.inputComponentsList.addComponentCurrentRow(new PopupBox.SoundPopupBox(parentScreen, parentScreen.getMinecraft().font, this.inputComponentsList.nextStart(5), 15, 0, 15, HorizontalSizing.LEFT_RIGHT, null,
+				this.inputComponentsList.addComponentCurrentRow(new PopupBox.SoundPopupBox(parentScreen, Minecraft.getInstance().font, this.inputComponentsList.nextStart(5), 15, 0, 15, HorizontalSizing.LEFT_RIGHT, null,
 					Component.translatable("datapack_edit.mob_patch.hit_sound"), (soundevent) -> {
 						this.packList.get(this.packListGrid.getRowposition()).getValue().putString("hit_sound", ParseUtil.getRegistryName(soundevent.getSecond(), BuiltInRegistries.SOUND_EVENT));
 					}));
@@ -2447,7 +2447,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				this.inputComponentsList.addComponentCurrentRow(new Static(parentScreen, this.inputComponentsList.nextStart(4), 100, 60, 15, HorizontalSizing.LEFT_WIDTH, null, "datapack_edit.mob_patch.attributes"));
 				this.inputComponentsList.newRow();
 				this.inputComponentsList.newRow();
-				this.inputComponentsList.addComponentCurrentRow(Grid.builder(parentScreen, parentScreen.getMinecraft())
+				this.inputComponentsList.addComponentCurrentRow(Grid.builder(parentScreen, Minecraft.getInstance())
 																	.xy1(this.inputComponentsList.nextStart(5), 0)
 																	.xy2(15, 90)
 																	.horizontalSizing(HorizontalSizing.LEFT_RIGHT)

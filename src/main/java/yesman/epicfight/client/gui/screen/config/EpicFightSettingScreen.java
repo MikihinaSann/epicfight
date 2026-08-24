@@ -48,7 +48,7 @@ public class EpicFightSettingScreen extends Screen {
     public EpicFightSettingScreen(@Nullable final Object mod, @Nullable Screen parentScreen) {
         super(Component.translatable(GUI_TITLE_SETTINGS));
 
-        this.minecraft = parentScreen == null ? Minecraft.getInstance() : parentScreen.getMinecraft();
+        this.minecraft = parentScreen == null ? Minecraft.getInstance() : Minecraft.getInstance();
         this.font = this.minecraft.font;
         this.parentScreen = parentScreen;
 

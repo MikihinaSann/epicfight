@@ -26,7 +26,8 @@
     "client.MixinOptions",
     "client.MixinParticleEngine",
     "client.MixinThrownTridentRenderer",
-    "client.LightTextureAccessor"
+    "client.LightTextureAccessor",
+    "client.AbstractContainerScreenAccessor"
   ],
   "mixins": [
     "common.MixinCrossbowAttack",
