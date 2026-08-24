@@ -38,6 +38,6 @@ public final class ProviderConditionalRegister extends DeferredRegisterShim<Prov
 
         // 3. Return the specialized holder wrapping the key
         // This allows for type-safe referencing in moveset definitions
-        return new DeferredConditional(key);
+        return new DeferredConditional(key, () -> null);
     }
 }

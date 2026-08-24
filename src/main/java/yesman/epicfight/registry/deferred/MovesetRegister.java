@@ -27,6 +27,6 @@ public final class MovesetRegister extends DeferredRegisterShim<Moveset.Builder>
                 this.getRegistryKey(),
                 ResourceLocation.fromNamespaceAndPath(this.getNamespace(), name)
         );
-        return new DeferredMoveset(key);
+        return new DeferredMoveset(key, () -> null);
     }
 }

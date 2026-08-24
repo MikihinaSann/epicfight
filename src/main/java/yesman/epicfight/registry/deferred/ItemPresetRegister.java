@@ -32,11 +32,11 @@ public final class ItemPresetRegister extends DeferredRegisterShim<CapabilityIte
         );
         this.register(name, builder);
 
-        return new DeferredWeapon(key);
+        return new DeferredWeapon(key, () -> (yesman.epicfight.world.capabilities.item.WeaponCapability.Builder) builder.get());
     }
 
     @Override
-    public <I extends CapabilityItem.Builder<?>> @NotNull DeferredHolderShim<CapabilityItem.Builder<?>, I> register(@NotNull String name, @NotNull Supplier<? extends I> sup) {
+    public <I extends CapabilityItem.Builder<?>> @NotNull DeferredHolderShim<CapabilityItem.Builder<?>, I> register(@NotNull String name, @NotNull Supplier<I> sup) {
         return super.register(name, sup);
     }
 

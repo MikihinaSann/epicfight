@@ -13,6 +13,9 @@ public final class AttachmentEntityPatchProvider {
 	@Nullable
 	private EntityPatch<?> entitypatch;
 	
+	public AttachmentEntityPatchProvider() {
+	}
+
 	public AttachmentEntityPatchProvider(Object attachmentHolder) {
 		if (!(attachmentHolder instanceof Entity entity)) {
 			throw new IllegalArgumentException(attachmentHolder + " is not a subtype of Entity");

@@ -18,12 +18,12 @@ import java.util.function.Supplier;
 ///
 /// @param <T> the registry element type
 public class DeferredRegisterShim<T> {
-    private final ResourceKey<Registry<T>> registryKey;
+    private final ResourceKey<?> registryKey;
     private final String modId;
     private final List<DeferredHolderShim<T, ?>> entries = new ArrayList<>();
     private boolean accepted = false;
 
-    public DeferredRegisterShim(ResourceKey<Registry<T>> registryKey, String modId) {
+    public DeferredRegisterShim(ResourceKey<?> registryKey, String modId) {
         this.registryKey = registryKey;
         this.modId = modId;
     }

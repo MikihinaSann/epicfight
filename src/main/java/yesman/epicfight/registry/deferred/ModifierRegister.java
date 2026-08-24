@@ -30,6 +30,6 @@ public final class ModifierRegister extends DeferredRegisterShim<WeaponModifier.
                 ResourceLocation.fromNamespaceAndPath(this.getNamespace(), name)
         );
 
-        return new DeferredModifier(key);
+        return new DeferredModifier(key, () -> null);
     }
 }
