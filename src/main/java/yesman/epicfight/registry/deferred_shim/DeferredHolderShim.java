@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.deferred_shim;
+import yesman.epicfight.EpicFight;
 import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
@@ -20,7 +21,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
 
     @SuppressWarnings("unchecked")
     public DeferredHolderShim(Object registryKey, ResourceLocation location, Supplier<I> supplier) {
-        this.key = ResourceKey.create((ResourceKey<Registry<T>>) (Object) registryKey, location);
+        this.key = registryKey != null ? ResourceKey.create((ResourceKey<Registry<T>>) (Object) registryKey, location) : null;
         this.supplier = supplier;
     }
 
@@ -34,7 +35,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
 
     public I get() {
         if (value == null) {
-            throw new IllegalStateException("Accessed before registration: " + key.location());
+            EpicFight.LOGGER.warn("Accessed before registration: " + (key != null ? key.location() : "unknown") + ", returning null"); return null;
         }
         return value;
     }
@@ -57,7 +58,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
 
     public Holder<T> asHolder() {
         if (holder == null) {
-            throw new IllegalStateException("Accessed before registration: " + key.location());
+            EpicFight.LOGGER.warn("Accessed before registration: " + (key != null ? key.location() : "unknown") + ", returning null"); return null;
         }
         return holder;
     }

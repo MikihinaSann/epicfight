@@ -7,6 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.registry.deferred.ItemPresetRegister;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
+import yesman.epicfight.registry.EpicFightRegistries;
 
 /**
  * A type-safe, registry-backed proxy for {@link CapabilityItem.Builder} instances.
@@ -43,7 +44,7 @@ public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends Deferre
      */
     @ApiStatus.Internal
     public DeferredPreset(ResourceKey<CapabilityItem.Builder<?>> key, java.util.function.Supplier<T> supplier) {
-        super(null, key.location(), supplier);
+        super(EpicFightRegistries.Keys.BUILDERS, key.location(), supplier);
     }
 
     /**

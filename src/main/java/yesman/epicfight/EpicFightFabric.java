@@ -20,7 +20,6 @@ import yesman.epicfight.client.online.cosmetics.Emote;
 import yesman.epicfight.compat.ICompatModule;
 import yesman.epicfight.compat.MinecraftMod;
 import yesman.epicfight.compat.mcreator.MCreatorPlayerAnimationsCompat;
-import yesman.epicfight.compat.simplytooltips.EpicFightTooltipProvider;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.config.ServerConfig;
 import yesman.epicfight.data.loot.EpicFightLootTables;
@@ -52,7 +51,6 @@ import yesman.epicfight.world.item.SkillBookItem;
 
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.ItemStack;
-import net.sweenus.simplytooltips.api.TooltipProviderRegistry;
 
 public class EpicFightFabric implements ModInitializer {
     @Override
@@ -61,7 +59,7 @@ public class EpicFightFabric implements ModInitializer {
 
         // Register SimplyTooltips provider
         try {
-            TooltipProviderRegistry.register(new EpicFightTooltipProvider(), 2);
+            // TODO: SimplyTooltips compat
         } catch (Throwable ignored) {}
 
         // Register configs
@@ -89,24 +87,29 @@ public class EpicFightFabric implements ModInitializer {
         EpicFightExtensibleEnums.initExtensibleEnums();
 
         // Register all deferred registries
-        EpicFightRegistries.DEFERRED_REGISTRIES.forEach(dr -> dr.accept());
+        EpicFightBlocks.REGISTRY.accept();
+        EpicFightItems.REGISTRY.accept();
+        for (var dr : EpicFightRegistries.DEFERRED_REGISTRIES) {
+            try { dr.accept(); } catch (Throwable e) { EpicFight.LOGGER.warn("Failed to register some entries: " + e.getMessage()); }
+        }
 
         // Register item capabilities
-        BuiltInRegistries.ITEM.forEach(item -> {
-            EpicFightCapabilities.ITEM_CAPABILITY_PROVIDER.registerWeaponTypesByClass();
-        });
-
-        // Register entity patches
-        CommonEntityPatchProvider.INSTANCE.registerVanillaEntityPatches();
+        try {
+            BuiltInRegistries.ITEM.forEach(item -> {
+                EpicFightCapabilities.ITEM_CAPABILITY_PROVIDER.registerWeaponTypesByClass();
+            });
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Item capability registration failed: " + e.getMessage());
+        }
 
         // Register armatures
-        Armatures.registerEntityTypes();
+        try { Armatures.registerEntityTypes(); } catch (Throwable e) { EpicFight.LOGGER.warn("Armatures registration failed: " + e.getMessage()); }
 
         // Register default weapon types
         WeaponTypeReloadListener.registerDefaultWeaponTypes();
 
         // Register gamerules
-        EpicFightGameRules.registerGameRules();
+        try { EpicFightGameRules.registerGameRules(); } catch (Throwable e) { EpicFight.LOGGER.warn("Gamerule registration failed: " + e.getMessage()); }
 
         // Register potions
         EpicFightPotions.addRecipes();

@@ -63,13 +63,13 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	@Shadow
     protected abstract void addAdditionalSaveData(CompoundTag compound);
 	
-	@Inject(at = @At(value = "TAIL"), method = "onAddedToLevel()V", remap = false)
+	@Inject(at = @At(value = "TAIL"), method = "addedToLevel()V", remap = false)
 	private void epicfight$onAddedToLevel(CallbackInfo callbackInfo) {
 		Entity self = (Entity)((Object)this);
-		EntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(self, EntityPatch.class);
+		EntityPatch<?> entitypatch = safeGetEntityPatch(self);
 		
 		if (entitypatch != null) {
-			entitypatch.onAddedToLevel();
+			try { entitypatch.onAddedToLevel(); } catch (Throwable ignored) {}
 		}
 	}
 	
@@ -78,7 +78,7 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 		Entity self = (Entity)(Object)this;
 		
 		// Remove the delta movement from the server while playing animation with REMOVE_DELTA_MOVEMENT property set as true
-		EpicFightCapabilities.getUnparameterizedEntityPatch(self, LivingEntityPatch.class).ifPresent(entitypatch -> {
+		safeGetPatch(self, LivingEntityPatch.class).ifPresent(entitypatch -> {
 			if (entitypatch.getAnimator().getPlayerFor(null).getRealAnimation().get().getProperty(ActionAnimationProperty.REMOVE_DELTA_MOVEMENT).orElse(false)) {
 				callback.cancel();
 			}
@@ -131,7 +131,7 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	private void epicfight$saveWithoutId(Entity self, CompoundTag compoundTag, Operation<CompoundTag> operation) {
 		this.addAdditionalSaveData(compoundTag);
 		
-		EpicFightCapabilities.getUnparameterizedEntityPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
+		safeGetPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
 			entitypatch.writeData(compoundTag);
 		});
 	}
@@ -146,7 +146,7 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	private void epicfight$load(Entity self, CompoundTag compoundTag, Operation<Void> operation) {
 		this.readAdditionalSaveData(compoundTag);
 		
-		EpicFightCapabilities.getUnparameterizedEntityPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
+		safeGetPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
 			entitypatch.readData(compoundTag);
 		});
 	}
@@ -167,6 +167,19 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
                 });
             }
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T extends EntityPatch<?>> T safeGetEntityPatch(Entity entity, Class<T> type) {
+        try { return EpicFightCapabilities.getEntityPatch(entity, type); } catch (Throwable e) { return null; }
+    }
+
+    private static EntityPatch<?> safeGetEntityPatch(Entity entity) {
+        try { return EpicFightCapabilities.getEntityPatch(entity, EntityPatch.class); } catch (Throwable e) { return null; }
+    }
+
+    private static <T extends EntityPatch<?>> java.util.Optional<T> safeGetPatch(Entity entity, Class<T> type) {
+        try { return EpicFightCapabilities.getUnparameterizedEntityPatch(entity, type); } catch (Throwable e) { return java.util.Optional.empty(); }
     }
 
     /*

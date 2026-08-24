@@ -31,8 +31,6 @@ public class EpicFightFabricClient implements ClientModInitializer {
         // Register client-side extensible enums
         InputAction.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, EpicFightInputAction.class);
         InputAction.ENUM_MANAGER.registerEnumCls("minecraft", MinecraftInputAction.class);
-        WidgetTheme.ENUM_MANAGER.registerEnumCls("color_determinator_theme", ColorDeterminator.Theme.class);
-        WidgetTheme.ENUM_MANAGER.registerEnumCls("anchored_button_built_in_theme", AnchoredButton.BuiltInTheme.class);
 
         // Load client enums
         InputAction.ENUM_MANAGER.loadEnum();

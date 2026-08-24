@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
+import yesman.epicfight.registry.EpicFightRegistries;
 
 import java.util.function.Supplier;
 
