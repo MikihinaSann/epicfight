@@ -18,10 +18,9 @@ public final class EpicFightCreativeTabs {
 	public static final DeferredRegisterShim<CreativeModeTab> REGISTRY = new DeferredRegisterShim<>(Registries.CREATIVE_MODE_TAB, EpicFight.MODID);
 
 	public static final DeferredHolderShim<CreativeModeTab, CreativeModeTab> ITEMS = REGISTRY.register("items", () ->
-		CreativeModeTab.builder()
+		CreativeModeTab.builder(net.minecraft.world.item.CreativeModeTab.Row.TOP, 0)
 			.title(Component.translatable("itemGroup.epicfight.items"))
 			.icon(() -> new ItemStack(EpicFightItems.SKILLBOOK.get()))
-			.withTabsBefore(CreativeModeTabs.SPAWN_EGGS)
 			.backgroundTexture(EpicFightMod.identifier("textures/gui/container/epicfight_creative_tab.png"))
 			.hideTitle()
 			.displayItems((params, output) -> {

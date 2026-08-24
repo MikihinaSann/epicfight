@@ -53,7 +53,8 @@
     "common.MixinWitherBossAccessor",
     "common.IdMapperAccessor",
     "common.EndDragonFightAccessor",
-    "common.AttributeSupplierBuilderAccessor"
+    "common.AttributeSupplierBuilderAccessor",
+    "common.AreaEffectCloudAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

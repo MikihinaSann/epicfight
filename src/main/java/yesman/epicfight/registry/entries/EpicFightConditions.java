@@ -23,7 +23,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 public final class EpicFightConditions {
 	private EpicFightConditions() {}
 	
-	public static final DeferredRegisterShim<Supplier<Condition<?>>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.CONDITION, EpicFight.MODID);
+	public static final DeferredRegisterShim<Supplier<Condition<?>>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.Keys.CONDITION, EpicFight.MODID);
 	
 	public static <T extends Condition<?>> Supplier<T> getConditionOrThrow(ResourceLocation key) throws NoSuchElementException, ClassCastException {
 		if (!EpicFightRegistries.CONDITION.containsKey(key)) {
