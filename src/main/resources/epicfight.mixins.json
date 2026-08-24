@@ -44,7 +44,8 @@
     "common.MixinTridentAttack",
     "common.MixinWitherBoss",
     "common.MixinWitherBossAccessor",
-    "common.IdMapperAccessor"
+    "common.IdMapperAccessor",
+    "common.EndDragonFightAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

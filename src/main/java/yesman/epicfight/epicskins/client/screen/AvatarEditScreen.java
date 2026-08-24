@@ -75,7 +75,7 @@ public class AvatarEditScreen extends Screen {
 		super(Component.translatable("gui.epicskins.skin_config"));
 		
 		this.parentScreen = screen;
-		this.minecraft = screen == null ? Minecraft.getInstance() : screen.getMinecraft();
+		this.minecraft = screen == null ? Minecraft.getInstance() : Minecraft.getInstance();
 		this.font = this.minecraft.font;
 
 		this.saveButton = Button.builder(Component.translatable("gui.epicskins.button.save"), (button) -> {

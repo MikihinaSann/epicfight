@@ -53,7 +53,7 @@ public class HasCustomTag extends EntityCondition {
 	@Override @ClientOnly
     @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
-		ResizableEditBox editbox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("tag"), null, null);
+		ResizableEditBox editbox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("tag"), null, null);
 		return List.of(ParameterEditor.of((value) -> StringTag.valueOf(value.toString()), (tag) -> ParseUtil.nullOrToString(tag, Tag::getAsString), (AbstractWidget)editbox));
 	}
 }

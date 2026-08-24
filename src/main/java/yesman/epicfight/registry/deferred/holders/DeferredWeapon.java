@@ -5,10 +5,11 @@ import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
+import java.util.function.Supplier;
 
 public final class DeferredWeapon extends DeferredPreset<WeaponCapability.Builder> {
     @ApiStatus.Internal
-    public DeferredWeapon(ResourceKey<CapabilityItem.Builder<?>> key) {
-        super(key);
+    public DeferredWeapon(ResourceKey<CapabilityItem.Builder<?>> key, Supplier<WeaponCapability.Builder> supplier) {
+        super(key, supplier);
     }
 }

@@ -57,8 +57,8 @@ public class TargetInDistance extends EntityPatchCondition {
 	@Override @ClientOnly
     @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
-		ResizableEditBox minEditBox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("min"), null, null);
-		ResizableEditBox maxEditBox = new ResizableEditBox(screen.getMinecraft().font, 0, 0, 0, 0, Component.literal("max"), null, null);
+		ResizableEditBox minEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("min"), null, null);
+		ResizableEditBox maxEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("max"), null, null);
 		minEditBox.setFilter((context) -> StringUtil.isNullOrEmpty(context) || ParseUtil.isParsable(context, Double::parseDouble));
 		maxEditBox.setFilter((context) -> StringUtil.isNullOrEmpty(context) || ParseUtil.isParsable(context, Double::parseDouble));
 		Function<Object, Tag> doubleParser = (value) -> DoubleTag.valueOf(Double.valueOf(value.toString()));

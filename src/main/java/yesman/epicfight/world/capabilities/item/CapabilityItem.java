@@ -542,7 +542,8 @@ public class CapabilityItem {
         LONGSWORD(WEAPON_CATEGORY_LONGSWORD, SWORD),
         DAGGER(WEAPON_CATEGORY_DAGGER),
         SHIELD(WEAPON_CATEGORY_SHIELD),
-		RANGED(WEAPON_CATEGORY_RANGED);
+		RANGED(WEAPON_CATEGORY_RANGED),
+		BOW(WEAPON_CATEGORY_BOW, RANGED);
 
         final Component translationKey;
 		final List<WeaponCategory> parent;

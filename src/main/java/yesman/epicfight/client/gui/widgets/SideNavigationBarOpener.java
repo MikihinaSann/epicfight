@@ -99,7 +99,7 @@ public class SideNavigationBarOpener extends AbstractWidget implements AnchoredW
 
     @Override
     public void onPressed() {
-        this.owner.getMinecraft().setScreen(new SideBarScreen(this.owner, this.entriesProvider.apply(this.twoStepsParent), 110));
+        this.Minecraft.getInstance().setScreen(new SideBarScreen(this.owner, this.entriesProvider.apply(this.twoStepsParent), 110));
     }
 
     /*******************************************************************

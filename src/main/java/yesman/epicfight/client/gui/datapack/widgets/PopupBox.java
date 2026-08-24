@@ -166,7 +166,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 		@Override
 		public void onClick(double x, double y) {
 			if (this.clickedPopupButton(x, y)) {
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<>(this.owner, this.registry, (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), this.onPressRow, this.getFilter()));
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<>(this.owner, this.registry, (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), this.onPressRow, this.getFilter()));
 			}
 		}
 	}
@@ -196,9 +196,9 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 		public void onClick(double x, double y) {
 			if (this.clickedPopupButton(x, y)) {
 				if (this.armature == null || this.armature.get() == null || this.mesh == null || this.mesh.get() == null) {
-					this.owner.getMinecraft().setScreen(new MessageScreen<>("", "Define model and armature first.", this.owner, (button2) -> this.owner.getMinecraft().setScreen(this.owner), 180, 60));
+					this.Minecraft.getInstance().setScreen(new MessageScreen<>("", "Define model and armature first.", this.owner, (button2) -> this.Minecraft.getInstance().setScreen(this.owner), 180, 60));
 				} else {
-					this.owner.getMinecraft().setScreen(new SelectAnimationScreen(this.owner, this::_setValue, this::_setValue, this.getFilter(), this.armature, this.mesh));
+					this.Minecraft.getInstance().setScreen(new SelectAnimationScreen(this.owner, this::_setValue, this::_setValue, this.getFilter(), this.armature, this.mesh));
 				}
 			}
 		}
@@ -212,7 +212,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 		@Override
 		public void onClick(double x, double y) {
 			if (this.clickedPopupButton(x, y)) {
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<>(this.owner, ParseUtil.mapEntryToPair(ColliderPreset.entries()), "Collider", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<>(this.owner, ParseUtil.mapEntryToPair(ColliderPreset.entries()), "Collider", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
 			}
 		}
 	}
@@ -244,7 +244,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 							return Pair.of(pair.getFirst(), func);
 						}).collect(Collectors.toSet());
 				
-				this.owner.getMinecraft().setScreen(
+				this.Minecraft.getInstance().setScreen(
 					new SelectFromRegistryScreen<> (
 						this.owner,
 						castedPairs,
@@ -285,7 +285,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 		@Override
 		public void onClick(double x, double y) {
 			if (this.clickedPopupButton(x, y)) {
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<>(this.owner, ParseUtil.mapEntryToPair(JointMaskReloadListener.entries()), "Joint Mask", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<>(this.owner, ParseUtil.mapEntryToPair(JointMaskReloadListener.entries()), "Joint Mask", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
 			}
 		}
 	}
@@ -300,7 +300,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 			if (this.clickedPopupButton(x, y)) {
 				Set<Pair<ResourceLocation, EntityType<?>>> set = Sets.newHashSet();
 				EpicFightCapabilities.ENTITY_PATCH_PROVIDER.getPatchedEntities().forEach(entityType -> set.add(Pair.of(EntityType.getKey(entityType), entityType)));
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<>(this.owner, set, "Preset", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<>(this.owner, set, "Preset", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
 			}
 		}
 	}
@@ -313,7 +313,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 		@Override
 		public void onClick(double x, double y) {
 			if (this.clickedPopupButton(x, y)) {
-				this.owner.getMinecraft().setScreen(new SelectModelScreen(this.owner, (name, item) -> {
+				this.Minecraft.getInstance().setScreen(new SelectModelScreen(this.owner, (name, item) -> {
 					this._setValue(item);
 					this.setDisplayText(name);
 				}, (name, item) -> {
@@ -336,7 +336,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 				Set<Pair<ResourceLocation, AssetAccessor<Armature>>> entries = Armatures.entry();
 				DatapackEditScreen.getCurrentScreen().getUserArmatures().entrySet().forEach((entry) -> entries.add(Pair.of(entry.getKey(), (AssetAccessor<Armature>)entry.getValue())));
 				
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<> (this.owner, entries, "Armature", (name, item) -> {
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<> (this.owner, entries, "Armature", (name, item) -> {
 					this._setValue(item);
 					this.setDisplayText(name);
 				}, (name, item) -> {
@@ -358,7 +358,7 @@ public abstract class PopupBox<T> extends AbstractWidget implements DataBindingC
 				Set<Pair<ResourceLocation, ResourceLocation>> set = Sets.newHashSet();
 				RenderEngine.getInstance().getRendererEntries().forEach((rl) -> set.add(Pair.of(rl, rl)));
 				
-				this.owner.getMinecraft().setScreen(new SelectFromRegistryScreen<>(this.owner, set, "Renderer", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
+				this.Minecraft.getInstance().setScreen(new SelectFromRegistryScreen<>(this.owner, set, "Renderer", (name, item) -> this._setValue(item), (name, item) -> this._setValue(item), (c) -> {}, this.getFilter()));
 			}
 		}
 	}
