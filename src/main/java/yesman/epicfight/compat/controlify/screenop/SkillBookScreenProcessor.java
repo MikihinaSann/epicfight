@@ -15,7 +15,7 @@ public class SkillBookScreenProcessor extends ScreenProcessor<SkillBookScreen> {
 
     private static final InputBindingSupplier LEARN_SKILL = ControlifyBindings.GUI_PRESS;
 
-    protected void handleButtons(ControllerEntity controller) {
+    public void handleButtons(ControllerEntity controller) {
         if (LEARN_SKILL.on(controller).guiPressed().get()) {
             screen.getLearnButton().onPress();
             playClackSound();

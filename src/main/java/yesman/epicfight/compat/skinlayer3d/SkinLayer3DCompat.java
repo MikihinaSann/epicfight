@@ -62,7 +62,7 @@ public class SkinLayer3DCompat implements ICompatModule {
             "skinlayer_mesh",
             () ->
             	AttachmentType
-                    .builder(SkinLayer3DMeshes::new)
+                    .builder(() -> new SkinLayer3DMeshes(null))
                     .build()
     );
 	

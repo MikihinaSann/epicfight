@@ -44,7 +44,7 @@ public class DeferredRegisterShim<T> {
         accepted = true;
 
         Registry<T> registry = getRegistry();
-        for (DeferredHolderShim<T> entry : entries) {
+        for (DeferredHolderShim<T, ?> entry : entries) {
             entry.bind(registry);
         }
     }

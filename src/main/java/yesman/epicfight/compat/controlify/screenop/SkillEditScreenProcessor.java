@@ -15,7 +15,7 @@ public class SkillEditScreenProcessor extends ScreenProcessor<SkillEditScreen> {
 
     private static final InputBindingSupplier OPEN_SKILL_INFO = ControlifyBindings.GUI_ABSTRACT_ACTION_1;
 
-    protected void handleButtons(ControllerEntity controller) {
+    public void handleButtons(ControllerEntity controller) {
         super.handleButtons(controller);
 
         if (this.screen.getFocused() instanceof SkillEditScreen.EquipSkillButton equipSkillButton &&

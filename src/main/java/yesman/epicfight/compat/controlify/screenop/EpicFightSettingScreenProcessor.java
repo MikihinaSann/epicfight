@@ -16,7 +16,7 @@ public class EpicFightSettingScreenProcessor extends ScreenProcessor<EpicFightSe
     private static final InputBindingSupplier SAVE = ControlifyBindings.GUI_ABSTRACT_ACTION_1;
     private static final InputBindingSupplier DISCARD = ControlifyBindings.GUI_ABSTRACT_ACTION_2;
 
-    protected void handleButtons(ControllerEntity controller) {
+    public void handleButtons(ControllerEntity controller) {
         final boolean savePressed = SAVE.on(controller).guiPressed().get();
         final boolean discardPressed = DISCARD.on(controller).guiPressed().get();
         if (savePressed || discardPressed) {
