@@ -67,37 +67,30 @@ public class FractureBlockState extends BlockState {
 		return this.maxLifeTime;
 	}
 	
-	@Override
 	public boolean hasBlockEntity() {
 		return true;
 	}
 	
-	@Override
 	public boolean hidesNeighborFace(BlockGetter level, BlockPos pos, BlockState neighborState, Direction dir) {
 		return false;
 	}
 	
-	@Override
 	public boolean supportsExternalFaceHiding() {
 		return false;
 	}
 	
-	@Override
-	public int getLightEmission(BlockGetter level, BlockPos blockPos) {
+		public int getLightEmission(BlockGetter level, BlockPos blockPos) {
 		return ORIGINAL_BLOCK_STATE_CACHE.containsKey(blockPos.hashCode()) ? ORIGINAL_BLOCK_STATE_CACHE.get(blockPos.hashCode()).getLightEmission(level, blockPos) : this.owner.getLightEmission(this, level, blockPos);
 	}
 	
-	@Override
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos) {
 		return Shapes.empty();
 	}
 	
-	@Override
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos, CollisionContext collisionContext) {
 		return Shapes.empty();
 	}
 	
-	@Override
 	public VoxelShape getCollisionShape(BlockGetter level, BlockPos blockPos) {
 		BlockState blockState = this.getOriginalBlockState(blockPos);
 		
@@ -108,7 +101,6 @@ public class FractureBlockState extends BlockState {
 		return blockState.getCollisionShape(level, blockPos, CollisionContext.empty());
 	}
 	
-	@Override
 	public VoxelShape getCollisionShape(BlockGetter level, BlockPos blockPos, CollisionContext collisionContext) {
 		BlockState blockState = this.getOriginalBlockState(blockPos);
 		
@@ -119,12 +111,10 @@ public class FractureBlockState extends BlockState {
 		return blockState.getCollisionShape(level, blockPos, collisionContext);
 	}
 	
-	@Override
 	public VoxelShape getVisualShape(BlockGetter level, BlockPos blockPos, CollisionContext collisionContext) {
 		return Shapes.empty();
 	}
 	
-	@Override
 	public RenderShape getRenderShape() {
 		return RenderShape.INVISIBLE;
 	}

@@ -74,7 +74,6 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 	
 	protected abstract void createNextCurve();
 	
-	@Override
 	public void tick() {
 		if (this.shouldRemove) {
 			if (this.age >= this.lifetime) {
@@ -104,7 +103,6 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 		this.createNextCurve();
 	}
 	
-	@Override
 	public void render(VertexConsumer vertexConsumer, Camera camera, float partialTick) {
 		if (this.trailEdges.isEmpty()) {
 			return;
@@ -160,13 +158,11 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 		}
 	}
 	
-	@Override
 	public AABB getRenderBoundingBox(float partialTicks) {
         return new AABB(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
     }
 	
-	@Override
-	public ParticleRenderType getRenderType() {
+		public ParticleRenderType getRenderType() {
 		return EpicFightParticleRenderTypes.TRAIL_EFFECT.apply(this.trailInfo.texturePath());
 	}
 	
@@ -186,7 +182,6 @@ public abstract class AbstractTrailParticle<T extends EntityPatch<?>> extends Te
 	}
 	
 	@SuppressWarnings("deprecation")
-	@Override
 	protected int getLightColor(float pPartialTick) {
 		BlockPos blockpos = BlockPos.containing(this.x, this.y, this.z);
 		return this.level.hasChunkAt(blockpos) ? this.getLightColor(this.level, this.level.getBlockState(blockpos), blockpos) : 0;
