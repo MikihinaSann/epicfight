@@ -138,49 +138,49 @@ public class ClientConfig {
     // Config Spec
     public static final ModConfigSpec SPEC = BUILDER.build();
 
-    // Config values
+    // Config values — initialized with defaults so the mod works even without a config file
 
     // Graphic Config values
-    public static boolean bloodEffects;
-    public static boolean activateComputeShader;
-    public static boolean activatePersistentBuffer;
-    public static boolean groundSlams;
+    public static boolean bloodEffects = true;
+    public static boolean activateComputeShader = false;
+    public static boolean activatePersistentBuffer = false;
+    public static boolean groundSlams = true;
 
     // Model Config values
-    public static int maxStuckProjectiles;
-    public static boolean enableAnimatedFirstPersonModel;
-    public static boolean enableOriginalModel;
-    public static boolean enableCosmetics;
+    public static int maxStuckProjectiles = 10;
+    public static boolean enableAnimatedFirstPersonModel = true;
+    public static boolean enableOriginalModel = false;
+    public static boolean enableCosmetics = true;
 
     // Camera Config values
-    public static boolean enableFirstPersonCameraMove;
+    public static boolean enableFirstPersonCameraMove = true;
 
     /** Use {@link #getTpsActivationType()} to handle null */
     @Deprecated @ApiStatus.Internal
     public static TPSActivationType tpsType;
-    public static int cameraHorizontalLocation;
-    public static int cameraVerticalLocation;
-    public static int cameraZoom;
-    public static int entityFocusingRange;
-    public static boolean lockOnSnapping;
+    public static int cameraHorizontalLocation = 0;
+    public static int cameraVerticalLocation = 0;
+    public static int cameraZoom = 0;
+    public static int entityFocusingRange = 30;
+    public static boolean lockOnSnapping = true;
 
     // Control Config values
-    public static int holdingThreshold;
-    public static boolean autoPerspectiveSwithing;
-    public static CanceledVanillaActions canceledVanillaActions;
-    public static PlayerBehaviorStrategy playerBehaviorStrategy;
-    public static CameraPerspectiveToggleMode cameraPerspectiveToggleMode;
-    public static Set<Item> combatCategorizedItems;
-    public static Set<Item> miningCategorizedItems;
+    public static int holdingThreshold = 7;
+    public static boolean autoPerspectiveSwithing = true;
+    public static CanceledVanillaActions canceledVanillaActions = CanceledVanillaActions.NONE;
+    public static PlayerBehaviorStrategy playerBehaviorStrategy = PlayerBehaviorStrategy.ADAPTIVE;
+    public static CameraPerspectiveToggleMode cameraPerspectiveToggleMode = CameraPerspectiveToggleMode.VANILLA;
+    public static Set<Item> combatCategorizedItems = new java.util.HashSet<>();
+    public static Set<Item> miningCategorizedItems = new java.util.HashSet<>();
 
     // UI Config values
-    public static boolean showTargetIndicator;
-    public static HealthBarVisibility healthBarVisibility;
-    public static boolean showEpicFightAttributesInTooltip;
-    public static double targetOutlineColor;
+    public static boolean showTargetIndicator = true;
+    public static HealthBarVisibility healthBarVisibility = HealthBarVisibility.NONE;
+    public static boolean showEpicFightAttributesInTooltip = false;
+    public static double targetOutlineColor = 0.0;
     public static int packedTargetOutlineColor = 0xFFFFFFFF;
-    public static BlockGuideOptions mineBlockGuideOption;
-    public static boolean enableTargetEntityGuide;
+    public static BlockGuideOptions mineBlockGuideOption = BlockGuideOptions.CROSSHAIR;
+    public static boolean enableTargetEntityGuide = true;
 
     // UI Component position values
     public static int staminaBarX;
