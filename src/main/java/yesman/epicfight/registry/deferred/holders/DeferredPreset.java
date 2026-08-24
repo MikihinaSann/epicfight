@@ -57,7 +57,8 @@ public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends Deferre
      * * @return The registered {@link T} template instance.
      */
     @Override
+    @SuppressWarnings("unchecked")
     public @NotNull T value() {
-        return super.value();
+        return (T) super.value();
     }
 }

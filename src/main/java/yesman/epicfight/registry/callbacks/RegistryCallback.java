@@ -12,7 +12,7 @@ public interface RegistryCallback {
     }
 
     interface ClearCallback<T> extends RegistryCallback {
-        void onClear(Registry<T> registry);
+        void onClear(Registry<T> registry, boolean full);
     }
 
     interface AddCallback<T> extends RegistryCallback {
