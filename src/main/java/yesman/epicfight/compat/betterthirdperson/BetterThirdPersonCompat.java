@@ -12,22 +12,22 @@ import yesman.epicfight.compat.ICompatModule;
 // features like dodge, attack, and lock-on may not work with Epic Fight.
 public final class BetterThirdPersonCompat implements ICompatModule {
     @Override
-    public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 
     }
 
     @Override
-    public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 
     }
 
     @Override
-    public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
         EpicFightTpsCameraDisableState.disable(EpicFightTpsCameraDisabledReason.BetterThirdPerson);
     }
 
     @Override
-    public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 
     }
 }

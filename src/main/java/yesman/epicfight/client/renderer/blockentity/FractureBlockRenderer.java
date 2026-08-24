@@ -49,7 +49,7 @@ public class FractureBlockRenderer implements BlockEntityRenderer<FractureBlockE
 		poseStack.translate(translate.x(), translate.y() + bouncingAnimation, translate.z());
 		poseStack.translate(-0.5D, -0.5D, -0.5D);	
 		
-		this.blockRenderDispatcher.renderBreakingTexture(blockEntity.getOriginalBlockState(), blockEntity.getBlockPos().above(), blockEntity.getLevel(), poseStack, multiBufferSource.getBuffer(RenderType.cutout()), null);
+		this.blockRenderDispatcher.renderBreakingTexture(blockEntity.getOriginalBlockState(), blockEntity.getBlockPos().above(), blockEntity.getLevel(), poseStack, multiBufferSource.getBuffer(RenderType.cutout()));
 		
 		poseStack.popPose();
 	}

@@ -5,22 +5,22 @@ import yesman.epicfight.compat.ICompatModule;
 
 public class SimplyTooltipsModule implements ICompatModule {
     @Override
-    public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 
     }
 
     @Override
-    public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 
     }
 
     @Override
-    public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
 
     }
 
     @Override
-    public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 
     }
 }

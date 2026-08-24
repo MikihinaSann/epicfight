@@ -266,7 +266,7 @@ public class WidgetTable extends ContainerObjectSelectionList<WidgetTable.Widget
                 if (listener != null) listener.setFocused(true);
             }
 
-            this.focused = listener;
+            ((yesman.epicfight.mixin.client.ContainerObjectSelectionListEntryAccessor) this).epicfight$setFocused(listener);
         }
 
         @Override

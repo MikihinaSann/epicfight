@@ -5,9 +5,11 @@ import net.minecraft.resources.ResourceKey;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.api.ex_cap.data.modifier.WeaponModifier;
 
+import java.util.function.Supplier;
+
 public final class DeferredModifier extends DeferredHolderShim<WeaponModifier.Builder, WeaponModifier.Builder>
 {
-    public DeferredModifier(ResourceKey<WeaponModifier.Builder> key) {
-        super(key);
+    public DeferredModifier(ResourceKey<WeaponModifier.Builder> key, Supplier<WeaponModifier.Builder> supplier) {
+        super(null, key.location(), supplier);
     }
 }

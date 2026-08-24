@@ -12,12 +12,12 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 
 public class PlayerReviveCompat implements ICompatModule {
     @Override
-    public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 
     }
 
     @Override
-    public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
         eventBus.<Object>addListener(event -> {
             if (event.getEntity() instanceof Player player) {
                 EpicFightCapabilities.getPlayerPatchAsOptional(player).ifPresent(playerPatch -> {
@@ -33,12 +33,12 @@ public class PlayerReviveCompat implements ICompatModule {
     }
 
     @Override
-    public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
 
     }
 
     @Override
-    public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 
     }
 }

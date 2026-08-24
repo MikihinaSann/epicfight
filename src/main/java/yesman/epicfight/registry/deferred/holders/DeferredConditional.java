@@ -6,9 +6,11 @@ import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import org.jetbrains.annotations.ApiStatus;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;
 
+import java.util.function.Supplier;
+
 public final class DeferredConditional extends DeferredHolderShim<ProviderConditional.Builder, ProviderConditional.Builder> {
     @ApiStatus.Internal
-    public DeferredConditional(ResourceKey<ProviderConditional.Builder> key) {
-        super(key);
+    public DeferredConditional(ResourceKey<ProviderConditional.Builder> key, Supplier<ProviderConditional.Builder> supplier) {
+        super(null, key.location(), supplier);
     }
 }

@@ -41,7 +41,7 @@ public class HealthBar extends EntityUI {
 		
 		if (healthBarVisibility == HealthBarVisibility.NONE) {
 			return false;
-		} else if (entity.getType().is(false)) {
+		} else if (false) {
 			return false;
 		}
 		

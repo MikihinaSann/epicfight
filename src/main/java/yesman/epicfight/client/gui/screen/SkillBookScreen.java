@@ -235,7 +235,7 @@ public class SkillBookScreen extends Screen {
             )
             .bounds(this.width / 2 + 54, this.height / 2 + 90, 67, 21)
             .tooltip(Tooltip.create(tooltip, null))
-            .build(LearnButton::new);
+            .build();
 
         if (isUsing || !meetsCondition) {
             this.learnButton.active = false;

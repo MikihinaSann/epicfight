@@ -248,15 +248,15 @@ public class EpicFightGameRules {
 		, StreamCodec<ByteBuf, Type> codec
 	) {
 		private static final RuleType<Boolean, GameRules.BooleanValue> BOOLEAN = new RuleType<> (
-			 GameRules.BooleanValue::create
+			 (def, callback) -> GameRules.BooleanValue.create(def)
 		   , GameRules.BooleanValue::create
 		   , GameRules.BooleanValue::get
 		   , (ruleValue, value) -> ruleValue.set(value, null)
 		   , ByteBufCodecs.BOOL
 		);
-		
+
 		private static final RuleType<Integer, GameRules.IntegerValue> INTEGER = new RuleType<> (
-			 GameRules.IntegerValue::create
+			 (def, callback) -> GameRules.IntegerValue.create(def)
 		   , GameRules.IntegerValue::create
 		   , GameRules.IntegerValue::get
 		   , (ruleValue, value) -> ruleValue.tryDeserialize(value.toString())

@@ -9,16 +9,16 @@ import yesman.epicfight.compat.ICompatModule;
 
 public class PlayerAnimatorCompat implements ICompatModule {
     @Override
-    public void onModEventBus(Object eventBus) {}
+	public void onInitialize() {}
 
     @Override
-    public void onGameEventBus(Object eventBus) {}
+	public void onInitializeServer() {}
 
     @Override
-    public void onModEventBusClient(Object eventBus) {}
+	public void onInitializeClient() {}
 
     @Override
-    public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
         EpicFightClientEventHooks.Render.VALIDATE_PLAYER_MODEL_TO_RENDER.registerEvent(this::renderEvent);
     }
 

@@ -1,23 +1,26 @@
 package yesman.epicfight.compat.azurelib;
 
-
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
 import yesman.epicfight.compat.ICompatModule;
 import yesman.epicfight.compat.azurelib.client.AzureModelTransformer;
 
 public class AzureLibCompat implements ICompatModule {
-	public void onModEventBus(Object eventBus) {
+	@Override
+	public void onInitialize() {
 	}
 
-	public void onGameEventBus(Object eventBus) {
+	@Override
+	public void onInitializeServer() {
 	}
 
-	public void onModEventBusClient(Object eventBus) {
+	@Override
+	public void onInitializeClient() {
 		HumanoidModelBaker.registerNewTransformer(new AzureModelTransformer());
 	}
 
-	public void onGameEventBusClient(Object eventBus) {
+	@Override
+	public void onInitializeClientServer() {
 		EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(AzureModelTransformer::getGeoArmorTexturePath);
 	}
 }

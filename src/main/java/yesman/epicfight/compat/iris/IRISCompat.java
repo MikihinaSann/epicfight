@@ -9,15 +9,15 @@ import yesman.epicfight.compat.sodium.client.SodiumFakeBlockRenderer;
 
 public class IRISCompat implements ICompatModule {
 	@Override
-	public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 	}
 	
 	@Override
-	public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 	}
 	
 	@Override
-	public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
 		eventBus.<Object>addListener(event -> {
 			ComputeShaderProvider.initIris();
 			event.enqueueWork(() -> RenderEngine.getInstance().reloadFakeBlockRenderer(new SodiumFakeBlockRenderer()));
@@ -25,6 +25,6 @@ public class IRISCompat implements ICompatModule {
 	}
 	
 	@Override
-	public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 	}
 }

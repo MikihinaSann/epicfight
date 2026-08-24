@@ -19,7 +19,7 @@ public class NoopLivingEntityRenderer<T extends LivingEntity> extends LivingEnti
 	
 	@Override
 	public void render(LivingEntity livingEntity, float yRot, float partialTicks, PoseStack poseStack, MultiBufferSource multiBufferSource, int packedLight) {
-		null.post(new Object.Pre<T, EntityModel<T>>(livingEntity, this, partialTicks, poseStack, multiBufferSource, packedLight));
+		// TODO: Port RenderLivingEvent to Fabric
 	}
 
 	@Override

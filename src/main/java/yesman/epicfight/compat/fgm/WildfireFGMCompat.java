@@ -58,17 +58,17 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public class WildfireFGMCompat implements ICompatModule {
     @Override
-    public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 
     }
 
     @Override
-    public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 
     }
 
     @Override
-    public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
             if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
                 playerrenderer.addPatchedLayerAlways(GenderLayer.class, new EpicFightWildfireRenderLayer());
@@ -77,7 +77,7 @@ public class WildfireFGMCompat implements ICompatModule {
     }
 
     @Override
-    public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 
     }
 

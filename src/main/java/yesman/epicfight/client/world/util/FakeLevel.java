@@ -57,7 +57,7 @@ public class FakeLevel extends ClientLevel {
             // Copy the connection instance from original level due to the mixin crashes from
             // Fabric's network API (#2419), tho this may have side effect, possibly modify the world
             // data and send packet for the modification. (So in FakeLevel it overrides all methods where to use)
-            refLevel.connection,
+            ((yesman.epicfight.mixin.client.ClientLevelAccessor) refLevel).epicfight$getConnection(),
 			// new FakeClientPacketListener(refLevel, minecraft), << the original approach, making a fake connection
 			new ClientLevel.ClientLevelData(Difficulty.NORMAL, false, false),
 			Level.OVERWORLD,
@@ -217,8 +217,8 @@ public class FakeLevel extends ClientLevel {
             	minecraft,
             	DUMMY_CONNECTION,
             	new CommonListenerCookie(
-            		(GameProfile)null,//refLevel.connection.getLocalGameProfile(),
-            		(WorldSessionTelemetryManager)null,//refLevel.connection.telemetryManager,
+            		(GameProfile)null,//((yesman.epicfight.mixin.client.ClientLevelAccessor) refLevel).epicfight$getConnection().getLocalGameProfile(),
+            		(WorldSessionTelemetryManager)null,//((yesman.epicfight.mixin.client.ClientLevelAccessor) refLevel).epicfight$getConnection().telemetryManager,
             		(RegistryAccess.Frozen)refLevel.registryAccess(),
             		refLevel.enabledFeatures(),
             		(String)null,
@@ -229,7 +229,7 @@ public class FakeLevel extends ClientLevel {
             		false,
             		Map.of(),
             		(ServerLinks)null,
-            		(ConnectionType)null//refLevel.connection.getConnectionType()
+            		(ConnectionType)null//((yesman.epicfight.mixin.client.ClientLevelAccessor) refLevel).epicfight$getConnection().getConnectionType()
             	)
             );
         }

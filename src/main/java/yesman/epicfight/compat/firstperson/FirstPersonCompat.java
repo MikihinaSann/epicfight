@@ -11,7 +11,7 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class FirstPersonCompat implements ICompatModule {
 	@Override
-	public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
 		eventBus.<Object>addListener(event -> event.enqueueWork(() -> {
 			FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
 				public boolean preventFirstperson() {
@@ -28,14 +28,14 @@ public class FirstPersonCompat implements ICompatModule {
 	}
 	
 	@Override
-	public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
 	}
 	
 	@Override
-	public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 	}
 	
 	@Override
-	public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 	}
 }

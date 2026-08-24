@@ -17,7 +17,7 @@ public class PatchedElytraLayer<E extends LivingEntity, T extends LivingEntityPa
 	@Override
 	protected void renderLayer(T entitypatch, E livingentity, ElytraLayer<E, M> vanillaLayer, PoseStack poseStack, MultiBufferSource buffer, int packedLight, OpenMatrix4f[] poses, float bob, float yRot, float xRot, float partialTicks) {
 		if (vanillaLayer.shouldRender(livingentity.getItemBySlot(EquipmentSlot.CHEST), livingentity)) {
-			vanillaLayer.getParentModel().copyPropertiesTo(vanillaLayer.elytraModel);
+			vanillaLayer.getParentModel().copyPropertiesTo((net.minecraft.client.model.EntityModel) ((yesman.epicfight.mixin.client.ElytraLayerAccessor) vanillaLayer).epicfight$getElytraModel());
 			OpenMatrix4f modelMatrix = new OpenMatrix4f();
 			modelMatrix.scale(new Vec3f(-0.9F, -0.9F, 0.9F)).translate(new Vec3f(0.0F, -0.5F, -0.1F)).mulFront(poses[8]);
 			poseStack.pushPose();

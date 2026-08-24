@@ -89,7 +89,13 @@ public class ModConfigSpec {
             return value;
         }
 
-        public <T> ConfigValue<List<? extends String>> defineList(String path, List<? extends String> defaultValue, Predicate<Object> validator) {
+        public ConfigValue<List<? extends String>> defineList(String path, List<? extends String> defaultValue, Object unused, Predicate<Object> validator) {
+            ConfigValue<List<? extends String>> value = new ConfigValue<>(this, path, defaultValue);
+            values.add(value);
+            return value;
+        }
+
+        public ConfigValue<List<? extends String>> defineList(String path, List<? extends String> defaultValue, Predicate<Object> validator) {
             ConfigValue<List<? extends String>> value = new ConfigValue<>(this, path, defaultValue);
             values.add(value);
             return value;

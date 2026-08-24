@@ -79,8 +79,8 @@ public class FractureBlockState extends BlockState {
 		return false;
 	}
 	
-		public int getLightEmission(BlockGetter level, BlockPos blockPos) {
-		return ORIGINAL_BLOCK_STATE_CACHE.containsKey(blockPos.hashCode()) ? ORIGINAL_BLOCK_STATE_CACHE.get(blockPos.hashCode()).getLightEmission(level, blockPos) : this.owner.getLightEmission(this, level, blockPos);
+		public int getLightEmission() {
+		return ORIGINAL_BLOCK_STATE_CACHE.isEmpty() ? this.owner.getLightEmission() : 0;
 	}
 	
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos) {

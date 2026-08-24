@@ -67,15 +67,15 @@ public class SkinLayer3DCompat implements ICompatModule {
     );
 	
 	@Override
-	public void onModEventBus(Object eventBus) {
+	public void onInitialize() {
 	}
 
 	@Override
-	public void onGameEventBus(Object eventBus) {
+	public void onInitializeServer() {
 	}
 	
 	@Override
-	public void onModEventBusClient(Object eventBus) {
+	public void onInitializeClient() {
 		REGISTRY.register(eventBus);
 
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
@@ -86,7 +86,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	}
 	
 	@Override
-	public void onGameEventBusClient(Object eventBus) {
+	public void onInitializeClientServer() {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
             event.getEntityPatch().getOriginal().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
                 skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());

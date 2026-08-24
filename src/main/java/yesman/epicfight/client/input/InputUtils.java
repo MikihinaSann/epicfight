@@ -57,12 +57,12 @@ public final class InputUtils {
                 keyMapping == option.keyUse ||
                 keyMapping == option.keyPickItem
         ) {
-            @SuppressWarnings("UnstableApiUsage")
-            Object.InteractionKeyMappingTriggered Object = ClientHooks.onClickInput(
-                mouseButton, keyMapping, InteractionHand.MAIN_HAND
-            );
-
-            return !Object.isCanceled();
+            // TODO: Port InputEvent.InteractionKeyMappingTriggered to Fabric
+            // Object.InteractionKeyMappingTriggered Object = ClientHooks.onClickInput(
+            //     mouseButton, keyMapping, InteractionHand.MAIN_HAND
+            // );
+            // return !Object.isCanceled();
+            return false;
         }
 
         return true;
