@@ -38,8 +38,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.block.Blocks;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.ClientHooks;
+
+
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
@@ -58,17 +58,17 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public class WildfireFGMCompat implements ICompatModule {
     @Override
-    public void onModEventBus(IEventBus eventBus) {
+    public void onModEventBus(Object eventBus) {
 
     }
 
     @Override
-    public void onGameEventBus(IEventBus eventBus) {
+    public void onGameEventBus(Object eventBus) {
 
     }
 
     @Override
-    public void onModEventBusClient(IEventBus eventBus) {
+    public void onModEventBusClient(Object eventBus) {
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
             if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
                 playerrenderer.addPatchedLayerAlways(GenderLayer.class, new EpicFightWildfireRenderLayer());
@@ -77,7 +77,7 @@ public class WildfireFGMCompat implements ICompatModule {
     }
 
     @Override
-    public void onGameEventBusClient(IEventBus eventBus) {
+    public void onGameEventBusClient(Object eventBus) {
 
     }
 

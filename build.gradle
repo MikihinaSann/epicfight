@@ -1,0 +1,172 @@
+plugins {
+    id 'fabric-loom' version '1.10.5'
+    id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.group_id
+
+def modId = project.mod_id
+
+repositories {
+    mavenCentral()
+
+    // CurseMaven — for compat mods
+    maven {
+        name = 'CurseMaven'
+        url = 'https://cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
+
+    // ForgeConfigAPIPort
+    maven {
+        name = 'Fuzs Mod Resources'
+        url = 'https://maven.su5ed.dev/releases/'
+    }
+
+    // Modrinth maven for ForgeConfigAPIPort fallback
+    maven {
+        name = 'Modrinth'
+        url = 'https://api.modrinth.com/maven'
+        content {
+            includeGroup 'maven.modrinth'
+        }
+    }
+
+    // PlayerRevive local project
+    flatDir {
+        dir '../PlayerRevive/build/libs'
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings loom.officialMojangMappings()
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    // Fabric API
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // ForgeConfigAPIPort — provides ModConfigSpec on Fabric
+    // TODO: Find correct maven coordinates and re-add as modImplementation
+    // For now, compileOnly to allow compilation
+    // modImplementation "maven.modrinth:forge-config-api-port:${project.forgeconfigapiport_version}"
+
+    // Compat mods (compile-only) — temporarily disabled for initial build
+    // modCompileOnly "curse.maven:azurelib-817423:${project.azurelib_file_id}"
+    // modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
+    // modCompileOnly "curse.maven:controlify-835847:${project.controlify_file_id}"
+    // modCompileOnly "curse.maven:trinkets-341284:${project.trinkets_file_id}"
+    // modCompileOnly "curse.maven:female-gender-456319:${project.fgm_file_id}"
+    // modCompileOnly "curse.maven:first-person-model-333287:${project.firstperson_file_id}"
+    // modCompileOnly "curse.maven:geckolib-388172:${project.geckolib_file_id}"
+    // modCompileOnly "curse.maven:irisshaders-455508:${project.iris_file_id}"
+    // modCompileOnly "curse.maven:jei-238222:${project.jei_file_id}"
+    // modCompileOnly "curse.maven:playeranimator-658587:${project.playeranimator_file_id}"
+    // modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
+    // modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
+    // modCompileOnly "curse.maven:skin-layers-3d-521480:${project.skinlayers_file_id}"
+    // modCompileOnly "curse.maven:sodium-394468:${project.sodium_file_id}"
+
+    // PlayerRevive — local project dependency
+    // modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
+
+    // JSR-305 (javax.annotation) — used for @Nullable etc.
+    compileOnly "com.google.code.findbugs:jsr305:3.0.2"
+
+    // Checker Framework annotations
+    compileOnly "org.checkerframework:checker-qual:3.43.0"
+
+    // ForgeConfigAPIPort — needed for ModConfigSpec at compile time
+    // TODO: Find correct maven coordinates
+    // modCompileOnly "fuzs.forgeconfigapiport:forgeconfigapiport-common-neoforgeapi:21.1.6"
+}
+
+loom {
+    runs {
+        client {
+            client()
+            configName = 'Fabric Client'
+        }
+        server {
+            server()
+            configName = 'Fabric Server'
+        }
+    }
+
+    accessWidenerPath = file('src/main/resources/epicfight.accesswidener')
+}
+
+processResources {
+    def replaceProperties = [
+        modId          : modId,
+        modVersion     : project.mod_version,
+        displayName    : project.display_name,
+        displayUrl     : project.display_url,
+        license        : project.license,
+        authors        : project.authors,
+        description    : project.description,
+        issueTracker   : project.issue_tracker,
+        sourceCode     : project.source_code,
+        credits        : project.credits,
+        minecraft      : project.minecraft_version,
+    ]
+
+    inputs.properties replaceProperties
+
+    filesMatching('fabric.mod.json') {
+        expand replaceProperties
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = 'UTF-8'
+    it.options.release = 21
+}
+
+java {
+    withSourcesJar()
+
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+jar {
+    from(rootProject.file('LICENSE'))
+    from(rootProject.file('LICENSE-ASSETS'))
+}
+
+// Include generated resources
+sourceSets.main {
+    resources.srcDir layout.projectDirectory.dir('src/generated/resources')
+}
+
+// API JAR — includes only API package
+def apiPackage = 'yesman/epicfight/api/**'
+
+task apiJar(type: Jar) {
+    group = 'build'
+    archiveClassifier.set('api')
+    from(sourceSets.main.output) {
+        include apiPackage
+    }
+}
+
+task apiSourcesJar(type: Jar) {
+    group = 'build'
+    archiveClassifier.set('api-sources')
+    from(sourceSets.main.allSource) {
+        include apiPackage
+    }
+}
+
+artifacts {
+    archives apiJar
+    archives apiSourcesJar
+}

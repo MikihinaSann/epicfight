@@ -11,8 +11,8 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
-import net.neoforged.neoforge.common.loot.IGlobalLootModifier;
-import net.neoforged.neoforge.common.loot.LootModifier;
+
+
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.types.registry.RegisterMobSkillBookLootTableEvent;
@@ -64,7 +64,7 @@ public class OnSkillBookDroppedByEntity extends LootModifier {
 	}
 
 	@Override
-	public MapCodec<? extends IGlobalLootModifier> codec() {
+	public MapCodec<? extends Object> codec() {
 		return SKILL_CODEC;
 	}
 }

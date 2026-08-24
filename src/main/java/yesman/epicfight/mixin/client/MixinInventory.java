@@ -21,7 +21,7 @@ public class MixinInventory {
     private void onCycleHotbarSlot(double direction, CallbackInfo ci) {
         // Called whenever the player changes their selected hotbar item via the mouse wheel or other input systems.
         if (ControlEngine.isHotbarCyclingDisabled()) {
-            // InputEvent.MouseScrollingEvent is already cancelled in ControlEngine.Events#mouseScrollEvent to block hotbar cycling for mouse input.
+            // Object.MouseScrollingEvent is already cancelled in ControlEngine.Events#mouseScrollEvent to block hotbar cycling for mouse input.
             // Controller inputs are unaffected, so we also cancel it here to enforce the restriction
             // for all input methods.
             ci.cancel();

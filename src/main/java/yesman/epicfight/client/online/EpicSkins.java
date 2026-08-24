@@ -35,11 +35,11 @@ public record EpicSkins(Supplier<ResourceLocation> capeTexture, float r, float g
 		if (EpicFightServerConnectionHelper.supported() && ClientConfig.enableCosmetics) {
 			EpicFightServerConnectionHelper.getPlayerSkinInfo(EpicFightSharedConstants.webServerDomain(), playerpatch.getOriginal().getUUID().toString().replace("-", ""), (response, exception) -> {
 				if (exception != null) {
-					EpicFightMod.LOGGER.error("Failed at connecting Epic Fight web server: " + exception.getMessage());
+					EpicFight.LOGGER.error("Failed at connecting Epic Fight web server: " + exception.getMessage());
 				}
 				
 				if (response.statusCode() != 200) {
-					EpicFightMod.LOGGER.error("Failed at connecting Epic Fight web server: " + response.body());
+					EpicFight.LOGGER.error("Failed at connecting Epic Fight web server: " + response.body());
 				}
 				
 				Map<Slot, Cape> cosmetics = Maps.newHashMap();

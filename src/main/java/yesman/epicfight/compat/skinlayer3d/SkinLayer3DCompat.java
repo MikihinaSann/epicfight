@@ -30,12 +30,12 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+
+
+
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
+import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
+
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -54,9 +54,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SkinLayer3DCompat implements ICompatModule {
-	public static final DeferredRegister<AttachmentType<?>> REGISTRY = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, EpicFightMod.MODID);
+	public static final DeferredRegisterShim<AttachmentType<?>> REGISTRY = new DeferredRegisterShim<>(null /* ATTACHMENT_TYPES removed in Fabric */, EpicFight.MODID);
 	
-	public static final DeferredHolder<AttachmentType<?>, AttachmentType<SkinLayer3DMeshes>> SKINLAYER_MESH = REGISTRY.register(
+	public static final DeferredHolderShim<AttachmentType<?>, AttachmentType<SkinLayer3DMeshes>> SKINLAYER_MESH = REGISTRY.register(
             "skinlayer_mesh",
             () ->
             	AttachmentType
@@ -65,15 +65,15 @@ public class SkinLayer3DCompat implements ICompatModule {
     );
 	
 	@Override
-	public void onModEventBus(IEventBus eventBus) {
+	public void onModEventBus(Object eventBus) {
 	}
 
 	@Override
-	public void onGameEventBus(IEventBus eventBus) {
+	public void onGameEventBus(Object eventBus) {
 	}
 	
 	@Override
-	public void onModEventBusClient(IEventBus eventBus) {
+	public void onModEventBusClient(Object eventBus) {
 		REGISTRY.register(eventBus);
 
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
@@ -84,7 +84,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	}
 	
 	@Override
-	public void onGameEventBusClient(IEventBus eventBus) {
+	public void onGameEventBusClient(Object eventBus) {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
             event.getEntityPatch().getOriginal().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
                 skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
@@ -96,7 +96,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	public static final class SkinLayer3DMeshes {
 		private final Map<PlayerModelPart, SkinnedMesh> partMeshes = Maps.newHashMap();
 		
-		public SkinLayer3DMeshes(IAttachmentHolder attachmentHolder) {
+		public SkinLayer3DMeshes(Object attachmentHolder) {
 			if (!(attachmentHolder instanceof Entity)) {
 				throw new IllegalArgumentException(attachmentHolder + " is not a subtype of Entity");
 			}

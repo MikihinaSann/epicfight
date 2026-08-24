@@ -47,7 +47,7 @@ public class ItemKeywordReloadListener extends SimplePreparableReloadListener<Ma
 					List<JsonElement> list = pOutput.computeIfAbsent(resourcelocation1, k -> new ArrayList<> ());
 					list.add(jsonelement);
 				} catch (IllegalArgumentException | IOException | JsonParseException jsonparseexception) {
-					EpicFightMod.LOGGER.error("Couldn't parse data file {} from {}", resourcelocation1, resourcelocation, jsonparseexception);
+					EpicFight.LOGGER.error("Couldn't parse data file {} from {}", resourcelocation1, resourcelocation, jsonparseexception);
 				}
 			}
 		}

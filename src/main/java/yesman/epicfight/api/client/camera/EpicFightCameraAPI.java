@@ -21,8 +21,8 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.*;
-import net.neoforged.neoforge.client.event.ViewportEvent;
-import net.neoforged.neoforge.entity.PartEntity;
+
+
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -626,8 +626,8 @@ public final class EpicFightCameraAPI {
                     if (!(entityHitResult.getEntity() instanceof ArmorStand) && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY))) {
                         this.setFocusingEntity(livingentity);
                     }
-                } else if (entityHitResult.getEntity() instanceof PartEntity<?> partEntity) {
-                    Entity parent = partEntity.getParent();
+                } else if (entityHitResult.getEntity() instanceof net.minecraft.world.entity.Entity) {
+                    Entity parent = net.minecraft.world.entity.Entity.getParent();
 
                     if (parent instanceof LivingEntity parentLivingEntity && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY))) {
                         this.setFocusingEntity(parentLivingEntity);
@@ -817,7 +817,7 @@ public final class EpicFightCameraAPI {
         }
     }
 
-    /// Sets up the camera transform before [ViewportEvent.ComputeCameraAngles] is called, so that Minecraft doesn't calculate the transform twice
+    /// Sets up the camera transform before [Object.ComputeCameraAngles] is called, so that Minecraft doesn't calculate the transform twice
     /// @return the result of the event state
     @ApiStatus.Internal
     public BuildCameraTransform.Pre setupCamera(Camera camera, float partialTick) {
@@ -957,7 +957,7 @@ public final class EpicFightCameraAPI {
     ///
     /// This method takes a [Player] instead of [LocalPlayer] because casting
     /// to the client-only [LocalPlayer] inside a mixin (e.g., in [LivingEntity])
-    /// would crash a dedicated server due to Forge's `@OnlyIn(Dist.CLIENT)`.
+    /// would crash a dedicated server due to Forge's `@OnlyIn(EnvType.CLIENT)`.
     @ApiStatus.Internal
     public float getYRotForHead(Player player) {
         if (!player.isLocalPlayer()) {

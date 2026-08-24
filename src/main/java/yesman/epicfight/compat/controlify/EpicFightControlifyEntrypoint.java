@@ -322,7 +322,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     }
 
     private static void registerModIntegration() {
-        EpicFightControllerModProvider.set(EpicFightMod.MODID, new EpicFightControlifyControllerMod());
+        EpicFightControllerModProvider.set(EpicFight.MODID, new EpicFightControlifyControllerMod());
     }
 
     private static void registerEvents() {
@@ -415,7 +415,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
                     "The method IEpicFightControllerMod#getInputState must not be called when the input mode is not %s",
                     InputMode.CONTROLLER.name()
             );
-            EpicFightMod.LOGGER.error(message);
+            EpicFight.LOGGER.error(message);
             throw new IllegalStateException(message);
         }
 

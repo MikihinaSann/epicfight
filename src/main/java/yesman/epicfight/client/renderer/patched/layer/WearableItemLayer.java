@@ -35,8 +35,8 @@ import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.armortrim.ArmorTrim;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+
+
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.asset.JsonAssetLoader;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
@@ -199,7 +199,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				 * Copy from {@link HumanoidArmorLayer#renderArmorPiece}
 				 */
 				ArmorMaterial armormaterial = armorItem.getMaterial().value();
-				IClientItemExtensions extensions = IClientItemExtensions.of(itemstack);
+				Object extensions = Object.of(itemstack);
 				int fallbackColor = extensions.getDefaultDyeColor(itemstack);
 				boolean innerModel = innerModel(slot);
 

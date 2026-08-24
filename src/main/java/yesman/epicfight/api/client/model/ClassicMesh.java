@@ -39,7 +39,7 @@ public class ClassicMesh extends StaticMesh<ClassicMeshPart> {
 	@Override
 	protected ClassicMeshPart getOrLogException(Map<String, ClassicMeshPart> parts, String name) {
 		if (!parts.containsKey(name)) {
-			EpicFightMod.LOGGER.debug("Can not find the mesh part named " + name + " in " + this.getClass().getCanonicalName());
+			EpicFight.LOGGER.debug("Can not find the mesh part named " + name + " in " + this.getClass().getCanonicalName());
 			return null;
 		}
 		

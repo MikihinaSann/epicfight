@@ -31,7 +31,7 @@ public final class BrainRecomposer {
 	public static void recomposeBrainByType(EntityType<?> entityType, Brain<?> brain, AnimatedCombatBehavior<?> animatedCombatBehavior, MoveToTargetSinkStopInaction chaseBehavior) {
 		BrainRecomposeFunction brainRecomposeFunction = BRAIN_REPLACE_DEST_MAPPER.get(entityType);
 		if (brainRecomposeFunction == null) {
-			EpicFightMod.LOGGER.error("Failed to find brain recompose function for entity type: {}", entityType);
+			EpicFight.LOGGER.error("Failed to find brain recompose function for entity type: {}", entityType);
 			return;
 		}
 		brainRecomposeFunction.recomposeBrain(brain, animatedCombatBehavior, chaseBehavior);

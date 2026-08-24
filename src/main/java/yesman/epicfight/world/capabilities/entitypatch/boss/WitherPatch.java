@@ -22,9 +22,9 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.event.entity.EntityAttributeModificationEvent;
-import net.neoforged.neoforge.registries.DeferredHolder;
+
+
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import org.joml.Quaternionf;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.Animator;
@@ -68,13 +68,13 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 		super(entity);
 	}
 
-	private static final List<DeferredHolder<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<Vec3>>> DATA_LASER_TARGET_LOCATION_LIST = ImmutableList.of(
+	private static final List<DeferredHolderShim<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<Vec3>>> DATA_LASER_TARGET_LOCATION_LIST = ImmutableList.of(
 		  EpicFightExpandedEntityDataAccessors.WITHER_HEAD_LEFT_TARGET_LOCATION
 		, EpicFightExpandedEntityDataAccessors.WITHER_HEAD_CENTER_TARGET_LOCATION
 		, EpicFightExpandedEntityDataAccessors.WITHER_HEAD_RIGHT_TARGET_LOCATION
 	);
 	
-	private static final List<DeferredHolder<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<Integer>>> DATA_TARGET_ENTITY_ID_LIST = ImmutableList.of(
+	private static final List<DeferredHolderShim<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<Integer>>> DATA_TARGET_ENTITY_ID_LIST = ImmutableList.of(
 		  EpicFightExpandedEntityDataAccessors.WITHER_HEAD_LEFT_TARGET_ENTITY_ID
 		, EpicFightExpandedEntityDataAccessors.WITHER_HEAD_CENTER_TARGET_ENTITY_ID
 		, EpicFightExpandedEntityDataAccessors.WITHER_HEAD_RIGHT_TARGET_ENTITY_ID

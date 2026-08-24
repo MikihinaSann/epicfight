@@ -18,7 +18,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.entity.PartEntity;
+
 import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.animation.Keyframe;
 import yesman.epicfight.api.animation.Pose;
@@ -453,7 +453,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
         if (entityHitResult != null) {
             Entity hitEntity = entityHitResult.getEntity();
 
-            if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof PartEntity) && !(hitEntity instanceof Interaction)) {
+            if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof net.minecraft.world.entity.Entity) && !(hitEntity instanceof Interaction)) {
                 return false;
             }
         }

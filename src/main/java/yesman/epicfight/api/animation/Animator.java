@@ -105,7 +105,7 @@ public abstract class Animator {
 	
 	public void addLivingAnimation(LivingMotion livingMotion, AssetAccessor<? extends StaticAnimation> animation) {
 		if (AnimationManager.checkNull(animation)) {
-			EpicFightMod.LOGGER.warn("Unable to put an empty animation for " + livingMotion);
+			EpicFight.LOGGER.warn("Unable to put an empty animation for " + livingMotion);
 			return;
 		}
 		

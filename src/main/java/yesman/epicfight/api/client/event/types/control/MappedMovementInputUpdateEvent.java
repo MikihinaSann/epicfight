@@ -42,7 +42,7 @@ public class MappedMovementInputUpdateEvent extends LivingEntityPatchEvent {
         this.inputState = null;
     }
 
-    /// Creates a new [MappedMovementInputUpdateEvent] with an immutable [PlayerInputState].
+    /// Creates a new [MappedObject] with an immutable [PlayerInputState].
     /// Use this constructor to fully support controllers.
     ///
     /// @param playerPatch the patched local player
@@ -52,7 +52,7 @@ public class MappedMovementInputUpdateEvent extends LivingEntityPatchEvent {
         super(playerPatch);
         this.inputState = inputState;
         // DEPRECATED: Still set the vanilla Input for backward compatibility to avoid Epic Fight addons breakage.
-        // Not setting this, may break any consumers that depend on the deprecated MovementInputEvent#getMovementInput() method.
+        // Not setting this, may break any consumers that depend on the deprecated MovementObject#getMovementInput() method.
         this.movementInput = playerPatch.getOriginal().input;
     }
 

@@ -62,7 +62,7 @@ public class PlayerEmoteSlots {
                     emoteHolder.ifPresentOrElse(emote -> {
                         page.emotes[slotIndex.getValue()] = emote;
                     }, () -> {
-                        EpicFightMod.LOGGER.error("Unknown emote: {}. Ignored.", registyNameTag.getAsString());
+                        EpicFight.LOGGER.error("Unknown emote: {}. Ignored.", registyNameTag.getAsString());
                     });
                 }
 
@@ -103,12 +103,12 @@ public class PlayerEmoteSlots {
 
     public void setEmote(int pageIndex, int slotIndex, @Nullable Holder.Reference<Emote> emote) {
         if (this.emoteTabs.size() <= pageIndex) {
-            EpicFightMod.LOGGER.error("Emote page index {} is out of bound {}", pageIndex, this.emoteTabs.size());
+            EpicFight.LOGGER.error("Emote page index {} is out of bound {}", pageIndex, this.emoteTabs.size());
             return;
         }
 
         if (slotIndex < 0 || slotIndex >= 6) {
-            EpicFightMod.LOGGER.error("Emote slot {} is not a valid index (0~6)", slotIndex);
+            EpicFight.LOGGER.error("Emote slot {} is not a valid index (0~6)", slotIndex);
             return;
         }
 

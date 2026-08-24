@@ -8,9 +8,9 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.LootTableLoadEvent;
+
+
+
 import yesman.epicfight.api.event.types.registry.RegisterMobSkillBookLootTableEvent;
 import yesman.epicfight.config.CommonConfig;
 import yesman.epicfight.data.loot.function.SetSkillFunction;
@@ -18,9 +18,9 @@ import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.EpicFightSkills;
 
-@EventBusSubscriber(modid = EpicFightMod.MODID)
+
 public class EpicFightLootTables {
-	@SubscribeEvent
+	
 	public static void onLootTableRegistry(final LootTableLoadEvent event) {
 		int modifier = CommonConfig.skillBookChestLootModifier;
 		int dropChance = 100 + modifier;

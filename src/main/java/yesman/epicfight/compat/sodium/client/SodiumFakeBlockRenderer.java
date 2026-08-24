@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.model.data.ModelData;
+
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.client.renderer.FakeBlockRenderer;
 
@@ -64,7 +64,7 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 		int originZ = (bp.getZ() & 15);
 		
 		for (Direction d : DIRECTIONS) {
-			List<BakedQuad> culledFaces = model.getQuads(bs, d, randomsource, ModelData.EMPTY, null);
+			List<BakedQuad> culledFaces = model.getQuads(bs, d, randomsource, null.EMPTY, null);
 			mutablepos.setWithOffset(bp, d);
 			
 			if (Block.shouldRenderFace(bs, level, bp, d, mutablepos)) {
@@ -72,7 +72,7 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 			}
 		}
 		
-		this.renderPreviewBlocks(buffer, level, model.getQuads(bs, null, randomsource, ModelData.EMPTY, null), originX, originY, originZ, offset, r, g, b, a);
+		this.renderPreviewBlocks(buffer, level, model.getQuads(bs, null, randomsource, null.EMPTY, null), originX, originY, originZ, offset, r, g, b, a);
 		
 		RenderSystem.getModelViewStack().pushMatrix();
 		RenderSystem.getModelViewStack().mul(poseStack.last().pose());

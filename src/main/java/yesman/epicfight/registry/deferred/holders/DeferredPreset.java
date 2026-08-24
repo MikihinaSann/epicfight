@@ -1,7 +1,7 @@
 package yesman.epicfight.registry.deferred.holders;
 
 import net.minecraft.resources.ResourceKey;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.registry.deferred.ItemPresetRegister;
@@ -33,7 +33,7 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
  * @see DeferredHolder
  * @see CapabilityItem.Builder
  */
-public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends DeferredHolder<CapabilityItem.Builder<?>, T> {
+public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends DeferredHolderShim<CapabilityItem.Builder<?>, T> {
 
     /**
      * Internal constructor used by {@link ItemPresetRegister}.

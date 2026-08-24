@@ -1,22 +1,15 @@
 package yesman.epicfight.registry.entries;
 
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvider;
 
+/// On Fabric, entity attachments are handled via a mixin-injected field on Entity,
+/// not via a registry. This class is kept for API compatibility but is mostly empty.
 public final class EpicFightAttachmentTypes {
 	private EpicFightAttachmentTypes() {}
-	
-	public static final DeferredRegister<AttachmentType<?>> REGISTRY = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, EpicFightMod.MODID);
-	
-	public static final DeferredHolder<AttachmentType<?>, AttachmentType<AttachmentEntityPatchProvider>> ENTITY_PATCH = REGISTRY.register(
-            "entitypatch",
-            () ->
-            	AttachmentType
-                    .builder(AttachmentEntityPatchProvider::new)
-                    .build()
-    );
+
+	/// Creates the entity patch provider for an entity.
+	/// On NeoForge this was an AttachmentType; on Fabric it's a simple factory.
+	public static AttachmentEntityPatchProvider createEntityPatchProvider() {
+		return new AttachmentEntityPatchProvider();
+	}
 }

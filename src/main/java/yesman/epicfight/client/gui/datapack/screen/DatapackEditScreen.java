@@ -324,7 +324,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 			int resourcepackVersion = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
 			
 			if (datapackVersion != resourcepackVersion) {
-				EpicFightMod.LOGGER.warn(new StringBuilder("Pack version is not matching in ").append(SharedConstants.getCurrentVersion().getId()).toString());
+				EpicFight.LOGGER.warn(new StringBuilder("Pack version is not matching in ").append(SharedConstants.getCurrentVersion().getId()).toString());
 			}
 			
 			pack.addProperty("description", packName);
@@ -608,7 +608,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 						this.userArmatures.put(rl, SelfAccessor.create(rl, armature));
 					}
 				} catch (Exception e) {
-					EpicFightMod.LOGGER.error("Failed to read model " + resourceLocation);
+					EpicFight.LOGGER.error("Failed to read model " + resourceLocation);
 					e.printStackTrace();
 				}
 			});
@@ -670,7 +670,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
                         )
                     );
 				} catch (Exception e) {
-					EpicFightMod.LOGGER.error("Failed to read animation " + resourceLocation);
+					EpicFight.LOGGER.error("Failed to read animation " + resourceLocation);
 					e.printStackTrace();
 				}
 			});
@@ -1222,7 +1222,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 						ResourceLocation rl = ResourceLocation.fromNamespaceAndPath(resourceLocation.getNamespace(), resourceLocation.getPath().replaceAll(this.directory + "/", "").replaceAll(".json", ""));
 						this.importJson(rl, streamSupplier.get());
 					} catch (Exception e) {
-						EpicFightMod.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
+						EpicFight.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
 						e.printStackTrace();
 					}
 				});
@@ -1241,14 +1241,14 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 					WeaponCapability.Builder builder = WeaponTypeReloadListener.deserializeWeaponCapabilityBuilder(registryName, compTag, DatapackEditScreen.this);
 					DatapackEditScreen.this.userWeaponTypes.put(registryName, (item) -> builder);
 				} catch (Exception e) {
-					EpicFightMod.LOGGER.warn("Failed to deserialize weapon type from datapack." + registryName + ": " + e.getMessage());
+					EpicFight.LOGGER.warn("Failed to deserialize weapon type from datapack." + registryName + ": " + e.getMessage());
 					e.printStackTrace();
 				}
 				
 				this.packList.add(PackEntry.ofValue(registryName, compTag));
 				this.packListGrid.addRowWithDefaultValues("pack_item", registryName.toString());
 			} catch (Exception e) {
-				EpicFightMod.LOGGER.info("Failed to import " + registryName + ": " + e.getMessage());
+				EpicFight.LOGGER.info("Failed to import " + registryName + ": " + e.getMessage());
 				throw e;
 			} finally {
 				try {
@@ -2080,7 +2080,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 							}
 						}
 					} catch (Exception e) {
-						EpicFightMod.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
+						EpicFight.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
 						e.printStackTrace();
 					}
 				});
@@ -2153,7 +2153,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 				this.packList.add(PackEntry.ofValue(registryName, compTag));
 				this.packListGrid.addRowWithDefaultValues("pack_item", registryName.toString());
 			} catch (Exception e) {
-				EpicFightMod.LOGGER.info("Failed to import " + registryName + ": " + e.getMessage());
+				EpicFight.LOGGER.info("Failed to import " + registryName + ": " + e.getMessage());
 				throw e;
 			} finally {
 				try {
@@ -2703,7 +2703,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 					try {
 						this.importJson(rl, streamSupplier.get());
 					} catch (Exception e) {
-						EpicFightMod.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
+						EpicFight.LOGGER.info("Failed to import " + resourceLocation + ": " + e.getMessage());
 						e.printStackTrace();
 					}
 				});

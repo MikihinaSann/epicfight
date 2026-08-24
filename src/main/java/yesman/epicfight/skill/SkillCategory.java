@@ -25,7 +25,7 @@ public interface SkillCategory extends ExtensibleEnum {
     /// Returns a translation key
     /// For backward compatibility, this method is implemented as default
     default Component getTranslationKey() {
-        return Component.translatable(String.format("skill.%s.category.%s", EpicFightMod.MODID, ParseUtil.toLowerCase(this.toString())));
+        return Component.translatable(String.format("skill.%s.category.%s", EpicFight.MODID, ParseUtil.toLowerCase(this.toString())));
     }
 
 	/// Texture location of the Skill book icon in inventory UI

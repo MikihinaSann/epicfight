@@ -89,7 +89,7 @@ public class RevelationSkill extends Skill {
             if (entityType != null) {
                 this.maxRevelationStacks.put(entityType, maxStacks.getInt(registryName));
             } else {
-                EpicFightMod.LOGGER.warn("Revelation registry error: no entity type named {}", registryName);
+                EpicFight.LOGGER.warn("Revelation registry error: no entity type named {}", registryName);
             }
         }
     }

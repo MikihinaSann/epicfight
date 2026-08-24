@@ -21,13 +21,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.InputEvent;
-import net.neoforged.neoforge.client.event.MovementInputUpdateEvent;
-import net.neoforged.neoforge.entity.PartEntity;
-import net.neoforged.neoforge.event.entity.living.LivingEvent.LivingJumpEvent;
+
+
+
+
+
+
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -656,9 +656,9 @@ public class ControlEngine implements IEventBasedEngine {
 
 		if (consumes && eventCheck) {
 			int mouseButton = InputConstants.Type.MOUSE == key.getKey().getType() ? key.getKey().getValue() : -1;
-			InputEvent.InteractionKeyMappingTriggered inputEvent = ClientHooks.onClickInput(mouseButton, key, InteractionHand.MAIN_HAND);
+			Object.InteractionKeyMappingTriggered Object = ClientHooks.onClickInput(mouseButton, key, InteractionHand.MAIN_HAND);
 
-	        if (inputEvent.isCanceled()) {
+	        if (Object.isCanceled()) {
 	        	return false;
 	        }
 		}
@@ -881,7 +881,7 @@ public class ControlEngine implements IEventBasedEngine {
     /// this method remains temporarily for backward compatibility. Future updates should refactor these dependencies
     /// to remove reliance on [KeyMapping], allowing this method to be fully removed.
     ///
-    /// Sometimes, it makes sense to use this method, for example, if you're using an event such as [InputEvent.InteractionKeyMappingTriggered],
+    /// Sometimes, it makes sense to use this method, for example, if you're using an event such as [Object.InteractionKeyMappingTriggered],
     /// which provides only a [KeyMapping].
     private static @Nullable InputAction mapKeyMappingToAction(@NotNull KeyMapping keyMapping) {
         return InputAction.fromKeyMapping(keyMapping);
@@ -922,7 +922,7 @@ public class ControlEngine implements IEventBasedEngine {
 
     /// Determines whether hotbar cycling should be disabled.
     ///
-    /// Used internally in [InputEvent.MouseScrollingEvent] and
+    /// Used internally in [Object.MouseScrollingEvent] and
     /// [yesman.epicfight.mixin.client.MixinInventory].
     ///
     /// Cancelling the mouse scroll event disables cycling for vanilla mouse input, but other input
@@ -966,14 +966,14 @@ public class ControlEngine implements IEventBasedEngine {
 	/******************
 	 * Event listeners
 	 ******************/
-	private void epicfight$mouseScrollEvent(InputEvent.MouseScrollingEvent event) {
+	private void epicfight$mouseScrollEvent(Object.MouseScrollingEvent event) {
         // Disables item switching for the vanilla mouse input
         if (isHotbarCyclingDisabled()) {
             event.setCanceled(true);
         }
 	}
 
-	private void epicfight$moveInputEvent(MovementInputUpdateEvent event) {
+	private void epicfight$moveObject(Object event) {
 		if (this.playerpatch == null) {
 			return;
 		}
@@ -992,7 +992,7 @@ public class ControlEngine implements IEventBasedEngine {
 		this.packetsToSend.clear();
 	}
 
-	private void epicfight$interactionKeyMappingTriggered(InputEvent.InteractionKeyMappingTriggered event) {
+	private void epicfight$interactionKeyMappingTriggered(Object.InteractionKeyMappingTriggered event) {
         if (this.minecraft.player == null || this.minecraft.hitResult == null) return;
 
         final InputAction triggeredAction = mapKeyMappingToAction(event.getKeyMapping());
@@ -1041,7 +1041,7 @@ public class ControlEngine implements IEventBasedEngine {
             if (
                 !EpicFightGameRules.ALLOW_VANILLA_MELEE.getRuleValue(playerpatch.getOriginal().level()) &&
                     this.minecraft.hitResult instanceof EntityHitResult entityHitResult &&
-                    (entityHitResult.getEntity() instanceof LivingEntity || entityHitResult.getEntity() instanceof PartEntity)
+                    (entityHitResult.getEntity() instanceof LivingEntity || entityHitResult.getEntity() instanceof net.minecraft.world.entity.Entity)
             ) {
                 event.setSwingHand(false);
                 event.setCanceled(true);
@@ -1112,15 +1112,15 @@ public class ControlEngine implements IEventBasedEngine {
 	 * Event listeners end
 	 **********************/
 	@Override
-	public void gameEventBus(IEventBus gameEventBus) {
+	public void gameEventBus(Object gameEventBus) {
 		gameEventBus.addListener(this::epicfight$mouseScrollEvent);
-		gameEventBus.addListener(this::epicfight$moveInputEvent);
+		gameEventBus.addListener(this::epicfight$moveObject);
 		gameEventBus.addListener(this::epicfight$clientTickEndEvent);
 		gameEventBus.addListener(this::epicfight$interactionKeyMappingTriggered);
 		gameEventBus.addListener(this::epicfight$livingJumpEvent);
 	}
 
 	@Override
-	public void modEventBus(IEventBus modEventBus) {
+	public void modEventBus(Object modEventBus) {
 	}
 }

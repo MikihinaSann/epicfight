@@ -16,7 +16,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.config.ClientConfig;
@@ -85,7 +85,7 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
 		if (checkOnlineUser(user)) {
 			EpicFightServerConnectionHelper.autoLogin(EpicFightSharedConstants.webServerDomain(), profileIdToString(user), this.accessToken, this.refreshToken, this.authProvider.toString(), (response, exception) -> {
 				if (exception != null) {
-					EpicFightMod.LOGGER.warn("Exeception fired in automatic login", exception);
+					EpicFight.LOGGER.warn("Exeception fired in automatic login", exception);
 				} else {
 					if (response.statusCode() == 200) {
 						JsonObject responseJson = JsonConverter.parseJson(response.body()).getAsJsonObject();
@@ -93,7 +93,7 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
 							
 						});
 					} else {
-						EpicFightMod.LOGGER.warn("Auto login failed with status code " + response.statusCode() + ": " + response.body());
+						EpicFight.LOGGER.warn("Auto login failed with status code " + response.statusCode() + ": " + response.body());
 					}
 				}
 			});
@@ -179,7 +179,7 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
 					
 					onSuccess.run();
 				} catch (Exception e) {
-                    EpicFightMod.LOGGER.error("Failed at deserializing json object from remote", e);
+                    EpicFight.LOGGER.error("Failed at deserializing json object from remote", e);
 				}
 			} else {
 				onFailed.accept(new HttpResponseException("Failed at getting available cosmetics", response.statusCode(), response.body()));
@@ -218,7 +218,7 @@ public class AuthenticationHelperImpl implements AuthenticationHelper {
 			this.cosmeticsBySlot.clear();
 			this.cosmetics.clear();
 		} catch (Exception e) {
-            EpicFightMod.LOGGER.error("Sign out failed", e);
+            EpicFight.LOGGER.error("Sign out failed", e);
 		}
 	}
 	

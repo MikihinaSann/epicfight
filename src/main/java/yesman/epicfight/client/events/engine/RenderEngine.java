@@ -34,10 +34,10 @@ import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.*;
-import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
-import net.neoforged.neoforge.event.tick.LevelTickEvent;
+
+
+
+
 import net.sweenus.simplytooltips.client.TooltipNavigationConfig;
 import net.sweenus.simplytooltips.client.render.ItemThemeRegistry;
 import org.jetbrains.annotations.Nullable;
@@ -390,7 +390,7 @@ public class RenderEngine implements IEventBasedEngine {
     /******************
      * Forge EventHook listeners
      ******************/
-    private void epicfight$renderLivingPre(RenderLivingEvent.Pre<? extends LivingEntity, ? extends EntityModel<? extends LivingEntity>> event) {
+    private void epicfight$renderLivingPre(Object.Pre<? extends LivingEntity, ? extends EntityModel<? extends LivingEntity>> event) {
         LivingEntity livingentity = event.getEntity();
 
         if (livingentity.level() == null) {
@@ -445,7 +445,7 @@ public class RenderEngine implements IEventBasedEngine {
         }
     }
 
-    private boolean noSimplyTooltipsSupport(ItemTooltipEvent event) {
+    private boolean noSimplyTooltipsSupport(Object event) {
         if (!ModPlatformProvider.get().isModLoaded(MinecraftMod.SIMPLY_TOOLTIPS.getModId())) {
             return true;
         }
@@ -461,7 +461,7 @@ public class RenderEngine implements IEventBasedEngine {
         return !ItemThemeRegistry.hasThemeForStack(stack);
     }
 
-    private void epicfight$itemTooltip(ItemTooltipEvent event) {
+    private void epicfight$itemTooltip(Object event) {
         if (ClientConfig.showEpicFightAttributesInTooltip && event.getEntity() != null && event.getEntity().level().isClientSide) {
             EpicFightCapabilities.getUnparameterizedEntityPatch(event.getEntity(), LocalPlayerPatch.class).ifPresent(playerpatch -> {
                 EpicFightCapabilities.getItemCapability(event.getItemStack()).ifPresent(itemCapability -> {
@@ -528,7 +528,7 @@ public class RenderEngine implements IEventBasedEngine {
     private static final Vector3f CAMERA_ROTATION_EULER = new Vector3f();
     private static final OpenMatrix4f PLAYER_ROTATION = new OpenMatrix4f();
 
-    private void epicfight$computeCameraAngles(ViewportEvent.ComputeCameraAngles event) {
+    private void epicfight$computeCameraAngles(Object.ComputeCameraAngles event) {
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
             // First person camera correction
             if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson() && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
@@ -696,7 +696,7 @@ public class RenderEngine implements IEventBasedEngine {
         EpicFightCameraAPI.getInstance().postClientTick();
     }
 
-    private void epicfight$levelTickPost(LevelTickEvent.Post event) {
+    private void epicfight$levelTickPost(Object /* LevelTickEvent removed */.Post event) {
         if (!event.getLevel().isClientSide()) {
             return;
         }
@@ -764,7 +764,7 @@ public class RenderEngine implements IEventBasedEngine {
      **********************/
 
     @Override
-    public void gameEventBus(IEventBus gameEventBus) {
+    public void gameEventBus(Object gameEventBus) {
         gameEventBus.addListener(this::epicfight$bossEventProgress);
         gameEventBus.addListener(this::epicfight$renderLivingPre);
         gameEventBus.addListener(this::epicfight$itemTooltip);
@@ -783,7 +783,7 @@ public class RenderEngine implements IEventBasedEngine {
     }
 
     @Override
-    public void modEventBus(IEventBus modEventBus) {
+    public void modEventBus(Object modEventBus) {
         modEventBus.addListener(this::epicfight$addLayers);
     }
 

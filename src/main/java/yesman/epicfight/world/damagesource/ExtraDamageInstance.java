@@ -8,7 +8,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.enchantment.Enchantments;
-import net.neoforged.neoforge.common.extensions.ILevelReaderExtension;
+
 import yesman.epicfight.registry.entries.EpicFightSkills;
 import yesman.epicfight.world.capabilities.item.WeaponCapabilityPresets;
 
@@ -78,7 +78,7 @@ public class ExtraDamageInstance {
 		return this.calculator.extraDamage.getBonusDamage(attacker, hurtItem, target, baseDamage, this.params);
 	}
 	
-	public void setTooltips(ILevelReaderExtension levelReader, ItemStack itemstack, MutableComponent tooltip, double baseDamage) {
+	public void setTooltips(LevelReader levelReader, ItemStack itemstack, MutableComponent tooltip, double baseDamage) {
 		this.calculator.tooltip.setTooltip(levelReader, itemstack, tooltip, baseDamage, this.params);
 	}
 	
@@ -89,7 +89,7 @@ public class ExtraDamageInstance {
 	
 	@FunctionalInterface
 	public interface ExtraDamageTooltipFunction {
-		void setTooltip(ILevelReaderExtension levelReader, ItemStack itemstack, MutableComponent tooltips, double baseDamage, float[] params);
+		void setTooltip(LevelReader levelReader, ItemStack itemstack, MutableComponent tooltips, double baseDamage, float[] params);
 	}
 	
 	public static class ExtraDamage {

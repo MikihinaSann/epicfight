@@ -25,7 +25,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.neoforged.neoforge.client.ClientHooks;
+
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;

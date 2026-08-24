@@ -7,8 +7,8 @@ import net.minecraft.client.Options;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.event.InputEvent;
+
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.input.InputManager;
@@ -23,7 +23,7 @@ public final class InputUtils {
     private InputUtils() {
     }
 
-    /// Handles firing the [InputEvent.InteractionKeyMappingTriggered] input event for keyboard/mouse actions
+    /// Handles firing the [Object.InteractionKeyMappingTriggered] input event for keyboard/mouse actions
     /// and runs the callback only if the event is not canceled.
     public static void runKeyboardMouseEvent(@NotNull InputAction action, @NotNull Runnable handler) {
         final KeyMapping keyMapping = action.keyMapping();
@@ -46,7 +46,7 @@ public final class InputUtils {
     }
 
     /// Checks if the given key mapping is interaction key (block or entity interaction) and triggers
-    /// [InputEvent.InteractionKeyMappingTriggered] event
+    /// [Object.InteractionKeyMappingTriggered] event
     public static boolean checkInteractionKeyUsable(int mouseButton, KeyMapping keyMapping) {
         Options option = Minecraft.getInstance().options;
 
@@ -56,11 +56,11 @@ public final class InputUtils {
                 keyMapping == option.keyPickItem
         ) {
             @SuppressWarnings("UnstableApiUsage")
-            InputEvent.InteractionKeyMappingTriggered inputEvent = ClientHooks.onClickInput(
+            Object.InteractionKeyMappingTriggered Object = ClientHooks.onClickInput(
                 mouseButton, keyMapping, InteractionHand.MAIN_HAND
             );
 
-            return !inputEvent.isCanceled();
+            return !Object.isCanceled();
         }
 
         return true;

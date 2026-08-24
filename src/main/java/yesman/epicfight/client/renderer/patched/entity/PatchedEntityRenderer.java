@@ -6,8 +6,8 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.EntityRenderer;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.neoforge.client.event.RenderNameTagEvent;
-import net.neoforged.neoforge.common.NeoForge;
+
+
 import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.model.SkinnedMesh;
@@ -20,8 +20,8 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public abstract class PatchedEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, R extends EntityRenderer<E>, AM extends SkinnedMesh> {
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTick) {
-		RenderNameTagEvent renderNameplateEvent = new RenderNameTagEvent(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
-		NeoForge.EVENT_BUS.post(renderNameplateEvent);
+		Object renderNameplateEvent = new Object(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
+		null.post(renderNameplateEvent);
 		
 		MixinEntityRenderer entityRendererAccessor = (MixinEntityRenderer)renderer;
 		

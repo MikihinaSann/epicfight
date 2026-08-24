@@ -26,7 +26,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.ClientHooks;
+
 import org.apache.logging.log4j.Logger;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.animation.Pose;

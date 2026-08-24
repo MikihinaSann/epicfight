@@ -2,8 +2,8 @@ package yesman.epicfight.compat.geckolib;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+
+
 import software.bernie.geckolib.event.GeoRenderEvent;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.transformer.HumanoidModelBaker;
@@ -18,23 +18,23 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 public class GeckolibCompat implements ICompatModule {
 	@Override
-	public void onModEventBusClient(IEventBus eventBus) {
-		eventBus.<FMLClientSetupEvent>addListener(event -> event.enqueueWork(() -> HumanoidModelBaker.registerNewTransformer(new GeoModelTransformer())));
+	public void onModEventBusClient(Object eventBus) {
+		eventBus.<Object>addListener(event -> event.enqueueWork(() -> HumanoidModelBaker.registerNewTransformer(new GeoModelTransformer())));
 	}
 	
 	@Override
-	public void onGameEventBusClient(IEventBus eventBus) {
+	public void onGameEventBusClient(Object eventBus) {
         EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(GeoModelTransformer::getGeoArmorTexturePath);
 		eventBus.addListener(this::geoEntityRenderPreEvent);
 		eventBus.addListener(this::geoEntityRenderPostEvent);
 	}
 	
 	@Override
-	public void onModEventBus(IEventBus eventBus) {
+	public void onModEventBus(Object eventBus) {
 	}
 	
 	@Override
-	public void onGameEventBus(IEventBus eventBus) {
+	public void onGameEventBus(Object eventBus) {
 	}
 	
 	public void geoEntityRenderPreEvent(GeoRenderEvent.Entity.Pre event) {

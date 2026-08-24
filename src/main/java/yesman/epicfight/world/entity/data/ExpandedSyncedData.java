@@ -20,7 +20,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.FriendlyByteBuf;
-import net.neoforged.neoforge.registries.DeferredHolder;
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.api.utils.datastructure.ParameterizedHolderHashMap;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.EpicFightNetworkManager.PayloadBundleBuilder;
@@ -85,7 +85,7 @@ public final class ExpandedSyncedData {
 		this.dataMap.put(key, val);
 	}
 	
-	public <T> void set(DeferredHolder<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<T>> key, @NonNull T val) {
+	public <T> void set(DeferredHolderShim<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<T>> key, @NonNull T val) {
 		if (!this.registeredKeys.contains(key)) {
 			throw new IllegalArgumentException("Unregistered key " + key.getRegisteredName());
 		}
@@ -97,7 +97,7 @@ public final class ExpandedSyncedData {
 		}
 	}
 	
-	public <T> T get(DeferredHolder<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<T>> key) {
+	public <T> T get(DeferredHolderShim<ExpandedEntityDataAccessor<?>, ExpandedEntityDataAccessor<T>> key) {
 		if (!this.registeredKeys.contains(key)) {
 			throw new IllegalArgumentException("Unregistered key " + key.getRegisteredName());
 		}

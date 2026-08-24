@@ -127,7 +127,7 @@ public class FakeLevel extends ClientLevel {
         final @Nullable ClientLevel level = this.refLevel;
         if (level == null) {
             if (!appliedGetBiomeManagerWorkaround) {
-                EpicFightMod.LOGGER.warn(
+                EpicFight.LOGGER.warn(
                         """
                                 FakeLevel.refLevel is null, so Epic Fight can't override getBiomeManager().
                                 This issue may happens when some mods are installed, such as BadOptimizations.

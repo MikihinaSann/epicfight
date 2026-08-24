@@ -6,17 +6,17 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectCategory;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
+import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.effect.VisibleMobEffect;
 
 public final class EpicFightMobEffects {
 	private EpicFightMobEffects() {}
 	
-	public static final DeferredRegister<MobEffect> REGISTRY = DeferredRegister.create(Registries.MOB_EFFECT, EpicFightMod.MODID);
+	public static final DeferredRegisterShim<MobEffect> REGISTRY = new DeferredRegisterShim<>(Registries.MOB_EFFECT, EpicFight.MODID);
 	
-	public static final DeferredHolder<MobEffect, VisibleMobEffect> STUN_IMMUNITY = REGISTRY.register("stun_immunity", () -> 
+	public static final DeferredHolderShim<MobEffect, VisibleMobEffect> STUN_IMMUNITY = REGISTRY.register("stun_immunity", () -> 
 		new VisibleMobEffect(
                 MobEffectCategory.BENEFICIAL
                 , 16758016
@@ -25,9 +25,9 @@ public final class EpicFightMobEffects {
 	);
 	
 	//public static final RegistryObject<MobEffect> BLOOMING = EFFECTS.register("blooming", () -> 
-	//	new VisibleMobEffect(MobEffectCategory.BENEFICIAL, 16735744, new ResourceLocation(EpicFightMod.MODID, "textures/mob_effect/blooming.png")));
+	//	new VisibleMobEffect(MobEffectCategory.BENEFICIAL, 16735744, new ResourceLocation(EpicFight.MODID, "textures/mob_effect/blooming.png")));
 	
-	public static final DeferredHolder<MobEffect, VisibleMobEffect> INSTABILITY = REGISTRY.register("instability", () -> 
+	public static final DeferredHolderShim<MobEffect, VisibleMobEffect> INSTABILITY = REGISTRY.register("instability", () -> 
 		new VisibleMobEffect(
                 MobEffectCategory.HARMFUL
                 , 0

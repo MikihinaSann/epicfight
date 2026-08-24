@@ -1,22 +1,22 @@
 package yesman.epicfight.compat.mcreator;
 
-import net.neoforged.bus.api.IEventBus;
+
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.event.types.render.ValidatePlayerModelEvent;
 import yesman.epicfight.compat.ICompatModule;
 
 public class MCreatorPlayerAnimationsCompat implements ICompatModule {
     @Override
-    public void onModEventBus(IEventBus eventBus) {}
+    public void onModEventBus(Object eventBus) {}
 
     @Override
-    public void onGameEventBus(IEventBus eventBus) {}
+    public void onGameEventBus(Object eventBus) {}
 
     @Override
-    public void onModEventBusClient(IEventBus eventBus) {}
+    public void onModEventBusClient(Object eventBus) {}
 
     @Override
-    public void onGameEventBusClient(IEventBus eventBus) {
+    public void onGameEventBusClient(Object eventBus) {
         EpicFightClientEventHooks.Render.VALIDATE_PLAYER_MODEL_TO_RENDER.registerEvent(this::renderEvent);
     }
 

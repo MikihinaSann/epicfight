@@ -18,14 +18,29 @@ import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimation
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.types.entity.EntityRemovedEvent;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
+import yesman.epicfight.world.capabilities.IEpicFightEntityPatchHolder;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
+import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvider;
 
 @Mixin(value = Entity.class)
-public abstract class MixinEntity {
+public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
     @Shadow
     private boolean onGround;
+
+    @Unique
+    private AttachmentEntityPatchProvider epicfight$entityPatchProvider;
+
+    @Override
+    public AttachmentEntityPatchProvider epicfight$getEntityPatchProvider() {
+        return epicfight$entityPatchProvider;
+    }
+
+    @Override
+    public void epicfight$setEntityPatchProvider(AttachmentEntityPatchProvider provider) {
+        this.epicfight$entityPatchProvider = provider;
+    }
 
      /// Stores when {@link #onGround} was lastly true
      ///

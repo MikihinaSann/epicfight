@@ -64,7 +64,7 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 				JsonElement jsonelement = GsonHelper.fromJson(new GsonBuilder().create(), reader, JsonElement.class);
 				layers.add(Pair.of(entry.getKey(), jsonelement));
 			} catch (IllegalArgumentException | IOException | JsonParseException jsonparseexception) {
-				EpicFightMod.LOGGER.error("Failed to parse layer file {} for {}", entry.getKey(), type);
+				EpicFight.LOGGER.error("Failed to parse layer file {} for {}", entry.getKey(), type);
 				jsonparseexception.printStackTrace();
 			} finally {
 				try {

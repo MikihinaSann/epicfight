@@ -21,7 +21,7 @@ import net.minecraft.world.item.PickaxeItem;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.item.ShovelItem;
 import net.minecraft.world.item.SwordItem;
-import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+
 import yesman.epicfight.registry.deferred.holders.DeferredPreset;
 import yesman.epicfight.registry.entries.EpicFightItemCapabilityPresets;
 import yesman.epicfight.world.capabilities.item.*;

@@ -6,13 +6,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.Item;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.fml.config.ModConfig;
-import net.neoforged.fml.event.config.ModConfigEvent;
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.*;
+import net.fabricmc.api.EnvType;
+
+
+import fuzs.forgeconfigapiport.api.config.v3.ModConfig;
+
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
+import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec.*;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 
 import static yesman.epicfight.generated.LangKeys.*;
 
-@EventBusSubscriber(modid = EpicFightMod.MODID, value = Dist.CLIENT)
+
 public class ClientConfig {
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
@@ -199,7 +199,7 @@ public class ClientConfig {
     public static HorizontalBasis chargingBarBaseX;
     public static VerticalBasis chargingBarBaseY;
 
-    @SubscribeEvent
+    
     static void epicfight$modConfigLoading(final ModConfigEvent.Loading event) {
         if (event.getConfig().getType() != ModConfig.Type.CLIENT) {
             return;
@@ -261,7 +261,7 @@ public class ClientConfig {
         chargingBarBaseY = CHARGING_BAR_BASE_Y.get();
 
         if (EpicFightServerConnectionHelper.init(event.getConfig().getFullPath().getParent().toString())) {
-            EpicFightMod.LOGGER.info("Epic Fight web server connection helper: supported");
+            EpicFight.LOGGER.info("Epic Fight web server connection helper: supported");
 
             try {
                 // Try loading epic skins code dynamically
@@ -270,10 +270,10 @@ public class ClientConfig {
                 authImpl.setAccessible(true);
                 Object o = authImpl.newInstance();
             } catch (Exception e) {
-                EpicFightMod.LOGGER.info("Epic Fight web server status: Failed at initializing Authentication provider: " + e);
+                EpicFight.LOGGER.info("Epic Fight web server status: Failed at initializing Authentication provider: " + e);
             }
         } else {
-            EpicFightMod.LOGGER.info("Epic Fight web server connection helper: unsupported");
+            EpicFight.LOGGER.info("Epic Fight web server connection helper: unsupported");
         }
 
         if (EpicFightServerConnectionHelper.supported() && ClientEngine.getInstance().getAuthHelper().valid()) {
@@ -677,7 +677,7 @@ public class ClientConfig {
         if (tpsType == null) {
             Exception noConfigValueException = new IllegalStateException("TPS Type is null");
 
-            EpicFightMod.LOGGER.warn(
+            EpicFight.LOGGER.warn(
                 "Epic Fight Config error: TPS Type is null",
                 noConfigValueException
             );

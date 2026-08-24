@@ -3,8 +3,8 @@ package yesman.epicfight.registry.deferred;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
+import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.registry.deferred.holders.DeferredPreset;
@@ -14,7 +14,7 @@ import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
 import java.util.function.Supplier;
 
-public final class ItemPresetRegister extends DeferredRegister<CapabilityItem.Builder<?>> {
+public final class ItemPresetRegister extends DeferredRegisterShim<CapabilityItem.Builder<?>> {
     private ItemPresetRegister(ResourceKey<? extends Registry<CapabilityItem.Builder<?>>> registryKey, String namespace) {
         super(registryKey, namespace);
     }
@@ -35,7 +35,7 @@ public final class ItemPresetRegister extends DeferredRegister<CapabilityItem.Bu
     }
 
     @Override
-    public <I extends CapabilityItem.Builder<?>> @NotNull DeferredHolder<CapabilityItem.Builder<?>, I> register(@NotNull String name, @NotNull Supplier<? extends I> sup) {
+    public <I extends CapabilityItem.Builder<?>> @NotNull DeferredHolderShim<CapabilityItem.Builder<?>, I> register(@NotNull String name, @NotNull Supplier<? extends I> sup) {
         return super.register(name, sup);
     }
 
