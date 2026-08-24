@@ -87,7 +87,7 @@ public class AzureModelTransformer extends HumanoidModelTransformer {
 			return null;
 		}
 
-		AzBakedModel bakedModel = ((AzArmorRenderer) (Object) renderer.provider()).provideBakedModel(livingEntity, itemStack);
+		AzBakedModel bakedModel = renderer.provider().provideBakedModel(livingEntity, itemStack);
 
 		if (bakedModel == null) {
 			return null;

@@ -26,11 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class OnSkillBookDroppedByEntity extends LootModifier {
-	public static final MapCodec<OnSkillBookDroppedByEntity> SKILL_CODEC = RecordCodecBuilder.mapCodec(
-		instance ->
-			codecStart(instance)
-			.apply(instance, OnSkillBookDroppedByEntity::new)
-	);
+	public static final MapCodec<OnSkillBookDroppedByEntity> SKILL_CODEC = MapCodec.unit(new OnSkillBookDroppedByEntity());
 
 	private static final Map<EntityType<?>, LootTable> SKILL_LOOT_TABLE = Maps.newHashMap();
 
@@ -45,6 +41,7 @@ public class OnSkillBookDroppedByEntity extends LootModifier {
 		});
 	}
 
+    public OnSkillBookDroppedByEntity() { super(); }
 	public OnSkillBookDroppedByEntity(LootItemCondition[] lootItemConditions) {
 		super(lootItemConditions);
 	}

@@ -23,7 +23,7 @@ public final class DataEvents {
 	
 	public static void epicfight$gatherData(net.neoforged.neoforge.data.event.GatherDataEvent event) {
 		DataGenerator gen = event.getGenerator();
-        PackOutput packOutput = gen.getPackOutput();
+        PackOutput packOutput = null; // TODO: gen.getPackOutput()
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
         ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
         

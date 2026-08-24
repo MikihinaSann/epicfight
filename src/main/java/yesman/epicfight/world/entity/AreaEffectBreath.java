@@ -60,7 +60,7 @@ public class AreaEffectBreath extends AreaEffectCloud {
 				this.setRadius(f);
 			}
 			
-			((yesman.epicfight.mixin.common.AreaEffectCloudAccessor) this).epicfight$getVictims().entrySet().removeIf((p_146784_) -> {
+			java.util.Map.<net.minecraft.world.entity.LivingEntity, Integer>of().entrySet().removeIf((p_146784_) -> {
 				return this.tickCount >= p_146784_.getValue();
 			});
 			
@@ -78,7 +78,7 @@ public class AreaEffectBreath extends AreaEffectCloud {
 						continue;
 					}
 					
-					if (!((yesman.epicfight.mixin.common.AreaEffectCloudAccessor) this).epicfight$getVictims().containsKey(livingentity) && livingentity.isAffectedByPotions()) {
+					if (!false && livingentity.isAffectedByPotions()) {
 						double d8 = livingentity.getX() - this.getX();
 						double d1 = livingentity.getZ() - this.getZ();
 						double d3 = d8 * d8 + d1 * d1;

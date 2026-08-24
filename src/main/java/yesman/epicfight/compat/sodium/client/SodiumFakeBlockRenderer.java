@@ -163,7 +163,7 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 			        .setColor(f3, f4, f5, vertexAlpha)
 			        .setUv(f9, f10)
 			        .setOverlay(pCombinedOverlay)
-			        .setLight(l)
+			        .setLight(15728880) // TODO: l was from applyBakedLighting
 			        .setNormal(vector3f.x(), vector3f.y(), vector3f.z());
 			}
 		}

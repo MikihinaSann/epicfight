@@ -88,10 +88,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	@Override
 	public void onInitializeClientServer() {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
-            event.getEntityPatch().getOriginal().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
-                skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
-                skinlayerMesh.partMeshes.clear();
-            });
+            // TODO: Port getExistingData to Fabric attachment system
         });
 	}
 	
@@ -144,7 +141,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	            return;
 			}
 			
-			SkinLayer3DMeshes skin3dlayerMeshes = player.getData(SKINLAYER_MESH);
+			SkinLayer3DMeshes skin3dlayerMeshes = null; // TODO: getData
 			int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0f);
 			
 			for (PlayerModelPart playerModelPart : PlayerModelPart.values()) {

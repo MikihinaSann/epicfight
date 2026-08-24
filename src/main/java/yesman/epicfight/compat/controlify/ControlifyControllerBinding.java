@@ -49,6 +49,6 @@ public record ControlifyControllerBinding(@NotNull InputBinding inputBinding) im
     @Override
     @NotNull
     public Object physicalInputId() {
-        return inputBinding.boundInput().getRelevantInputs();
+        return ((dev.isxander.controlify.api.bind.InputBinding) inputBinding.boundInput()).getRelevantInputs();
     }
 }

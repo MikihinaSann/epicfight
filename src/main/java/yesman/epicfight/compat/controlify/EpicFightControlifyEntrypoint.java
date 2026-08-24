@@ -268,7 +268,7 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
                     builder -> applyCommonBindingProperties(action, builder)
                             .category(guiCategory)
                             .allowedContexts(EpicFightControlifyBindContexts.IN_GAME)
-                            .radialCandidate(RadialIcons.getItem(Items.REDSTONE))
+                            .radialCandidate(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(Items.REDSTONE))
             );
             case OPEN_EMOTE_WHEEL_SCREEN -> openEmoteWheelScreen = registrar.registerBinding(
                     builder -> applyCommonBindingProperties(action, builder)

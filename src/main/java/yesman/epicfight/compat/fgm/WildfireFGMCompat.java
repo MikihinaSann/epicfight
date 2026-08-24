@@ -97,7 +97,7 @@ public class WildfireFGMCompat implements ICompatModule {
         @Override
         protected void renderLayer(AbstractClientPlayerPatch<AbstractClientPlayer> entityPatch, AbstractClientPlayer entity, @Nullable GenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> vanillaLayer, PoseStack poseStack, MultiBufferSource buffer, int packedLight, OpenMatrix4f[] poses, float bob, float yRot, float xRot, float partialTicks) {
             if (vanillaLayer instanceof FemaleLayerAccessor<?, ?> accessor) {
-                if (!(Boolean) GeneralClientConfig.INSTANCE.disableRendering.get() && !entity.isSpectator()) {
+                if (!(Boolean) false && !entity.isSpectator()) {
                     try {
                         EntityConfig entityConfig = EntityConfig.getEntity(entity);
                         if (entityConfig == null) {
@@ -174,7 +174,7 @@ public class WildfireFGMCompat implements ICompatModule {
                         float zOff = 0.0625F - bSize * 0.0625F;
                         breastSize = bSize + 0.5F * Math.abs(bSize - 0.7F) * 2.0F;
                         float resistance = entityConfig.getArmorPhysicsOverride() ? 0.0F : Mth.clamp(genderArmor.physicsResistance(), 0.0F, 1.0F);
-                        boolean breathingAnimation = entityConfig.canBreathe() && resistance <= 0.5F && (!entity.isUnderWater() || MobEffectUtil.hasWaterBreathing(entity) || entity.level().getBlockState(BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ())).is(Blocks.BUBBLE_COLUMN));
+                        boolean breathingAnimation = true && resistance <= 0.5F && (!entity.isUnderWater() || MobEffectUtil.hasWaterBreathing(entity) || entity.level().getBlockState(BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ())).is(Blocks.BUBBLE_COLUMN));
                         boolean bounceEnabled = entityConfig.hasBreastPhysics() && (!isChestplateOccupied || resistance < 1.0F);
                         int overlay = LivingEntityRenderer.getOverlayCoords(entity, 0.0F);
                         HumanoidModel<?> model = vanillaLayer.getParentModel();

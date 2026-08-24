@@ -276,7 +276,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 		if (pack$resourcessupplier != null) {
 			String s = path.getFileName().toString();
 			PackLocationInfo packlocationinfo = new PackLocationInfo("file/" + s, Component.literal(s), PackSource.WORLD, Optional.empty());
-            Pack pack = Pack.readMetaAndCreate(packlocationinfo, pack$resourcessupplier, PackType.SERVER_DATA, new net.minecraft.server.packs.repository.Pack.SelectionConfig(false, Pack.Position.TOP, false));
+            Pack pack = Pack.readMetaAndCreate(packlocationinfo, pack$resourcessupplier, PackType.SERVER_DATA, null);
             
 			PackResources packResources = pack.open();
 			
