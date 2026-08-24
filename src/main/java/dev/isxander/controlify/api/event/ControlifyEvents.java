@@ -1,6 +1,9 @@
 package dev.isxander.controlify.api.event;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+import dev.isxander.controlify.controller.ControllerEntity;
+import java.util.function.Consumer;
+
+/// Stub for Controlify's ControlifyEvents.
 public class ControlifyEvents {
+    public static void on(Consumer<ControllerEntity> consumer) {}
 }

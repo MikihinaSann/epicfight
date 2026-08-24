@@ -1,6 +1,6 @@
 package dev.isxander.controlify.bindings;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+/// Stub for Controlify's RadialIcons.
 public class RadialIcons {
+    public static final Object LOOK_INPUT_MODIFIER = new Object();
 }
