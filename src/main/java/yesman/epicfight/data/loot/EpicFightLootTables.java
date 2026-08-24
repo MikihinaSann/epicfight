@@ -19,4 +19,5 @@ public class EpicFightLootTables {
 	public static void onLootTableRegistry(final LootTableLoadEvent event) {
 		// TODO: Port loot table injection to Fabric LootTableEvents
 	}
+    public static void createSkillLootTable() {}
 }
