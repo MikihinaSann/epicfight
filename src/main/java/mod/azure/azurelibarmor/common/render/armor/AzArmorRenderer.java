@@ -22,5 +22,14 @@ public class AzArmorRenderer {
     public AzBone getBodyBone(AzBakedModel model) { return null; }
     public Object provider() { return null; }
     public AzBakedModel provideBakedModel(LivingEntity entity, ItemStack stack) { return null; }
-    public Object rendererPipeline() { return new Object(); }
+    public RendererPipelineStub rendererPipeline() { return new RendererPipelineStub(); }
+
+    public static class RendererPipelineStub {
+        public ConfigStub config() { return new ConfigStub(); }
+    }
+
+    public static class ConfigStub {
+        public net.minecraft.resources.ResourceLocation textureLocation(LivingEntity entity, ItemStack stack) { return null; }
+        public mod.azure.azurelibarmor.common.render.armor.bone.AzArmorBoneProvider boneProvider() { return new mod.azure.azurelibarmor.common.render.armor.bone.AzArmorBoneProvider(); }
+    }
 }

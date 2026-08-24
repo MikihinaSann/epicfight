@@ -3,6 +3,7 @@ package net.neoforged.neoforge.data.event;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import java.util.concurrent.CompletableFuture;
 
 /// Stub for NeoForge's GatherDataEvent.
