@@ -1,4 +1,6 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.client.ClientHooks;
 import net.minecraft.client.Minecraft;
 import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 

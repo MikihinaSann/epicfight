@@ -1,4 +1,6 @@
 package yesman.epicfight.client.input;
+import net.neoforged.neoforge.event.EventHooks;
+import net.neoforged.neoforge.client.ClientHooks;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;

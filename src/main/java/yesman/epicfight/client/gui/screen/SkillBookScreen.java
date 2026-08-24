@@ -682,7 +682,7 @@ public class SkillBookScreen extends Screen {
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
             guiGraphics.pose().popPose();
 
-            int i = this.getFGColor();
+            int i = 0xFFFFFFFF;
             this.renderString(guiGraphics, minecraft.font, i | Mth.ceil(this.alpha * 255.0F) << 24);
         }
     }

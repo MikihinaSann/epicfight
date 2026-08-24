@@ -18,6 +18,9 @@ import javax.annotation.Nullable;
 import java.util.function.Function;
 
 public class AnchoredButton extends Button implements AnchoredWidget, ThemeApplicableWidget<AnchoredButton.ButtonTheme> {
+
+    /// NeoForge adds packedFGColor to AbstractWidget. On Fabric, we declare it here.
+    protected int packedFGColor = -1;
     protected final Function<AbstractWidget, Boolean> highlightWhen;
     protected ButtonTheme theme;
 
@@ -72,8 +75,7 @@ public class AnchoredButton extends Button implements AnchoredWidget, ThemeAppli
         this.renderString(guiGraphics, Minecraft.getInstance().font, i | Mth.ceil(this.alpha * 255.0F) << 24);
     }
 
-    @Override
-    public int getFGColor() {
+        public int getFGColor() {
         if (this.packedFGColor != -1) {
             return this.packedFGColor;
         } else {
