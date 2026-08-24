@@ -1,6 +1,9 @@
 package dev.isxander.controlify.api.bind;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+/// Stub for Controlify's InputBindingBuilder.
 public class InputBindingBuilder {
+    public InputBindingBuilder justPressed() { return this; }
+    public InputBindingBuilder pressed() { return this; }
+    public InputBindingBuilder analogue() { return this; }
+    public InputBinding build() { return new InputBinding(); }
 }
