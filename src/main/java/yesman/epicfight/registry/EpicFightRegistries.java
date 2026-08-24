@@ -1,5 +1,4 @@
 package yesman.epicfight.registry;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,18 +25,34 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class EpicFightRegistries {
-    // Custom registries — created via Registry.registerSimple / Registry.register
-    public static final Registry<Supplier<Condition<?>>> CONDITION = Registry.registerSimple(Keys.CONDITION);
-    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = Registry.registerSimple(Keys.EXPANDED_ENTITY_DATA_ACCESSOR);
-    public static final Registry<Skill> SKILL = Registry.registerSimple(Keys.SKILL, SkillCallbacks.getSkillCallback());
-    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = Registry.registerSimple(Keys.SKILL_DATA_KEY, SkillDataKeyCallbacks.getRegistryCallback());
-    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = Registry.registerSimple(Keys.SYNCHED_ANIMATION_VARIABLE_KEY, SynchedAnimationVariableKeyCallbacks.getRegistryCallback());
-    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = Registry.registerSimple(Keys.BUILDERS);
-    public static final Registry<Moveset.Builder> MOVESETS = Registry.registerSimple(Keys.MOVESETS);
-    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = Registry.registerSimple(Keys.PROVIDER_CONDITIONALS);
-    public static final Registry<WeaponModifier.Builder> MODIFIERS = Registry.registerSimple(Keys.MODIFIERS);
-    public static final Registry<CustomData<?>> WEAPON_DATA = Registry.registerSimple(Keys.WEAPON_DATA);
-    public static final Registry<CustomData<?>> MOVESET_DATA = Registry.registerSimple(Keys.MOVESET_DATA);
+    // Custom registries — created via Registry.register
+    @SuppressWarnings("unchecked")
+    public static final Registry<Supplier<Condition<?>>> CONDITION = registerSimple(Keys.CONDITION);
+    @SuppressWarnings("unchecked")
+    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = registerSimple(Keys.EXPANDED_ENTITY_DATA_ACCESSOR);
+    @SuppressWarnings("unchecked")
+    public static final Registry<Skill> SKILL = registerSimple(Keys.SKILL);
+    @SuppressWarnings("unchecked")
+    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = registerSimple(Keys.SKILL_DATA_KEY);
+    @SuppressWarnings("unchecked")
+    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = registerSimple(Keys.SYNCHED_ANIMATION_VARIABLE_KEY);
+    @SuppressWarnings("unchecked")
+    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = registerSimple(Keys.BUILDERS);
+    @SuppressWarnings("unchecked")
+    public static final Registry<Moveset.Builder> MOVESETS = registerSimple(Keys.MOVESETS);
+    @SuppressWarnings("unchecked")
+    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = registerSimple(Keys.PROVIDER_CONDITIONALS);
+    @SuppressWarnings("unchecked")
+    public static final Registry<WeaponModifier.Builder> MODIFIERS = registerSimple(Keys.MODIFIERS);
+    @SuppressWarnings("unchecked")
+    public static final Registry<CustomData<?>> WEAPON_DATA = registerSimple(Keys.WEAPON_DATA);
+    @SuppressWarnings("unchecked")
+    public static final Registry<CustomData<?>> MOVESET_DATA = registerSimple(Keys.MOVESET_DATA);
+
+    @SuppressWarnings("unchecked")
+    private static <T> Registry<T> registerSimple(ResourceKey<Registry<T>> key) {
+        return Registry.register((ResourceKey<Registry<T>>) (Object) key, new net.minecraft.core.SimpleRegistry<>(key));
+    }
 
     // Deferred Registries
     public static final List<DeferredRegisterShim<?>> DEFERRED_REGISTRIES = List.of(
