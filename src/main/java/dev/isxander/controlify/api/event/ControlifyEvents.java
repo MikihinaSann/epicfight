@@ -5,5 +5,6 @@ import java.util.function.Consumer;
 
 /// Stub for Controlify's ControlifyEvents.
 public class ControlifyEvents {
-    public static void on(Consumer<ControllerEntity> consumer) {}
+    public static Object on(Consumer<ControllerEntity> consumer) { return new Object(); }
+    public static Object onOrNull(Consumer<ControllerEntity> consumer) { return new Object(); }
 }

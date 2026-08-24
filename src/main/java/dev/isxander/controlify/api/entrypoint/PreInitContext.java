@@ -1,6 +1,7 @@
 package dev.isxander.controlify.api.entrypoint;
 
-/// Stub class for Controlify API — generated to allow compilation
-/// without the actual Controlify mod (which has a malformed access widener in CurseMaven).
+/// Stub for Controlify's PreInitContext.
 public class PreInitContext {
+    public PreInitContext guideRegistries() { return this; }
+    public PreInitContext registerIcon(net.minecraft.resources.ResourceLocation id, Object consumer) { return this; }
 }
