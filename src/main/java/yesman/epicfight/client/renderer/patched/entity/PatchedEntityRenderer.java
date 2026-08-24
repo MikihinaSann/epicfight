@@ -21,13 +21,14 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public abstract class PatchedEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, R extends EntityRenderer<E>, AM extends SkinnedMesh> {
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTick) {
-		Object renderNameplateEvent = new Object(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
-		
-		
+		// TODO: Port RenderNameTagEvent to Fabric
+		// Object renderNameplateEvent = new Object(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
+
 		MixinEntityRenderer entityRendererAccessor = (MixinEntityRenderer)renderer;
-		
-		if (renderNameplateEvent.canRender().isTrue() || renderNameplateEvent.canRender().isDefault() && entityRendererAccessor.invokeShouldShowName(entity)) {
-			entityRendererAccessor.invokeRenderNameTag(entity, renderNameplateEvent.getContent(), poseStack, buffer, packedLight, partialTick);
+
+		// Simplified: always render name tag if shouldShowName
+		if (entityRendererAccessor.invokeShouldShowName(entity)) {
+			entityRendererAccessor.invokeRenderNameTag(entity, entity.getDisplayName(), poseStack, buffer, packedLight, partialTick);
         }
 	}
 	

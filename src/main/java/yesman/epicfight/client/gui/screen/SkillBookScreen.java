@@ -667,7 +667,7 @@ public class SkillBookScreen extends Screen {
         );
 
         protected LearnButton(Builder builder) {
-            super(builder);
+            super(builder.x, builder.y, builder.width, builder.height, builder.message, builder.onPress, Button.DEFAULT_NARRATION);
         }
 
         @Override

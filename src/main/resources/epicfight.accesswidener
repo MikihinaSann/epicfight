@@ -159,3 +159,9 @@ accessible method net/minecraft/client/color/item/ItemColors getItemColors ()Lne
 accessible field net/minecraft/client/renderer/RenderStateShard name Ljava/lang/String;
 accessible field net/minecraft/client/renderer/RenderType sortOnUpload Z
 accessible field net/minecraft/client/renderer/RenderType mode Lcom/mojang/blaze3d/vertex/VertexFormat$Mode;
+accessible field net/minecraft/client/gui/components/Button$Builder x I
+accessible field net/minecraft/client/gui/components/Button$Builder y I
+accessible field net/minecraft/client/gui/components/Button$Builder width I
+accessible field net/minecraft/client/gui/components/Button$Builder height I
+accessible field net/minecraft/client/gui/components/Button$Builder message Lnet/minecraft/network/chat/Component;
+accessible field net/minecraft/client/gui/components/Button$Builder onPress Lnet/minecraft/client/gui/components/Button$OnPress;

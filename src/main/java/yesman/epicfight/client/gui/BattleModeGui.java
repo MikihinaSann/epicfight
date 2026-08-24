@@ -118,7 +118,7 @@ public class BattleModeGui {
 			String skillName = Component.translatable(String.format("skill.%s.%s", rl.getNamespace(), rl.getPath())).getString();
 			
 			int stringWidth = this.minecraft.font.width(skillName);
-			guiGraphics.drawString(this.minecraft.font, skillName, (pos.x + 120 - stringWidth * 0.5F), pos.y - 12, 16777215, true);
+			guiGraphics.drawString(this.minecraft.font, skillName, (int)(pos.x + 120 - stringWidth * 0.5F), pos.y - 12, 16777215, true);
 		}
 	}
 	

@@ -3,9 +3,8 @@ import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 
-
-public class GlobalCapability<T> extends Object<T, Void> {
+/// Stub — NeoForge's BaseCapability is removed. This class is kept for API compatibility.
+public class GlobalCapability<T> {
 	public GlobalCapability(ResourceLocation name, Class<T> type) {
-		super(name, type, void.class);
 	}
 }

@@ -95,7 +95,7 @@ public abstract class MultiCollider<T extends Collider> extends Collider {
 			}
 			
 			if (entity instanceof net.minecraft.world.entity.Entity) {
-				if (((net.minecraft.world.entity.Entity<?>)entity).getParent().is(entitypatch.getOriginal())) {
+				if (((net.minecraft.world.entity.Entity)entity).getParent().is(entitypatch.getOriginal())) {
 					return false;
 				}
 			}
