@@ -149,5 +149,4 @@ accessible field net/minecraft/world/entity/projectile/ThrownTrident dealtDamage
 accessible method net/minecraft/world/item/ItemStack <init> (Ljava/lang/Void;)V
 accessible field net/minecraft/world/level/dimension/end/EndDragonFight dragonEvent Lnet/minecraft/world/level/dimension/end/EndDragonFight;
 accessible method net/minecraft/world/level/GameRules register (Ljava/lang/String;Lnet/minecraft/world/level/GameRules$Category;Lnet/minecraft/world/level/GameRules$Type;)Lnet/minecraft/world/level/GameRules$Key;
-accessible field net/minecraft/core/IdMapper tToId Lit/unimi/dsi/fastutil/objects/Object2IntMap;
-accessible field net/minecraft/core/IdMapper nextId I
+accessible method net/minecraft/core/IdMapper <init> (I)V

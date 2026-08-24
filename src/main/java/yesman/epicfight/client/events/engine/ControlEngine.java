@@ -387,7 +387,7 @@ public class ControlEngine implements IEventBasedEngine {
         final EpicFightInputAction epicFightAttack = EpicFightInputAction.ATTACK;
 
         boolean shouldPlayAttackAnimation = this.playerpatch.canPlayAttackAnimation();
-        if (vanillaAttack.keyMapping().getKey() == epicFightAttack.keyMapping().getKey() &&
+        if (vanillaAttack.keyMapping().getDefaultKey() == epicFightAttack.keyMapping().getDefaultKey() &&
                 Minecraft.getInstance().hitResult != null && shouldPlayAttackAnimation) {
             // Not needed for controller inputs.
             // This is called for keyboard/mouse inputs to just reset the internal keymapping counter.
@@ -628,10 +628,10 @@ public class ControlEngine implements IEventBasedEngine {
 	@SuppressWarnings({"JavadocReference", "DeprecatedIsStillUsed"})
     @Deprecated(forRemoval = true)
     public static boolean isKeyDown(KeyMapping key) {
-		if (key.getKey().getType() == InputConstants.Type.KEYSYM) {
-			return key.isDown() || GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), key.getKey().getValue()) > 0;
-		} else if(key.getKey().getType() == InputConstants.Type.MOUSE) {
-			return key.isDown() || GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), key.getKey().getValue()) > 0;
+		if (key.getDefaultKey().getType() == InputConstants.Type.KEYSYM) {
+			return key.isDown() || GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), key.getDefaultKey().getValue()) > 0;
+		} else if(key.getDefaultKey().getType() == InputConstants.Type.MOUSE) {
+			return key.isDown() || GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), key.getDefaultKey().getValue()) > 0;
 		} else {
 			return false;
 		}

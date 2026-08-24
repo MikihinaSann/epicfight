@@ -28,7 +28,7 @@ public final class InputUtils {
     public static void runKeyboardMouseEvent(@NotNull InputAction action, @NotNull Runnable handler) {
         final KeyMapping keyMapping = action.keyMapping();
 
-        final InputConstants.Key key = keyMapping.getKey();
+        final InputConstants.Key key = keyMapping.getDefaultKey();
         final boolean isMouse = InputConstants.Type.MOUSE == key.getType();
 
         final int mouseButton = isMouse ? key.getValue() : -1;

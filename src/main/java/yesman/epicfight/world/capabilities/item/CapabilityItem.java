@@ -80,7 +80,7 @@ public class CapabilityItem {
 	public static List<AttributeModifier> getAttributeModifiersAsWeapon(Holder<Attribute> attribute, EquipmentSlot slot, ItemStack itemstack, @Nullable LivingEntityPatch<?> entitypatch) {
 		List<AttributeModifier> attributeModifiers = Lists.newArrayList();
 		
-		itemstack.getAttributeModifiers().forEach(slot, (attribute$1, modifier) -> {
+		itemstack.getOrDefault(net.minecraft.core.component.DataComponents.ATTRIBUTE_MODIFIERS, net.minecraft.world.item.component.ItemAttributeModifiers.EMPTY).forEach(slot, (attribute$1, modifier) -> {
 			if (attribute$1 == attribute) {
 				attributeModifiers.add(modifier);
 			}

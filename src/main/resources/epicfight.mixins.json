@@ -43,7 +43,8 @@
     "common.MixinThrownTrident",
     "common.MixinTridentAttack",
     "common.MixinWitherBoss",
-    "common.MixinWitherBossAccessor"
+    "common.MixinWitherBossAccessor",
+    "common.IdMapperAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
