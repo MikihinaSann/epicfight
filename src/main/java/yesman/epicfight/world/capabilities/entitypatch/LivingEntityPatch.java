@@ -913,11 +913,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 
         if (hand == InteractionHand.MAIN_HAND) {
             impact = (float)this.original.getAttributeValue(EpicFightAttributes.IMPACT);
-            i = this.getOriginal().getMainHandItem().getEnchantmentLevel(this.getLevel().registryAccess().holderOrThrow(Enchantments.KNOCKBACK));
+            i = this.getOriginal().getMainHandItem().getEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.KNOCKBACK));
         } else {
             if (this.isOffhandItemValid()) {
                 impact = (float)this.original.getAttributeValue(EpicFightAttributes.OFFHAND_IMPACT);
-                i = this.getOriginal().getOffhandItem().getEnchantmentLevel(this.getLevel().registryAccess().holderOrThrow(Enchantments.KNOCKBACK));
+                i = this.getOriginal().getOffhandItem().getEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getOrThrow(Enchantments.KNOCKBACK));
             } else {
                 impact = (float)this.original.getAttribute(EpicFightAttributes.IMPACT).getBaseValue();
             }

@@ -43,7 +43,7 @@ accessible method net/minecraft/client/multiplayer/MultiPlayerGameMode performUs
 accessible field net/minecraft/client/particle/Particle alpha F
 accessible field net/minecraft/client/player/LocalPlayer sprintTriggerTime I
 accessible method net/minecraft/client/renderer/GameRenderer getFov (Lnet/minecraft/client/Camera;FZ)D
-accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/LightTexture;
+accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/DynamicTexture;
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamR F
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamG F
 accessible field net/minecraft/client/renderer/OutlineBufferSource teamB F
