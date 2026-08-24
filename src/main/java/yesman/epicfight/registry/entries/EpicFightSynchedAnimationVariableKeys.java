@@ -15,7 +15,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 public final class EpicFightSynchedAnimationVariableKeys {
 	private EpicFightSynchedAnimationVariableKeys() {}
 	
-	public static final DeferredRegisterShim<SynchedAnimationVariableKey<?>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.SYNCHED_ANIMATION_VARIABLE, EpicFight.MODID);
+	public static final DeferredRegisterShim<SynchedAnimationVariableKey<?>> REGISTRY = new DeferredRegisterShim<>(EpicFightRegistries.Keys.SYNCHED_ANIMATION_VARIABLE_KEY, EpicFight.MODID);
 	
 	public static final DeferredHolderShim<SynchedAnimationVariableKey<?>, SynchedIndependentAnimationVariableKey<Vec3>> DESTINATION =
 		REGISTRY.register("destination", () -> 

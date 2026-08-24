@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 import yesman.epicfight.EpicFight;
 
 import com.mojang.serialization.MapCodec;
