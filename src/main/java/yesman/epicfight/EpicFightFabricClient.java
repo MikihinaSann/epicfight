@@ -12,6 +12,7 @@ import yesman.epicfight.client.gui.widgets.common.WidgetTheme;
 import yesman.epicfight.client.input.EpicFightKeyMappings;
 import yesman.epicfight.client.renderer.patched.item.EpicFightItemProperties;
 import yesman.epicfight.client.renderer.shader.compute.loader.ComputeShaderProvider;
+import yesman.epicfight.network.EpicFightClientPayloadRegistration;
 import yesman.epicfight.platform.fabric.client.FabricClientModPlatform;
 import yesman.epicfight.world.capabilities.provider.CommonEntityPatchProvider;
 
@@ -22,6 +23,13 @@ public class EpicFightFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         EpicFightClient.initialize(new FabricClientModPlatform());
+
+        // Register client-bound payload handlers with Fabric networking
+        try {
+            EpicFightClientPayloadRegistration.registerClientHandlers();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register client payload handlers: " + e.getMessage());
+        }
 
         // Register client-side extensible enums
         try {

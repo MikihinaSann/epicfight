@@ -6,7 +6,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
 
-@Mixin(AttributeSupplier.Builder.class)
+@Mixin(AttributeSupplier.class)
 public interface AttributeSupplierBuilderAccessor {
     @Invoker("hasAttribute")
     boolean epicfight$hasAttribute(Holder<Attribute> attribute);

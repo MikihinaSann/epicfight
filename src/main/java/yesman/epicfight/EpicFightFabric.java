@@ -28,6 +28,7 @@ import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.main.EpicFightExtensibleEnums;
 import yesman.epicfight.main.EpicFightSharedConstants;
+import yesman.epicfight.network.EpicFightPayloadRegistration;
 import yesman.epicfight.network.EntityPairingPacketType;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.platform.fabric.FabricModPlatform;
@@ -57,6 +58,14 @@ public class EpicFightFabric implements ModInitializer {
     @Override
     public void onInitialize() {
         EpicFight.initialize(new FabricModPlatform());
+
+        // Register payload codecs and server-side handlers with Fabric networking
+        try {
+            EpicFightPayloadRegistration.registerCodecs();
+            EpicFightPayloadRegistration.registerServerHandlers();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register payload networking: " + e.getMessage());
+        }
 
         // Register SimplyTooltips provider
         try {
@@ -92,6 +101,13 @@ public class EpicFightFabric implements ModInitializer {
         EpicFightItems.REGISTRY.accept();
         for (var dr : EpicFightRegistries.DEFERRED_REGISTRIES) {
             try { dr.accept(); } catch (Throwable e) { EpicFight.LOGGER.warn("Failed to register some entries: " + e.getMessage()); }
+        }
+
+        // Register command argument types (must be done after deferred registries are accepted)
+        try {
+            EpicFightCommandArgumentTypes.registerArgumentTypes();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register command argument types: " + e.getMessage());
         }
 
         // Wire dynamic registry callbacks (for future datapack reloads) and bake registries

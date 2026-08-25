@@ -21,9 +21,7 @@ public final class EpicFightCommandArgumentTypes {
 	public static final DeferredHolderShim<ArgumentTypeInfo<?, ?>, ArgumentTypeInfo<AnimationArgument, ?>> ANIMATION = REGISTRY.register("animation", () -> SingletonArgumentInfo.contextFree(AnimationArgument::animation));
 	
 	public static void registerArgumentTypes() {
-		// TODO: registerByClass needs AW or mixin
-        // ArgumentTypeInfos.registerByClass(SkillArgument.class, SKILL.get());
-		// TODO: registerByClass needs AW or mixin
-        // ArgumentTypeInfos.registerByClass(AnimationArgument.class, ANIMATION.get());
+		ArgumentTypeInfos.BY_CLASS.put(SkillArgument.class, SKILL.get());
+		ArgumentTypeInfos.BY_CLASS.put(AnimationArgument.class, ANIMATION.get());
 	}
 }

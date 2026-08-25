@@ -42,23 +42,25 @@ public abstract class MixinLivingEntity {
 		
 		EpicFightCapabilities.getUnparameterizedEntityPatch(self, HurtableEntityPatch.class).ifPresent(entitypatch -> {
 			AttributeSupplier.Builder builder = AttributeSupplier.builder();
-			
+			java.util.Set<net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute>> added = new java.util.HashSet<>();
+
 			self.getAttributes().supplier.instances.forEach((k, v) -> {
 				builder.add(k, v.getBaseValue());
+				added.add(k);
 			});
-			
-			if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(Attributes.ATTACK_DAMAGE)) builder.add(Attributes.ATTACK_DAMAGE);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.WEIGHT)) builder.add(EpicFightAttributes.WEIGHT);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.IMPACT)) builder.add(EpicFightAttributes.IMPACT);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.ARMOR_NEGATION)) builder.add(EpicFightAttributes.ARMOR_NEGATION);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.MAX_STRIKES)) builder.add(EpicFightAttributes.MAX_STRIKES);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.STUN_ARMOR)) builder.add(EpicFightAttributes.STUN_ARMOR);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.ASSASSINATION_RESISTANCE)) builder.add(EpicFightAttributes.ASSASSINATION_RESISTANCE);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.OFFHAND_ARMOR_NEGATION)) builder.add(EpicFightAttributes.OFFHAND_ARMOR_NEGATION);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.OFFHAND_IMPACT)) builder.add(EpicFightAttributes.OFFHAND_IMPACT);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.OFFHAND_MAX_STRIKES)) builder.add(EpicFightAttributes.OFFHAND_MAX_STRIKES);
-            if (!((yesman.epicfight.mixin.common.AttributeSupplierBuilderAccessor) builder).epicfight$hasAttribute(EpicFightAttributes.OFFHAND_ATTACK_SPEED)) builder.add(EpicFightAttributes.OFFHAND_ATTACK_SPEED);
-			
+
+			if (!added.contains(Attributes.ATTACK_DAMAGE)) builder.add(Attributes.ATTACK_DAMAGE);
+            if (!added.contains(EpicFightAttributes.WEIGHT)) builder.add(EpicFightAttributes.WEIGHT);
+            if (!added.contains(EpicFightAttributes.IMPACT)) builder.add(EpicFightAttributes.IMPACT);
+            if (!added.contains(EpicFightAttributes.ARMOR_NEGATION)) builder.add(EpicFightAttributes.ARMOR_NEGATION);
+            if (!added.contains(EpicFightAttributes.MAX_STRIKES)) builder.add(EpicFightAttributes.MAX_STRIKES);
+            if (!added.contains(EpicFightAttributes.STUN_ARMOR)) builder.add(EpicFightAttributes.STUN_ARMOR);
+            if (!added.contains(EpicFightAttributes.ASSASSINATION_RESISTANCE)) builder.add(EpicFightAttributes.ASSASSINATION_RESISTANCE);
+            if (!added.contains(EpicFightAttributes.OFFHAND_ARMOR_NEGATION)) builder.add(EpicFightAttributes.OFFHAND_ARMOR_NEGATION);
+            if (!added.contains(EpicFightAttributes.OFFHAND_IMPACT)) builder.add(EpicFightAttributes.OFFHAND_IMPACT);
+            if (!added.contains(EpicFightAttributes.OFFHAND_MAX_STRIKES)) builder.add(EpicFightAttributes.OFFHAND_MAX_STRIKES);
+            if (!added.contains(EpicFightAttributes.OFFHAND_ATTACK_SPEED)) builder.add(EpicFightAttributes.OFFHAND_ATTACK_SPEED);
+
 			self.getAttributes().supplier = builder.build();
 		});
 	}

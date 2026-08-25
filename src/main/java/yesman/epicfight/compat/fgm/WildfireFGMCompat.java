@@ -1,5 +1,4 @@
 package yesman.epicfight.compat.fgm;
-import net.neoforged.neoforge.client.ClientHooks;
 import yesman.epicfight.EpicFight;
 
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -307,7 +306,7 @@ public class WildfireFGMCompat implements ICompatModule {
                     int color = armorStack.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(armorStack, -6265536) : -1;
 
                     for(ArmorMaterial.Layer layer : material.value().layers()) {
-                        ResourceLocation armorTexture = ClientHooks.getArmorTexture(entity.getOriginal(), armorStack, layer, false, EquipmentSlot.CHEST);
+                        ResourceLocation armorTexture = layer.texture(false);
                         RenderType armorType = RenderType.armorCutoutNoCull(armorTexture);
                         VertexConsumer armorVertexConsumer = bufferSource.getBuffer(armorType);
                         renderBox(armorBox, matrixStack, armorVertexConsumer, light, OverlayTexture.NO_OVERLAY, layer.dyeable() ? color : -1);

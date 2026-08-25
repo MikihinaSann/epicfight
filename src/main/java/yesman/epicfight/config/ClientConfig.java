@@ -157,7 +157,7 @@ public class ClientConfig {
 
     /** Use {@link #getTpsActivationType()} to handle null */
     @Deprecated @ApiStatus.Internal
-    public static TPSActivationType tpsType;
+    public static TPSActivationType tpsType = TPSActivationType.ON_AIMING;
     public static int cameraHorizontalLocation = 0;
     public static int cameraVerticalLocation = 0;
     public static int cameraZoom = 0;
@@ -183,23 +183,23 @@ public class ClientConfig {
     public static boolean enableTargetEntityGuide = true;
 
     // UI Component position values
-    public static int staminaBarX;
-    public static int staminaBarY;
-    public static HorizontalBasis staminaBarBaseX;
-    public static VerticalBasis staminaBarBaseY;
-    public static int weaponInnateX;
-    public static int weaponInnateY;
-    public static HorizontalBasis weaponInnateBaseX;
-    public static VerticalBasis weaponInnateBaseY;
-    public static int passiveX;
-    public static int passiveY;
-    public static HorizontalBasis passiveBaseX;
-    public static VerticalBasis passiveBaseY;
-    public static AlignDirection passiveAlignDirection;
-    public static int chargingBarX;
-    public static int chargingBarY;
-    public static HorizontalBasis chargingBarBaseX;
-    public static VerticalBasis chargingBarBaseY;
+    public static int staminaBarX = 120;
+    public static int staminaBarY = 10;
+    public static HorizontalBasis staminaBarBaseX = HorizontalBasis.RIGHT;
+    public static VerticalBasis staminaBarBaseY = VerticalBasis.BOTTOM;
+    public static int weaponInnateX = 42;
+    public static int weaponInnateY = 48;
+    public static HorizontalBasis weaponInnateBaseX = HorizontalBasis.RIGHT;
+    public static VerticalBasis weaponInnateBaseY = VerticalBasis.BOTTOM;
+    public static int passiveX = 70;
+    public static int passiveY = 36;
+    public static HorizontalBasis passiveBaseX = HorizontalBasis.RIGHT;
+    public static VerticalBasis passiveBaseY = VerticalBasis.BOTTOM;
+    public static AlignDirection passiveAlignDirection = AlignDirection.HORIZONTAL;
+    public static int chargingBarX = -119;
+    public static int chargingBarY = 60;
+    public static HorizontalBasis chargingBarBaseX = HorizontalBasis.CENTER;
+    public static VerticalBasis chargingBarBaseY = VerticalBasis.CENTER;
 
     
     static void epicfight$modConfigLoading(final ModConfigEvent.Loading event) {

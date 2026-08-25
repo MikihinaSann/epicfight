@@ -145,3 +145,4 @@ accessible method net/minecraft/client/renderer/entity/layers/HumanoidArmorLayer
 accessible field net/minecraft/client/renderer/RenderType$CompositeState cullState Lnet/minecraft/client/renderer/RenderStateShard$CullStateShard;
 accessible field net/minecraft/world/entity/LivingEntity lerpSteps I
 accessible field net/minecraft/world/entity/boss/enderdragon/phases/EnderDragonPhaseManager dragon Lnet/minecraft/world/entity/boss/enderdragon/EnderDragon;
+accessible field net/minecraft/commands/synchronization/ArgumentTypeInfos BY_CLASS Ljava/util/Map;
