@@ -67,7 +67,13 @@ public class SkillReloadListener extends SimpleJsonResourceReloadListener {
 	}
 	
 	public static void reloadAllSkillsAnimations() {
-		EpicFightRegistries.SKILL.holders().map(Holder::value).forEach((skill) -> skill.registerPropertiesToAnimation());
+		EpicFightRegistries.SKILL.holders().map(Holder::value).forEach((skill) -> {
+			try {
+				skill.registerPropertiesToAnimation();
+			} catch (NullPointerException e) {
+				// Animation accessors may not be loaded yet during early resource reload
+			}
+		});
 	}
 	
     @ClientOnly
