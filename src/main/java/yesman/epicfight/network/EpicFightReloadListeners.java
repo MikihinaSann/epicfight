@@ -72,6 +72,7 @@ public final class EpicFightReloadListeners {
 
     /**
      * Adapter that wraps any {@link PreparableReloadListener} as an {@link IdentifiableResourceReloadListener}.
+     * Catches exceptions during reload to prevent crashes from inter-listener dependency ordering issues.
      */
     private record IdentifiableReloadListenerWrapper(ResourceLocation fabricId, PreparableReloadListener delegate)
             implements IdentifiableResourceReloadListener {
@@ -85,7 +86,11 @@ public final class EpicFightReloadListeners {
         public CompletableFuture<Void> reload(PreparationBarrier stage, ResourceManager resourceManager,
                                                ProfilerFiller preparationsProfiler, ProfilerFiller reloadProfiler,
                                                Executor backgroundExecutor, Executor gameExecutor) {
-            return delegate.reload(stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor);
+            return delegate.reload(stage, resourceManager, preparationsProfiler, reloadProfiler, backgroundExecutor, gameExecutor)
+                    .exceptionally(throwable -> {
+                        EpicFight.LOGGER.warn("Reload listener {} failed: {}", fabricId, throwable.getMessage());
+                        return null;
+                    });
         }
     }
 }

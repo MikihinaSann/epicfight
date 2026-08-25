@@ -187,14 +187,11 @@ public class EpicFightFabric implements ModInitializer {
         });
 
         // Register reload listeners with Fabric's resource manager
-        // TODO: Reload listeners have inter-dependencies that need proper ordering via
-        // IdentifiableResourceReloadListener.getFabricDependencies(). Currently causes NPEs
-        // during world creation because listeners fire before their dependencies are loaded.
-        // try {
-        //     yesman.epicfight.network.EpicFightReloadListeners.register();
-        // } catch (Throwable e) {
-        //     EpicFight.LOGGER.warn("Failed to register reload listeners: " + e.getMessage());
-        // }
+        try {
+            yesman.epicfight.network.EpicFightReloadListeners.register();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register reload listeners: " + e.getMessage());
+        }
 
         // Load compat modules
         boolean isClientSide = EpicFightSharedConstants.isPhysicalClient();
