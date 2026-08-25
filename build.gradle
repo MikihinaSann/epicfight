@@ -26,6 +26,12 @@ repositories {
         url = 'https://maven.su5ed.dev/releases/'
     }
 
+    // Ladysnake maven — Cardinal Components API individual modules
+    maven {
+        name = 'Ladysnake'
+        url = 'https://maven.ladysnake.org/releases/'
+    }
+
     // Modrinth maven for ForgeConfigAPIPort fallback
     maven {
         name = 'Modrinth'
@@ -55,21 +61,39 @@ dependencies {
     implementation "com.electronwill.night-config:core:3.8.0"
     implementation "com.electronwill.night-config:toml:3.8.0"
 
-    // Compat mods (compile-only)
-    modCompileOnly "curse.maven:azurelib-817423:${project.azurelib_file_id}"
-    modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
-    // modCompileOnly "curse.maven:controlify-835847:${project.controlify_file_id}" — has malformed access widener
-    modCompileOnly "curse.maven:trinkets-341284:${project.trinkets_file_id}"
-    modCompileOnly "curse.maven:female-gender-456319:${project.fgm_file_id}"
+    // Compat mods — modImplementation for runtime availability
+    // Transitive dep for SimplyTooltips (needs architectury)
+    modImplementation "maven.modrinth:architectury-api:13.0.8+fabric"
+
+    // Non-conflicting compat mods with simple deps (runtime + compile)
+    modImplementation "curse.maven:azurelib-817423:${project.azurelib_file_id}"
+    modImplementation "curse.maven:female-gender-456319:${project.fgm_file_id}"
+    modImplementation "curse.maven:geckolib-388172:${project.geckolib_file_id}"
+    modImplementation "curse.maven:jei-238222:${project.jei_file_id}"
+    modImplementation "curse.maven:playeranimator-658587:${project.playeranimator_file_id}"
+
+    // Mods with missing transitive deps or dev-env crashes — kept as modCompileOnly:
+    // - FirstPerson: missing dev.tr7zw.transition.mc.GeneralUtil at runtime
+    // - Iris + Sodium + SkinLayers3D: Iris mixin remapping fails in Loom dev env with Mojang mappings
+    // - Trinkets: needs cardinal-components-base/entity (CCA nested jars stripped by Loom)
+    // - SimplyTooltips: needs fzzy_config → fabric-language-kotlin (Kotlin runtime)
+    // - BetterThirdPerson + ShoulderSurfing: mod-level conflict (ShoulderSurfing breaks BetterThirdPerson)
     modCompileOnly "curse.maven:first-person-model-333287:${project.firstperson_file_id}"
-    modCompileOnly "curse.maven:geckolib-388172:${project.geckolib_file_id}"
     modCompileOnly "curse.maven:irisshaders-455508:${project.iris_file_id}"
-    modCompileOnly "curse.maven:jei-238222:${project.jei_file_id}"
-    modCompileOnly "curse.maven:playeranimator-658587:${project.playeranimator_file_id}"
-    modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
-    modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
-    modCompileOnly "curse.maven:skin-layers-3d-521480:${project.skinlayers_file_id}"
     modCompileOnly "curse.maven:sodium-394468:${project.sodium_file_id}"
+    modCompileOnly "curse.maven:skin-layers-3d-521480:${project.skinlayers_file_id}"
+
+    // Mods with complex transitive deps — kept as modCompileOnly until deps are resolved:
+    // - Trinkets: needs cardinal-components-base/entity (CCA nested jars stripped by Loom, Ladysnake maven unavailable)
+    // - SimplyTooltips: needs fzzy_config → fabric-language-kotlin (Kotlin runtime)
+    // - BetterThirdPerson + ShoulderSurfing: mod-level conflict (ShoulderSurfing breaks BetterThirdPerson)
+    modCompileOnly "curse.maven:trinkets-341284:${project.trinkets_file_id}"
+    modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
+    modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
+    modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
+
+    // Controlify has a malformed access widener — disabled until fixed
+    // modImplementation "curse.maven:controlify-835847:${project.controlify_file_id}"
 
     // PlayerRevive — local project dependency
     modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
