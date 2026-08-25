@@ -1,6 +1,12 @@
 package yesman.epicfight.registry;
+import net.fabricmc.fabric.api.event.registry.FabricRegistryBuilder;
+import net.fabricmc.fabric.api.event.registry.RegistryAttribute;
+import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import yesman.epicfight.registry.callbacks.SkillCallbacks;
+import yesman.epicfight.registry.callbacks.SkillDataKeyCallbacks;
+import yesman.epicfight.registry.callbacks.SynchedAnimationVariableKeyCallbacks;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.animation.SynchedAnimationVariableKey;
@@ -19,33 +25,24 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public abstract class EpicFightRegistries {
-    @SuppressWarnings("unchecked")
-    public static final Registry<Supplier<Condition<?>>> CONDITION = createRegistry(Keys.CONDITION);
-    @SuppressWarnings("unchecked")
-    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = createRegistry(Keys.EXPANDED_ENTITY_DATA_ACCESSOR);
-    @SuppressWarnings("unchecked")
-    public static final Registry<Skill> SKILL = createRegistry(Keys.SKILL);
-    @SuppressWarnings("unchecked")
-    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = createRegistry(Keys.SKILL_DATA_KEY);
-    @SuppressWarnings("unchecked")
-    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = createRegistry(Keys.SYNCHED_ANIMATION_VARIABLE_KEY);
-    @SuppressWarnings("unchecked")
-    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = createRegistry(Keys.BUILDERS);
-    @SuppressWarnings("unchecked")
-    public static final Registry<Moveset.Builder> MOVESETS = createRegistry(Keys.MOVESETS);
-    @SuppressWarnings("unchecked")
-    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = createRegistry(Keys.PROVIDER_CONDITIONALS);
-    @SuppressWarnings("unchecked")
-    public static final Registry<WeaponModifier.Builder> MODIFIERS = createRegistry(Keys.MODIFIERS);
-    @SuppressWarnings("unchecked")
-    public static final Registry<CustomData<?>> WEAPON_DATA = createRegistry(Keys.WEAPON_DATA);
-    @SuppressWarnings("unchecked")
-    public static final Registry<CustomData<?>> MOVESET_DATA = createRegistry(Keys.MOVESET_DATA);
+    public static final Registry<Supplier<Condition<?>>> CONDITION = createRegistry(Keys.CONDITION, false);
+    public static final Registry<ExpandedEntityDataAccessor<?>> EXPANDED_ENTITY_DATA_ACCESSOR = createRegistry(Keys.EXPANDED_ENTITY_DATA_ACCESSOR, true);
+    public static final Registry<Skill> SKILL = createRegistry(Keys.SKILL, true);
+    public static final Registry<SkillDataKey<?>> SKILL_DATA_KEY = createRegistry(Keys.SKILL_DATA_KEY, true);
+    public static final Registry<SynchedAnimationVariableKey<?>> SYNCHED_ANIMATION_VARIABLE = createRegistry(Keys.SYNCHED_ANIMATION_VARIABLE_KEY, true);
+    public static final Registry<CapabilityItem.Builder<?>> BUILDERS = createRegistry(Keys.BUILDERS, true);
+    public static final Registry<Moveset.Builder> MOVESETS = createRegistry(Keys.MOVESETS, true);
+    public static final Registry<ProviderConditional.Builder> PROVIDER_CONDITIONALS = createRegistry(Keys.PROVIDER_CONDITIONALS, true);
+    public static final Registry<WeaponModifier.Builder> MODIFIERS = createRegistry(Keys.MODIFIERS, true);
+    public static final Registry<CustomData<?>> WEAPON_DATA = createRegistry(Keys.WEAPON_DATA, true);
+    public static final Registry<CustomData<?>> MOVESET_DATA = createRegistry(Keys.MOVESET_DATA, true);
 
-    @SuppressWarnings("unchecked")
-    private static <T> Registry<T> createRegistry(ResourceKey<Registry<T>> key) {
-        // TODO: Create proper Fabric registry
-        return null;
+    private static <T> Registry<T> createRegistry(ResourceKey<Registry<T>> key, boolean synced) {
+        var builder = FabricRegistryBuilder.createSimple(key);
+        if (synced) {
+            builder.attribute(RegistryAttribute.SYNCED);
+        }
+        return builder.buildAndRegister();
     }
 
     public static final List<DeferredRegisterShim<?>> DEFERRED_REGISTRIES = List.of(
@@ -59,6 +56,63 @@ public abstract class EpicFightRegistries {
         EpicFightProviderConditionals.REGISTRY, EpicFightItemCapabilityPresets.REGISTRY,
         EpicFightModifiers.REGISTRY, EpicFightMovesetData.REGISTER
     );
+
+    /**
+     * Fires registry callbacks in the correct order after all deferred registries have been accepted.
+     *
+     * Ordering matters:
+     *   1. SKILL bake (sets holder on each skill)
+     *   2. SKILL_DATA_KEY add (per-entry, populates dataKeysBySkillClasses) then bake (builds CLASS_TO_DATA_KEYS map, depends on SKILL being baked)
+     *   3. SYNCHED_ANIMATION_VARIABLE bake (populates ID_MAPPER)
+     */
+    public static void bakeRegistries() {
+        // 1. Bake SKILL registry — sets holder reference on each Skill
+        try {
+            SkillCallbacks.getSkillCallback().onBake(SKILL);
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to bake SKILL registry callbacks", e);
+        }
+
+        // 2. Fire onAdd for existing SKILL_DATA_KEY entries (callback wasn't registered when they were added),
+        //    then bake (depends on SKILL registry being baked first)
+        try {
+            SkillDataKeyCallbacks skillDataKeyCallbacks = SkillDataKeyCallbacks.getRegistryCallback();
+            SKILL_DATA_KEY.holders().forEach(holder -> {
+                try {
+                    int id = SKILL_DATA_KEY.getId(holder.value());
+                    skillDataKeyCallbacks.onAdd(SKILL_DATA_KEY, id, holder.key(), holder.value());
+                } catch (Throwable e) {
+                    EpicFight.LOGGER.warn("Failed to fire onAdd for SKILL_DATA_KEY entry", e);
+                }
+            });
+            skillDataKeyCallbacks.onBake(SKILL_DATA_KEY);
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to bake SKILL_DATA_KEY registry callbacks", e);
+        }
+
+        // 3. Bake SYNCHED_ANIMATION_VARIABLE registry — populates ID_MAPPER
+        try {
+            SynchedAnimationVariableKeyCallbacks.getRegistryCallback().onBake(SYNCHED_ANIMATION_VARIABLE);
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to bake SYNCHED_ANIMATION_VARIABLE registry callbacks", e);
+        }
+    }
+
+    /**
+     * Registers the RegistryEntryAddedCallback for SKILL_DATA_KEY so that dynamically added entries
+     * (e.g., from datapack reloads) also trigger the onAdd callback.
+     * Call this during mod initialization, before any reloads happen.
+     */
+    public static void registerDynamicCallbacks() {
+        RegistryEntryAddedCallback.event(SKILL_DATA_KEY).register((id, resourceLocation, value) -> {
+            try {
+                var resourceKey = ResourceKey.create(Keys.SKILL_DATA_KEY, resourceLocation);
+                SkillDataKeyCallbacks.getRegistryCallback().onAdd(SKILL_DATA_KEY, id, resourceKey, value);
+            } catch (Throwable e) {
+                EpicFight.LOGGER.warn("Failed to fire dynamic onAdd for SKILL_DATA_KEY", e);
+            }
+        });
+    }
 
     public interface Keys {
         ResourceKey<Registry<CapabilityItem.Builder<?>>> BUILDERS = key("item_capability_builder");

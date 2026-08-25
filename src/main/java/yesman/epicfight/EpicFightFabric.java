@@ -3,6 +3,7 @@ package yesman.epicfight;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+import net.fabricmc.fabric.api.event.registry.RegistryEntryAddedCallback;
 import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import yesman.epicfight.api.animation.AnimationManager;
@@ -91,6 +92,18 @@ public class EpicFightFabric implements ModInitializer {
         EpicFightItems.REGISTRY.accept();
         for (var dr : EpicFightRegistries.DEFERRED_REGISTRIES) {
             try { dr.accept(); } catch (Throwable e) { EpicFight.LOGGER.warn("Failed to register some entries: " + e.getMessage()); }
+        }
+
+        // Wire dynamic registry callbacks (for future datapack reloads) and bake registries
+        try {
+            EpicFightRegistries.registerDynamicCallbacks();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register dynamic registry callbacks: " + e.getMessage());
+        }
+        try {
+            EpicFightRegistries.bakeRegistries();
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to bake registries: " + e.getMessage());
         }
 
         // Register item capabilities

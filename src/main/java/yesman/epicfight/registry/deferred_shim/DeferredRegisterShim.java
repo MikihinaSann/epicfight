@@ -74,11 +74,9 @@ public class DeferredRegisterShim<T> {
 
     @SuppressWarnings("unchecked")
     private Registry<T> getRegistry() {
-        // Try BuiltInRegistries first, then fall back to custom registries
         Registry<?> registry = BuiltInRegistries.REGISTRY.get(registryKey.location());
         if (registry == null) {
-            // For custom registries, they should already be registered
-            registry = (Registry<T>) Registry.class.cast(BuiltInRegistries.REGISTRY.get(registryKey.location()));
+            throw new IllegalStateException("Registry not found for key: " + registryKey.location());
         }
         return (Registry<T>) registry;
     }
