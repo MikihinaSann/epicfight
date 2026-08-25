@@ -50,9 +50,10 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     // ForgeConfigAPIPort — provides ModConfigSpec on Fabric
-    // TODO: Find correct maven coordinates and re-add as modImplementation
-    // For now, compileOnly to allow compilation
-    // modImplementation "maven.modrinth:forge-config-api-port:${project.forgeconfigapiport_version}"
+    modImplementation "maven.modrinth:forge-config-api-port:${project.forgeconfigapiport_version}"
+    // NightConfig — required at runtime by ForgeConfigAPIPort (nested jars get stripped by Loom remapping)
+    implementation "com.electronwill.night-config:core:3.8.0"
+    implementation "com.electronwill.night-config:toml:3.8.0"
 
     // Compat mods (compile-only)
     modCompileOnly "curse.maven:azurelib-817423:${project.azurelib_file_id}"

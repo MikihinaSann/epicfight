@@ -20,14 +20,13 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 public class GeckolibCompat implements ICompatModule {
 	@Override
 	public void onInitializeClient() {
-		// TODO: Port event listener to Fabric callback
+		GeoRenderEvent.Entity.Pre.EVENT.register(this::geoEntityRenderPreEvent);
+		GeoRenderEvent.Entity.Post.EVENT.register(this::geoEntityRenderPostEvent);
 	}
-	
+
 	@Override
 	public void onInitializeClientServer() {
         EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.registerEvent(GeoModelTransformer::getGeoArmorTexturePath);
-		// TODO: Port event listener to Fabric callback
-		// TODO: Port event listener to Fabric callback
 	}
 	
 	@Override
@@ -38,12 +37,14 @@ public class GeckolibCompat implements ICompatModule {
 	public void onInitializeServer() {
 	}
 	
-	public void geoEntityRenderPreEvent(GeoRenderEvent.Entity.Pre event) {
+	public boolean geoEntityRenderPreEvent(GeoRenderEvent.Entity.Pre event) {
 		Entity entity = event.getEntity();
-		
+
 		if (entity.level() == null) {
-			return;
+			return false;
 		}
+
+		boolean canceled = false;
 		
 		if (entity instanceof LivingEntity livingentity) {
 			RenderEngine renderEngine = RenderEngine.getInstance();
@@ -61,7 +62,7 @@ public class GeckolibCompat implements ICompatModule {
 				}
 				
 				if (entitypatch != null && entitypatch.overrideRender()) {
-					// TODO: Port setCanceled to Fabric;
+					canceled = true;
 					renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
 					
 					if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
@@ -78,6 +79,8 @@ public class GeckolibCompat implements ICompatModule {
 				}
 			}
 		}
+
+		return canceled;
 	}
 	
 	public void geoEntityRenderPostEvent(GeoRenderEvent.Entity.Post event) {

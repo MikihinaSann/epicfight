@@ -1,6 +1,7 @@
 package yesman.epicfight.compat.simplytooltips;
 
 
+import net.sweenus.simplytooltips.api.TooltipProviderRegistry;
 import yesman.epicfight.compat.ICompatModule;
 
 public class SimplyTooltipsModule implements ICompatModule {
@@ -16,7 +17,7 @@ public class SimplyTooltipsModule implements ICompatModule {
 
     @Override
 	public void onInitializeClient() {
-
+		TooltipProviderRegistry.register(new EpicFightTooltipProvider(), 0);
     }
 
     @Override

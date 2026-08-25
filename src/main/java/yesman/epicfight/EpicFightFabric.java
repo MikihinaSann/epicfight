@@ -72,8 +72,32 @@ public class EpicFightFabric implements ModInitializer {
             // TODO: SimplyTooltips compat
         } catch (Throwable ignored) {}
 
-        // Register configs
-        // TODO: Register configs via ForgeConfigAPIPort when available
+        // Register configs via ForgeConfigAPIPort (NeoForge API — ModConfigSpec remaps to neoforged)
+        try {
+            // Register COMMON and SERVER config specs
+            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry.INSTANCE.register(
+                EpicFight.MODID, net.neoforged.fml.config.ModConfig.Type.COMMON,
+                (net.neoforged.fml.config.IConfigSpec) yesman.epicfight.config.CommonConfig.SPEC);
+            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry.INSTANCE.register(
+                EpicFight.MODID, net.neoforged.fml.config.ModConfig.Type.SERVER,
+                (net.neoforged.fml.config.IConfigSpec) yesman.epicfight.config.ServerConfig.SPEC);
+
+            // Wire config loading events — inline the config value reads since v3 ModConfigEvent
+            // types are remapped by Loom and don't match v4 Fabric event types
+            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents.loading(EpicFight.MODID).register(config -> {
+                if (config.getType() == net.neoforged.fml.config.ModConfig.Type.COMMON) {
+                    yesman.epicfight.config.CommonConfig.skillBookMobDropChanceModifier =
+                        yesman.epicfight.config.CommonConfig.SKILL_BOOK_MOB_DROP_CHANCE_MODIFIER.get();
+                    yesman.epicfight.config.CommonConfig.skillBookChestLootModifier =
+                        yesman.epicfight.config.CommonConfig.SKILL_BOOK_CHEST_LOOT_MODIFIER.get();
+                } else if (config.getType() == net.neoforged.fml.config.ModConfig.Type.SERVER) {
+                    yesman.epicfight.config.ServerConfig.allowCustomAnimations =
+                        yesman.epicfight.config.ServerConfig.ALLOW_CUSTOM_ANIMATIONS.get();
+                }
+            });
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register configs: " + e.getMessage());
+        }
 
         // Register extensible enums
         LivingMotion.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, LivingMotions.class);

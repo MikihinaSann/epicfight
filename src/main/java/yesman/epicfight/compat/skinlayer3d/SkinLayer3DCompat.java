@@ -1,5 +1,6 @@
 package yesman.epicfight.compat.skinlayer3d;
-import net.neoforged.neoforge.attachment.AttachmentType;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;
@@ -35,9 +36,6 @@ import net.minecraft.world.level.block.AbstractSkullBlock;
 
 
 
-import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
-import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
-
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -56,14 +54,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SkinLayer3DCompat implements ICompatModule {
-	public static final DeferredRegisterShim<AttachmentType<?>> REGISTRY = new DeferredRegisterShim<>(null /* ATTACHMENT_TYPES removed in Fabric */, EpicFight.MODID);
-	
-	public static final DeferredHolderShim<AttachmentType<?>, AttachmentType<SkinLayer3DMeshes>> SKINLAYER_MESH = REGISTRY.register(
-            "skinlayer_mesh",
-            () ->
-            	AttachmentType
-                    .builder(() -> new SkinLayer3DMeshes(null))
-                    .build()
+	public static final AttachmentType<SkinLayer3DMeshes> SKINLAYER_MESH = AttachmentRegistry.createDefaulted(
+            ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "skinlayer_mesh"),
+            () -> new SkinLayer3DMeshes(null)
     );
 	
 	@Override
@@ -76,8 +69,6 @@ public class SkinLayer3DCompat implements ICompatModule {
 	
 	@Override
 	public void onInitializeClient() {
-		// TODO: register eventBus
-
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
             if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
                 playerrenderer.addPatchedLayerAlways(CustomLayerFeatureRenderer.class, new EpicFight3DSkinLayerRenderer());
@@ -88,7 +79,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	@Override
 	public void onInitializeClientServer() {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
-            // TODO: Port getExistingData to Fabric attachment system
+            event.getEntityPatch().getOriginal().removeAttached(SKINLAYER_MESH);
         });
 	}
 	
@@ -141,7 +132,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	            return;
 			}
 			
-			SkinLayer3DMeshes skin3dlayerMeshes = null; // TODO: getData
+			SkinLayer3DMeshes skin3dlayerMeshes = player.getAttachedOrCreate(SKINLAYER_MESH);
 			int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0f);
 			
 			for (PlayerModelPart playerModelPart : PlayerModelPart.values()) {
