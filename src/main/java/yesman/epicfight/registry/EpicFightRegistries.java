@@ -36,6 +36,7 @@ public abstract class EpicFightRegistries {
     public static final Registry<WeaponModifier.Builder> MODIFIERS = createRegistry(Keys.MODIFIERS, true);
     public static final Registry<CustomData<?>> WEAPON_DATA = createRegistry(Keys.WEAPON_DATA, true);
     public static final Registry<CustomData<?>> MOVESET_DATA = createRegistry(Keys.MOVESET_DATA, true);
+    public static final Registry<Emote> EMOTE = createRegistry(Keys.EMOTE, true);
 
     private static <T> Registry<T> createRegistry(ResourceKey<Registry<T>> key, boolean synced) {
         var builder = FabricRegistryBuilder.createSimple(key);

@@ -1,5 +1,4 @@
 package yesman.epicfight.server.commands;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.brigadier.CommandDispatcher;

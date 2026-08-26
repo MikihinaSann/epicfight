@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;

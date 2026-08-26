@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.common;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.Rarity;

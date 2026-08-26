@@ -7,6 +7,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
@@ -29,7 +30,10 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 import yesman.epicfight.api.animation.property.MoveCoordFunctions;
+import yesman.epicfight.api.animation.JointTransform;
 import yesman.epicfight.api.client.animation.AnimationSubFileReader;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.event.types.camera.*;
@@ -66,6 +70,8 @@ import java.util.Set;
 public final class EpicFightCameraAPI {
     private static final EpicFightCameraAPI INSTANCE = new EpicFightCameraAPI();
     private static final int MAX_ZOOM_TICK = 8;
+    private static final Vector3f CAMERA_ROTATION_EULER = new Vector3f();
+    private static final OpenMatrix4f PLAYER_ROTATION = new OpenMatrix4f();
 
     public static EpicFightCameraAPI getInstance() {
         return INSTANCE;
@@ -357,13 +363,15 @@ public final class EpicFightCameraAPI {
         // Select the nearest target on the screen from the given direction
         // Excludes entities out of the view frustum
         // Excludes riding entities
+        Frustum frustum = yesman.epicfight.client.renderer.EpicFightFrustumHolder.get();
         Optional<Pair<LivingEntity, Float>> next = entitiesInLevel.stream()
             .filter(entity ->
                 this.predicateFocusableEntity(entity) &&
                 !entity.is(this.focusingEntity) &&
                 MathUtils.canBeSeen(entity, this.minecraft.player, lockOnRange) &&
                 (
-                    this.minecraft.getEntityRenderDispatcher().shouldRender(entity, null, cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
+                    frustum == null || // No frustum captured yet — skip frustum culling, rely on distance + canBeSeen
+                    this.minecraft.getEntityRenderDispatcher().shouldRender(entity, frustum, cameraLocation.x(), cameraLocation.y(), cameraLocation.z()) || // Excludes entities out of the view frustum
                         entity.hasIndirectPassenger(this.minecraft.player)    // Excludes riding entities
                 ) &&
                 entity.distanceToSqr(this.minecraft.player) < lockOnRange * lockOnRange
@@ -943,10 +951,61 @@ public final class EpicFightCameraAPI {
             }
         }
 
+        // First person camera correction (ported from NeoForge ComputeCameraAnglesEvent)
+        if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson()) {
+            LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+
+            if (playerpatch != null && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
+                if (this.isLerpingFpv()) {
+                    float xRot = this.getLerpedFpvXRot(partialTick);
+                    float yRot = this.getLerpedFpvYRot(partialTick);
+                    this.minecraft.cameraEntity.setXRot(xRot);
+                    this.minecraft.cameraEntity.setYRot(yRot);
+                } else {
+                    AnimationSubFileReader.PovSettings.ViewLimit viewLimit = playerpatch.getPovSettings().viewLimit();
+
+                    if (viewLimit != null) {
+                        float pitch = camera.getXRot();
+                        float yaw = camera.getYRot();
+                        float clampedXRot = Mth.clamp(pitch, viewLimit.xRotMin(), viewLimit.xRotMax());
+                        float bodyY = MathUtils.findNearestRotation(yaw, playerpatch.getYRot());
+                        float clampedYRot = Mth.clamp(yaw, bodyY + viewLimit.yRotMin(), bodyY + viewLimit.yRotMax());
+
+                        if (Float.compare(clampedXRot, pitch) != 0 || Float.compare(clampedYRot, yaw) != 0) {
+                            this.fixFpvRotation(clampedXRot, playerpatch.getYRot(), 5);
+                        }
+                    }
+                }
+
+                if (playerpatch.hasCameraAnimation()) {
+                    float time = Mth.lerp(partialTick, playerpatch.getFirstPersonLayer().animationPlayer.getPrevElapsedTime(), playerpatch.getFirstPersonLayer().animationPlayer.getElapsedTime());
+                    JointTransform cameraTransform;
+
+                    if (playerpatch.getFirstPersonLayer().animationPlayer.getAnimation().get().isLinkAnimation() || playerpatch.getPovSettings() == null) {
+                        cameraTransform = playerpatch.getFirstPersonLayer().getLinkCameraTransform().getInterpolatedTransform(time);
+                    } else {
+                        cameraTransform = playerpatch.getPovSettings().cameraTransform().getInterpolatedTransform(time);
+                    }
+
+                    float xRot = playerpatch.getOriginal().getXRot();
+                    float yRot = playerpatch.getOriginal().getYRot();
+
+                    Vec3f translation = OpenMatrix4f.transform3v(OpenMatrix4f.ofRotationDegree(yRot, Vec3f.Y_AXIS, PLAYER_ROTATION).rotate(xRot, Vec3f.X_AXIS), cameraTransform.translation(), null);
+                    Quaternionf rot = cameraTransform.rotation();
+                    rot.getEulerAnglesXYZ(CAMERA_ROTATION_EULER);
+
+                    CAMERA_ROTATION_EULER.x = (float)Math.toDegrees(CAMERA_ROTATION_EULER.x);
+                    CAMERA_ROTATION_EULER.y = (float)Math.toDegrees(CAMERA_ROTATION_EULER.y);
+                    CAMERA_ROTATION_EULER.z = (float)Math.toDegrees(CAMERA_ROTATION_EULER.z);
+
+                    camera.move(translation.x, translation.y, translation.z);
+                    camera.setRotation(camera.getYRot() + CAMERA_ROTATION_EULER.y, camera.getXRot() + CAMERA_ROTATION_EULER.x);
+                }
+            }
+        }
+
         return buildCameraEventPre;
     }
-
-    /// Called after [#setupCamera] to apply a simple transform
     @ApiStatus.Internal
     public void fireCameraBuildPost(Camera camera, float partialTick) {
         EpicFightClientEventHooks.Camera.BUILD_TRANSFORM_POST.post(new BuildCameraTransform.Post(this, camera, partialTick));

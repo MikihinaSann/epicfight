@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.patched.entity;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.model.CreeperModel;
 import net.minecraft.client.renderer.entity.CreeperRenderer;

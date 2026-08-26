@@ -1,5 +1,4 @@
 package yesman.epicfight.api.collider;
-import net.minecraft.client.Minecraft;
 
 import java.util.Collections;
 import java.util.List;

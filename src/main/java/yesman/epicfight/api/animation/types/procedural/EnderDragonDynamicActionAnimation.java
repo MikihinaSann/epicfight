@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types.procedural;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;

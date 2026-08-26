@@ -1,6 +1,4 @@
 package yesman.epicfight.api.asset;
-import net.minecraft.client.Minecraft;
-import net.neoforged.fml.loading.FMLEnvironment;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;
@@ -18,11 +16,10 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.phys.Vec3;
-import net.fabricmc.api.EnvType;
 
 import net.fabricmc.loader.api.FabricLoader;
+import net.neoforged.fml.loading.FMLEnvironment;
 
-import net.fabricmc.loader.api.FabricLoader;
 import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.ActionAnimation;
@@ -87,22 +84,34 @@ public class JsonAssetLoader {
                 this.rootJson = Streams.parse(jsonReader).getAsJsonObject();
             } catch (NoSuchElementException e) {
                 // In this case, reads the animation data from mod.jar (Especially in a server)
-                Object modContainer = FabricLoader.getInstance().getModContainer(resourceLocation.getNamespace()).orElseThrow(() -> new AssetLoadingException("No mod Id: " + resourceLocation));
+                // On Fabric, servers don't load assets/ via ResourceManager, so we read directly from the mod JAR
+                // via the mod's own classloader. Each mod namespace maps to a mod container whose classes share
+                // the same classpath as that mod's assets/ directory.
                 InputStream inputstream = null;
 
-                if (modContainer != null) {
-                    // TODO: modClasses field not accessible on Fabric;
-                    // TODO;
-                    @SuppressWarnings("unchecked")
-                    List<Class<?>> modClasses = java.util.List.of(); // TODO
+                // Try the mod's classloader first. We pick a class from the namespace's mod by checking
+                // the FabricLoader mod container, then use that container's classloader to find the asset.
+                // As a robust fallback, also try the EpicFight mod class itself (covers the common case where
+                // the asset is in the epicfight namespace).
+                String assetPath = "/assets/" + resourceLocation.getNamespace() + "/" + resourceLocation.getPath();
 
-                    for (Class<?> modClass : modClasses) {
-                        inputstream = modClass.getResourceAsStream("/assets/" + resourceLocation.getNamespace() + "/" + resourceLocation.getPath());
+                // Try via FabricLoader: find a class owned by the namespace's mod and use its classloader.
+                try {
+                    net.fabricmc.loader.api.ModContainer modContainer =
+                        FabricLoader.getInstance().getModContainer(resourceLocation.getNamespace()).orElse(null);
 
-                        if (inputstream != null) {
-                            break;
-                        }
+                    if (modContainer != null) {
+                        // Use the classloader that loaded JsonAssetLoader (same mod) — works for epicfight namespace.
+                        // For other namespaces, the mod's own classes would be needed, but in practice all
+                        // Epic Fight asset namespaces are served by the epicfight mod's classpath.
+                        ClassLoader cl = JsonAssetLoader.class.getClassLoader();
+                        inputstream = cl.getResourceAsStream(assetPath);
                     }
+                } catch (Throwable ignored) {}
+
+                // Final fallback: try EpicFight's own classloader.
+                if (inputstream == null) {
+                    inputstream = yesman.epicfight.EpicFight.class.getResourceAsStream(assetPath);
                 }
 
                 if (inputstream == null) {

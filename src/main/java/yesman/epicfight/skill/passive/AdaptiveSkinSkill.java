@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.passive;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableMap;
 import net.minecraft.ChatFormatting;
@@ -161,9 +160,11 @@ public class AdaptiveSkinSkill extends PassiveSkill {
 
             if (!EpicFightDamageTypeTags.NONE.equals(resistingDamageTypeTagKey)) {
                 Vec3f color = AdaptiveSkinSkill.this.getGlintColor(resistingDamageTypeTagKey);
-                resultColor.x = color.x;
-                resultColor.y = color.y;
-                resultColor.z = color.z;
+                if (color != null) {
+                    resultColor.x = color.x;
+                    resultColor.y = color.y;
+                    resultColor.z = color.z;
+                }
             }
         });
     }

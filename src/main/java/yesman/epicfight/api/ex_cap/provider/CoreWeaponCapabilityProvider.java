@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.provider;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Lists;
 import net.minecraft.world.InteractionHand;

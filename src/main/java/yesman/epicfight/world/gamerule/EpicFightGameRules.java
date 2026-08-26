@@ -1,5 +1,4 @@
 package yesman.epicfight.world.gamerule;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
@@ -10,7 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.server.SPChangeGamerule;
 import yesman.epicfight.skill.SkillSlots;
@@ -190,7 +189,7 @@ public class EpicFightGameRules {
 						, this.ruleCategory
 						, this.ruleType.valueCreator.apply(
 							    this.configValueHolder.get()
-							  , (server, value) -> EpicFightNetworkManager.sendToAll(new SPChangeGamerule(new EpicFightGameRules.KeyValuePair((ConfigurableGameRule<Object, ?, ?>)this, this.ruleType.getRule.apply(value))))
+							  , (server, value) -> EpicFightNetworkManager.sendToAll(server, new SPChangeGamerule(new EpicFightGameRules.KeyValuePair((ConfigurableGameRule<Object, ?, ?>)this, this.ruleType.getRule.apply(value))))
 						  )
 				);
 			} else {
@@ -248,16 +247,16 @@ public class EpicFightGameRules {
 		, StreamCodec<ByteBuf, Type> codec
 	) {
 		private static final RuleType<Boolean, GameRules.BooleanValue> BOOLEAN = new RuleType<> (
-			 (def, callback) -> GameRules.BooleanValue.create(def)
-		   , (def) -> GameRules.BooleanValue.create(def)
+			 GameRules.BooleanValue::create
+		   , GameRules.BooleanValue::create
 		   , GameRules.BooleanValue::get
 		   , (ruleValue, value) -> ruleValue.set(value, null)
 		   , ByteBufCodecs.BOOL
 		);
 
 		private static final RuleType<Integer, GameRules.IntegerValue> INTEGER = new RuleType<> (
-			 (def, callback) -> GameRules.IntegerValue.create(def)
-		   , (def) -> GameRules.IntegerValue.create(def)
+			 GameRules.IntegerValue::create
+		   , GameRules.IntegerValue::create
 		   , GameRules.IntegerValue::get
 		   , (ruleValue, value) -> ruleValue.tryDeserialize(value.toString())
 		   , ByteBufCodecs.INT

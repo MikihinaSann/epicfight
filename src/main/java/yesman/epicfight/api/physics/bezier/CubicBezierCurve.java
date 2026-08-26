@@ -1,5 +1,4 @@
 package yesman.epicfight.api.physics.bezier;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;

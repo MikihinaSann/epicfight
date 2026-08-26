@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer;
-import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.HashMap;

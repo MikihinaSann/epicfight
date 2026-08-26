@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import yesman.epicfight.api.animation.*;

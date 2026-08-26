@@ -21,6 +21,7 @@ import net.irisshaders.iris.vertices.sodium.terrain.XHFPModelVertexType;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.block.BlockRenderDispatcher;
 import net.minecraft.client.renderer.block.model.BakedQuad;
@@ -31,6 +32,7 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
@@ -54,6 +56,11 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 		long seed = bs.getSeed(bp);
 		randomsource.setSeed(seed);
 		
+		// Compute proper lighting from the block position instead of hardcoding full brightness.
+		// The original NeoForge code used applyBakedLighting to extract light from baked quad data;
+		// since that was removed in the Fabric port, we compute it from the level's brightness.
+		int packedLight = LightTexture.pack(level.getBrightness(LightLayer.BLOCK, bp), level.getBrightness(LightLayer.SKY, bp));
+		
 		Vec3 offset = bs.hasOffsetFunction() ? bs.getOffset(level, bp) : Vec3.ZERO;
 		VertexConsumer buffer = buffers.getBuffer(EpicFightRenderTypes.blockHighlight());
 		BlockRenderDispatcher blockrenderdispatcher = Minecraft.getInstance().getBlockRenderer();
@@ -68,11 +75,11 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 			mutablepos.setWithOffset(bp, d);
 			
 			if (Block.shouldRenderFace(bs, level, bp, d, mutablepos)) {
-				this.renderPreviewBlocks(buffer, level, culledFaces, originX, originY, originZ, offset, r, g, b, a);
+				this.renderPreviewBlocks(buffer, level, culledFaces, originX, originY, originZ, offset, r, g, b, a, packedLight);
 			}
 		}
 		
-		this.renderPreviewBlocks(buffer, level, model.getQuads(bs, null, randomsource), originX, originY, originZ, offset, r, g, b, a);
+		this.renderPreviewBlocks(buffer, level, model.getQuads(bs, null, randomsource), originX, originY, originZ, offset, r, g, b, a, packedLight);
 		
 		RenderSystem.getModelViewStack().pushMatrix();
 		RenderSystem.getModelViewStack().mul(poseStack.last().pose());
@@ -105,14 +112,14 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 		RenderSystem.applyModelViewMatrix();
 	}
 	
-	private void renderPreviewBlocks(VertexConsumer consumer, BlockAndTintGetter level, List<BakedQuad> quads, int originX, int originY, int originZ, Vec3 offset, float r, float g, float b, float a) {
+	private void renderPreviewBlocks(VertexConsumer consumer, BlockAndTintGetter level, List<BakedQuad> quads, int originX, int originY, int originZ, Vec3 offset, float r, float g, float b, float a, int packedLight) {
 		for (BakedQuad bakedquad : quads) {
 			float f = level.getShade(bakedquad.getDirection(), bakedquad.isShade());
-			putBulkDataWithoutPose(consumer, bakedquad, originX, originY, originZ, offset, new float[] {f, f, f, f}, r, g, b, a, new int[] {16777215, 16777215, 16777215, 16777215}, OverlayTexture.NO_OVERLAY, false);
+			putBulkDataWithoutPose(consumer, bakedquad, originX, originY, originZ, offset, new float[] {f, f, f, f}, r, g, b, a, new int[] {16777215, 16777215, 16777215, 16777215}, OverlayTexture.NO_OVERLAY, false, packedLight);
 		}
 	}
 	
-	private static void putBulkDataWithoutPose(VertexConsumer vertexConsumer, BakedQuad pQuad, int originX, int originY, int originZ, Vec3 offset, float[] pColorMuls, float pRed, float pGreen, float pBlue, float alpha, int[] pCombinedLights, int pCombinedOverlay, boolean pMulColor) {
+	private static void putBulkDataWithoutPose(VertexConsumer vertexConsumer, BakedQuad pQuad, int originX, int originY, int originZ, Vec3 offset, float[] pColorMuls, float pRed, float pGreen, float pBlue, float alpha, int[] pCombinedLights, int pCombinedOverlay, boolean pMulColor, int packedLight) {
 		float[] afloat = new float[] { pColorMuls[0], pColorMuls[1], pColorMuls[2], pColorMuls[3] };
 		int[] aint1 = pQuad.getVertices();
 		Vec3i vec3i = pQuad.getDirection().getNormal();
@@ -153,17 +160,19 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 					f5 = afloat[k] * pBlue;
 				}
 
-				// TODO: int l was from applyBakedLighting
+				// Lighting computed from the level's brightness at the block position.
+			// The original NeoForge code used applyBakedLighting to extract light from baked quad data;
+			// since that was removed in the Fabric port, we use the level's block/sky light at the position.
 				float f9 = bytebuffer.getFloat(16);
 				float f10 = bytebuffer.getFloat(20);
-				// TODO: applyBakedLighting/applyBakedNormals removed
+				
 				float vertexAlpha = pMulColor ? alpha * (float) (bytebuffer.get(15) & 255) / 255.0F : alpha;
 				
 				vertexConsumer.addVertex(outX, outY, outZ)
 			        .setColor(f3, f4, f5, vertexAlpha)
 			        .setUv(f9, f10)
 			        .setOverlay(pCombinedOverlay)
-			        .setLight(15728880) // TODO: l was from applyBakedLighting
+			        .setLight(packedLight)
 			        .setNormal(vector3f.x(), vector3f.y(), vector3f.z());
 			}
 		}

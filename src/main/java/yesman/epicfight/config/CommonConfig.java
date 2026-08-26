@@ -1,11 +1,8 @@
 package yesman.epicfight.config;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvent;
 
+import net.neoforged.fml.config.ModConfig;
 
-
-import fuzs.forgeconfigapiport.api.config.v3.ModConfig;
-
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
@@ -25,11 +22,11 @@ public class CommonConfig {
 	}
 	
 	
-    static void onLoad(final ModConfigEvent.Loading event) {
-		if (event.getConfig().getType() != ModConfig.Type.COMMON) {
+    public static void onLoad(final ModConfig config) {
+		if (config.getType() != ModConfig.Type.COMMON) {
 			return;
 		}
-		
+
 		skillBookMobDropChanceModifier = SKILL_BOOK_MOB_DROP_CHANCE_MODIFIER.get();
 		skillBookChestLootModifier = SKILL_BOOK_CHEST_LOOT_MODIFIER.get();
 	}

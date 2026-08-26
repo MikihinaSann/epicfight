@@ -1,5 +1,4 @@
 package yesman.epicfight.network;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.MinecraftServer;
@@ -37,6 +36,8 @@ public class EpicFightPayloadContext {
     }
 
     public void reply(net.minecraft.network.protocol.common.custom.CustomPacketPayload payload) {
-        // TODO: Implement reply via ServerPlayNetworking.send
+        if (this.player instanceof ServerPlayer serverPlayer && serverPlayer.connection != null) {
+            net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking.send(serverPlayer, payload);
+        }
     }
 }

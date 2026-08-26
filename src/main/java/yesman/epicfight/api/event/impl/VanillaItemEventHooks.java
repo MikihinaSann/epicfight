@@ -1,5 +1,4 @@
 package yesman.epicfight.api.event.impl;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Multimap;
 import net.minecraft.core.Holder;

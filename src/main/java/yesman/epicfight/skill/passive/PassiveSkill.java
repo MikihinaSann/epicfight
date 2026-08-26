@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.passive;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;

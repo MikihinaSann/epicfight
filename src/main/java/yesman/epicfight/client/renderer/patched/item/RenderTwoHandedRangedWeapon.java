@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.patched.item;
-import net.minecraft.client.Minecraft;
 
 import com.google.gson.JsonElement;
 import com.mojang.blaze3d.vertex.PoseStack;

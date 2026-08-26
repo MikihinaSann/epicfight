@@ -1,20 +1,20 @@
 package yesman.epicfight.mixin.common;
-import net.minecraft.client.Minecraft;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import java.util.List;
 import net.minecraft.core.IdMapper;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
 /// Accessor mixin for IdMapper private fields.
+/// Yarn mappings: tToId is Reference2IntMap (not Object2IntMap), idToT is List (not Int2ObjectMap)
 @Mixin(IdMapper.class)
 public interface IdMapperAccessor<T> {
     @Accessor("tToId")
-    Object2IntMap<T> epicfight$getTToId();
+    Reference2IntMap<T> epicfight$getTToId();
 
     @Accessor("idToT")
-    Int2ObjectMap<T> epicfight$getIdToT();
+    List<T> epicfight$getIdToT();
 
     @Accessor("nextId")
     int epicfight$getNextId();

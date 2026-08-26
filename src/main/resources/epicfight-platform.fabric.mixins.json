@@ -6,6 +6,10 @@
   "client": [
     "MixinClientLevel"
   ],
+  "mixins": [
+    "MixinServerLevel",
+    "SpawnPlacementsAccessor"
+  ],
   "injectors": {
     "defaultRequire": 1
   }

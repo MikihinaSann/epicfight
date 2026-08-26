@@ -2,8 +2,6 @@ package yesman.epicfight.compat.shouldersurfing;
 
 import com.github.exopandora.shouldersurfing.api.client.IShoulderSurfing;
 import com.github.exopandora.shouldersurfing.api.client.ShoulderSurfing;
-import com.github.exopandora.shouldersurfing.api.client.event.ComputeCameraCouplingEvent;
-import com.github.exopandora.shouldersurfing.api.client.event.handler.ComputeCameraCouplingEventHandler;
 import com.github.exopandora.shouldersurfing.api.client.event.handler.ComputePlayerAttackStateEventHandler;
 import com.github.exopandora.shouldersurfing.api.client.event.handler.ComputeTemporaryFirstPersonStateEventHandler;
 import com.github.exopandora.shouldersurfing.api.event.IEventBus;
@@ -52,7 +50,8 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 /// - [Shoulder Surfing mod does not detect Epic Fight custom Attack keybind](https://github.com/Epic-Fight/epicfight/issues/2111)
 /// - [Handle Epic Fight Breaking Changes from Shoulder Surfing's side](https://github.com/Exopandora/ShoulderSurfing/issues/359)
 @SuppressWarnings("unused") // Referenced in src/main/resources/shouldersurfing_plugin.json
-public class ShoulderSurfingCompat {
+public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
+    @Override
     public void register(IEventBus eventBus) {
         disableEpicFightCamera();
         registerEpicFightEvents();
@@ -99,8 +98,8 @@ public class ShoulderSurfingCompat {
         final float camXRot = Mth.rotLerp(event.getPartialTick(), event.getCameraApi().getCameraXRotO(), event.getCameraApi().getCameraXRot());
         final float camYRot = Mth.rotLerp(event.getPartialTick(), event.getCameraApi().getCameraYRotO(), event.getCameraApi().getCameraYRot());
 
-        shoulderSurfing.getCamera().setRotation(camYRot, camXRot);
-        
+        shoulderSurfing.getCamera().setXRot(camXRot);
+        shoulderSurfing.getCamera().setYRot(camYRot);
     }
 
     private static void lockOnTick(LockOnEvent.Tick event) {

@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.listeners;
-import net.minecraft.client.Minecraft;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

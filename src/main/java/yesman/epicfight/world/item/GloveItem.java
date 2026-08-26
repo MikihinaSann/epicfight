@@ -1,5 +1,4 @@
 package yesman.epicfight.world.item;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;

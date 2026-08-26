@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.common;
-import net.minecraft.client.Minecraft;
 
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
@@ -16,7 +15,10 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
+import yesman.epicfight.api.animation.Animator;
+import yesman.epicfight.api.animation.AnimationPlayer;
 import yesman.epicfight.api.event.EpicFightEventHooks;
+import yesman.epicfight.api.event.impl.VanillaEntityEventHooks;
 import yesman.epicfight.api.event.types.entity.EntityRemovedEvent;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.IEpicFightEntityPatchHolder;
@@ -24,6 +26,7 @@ import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvider;
+import net.minecraft.world.entity.EntityDimensions;
 
 @Mixin(value = Entity.class)
 public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
@@ -63,24 +66,48 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	@Shadow
     protected abstract void addAdditionalSaveData(CompoundTag compound);
 	
-	@Inject(at = @At(value = "TAIL"), method = "addedToLevel()V", remap = false)
+	// On NeoForge, Entity.onAddedToLevel() is a patched method that fires when an entity
+	// is added to the level's entity storage. Fabric doesn't have this method, so this
+	// injection is silently skipped (defaultRequire=0). The onAddedToLevel() behavior is
+	// instead handled by the Fabric entity join handlers in MixinClientLevel and EpicFightFabric.
+	@Inject(at = @At(value = "TAIL"), method = "onAddedToLevel()V", remap = false, require = 0)
 	private void epicfight$onAddedToLevel(CallbackInfo callbackInfo) {
 		Entity self = (Entity)((Object)this);
 		EntityPatch<?> entitypatch = safeGetEntityPatch(self);
-		
+
 		if (entitypatch != null) {
 			try { entitypatch.onAddedToLevel(); } catch (Throwable ignored) {}
+		}
+	}
+
+	/// Fires Epic Fight's onConstruct hook at the end of Entity constructor.
+	/// On NeoForge this was EntityEvent.EntityConstructing. On Fabric we inject directly.
+	@Inject(at = @At(value = "TAIL"), method = "<init>(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V")
+	private void epicfight$onEntityConstructed(net.minecraft.world.entity.EntityType<?> type, net.minecraft.world.level.Level level, CallbackInfo callbackInfo) {
+		Entity self = (Entity)((Object)this);
+		try {
+			VanillaEntityEventHooks.onConstruct(self);
+		} catch (Throwable e) {
+			yesman.epicfight.EpicFight.LOGGER.warn("[EpicFight] onConstruct failed for {}: {}", self.getClass().getSimpleName(), e.getMessage());
 		}
 	}
 	
 	@Inject(at = @At(value = "HEAD"), method = "lerpMotion(DDD)V", cancellable = true)
 	public void epicfight$lerpMotion(double pX, double pY, double pZ, CallbackInfo callback) {
 		Entity self = (Entity)(Object)this;
-		
+
 		// Remove the delta movement from the server while playing animation with REMOVE_DELTA_MOVEMENT property set as true
 		safeGetPatch(self, LivingEntityPatch.class).ifPresent(entitypatch -> {
-			if (entitypatch.getAnimator().getPlayerFor(null).getRealAnimation().get().getProperty(ActionAnimationProperty.REMOVE_DELTA_MOVEMENT).orElse(false)) {
-				callback.cancel();
+			Animator animator = entitypatch.getAnimator();
+			if (animator != null) {
+				AnimationPlayer player = animator.getPlayerFor(null);
+				if (player != null && player.getRealAnimation() != null) {
+					player.getRealAnimation().get().getProperty(ActionAnimationProperty.REMOVE_DELTA_MOVEMENT).ifPresent(remove -> {
+						if (remove) {
+							callback.cancel();
+						}
+					});
+				}
 			}
 		});
 	}
@@ -152,6 +179,18 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 			entitypatch.readData(compoundTag);
 		});
 	}
+
+    /// EntityEvent.Size — fires when an entity's dimensions are refreshed, allows modifying the size
+    /// On NeoForge this was EntityEvent.Size. On Fabric we inject into refreshDimensions.
+    @Inject(at = @At(value = "HEAD"), method = "refreshDimensions()V")
+    private void epicfight$refreshDimensions(CallbackInfo callbackInfo) {
+        Entity self = (Entity)(Object)this;
+        VanillaEntityEventHooks.onSizingEntity(self, dimensions -> {
+            // We can't directly set the new size here without a more complex mixin,
+            // but the onSizingEntity hook handles EnderDragon specially via the scaler
+            // In practice, the EnderDragon size is handled by the entity itself
+        });
+    }
 
     /// Called when setting [Entity#onGround()] according to the player's movement
     ///

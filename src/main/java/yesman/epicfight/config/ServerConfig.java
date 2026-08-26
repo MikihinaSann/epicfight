@@ -1,28 +1,29 @@
 package yesman.epicfight.config;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvent;
 
 import net.fabricmc.api.EnvType;
 
+import net.neoforged.fml.config.ModConfig;
 
-import fuzs.forgeconfigapiport.api.config.v3.ModConfig;
-
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.main.EpicFightMod;
 
 
 public class ServerConfig {
 	private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 	public static final ModConfigSpec.BooleanValue ALLOW_CUSTOM_ANIMATIONS = BUILDER.define("allow_custom_animations", false);
+	public static final ModConfigSpec.BooleanValue FULL_BOUNDING_BOX_LADDERS = BUILDER.define("full_bounding_box_ladders", false);
 	public static final ModConfigSpec SPEC = BUILDER.build();
 	
 	public static boolean allowCustomAnimations;
+	public static boolean fullBoundingBoxLadders;
 	
 	
-    static void onLoad(final ModConfigEvent.Loading event) {
-		if (event.getConfig().getType() != ModConfig.Type.SERVER) {
+    public static void onLoad(final ModConfig config) {
+		if (config.getType() != ModConfig.Type.SERVER) {
 			return;
 		}
-		
+
 		allowCustomAnimations = ALLOW_CUSTOM_ANIMATIONS.get();
+		fullBoundingBoxLadders = FULL_BOUNDING_BOX_LADDERS.get();
 	}
 }

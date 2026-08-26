@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.entity;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.renderer.entity.EntityRendererProvider.Context;
 import net.minecraft.client.renderer.entity.WitherSkeletonRenderer;

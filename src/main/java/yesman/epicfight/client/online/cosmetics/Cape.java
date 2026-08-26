@@ -1,5 +1,4 @@
 package yesman.epicfight.client.online.cosmetics;
-import net.minecraft.client.Minecraft;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;

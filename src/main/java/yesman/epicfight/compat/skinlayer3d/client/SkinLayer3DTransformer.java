@@ -1,5 +1,4 @@
 package yesman.epicfight.compat.skinlayer3d.client;
-import net.minecraft.client.Minecraft;
 
 import java.util.List;
 import java.util.Map;

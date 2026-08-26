@@ -9,7 +9,12 @@ import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
 import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import yesman.epicfight.EpicFight;
+import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.api.animation.AnimationManager;
+import yesman.epicfight.api.client.animation.property.JointMaskReloadListener;
+import yesman.epicfight.api.client.model.ItemSkinsReloadListener;
+import yesman.epicfight.api.client.model.Meshes;
+import yesman.epicfight.api.data.reloader.EmoteReloadListener;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
 import yesman.epicfight.api.data.reloader.SkillReloadListener;
@@ -43,23 +48,46 @@ public final class EpicFightReloadListeners {
     public static void register() {
         ResourceManagerHelper helper = ResourceManagerHelper.get(net.minecraft.server.packs.PackType.SERVER_DATA);
 
-        // Core datapack reload listeners
-        helper.registerReloadListener(wrap("skill_parameters", SkillReloadListener.getInstance()));
-        helper.registerReloadListener(wrap("epicfight_mobpatch", new MobPatchReloadListener()));
-        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener()));
-        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener()));
-        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener()));
-        helper.registerReloadListener(wrap("animation_manager", AnimationManager.getInstance()));
+        // Collider preset — registered first to match NeoForge upstream ordering
+        helper.registerReloadListener(wrap("collider_preset", new ColliderPreset()));
 
-        // ExCap reload listeners
+        // ExCap reload listeners — MUST run before core listeners that depend on weapon types
+        // Order: item_presets (populates BUILDERS) → weapon_types (exports BUILDERS to PRESETS) → capabilities (uses PRESETS)
+        helper.registerReloadListener(wrap("item_presets", new ItemPresetReloadListener()));
         helper.registerReloadListener(wrap("weapon_modifiers", new WeaponModifierReloadListener()));
         helper.registerReloadListener(wrap("movesets", new MovesetReloadListener()));
-        helper.registerReloadListener(wrap("item_presets", new ItemPresetReloadListener()));
         helper.registerReloadListener(wrap("conditional", new ConditionalReloadListener()));
         helper.registerReloadListener(wrap("excap_data_creation", new ExCapDataCreationReloadListener()));
         helper.registerReloadListener(wrap("excap_data", new ExCapDataReloadListener()));
 
-        EpicFight.LOGGER.info("EpicFight reload listeners registered (12)");
+        // Core datapack reload listeners — run after ExCap so weapon types are available
+        helper.registerReloadListener(wrap("skill_parameters", SkillReloadListener.getInstance()));
+        helper.registerReloadListener(wrap("epicfight_mobpatch", new MobPatchReloadListener()));
+        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener()));
+        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener()));
+        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener()));
+        helper.registerReloadListener(wrap("animation_manager", AnimationManager.getInstance()));
+        helper.registerReloadListener(wrap("emote", EmoteReloadListener.INSTANCE));
+
+        EpicFight.LOGGER.info("EpicFight reload listeners registered (14)");
+    }
+
+    /**
+     * Registers all client-side reload listeners with Fabric's resource manager.
+     * Must be called from {@code onInitializeClient} (client side).
+     *
+     * <p>These correspond to the NeoForge {@code RegisterClientReloadListenersEvent}
+     * registrations in {@code EpicFightMod.registerResourcepackReloadListnerEvent()}.</p>
+     */
+    public static void registerClient() {
+        ResourceManagerHelper helper = ResourceManagerHelper.get(net.minecraft.server.packs.PackType.CLIENT_RESOURCES);
+
+        helper.registerReloadListener(wrap("joint_mask", new JointMaskReloadListener()));
+        helper.registerReloadListener(wrap("meshes", Meshes.INSTANCE));
+        helper.registerReloadListener(wrap("animation_manager_client", AnimationManager.getInstance()));
+        helper.registerReloadListener(wrap("item_skins", ItemSkinsReloadListener.INSTANCE));
+
+        EpicFight.LOGGER.info("EpicFight client reload listeners registered (4)");
     }
 
     /**

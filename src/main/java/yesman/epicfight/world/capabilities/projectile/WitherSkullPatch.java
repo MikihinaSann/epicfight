@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.projectile;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;

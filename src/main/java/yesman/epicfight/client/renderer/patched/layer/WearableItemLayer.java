@@ -151,7 +151,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				}
 				
 				if (armorModel instanceof HumanoidModel humanoidModel) {
-					boolean shouldSit = livingentity.isPassenger() && (livingentity.getVehicle() != null && livingentity.getVehicle() != null && false);
+					boolean shouldSit = livingentity.isPassenger(); // NeoForge's Entity.shouldRiderSit() defaults to true in vanilla
 					float f8 = 0.0F;
 					float f5 = 0.0F;
 					
@@ -201,8 +201,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				 * Copy from {@link HumanoidArmorLayer#renderArmorPiece}
 				 */
 				ArmorMaterial armormaterial = armorItem.getMaterial().value();
-				Object extensions = null;
-				int fallbackColor = -1; // TODO: getDefaultDyeColor
+				int fallbackColor = -1;
 				boolean innerModel = innerModel(slot);
 
 				AnimatedArmorTextureEvent textureEvent = EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.post(new AnimatedArmorTextureEvent(livingentity, itemstack, slot, vanillaModel));

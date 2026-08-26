@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.client;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.authlib.GameProfile;
 import net.minecraft.client.multiplayer.ClientLevel;

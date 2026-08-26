@@ -1,6 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.*;
 import net.minecraft.ChatFormatting;
@@ -353,7 +352,6 @@ public class CapabilityItem {
 		SkillContainer weaponInnateSkillContainer = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
 		PayloadBundleBuilder toLocal = PayloadBundleBuilder.create();
 		PayloadBundleBuilder toRemote = PayloadBundleBuilder.create();
-		EpicFight.LOGGER.debug("Capability Item Preset: {}", id);
 		if (weaponInnateSkill != null) {
 			if (weaponInnateSkillContainer.getSkill() != weaponInnateSkill) {
 				weaponInnateSkillContainer.setSkill(weaponInnateSkill);

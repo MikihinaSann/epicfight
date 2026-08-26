@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.item.custom;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.Tag;
 

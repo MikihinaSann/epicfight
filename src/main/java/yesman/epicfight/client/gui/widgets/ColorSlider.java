@@ -1,5 +1,4 @@
 package yesman.epicfight.client.gui.widgets;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;

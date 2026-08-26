@@ -5,7 +5,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
 
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import yesman.epicfight.client.particle.EpicFightParticleRenderTypes;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.main.AuthenticationHelper;

@@ -1,6 +1,5 @@
 package yesman.epicfight.data;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
-import net.minecraft.client.Minecraft;
 
 import java.util.concurrent.CompletableFuture;
 

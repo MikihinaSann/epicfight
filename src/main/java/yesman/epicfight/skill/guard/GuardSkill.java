@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.guard;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.gui.GuiGraphics;

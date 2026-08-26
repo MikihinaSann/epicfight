@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.provider;
-import net.minecraft.client.Minecraft;
 
 /**
  * Defines the logic type and evaluation priority for weapon style providers.

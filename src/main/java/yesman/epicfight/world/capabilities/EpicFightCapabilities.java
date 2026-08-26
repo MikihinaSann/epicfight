@@ -5,14 +5,12 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.registry.entries.EpicFightAttachmentTypes;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
@@ -21,23 +19,12 @@ import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvide
 import yesman.epicfight.world.capabilities.provider.CommonEntityPatchProvider;
 import yesman.epicfight.world.capabilities.provider.CommonItemCapabilityProvider;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @SuppressWarnings("unchecked")
 public class EpicFightCapabilities {
 	public static final CommonEntityPatchProvider ENTITY_PATCH_PROVIDER = CommonEntityPatchProvider.INSTANCE;
 	public static final CommonItemCapabilityProvider ITEM_CAPABILITY_PROVIDER = CommonItemCapabilityProvider.INSTANCE;
-
-	/// Item capability lookup map — populated during init.
-	/// On NeoForge this used ItemCapability; on Fabric we use a direct map.
-	private static final Map<Item, CapabilityItem> ITEM_CAPABILITY_MAP = new HashMap<>();
-
-	/// Registers an item capability for a specific item.
-	public static void registerItemCapability(Item item, CapabilityItem capability) {
-		ITEM_CAPABILITY_MAP.put(item, capability);
-	}
 
 	/// Returns [CapabilityItem] from [ItemStack] instance
 	public static @NotNull CapabilityItem getItemStackCapability(ItemStack stack) {
@@ -46,7 +33,7 @@ public class EpicFightCapabilities {
 
     /// Returns [CapabilityItem] from [ItemStack] instance wrapped by [Optional]
 	public static Optional<CapabilityItem> getItemCapability(ItemStack stack) {
-		CapabilityItem cap = ITEM_CAPABILITY_MAP.get(stack.getItem());
+		CapabilityItem cap = ITEM_CAPABILITY_PROVIDER.getCapability(stack, null);
 		return Optional.ofNullable(cap);
 	}
 
@@ -236,12 +223,13 @@ public class EpicFightCapabilities {
         if (entity instanceof IEpicFightEntityPatchHolder holder) {
             AttachmentEntityPatchProvider provider = holder.epicfight$getEntityPatchProvider();
             if (provider == null) {
-                provider = EpicFightAttachmentTypes.createEntityPatchProvider();
+                provider = new AttachmentEntityPatchProvider(entity);
                 holder.epicfight$setEntityPatchProvider(provider);
             }
             return provider;
         }
+        EpicFight.LOGGER.warn("[EpicFight] getEntityPatchProvider: entity {} is not IEpicFightEntityPatchHolder", entity.getClass().getName());
         // Fallback — should not happen if mixin is applied
-        return EpicFightAttachmentTypes.createEntityPatchProvider();
+        return new AttachmentEntityPatchProvider(entity);
     }
 }

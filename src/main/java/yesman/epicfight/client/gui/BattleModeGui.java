@@ -137,9 +137,9 @@ public class BattleModeGui {
 			if (slot == SkillSlots.WEAPON_INNATE) {
 				continue;
 			}
-			
+
 			SkillContainer container = playerpatch.getSkill(slot);
-			
+
 			if (!container.isEmpty()) {
 				if (!this.skillIcons.contains(container) && container.getSkill().shouldDraw(container)) {
 					this.skillIcons.add(container);
@@ -195,7 +195,7 @@ public class BattleModeGui {
 		}
 		
 		SkillContainer container = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
-		
+
 		if (!container.isEmpty() && container.getSkill().shouldDraw(container)) {
 			float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
 			Vec2i pos = ClientConfig.getWeaponInnatePosition();

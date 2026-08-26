@@ -8,6 +8,7 @@ import net.minecraft.client.Options;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.Input;
 import net.minecraft.client.player.LocalPlayer;
+import yesman.epicfight.EpicFight;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,7 @@ import net.minecraft.world.phys.HitResult;
 
 
 
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -387,7 +389,7 @@ public class ControlEngine implements IEventBasedEngine {
         final EpicFightInputAction epicFightAttack = EpicFightInputAction.ATTACK;
 
         boolean shouldPlayAttackAnimation = this.playerpatch.canPlayAttackAnimation();
-        if (vanillaAttack.keyMapping().getDefaultKey() == epicFightAttack.keyMapping().getDefaultKey() &&
+        if (InputUtils.getKey(vanillaAttack.keyMapping()) == InputUtils.getKey(epicFightAttack.keyMapping()) &&
                 Minecraft.getInstance().hitResult != null && shouldPlayAttackAnimation) {
             // Not needed for controller inputs.
             // This is called for keyboard/mouse inputs to just reset the internal keymapping counter.
@@ -505,13 +507,42 @@ public class ControlEngine implements IEventBasedEngine {
         }
     }
 
+    private int lastSwitchModeTick = -100;
+
     private void switchMode() {
+        // Cooldown to prevent rapid double-toggle when multiple click events accumulate
+        // before handleEpicFightKeyMappings processes them (e.g., JEI's R key mapping
+        // overwrites SWITCH_MODE in KeyMapping.MAP, causing REPEAT filtering to fail).
+        if (this.player.tickCount - this.lastSwitchModeTick < 10) {
+            return;
+        }
+        this.lastSwitchModeTick = this.player.tickCount;
+
         final boolean canSwitch = EpicFightGameRules.CAN_SWITCH_PLAYER_MODE.getRuleValue(this.playerpatch.getOriginal().level());
         if (!canSwitch) {
             this.minecraft.gui.getChat().addMessage(Component.translatable("epicfight.messages.mode_switching_disabled").withStyle(ChatFormatting.RED));
             return;
         }
         this.playerpatch.toggleMode();
+    }
+
+    /// Called from [MixinLocalPlayerInput] after [Input#tick] during [LocalPlayer#aiStep].
+    /// Replaces the NeoForge [MovementInputUpdateEvent] handler [epicfight$moveInputEvent].
+    public void handleMovementInput(Input input) {
+        if (this.playerpatch == null) {
+            return;
+        }
+
+        PlayerInputState playerinputstate = this.inputTick(input);
+
+        MappedMovementInputUpdateEvent mappedEvent = new MappedMovementInputUpdateEvent(this.playerpatch, playerinputstate);
+        EpicFightClientEventHooks.Control.MAPPED_MOVEMENT_INPUT_UPDATE.postWithListener(mappedEvent, this.playerpatch.getEventListener());
+    }
+
+    /// Called from [MixinLivingEntityJump] when the local player jumps.
+    /// Replaces the NeoForge [LivingJumpEvent] handler [epicfight$livingJumpEvent].
+    public void setTickSinceLastJump(int value) {
+        this.tickSinceLastJump = value;
     }
 
     private void toggleLockOnState() {
@@ -628,10 +659,11 @@ public class ControlEngine implements IEventBasedEngine {
 	@SuppressWarnings({"JavadocReference", "DeprecatedIsStillUsed"})
     @Deprecated(forRemoval = true)
     public static boolean isKeyDown(KeyMapping key) {
-		if (key.getDefaultKey().getType() == InputConstants.Type.KEYSYM) {
-			return key.isDown() || GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), key.getDefaultKey().getValue()) > 0;
-		} else if(key.getDefaultKey().getType() == InputConstants.Type.MOUSE) {
-			return key.isDown() || GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), key.getDefaultKey().getValue()) > 0;
+		InputConstants.Key inputKey = InputUtils.getKey(key);
+		if (inputKey.getType() == InputConstants.Type.KEYSYM) {
+			return key.isDown() || GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), inputKey.getValue()) > 0;
+		} else if(inputKey.getType() == InputConstants.Type.MOUSE) {
+			return key.isDown() || GLFW.glfwGetMouseButton(Minecraft.getInstance().getWindow().getWindow(), inputKey.getValue()) > 0;
 		} else {
 			return false;
 		}
@@ -783,6 +815,115 @@ public class ControlEngine implements IEventBasedEngine {
         return playerpatch.getEntityState().inaction() || (!playerpatch.getHoldingItemCapability(InteractionHand.MAIN_HAND).canBePlacedOffhand());
     }
 
+    /// Determines whether the vanilla use-item action should be cancelled.
+    ///
+    /// Replaces the NeoForge [InputEvent.InteractionKeyMappingTriggered] handler logic for USE action.
+    /// Called from [MixinMinecraft] when the player attempts to use an item.
+    ///
+    /// @return `true` to cancel the vanilla use-item action; `false` to allow it
+    @ApiStatus.Internal
+    public static boolean shouldCancelVanillaUseItem() {
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        if (playerpatch == null) {
+            return false;
+        }
+
+        // Only cancel when in EpicFight mode and the use key is bound to the same physical input as guard
+        if (!playerpatch.isEpicFightMode()) {
+            return false;
+        }
+
+        if (!InputManager.isBoundToSamePhysicalInput(MinecraftInputAction.USE, EpicFightInputAction.GUARD)) {
+            return false;
+        }
+
+        // Don't cancel vanilla use when the player is holding a shield.
+        // maybeGuard() already skips the guard skill for ShieldItem, so if we also cancel
+        // vanilla use here, the player can neither guard nor block — a deadlock.
+        // Letting vanilla blocking proceed matches the intent: shields use vanilla blocking,
+        // the guard skill is for weapons with guard motions.
+        LocalPlayer player = playerpatch.getOriginal();
+        if (ShieldItem.class.isAssignableFrom(player.getMainHandItem().getItem().getClass())
+                || ShieldItem.class.isAssignableFrom(player.getOffhandItem().getItem().getClass())) {
+            return false;
+        }
+
+        SkillContainer skillContainer = playerpatch.getSkill(SkillSlots.GUARD);
+        boolean canGuard = skillContainer.getSkill() != null && skillContainer.getSkill().canExecute(skillContainer);
+
+        if (!canGuard) {
+            return false;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.hitResult == null) {
+            return false;
+        }
+
+        if (mc.hitResult.getType() == HitResult.Type.MISS) {
+            return ClientConfig.canceledVanillaActions.cancelItemUse();
+        } else {
+            // For entity/block hits, simulate the interaction to decide
+            try {
+                InteractionResult interactionResult;
+                if (mc.hitResult instanceof EntityHitResult entityHitResult) {
+                    interactionResult = entityHitResult.getEntity().interact(mc.player, InteractionHand.MAIN_HAND);
+                } else if (mc.hitResult instanceof BlockHitResult blockHitResult) {
+                    BlockPos blockpos = blockHitResult.getBlockPos();
+                    BlockState blockstate = mc.level.getBlockState(blockpos);
+                    FakeLevel fakeLevel = FakeLevel.getFakeLevel(mc.level);
+                    FakeLevel.FakeClientPlayer fakePlayer = FakeLevel.getFakePlayer(mc.player.getGameProfile());
+                    InteractionResult useItemResult = blockstate.useItemOn(mc.player.getItemInHand(InteractionHand.MAIN_HAND), fakeLevel, fakePlayer, InteractionHand.MAIN_HAND, blockHitResult).result();
+                    if (useItemResult != InteractionResult.PASS) {
+                        interactionResult = useItemResult;
+                    } else {
+                        interactionResult = blockstate.useWithoutItem(fakeLevel, fakePlayer, blockHitResult);
+                    }
+                } else {
+                    return false;
+                }
+
+                if (interactionResult != InteractionResult.PASS) {
+                    return ClientConfig.canceledVanillaActions.cancelInteraction();
+                } else {
+                    return ClientConfig.canceledVanillaActions.cancelItemUse();
+                }
+            } catch (Throwable e) {
+                return false;
+            }
+        }
+    }
+
+    /// Determines whether the vanilla attack action should be cancelled when targeting a living entity in vanilla mode.
+    ///
+    /// Replaces the NeoForge [InputEvent.InteractionKeyMappingTriggered] handler logic for ATTACK action.
+    /// Called from [MixinMinecraft] when the player attempts to attack.
+    ///
+    /// @return `true` to cancel the vanilla attack action; `false` to allow it
+    @ApiStatus.Internal
+    public static boolean shouldCancelVanillaAttackOnEntity() {
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        if (playerpatch == null) {
+            return false;
+        }
+
+        // Only applies in vanilla mode
+        if (!playerpatch.isVanillaMode()) {
+            return false;
+        }
+
+        if (EpicFightGameRules.ALLOW_VANILLA_MELEE.getRuleValue(playerpatch.getOriginal().level())) {
+            return false;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.hitResult instanceof EntityHitResult entityHitResult) {
+            return entityHitResult.getEntity() instanceof LivingEntity || entityHitResult.getEntity() instanceof net.minecraft.world.entity.boss.EnderDragonPart;
+        }
+
+        return false;
+    }
+
 
     /**
      * Previously used to disable the vanilla attack key so the player
@@ -907,7 +1048,16 @@ public class ControlEngine implements IEventBasedEngine {
             // but controller inputs will not support those custom keybinds.
             return isKeyDown(currentHoldingKey);
         }
-        return InputManager.isActionActive(currentHoldingAction);
+        // On Fabric 1.21.1, KeyMapping#isDown can briefly report false for keyboard keys
+        // that share a physical binding with a vanilla key mapping (e.g. MOVER_SKILL and
+        // JUMP both bound to Space). This causes the chargeable-skill holding loop to
+        // think the player released the key, prematurely ending the charge. Fall back to
+        // the physical key state, which is reliable and safe here because this method is
+        // only called during in-game ticks (no screen open).
+        if (InputManager.isActionActive(currentHoldingAction)) {
+            return true;
+        }
+        return InputManager.isActionPhysicallyActive(currentHoldingAction);
     }
 
     /// Determines whether hotbar cycling should be disabled.
@@ -956,23 +1106,24 @@ public class ControlEngine implements IEventBasedEngine {
 	/******************
 	 * Event listeners
 	 ******************/
-	// TODO: Port to Fabric callback (was InputEvent.MouseScrollingEvent)
+	// Handled by MixinInventory.onCycleHotbarSlot (cancels swapPaint for all input methods)
+	// NeoForge's InputEvent.MouseScrollingEvent was an extra safety for mouse input only
 	private void epicfight$mouseScrollEvent(Object event) {
 	}
 
-	// TODO: Port to Fabric callback (was MovementInputUpdateEvent)
+	// Handled by MixinLocalPlayerInput.epicfight$onMovementInputUpdate
 	private void epicfight$moveObject(Object event) {
 	}
 
-	// TODO: Port to Fabric callback (was ClientTickEvent.Post)
+	// Handled by gameEventBus() callback — ClientTickEvents.END_CLIENT_TICK
 	private void epicfight$clientTickEndEvent(Object event) {
 	}
 
-	// TODO: Port to Fabric callback (was InputEvent.InteractionKeyMappingTriggered)
+	// Handled by MixinMinecraft.epicfight$startUseItem and MixinMinecraft.onStartVanillaAttack
 	private void epicfight$interactionKeyMappingTriggered(Object event) {
 	}
 
-	// TODO: Port to Fabric callback (was LivingJumpEvent)
+	// Handled by MixinLivingEntityJump.epicfight$onJump
 	private void epicfight$livingJumpEvent(Object event) {
 	}
 
@@ -981,7 +1132,15 @@ public class ControlEngine implements IEventBasedEngine {
 	 **********************/
 	@Override
 	public void gameEventBus(Object gameEventBus) {
-		// TODO: Port to Fabric callbacks (was NeoForge IEventBus.addListener)
+		// Client tick end — flush queued packets (was epicfight$clientTickEndEvent / ClientTickEvent.Post)
+		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (this.player == null) {
+				return;
+			}
+
+			this.packetsToSend.forEach(EpicFightNetworkManager::sendToServer);
+			this.packetsToSend.clear();
+		});
 	}
 
 	@Override

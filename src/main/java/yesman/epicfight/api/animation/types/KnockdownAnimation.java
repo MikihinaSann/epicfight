@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageTypes;

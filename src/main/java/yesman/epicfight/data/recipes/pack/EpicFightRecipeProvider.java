@@ -1,5 +1,4 @@
 package yesman.epicfight.data.recipes.pack;
-import net.minecraft.client.Minecraft;
 
 import java.util.concurrent.CompletableFuture;
 

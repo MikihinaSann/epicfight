@@ -1,5 +1,4 @@
 package yesman.epicfight.world.level.block;
-import net.minecraft.client.Minecraft;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -25,6 +24,7 @@ public class FractureBlockState extends BlockState {
 	private Quaternionf rotation;
 	private double bouncing;
 	private int maxLifeTime;
+	private BlockState originalBlockState;
 	private static final Int2ObjectMap<BlockState> ORIGINAL_BLOCK_STATE_CACHE = new Int2ObjectOpenHashMap<>();
 	
 	public static void remove(BlockPos blockPos) {
@@ -41,6 +41,7 @@ public class FractureBlockState extends BlockState {
 	
 	public void setFractureInfo(BlockPos bp, BlockState originalState, Vector3f translate, Quaternionf rotation, double bouncing, int maxLifeTime) {
 		ORIGINAL_BLOCK_STATE_CACHE.put(bp.hashCode(), originalState);
+		this.originalBlockState = originalState;
 		this.translate = translate;
 		this.rotation = rotation;
 		this.bouncing = bouncing;
@@ -80,7 +81,7 @@ public class FractureBlockState extends BlockState {
 	}
 	
 		public int getLightEmission() {
-		return 0; // TODO: getLightEmission
+		return this.originalBlockState != null ? this.originalBlockState.getLightEmission() : 0;
 	}
 	
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos) {

@@ -1,6 +1,5 @@
 package yesman.epicfight.world.capabilities.provider;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
-import net.minecraft.client.Minecraft;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -88,32 +87,32 @@ public final class CommonItemCapabilityProvider implements ICapabilityProvider<I
 		BuiltInRegistries.ITEM.entrySet().stream().filter(entry -> !this.capabilities.containsKey(entry.getValue())).forEach(entry -> {
 			Function<Item, ? extends CapabilityItem.Builder<?>> type = null;
 			Item item = entry.getValue();
-			
+
 			if (item instanceof BlockItem) {
 				return;
 			}
-			
+
 			for (Map.Entry<ResourceLocation, ItemKeywordReloadListener.ItemRegex> regexEntry : ItemKeywordReloadListener.getRegexes().entrySet()) {
 				if (regexEntry.getValue().matchesAny(entry.getKey().location().toString())) {
 					type = WeaponTypeReloadListener.get(regexEntry.getKey());
-					
+
 					if (type != null) {
 						this.capabilities.put(item, type.apply(item).build());
 						break;
 					}
 				}
 			}
-			
+
 			if (type == null) {
 				Class<?> clazz = item.getClass();
 				CapabilityItem capability = null;
-				
+
 				for (; clazz != null && capability == null; clazz = clazz.getSuperclass()) {
 					if (this.typedCapabilities.containsKey(clazz)) {
 						capability = getDefault(item);
 					}
 				}
-				
+
 				if (capability != null) {
 					this.capabilities.put(item, capability);
 				}

@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 

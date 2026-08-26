@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.patched.layer;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
@@ -12,6 +11,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.client.events.engine.RenderEngine;
+import yesman.epicfight.client.renderer.patched.item.RenderItemBase;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public class PatchedItemInHandLayer<E extends LivingEntity, T extends LivingEntityPatch<E>, M extends EntityModel<E>> extends PatchedLayer<E, T, M, RenderLayer<E, M>> {
@@ -20,13 +20,19 @@ public class PatchedItemInHandLayer<E extends LivingEntity, T extends LivingEnti
 		ItemStack mainHandStack = entitypatch.getOriginal().getMainHandItem();
 
 		if (mainHandStack.getItem() != Items.AIR && entitypatch.isMainhandItemValid()) {
-			RenderEngine.getInstance().getItemRenderer(mainHandStack).renderItemInHand(mainHandStack, entitypatch, InteractionHand.MAIN_HAND, poses, buffer, postStack, packedLight, partialTicks);
+			RenderItemBase renderer = RenderEngine.getInstance().getItemRenderer(mainHandStack);
+			if (renderer != null) {
+				renderer.renderItemInHand(mainHandStack, entitypatch, InteractionHand.MAIN_HAND, poses, buffer, postStack, packedLight, partialTicks);
+			}
 		}
-		
+
 		ItemStack offHandStack = entitypatch.getOriginal().getOffhandItem();
-		
+
 		if (entitypatch.isOffhandItemValid()) {
-			RenderEngine.getInstance().getItemRenderer(offHandStack).renderItemInHand(offHandStack, entitypatch, InteractionHand.OFF_HAND, poses, buffer, postStack, packedLight, partialTicks);
+			RenderItemBase renderer = RenderEngine.getInstance().getItemRenderer(offHandStack);
+			if (renderer != null) {
+				renderer.renderItemInHand(offHandStack, entitypatch, InteractionHand.OFF_HAND, poses, buffer, postStack, packedLight, partialTicks);
+			}
 		}
 	}
 }

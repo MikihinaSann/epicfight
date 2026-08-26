@@ -1,24 +1,21 @@
 package yesman.epicfight.registry.entries;
-import net.minecraft.client.Minecraft;
-import yesman.epicfight.EpicFight;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
+import yesman.epicfight.EpicFight;
+import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
-import yesman.epicfight.main.EpicFightMod;
 
 public final class EpicFightCreativeTabs {
 	private EpicFightCreativeTabs() {}
-	
+
 	public static final DeferredRegisterShim<CreativeModeTab> REGISTRY = new DeferredRegisterShim<>(Registries.CREATIVE_MODE_TAB, EpicFight.MODID);
 
 	public static final DeferredHolderShim<CreativeModeTab, CreativeModeTab> ITEMS = REGISTRY.register("items", () ->
-		CreativeModeTab.builder(net.minecraft.world.item.CreativeModeTab.Row.TOP, 0)
+		CreativeModeTab.builder(CreativeModeTab.Row.TOP, 0)
 			.title(Component.translatable("itemGroup.epicfight.items"))
 			.icon(() -> new ItemStack(EpicFightItems.SKILLBOOK.get()))
 			.backgroundTexture(EpicFightMod.identifier("textures/gui/container/epicfight_creative_tab.png"))
@@ -30,7 +27,7 @@ public final class EpicFightCreativeTabs {
 					if (item == EpicFightItems.UCHIGATANA_SHEATH || item == EpicFightItems.SKILLBOOK) {
 						return;
 					}
-					
+
 					output.accept(item.get());
 				});
 			})

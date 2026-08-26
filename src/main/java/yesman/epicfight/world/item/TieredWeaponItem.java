@@ -1,5 +1,4 @@
 package yesman.epicfight.world.item;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;

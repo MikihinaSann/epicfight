@@ -1,5 +1,4 @@
 package yesman.epicfight.world.level.block.entity;
-import net.minecraft.client.Minecraft;
 
 import java.util.Set;
 

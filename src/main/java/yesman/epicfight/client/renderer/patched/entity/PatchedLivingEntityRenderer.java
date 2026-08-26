@@ -116,14 +116,18 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 	@Override
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTicks) {
 		super.render(entity, entitypatch, renderer, buffer, poseStack, packedLight, partialTicks);
-		
+
 		MixinLivingEntityRenderer livingEntityRendererAccessor = (MixinLivingEntityRenderer)renderer;
-		
+
 		boolean isVisible = livingEntityRendererAccessor.invokeIsBodyVisible(entity);
 		boolean isVisibleToPlayer = !isVisible && !entity.isInvisibleTo(Minecraft.getInstance().player);
 		boolean isGlowing = Minecraft.getInstance().shouldEntityAppearGlowing(entity);
 		RenderType renderType = livingEntityRendererAccessor.invokeGetRenderType(entity, isVisible, isVisibleToPlayer, isGlowing);
 		Armature armature = entitypatch.getArmature();
+		if (armature == null) {
+			yesman.epicfight.EpicFight.LOGGER.warn("[EpicFight] {} armature is null — cannot render Epic Fight model", entity.getType());
+			return;
+		}
 		poseStack.pushPose();
 		this.mulPoseStack(poseStack, armature, entity, entitypatch, partialTicks);
 		this.prepareVanillaModel(entity, renderer.getModel(), renderer, partialTicks);
@@ -168,7 +172,7 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 	}
 	
 	protected void prepareVanillaModel(E entity, M model, LivingEntityRenderer<E, M> renderer, float partialTicks) {
-		boolean shouldSit = entity.isPassenger() && (entity.getVehicle() != null && entity.getVehicle() != null && false);
+		boolean shouldSit = entity.isPassenger(); // NeoForge's Entity.shouldRiderSit() defaults to true in vanilla
 		model.riding = shouldSit;
 		model.young = entity.isBaby();
 		float f = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);

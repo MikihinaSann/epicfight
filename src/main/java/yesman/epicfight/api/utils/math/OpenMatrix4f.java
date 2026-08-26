@@ -1,5 +1,4 @@
 package yesman.epicfight.api.utils.math;
-import net.minecraft.client.Minecraft;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

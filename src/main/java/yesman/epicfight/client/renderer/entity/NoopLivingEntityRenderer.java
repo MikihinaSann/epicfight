@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.entity;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 

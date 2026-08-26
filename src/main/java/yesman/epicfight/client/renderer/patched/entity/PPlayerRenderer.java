@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.patched.entity;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.player.AbstractClientPlayer;

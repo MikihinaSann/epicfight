@@ -1,5 +1,4 @@
 package yesman.epicfight.skill;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

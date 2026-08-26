@@ -1,5 +1,4 @@
 package yesman.epicfight.network.client;
-import net.minecraft.client.Minecraft;
 
 import javax.annotation.Nullable;
 

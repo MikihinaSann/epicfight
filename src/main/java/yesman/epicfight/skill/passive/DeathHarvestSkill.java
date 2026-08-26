@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.passive;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.LivingEntity;

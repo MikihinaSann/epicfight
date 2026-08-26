@@ -1,5 +1,4 @@
 package yesman.epicfight.compat.controlify;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import dev.isxander.controlify.api.ControlifyApi;
@@ -325,7 +324,26 @@ public class EpicFightControlifyEntrypoint implements ControlifyEntrypoint {
     }
 
     private static void registerEvents() {
-        // TODO: Port LOOK_INPUT_MODIFIER to Fabric
+        // Registers a look-input modifier so Epic Fight's camera can take over
+        // the player's look input when in Epic Fight combat mode.
+        // Note: Controlify is currently disabled as a dependency (malformed access widener),
+        // so the stub's register() is a no-op. When Controlify is re-enabled, this will
+        // function identically to the NeoForge version.
+        ControlifyEvents.LOOK_INPUT_MODIFIER.register(event -> {
+            // Workaround: Since these values are normalized
+            // (e.g., x = -10 with default sensitivity or -20 when sensitivity is maxed),
+            // while mouse values are not normalized (e.g., around 110.00000983476669),
+            // handle the difference by scaling the values by 10.
+            final double multiplier = 10;
+
+            final Vector2f lookInput = event.lookInput();
+            final double dy = lookInput.x * multiplier;
+            final double dx = lookInput.y * multiplier;
+
+            if (EpicFightCameraAPI.getInstance().turnCamera(dy, dx)) {
+                lookInput.zero();
+            }
+        });
     }
 
     private static void registerGuides(GuideDomainRegistry<InGameCtx> inGameRegistry, GuideDomainRegistry<ContainerCtx> containerRegistry) {

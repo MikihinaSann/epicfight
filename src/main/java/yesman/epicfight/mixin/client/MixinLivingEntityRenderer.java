@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.client;
-import net.minecraft.client.Minecraft;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Invoker;
@@ -12,10 +11,10 @@ import net.minecraft.world.entity.LivingEntity;
 public interface MixinLivingEntityRenderer {
 	@Invoker("isBodyVisible")
 	public boolean invokeIsBodyVisible(LivingEntity entity);
-	
+
 	@Invoker("getRenderType")
 	public RenderType invokeGetRenderType(LivingEntity entity, boolean flag1, boolean flag2, boolean flag3);
-	
+
 	@Invoker("getBob")
 	public float invokeGetBob(LivingEntity entity, float partialTicks);
 }

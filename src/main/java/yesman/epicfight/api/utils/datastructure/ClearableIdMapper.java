@@ -1,5 +1,4 @@
 package yesman.epicfight.api.utils.datastructure;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.IdMapper;
 import yesman.epicfight.mixin.common.IdMapperAccessor;

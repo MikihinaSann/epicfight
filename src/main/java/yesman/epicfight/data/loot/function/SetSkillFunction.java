@@ -1,5 +1,4 @@
 package yesman.epicfight.data.loot.function;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;

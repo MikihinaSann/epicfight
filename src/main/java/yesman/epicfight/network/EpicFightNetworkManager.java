@@ -1,5 +1,4 @@
 package yesman.epicfight.network;
-import net.minecraft.client.Minecraft;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -8,6 +7,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamEncoder;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
@@ -39,8 +39,13 @@ public class EpicFightNetworkManager {
         }
     }
 
-    public static void sendToAll(CustomPacketPayload message, CustomPacketPayload... others) {
-        // Placeholder — needs server context to iterate players
+    public static void sendToAll(MinecraftServer server, CustomPacketPayload message, CustomPacketPayload... others) {
+        server.getPlayerList().getPlayers().forEach(player -> {
+            ServerPlayNetworking.send(player, message);
+            for (CustomPacketPayload other : others) {
+                ServerPlayNetworking.send(player, other);
+            }
+        });
     }
 
     public static void sendToAllPlayerTrackingThisEntity(CustomPacketPayload message, Entity entity, CustomPacketPayload... others) {
@@ -63,10 +68,12 @@ public class EpicFightNetworkManager {
     }
 
     public static void sendToAllPlayerTrackingThisEntityWithSelf(CustomPacketPayload message, ServerPlayer entity, CustomPacketPayload... others) {
-        // Send to self
-        ServerPlayNetworking.send(entity, message);
-        for (CustomPacketPayload other : others) {
-            ServerPlayNetworking.send(entity, other);
+        // Send to self — guard against null connection during early player placement (Entity.load)
+        if (entity.connection != null) {
+            ServerPlayNetworking.send(entity, message);
+            for (CustomPacketPayload other : others) {
+                ServerPlayNetworking.send(entity, other);
+            }
         }
         // Send to tracking players (excluding self)
         if (entity.level() instanceof ServerLevel serverLevel) {

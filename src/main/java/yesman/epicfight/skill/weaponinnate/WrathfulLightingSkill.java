@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.weaponinnate;
-import net.minecraft.client.Minecraft;
 
 import java.util.List;
 

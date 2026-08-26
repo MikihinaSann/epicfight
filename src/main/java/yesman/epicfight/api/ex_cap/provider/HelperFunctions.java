@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.provider;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.InteractionHand;
 import org.jetbrains.annotations.ApiStatus;

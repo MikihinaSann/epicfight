@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -234,7 +233,7 @@ public class AttackAnimation extends ActionAnimation {
 				LivingEntity trueEntity = this.getTrueEntity(target);
 				
 				if (trueEntity != null && trueEntity.isAlive() && !entitypatch.getCurrentlyAttackTriedEntities().contains(trueEntity) && !entitypatch.isTargetInvulnerable(target)) {
-					if (target instanceof LivingEntity || target instanceof net.minecraft.world.entity.Entity) {
+					if (target instanceof LivingEntity || target instanceof net.minecraft.world.entity.boss.EnderDragonPart) {
 						AABB aabb = target.getBoundingBox();
 						
 						if (MathUtils.canBeSeen(target, entity, target.position().distanceTo(entity.getEyePosition()) + aabb.getCenter().distanceTo(new Vec3(aabb.maxX, aabb.maxY, aabb.maxZ)))) {
@@ -270,8 +269,8 @@ public class AttackAnimation extends ActionAnimation {
 	public LivingEntity getTrueEntity(Entity entity) {
 		if (entity instanceof LivingEntity livingEntity) {
 			return livingEntity;
-		} else if (entity instanceof net.minecraft.world.entity.Entity) {
-			Entity parentEntity = null;
+		} else if (entity instanceof net.minecraft.world.entity.boss.EnderDragonPart enderDragonPart) {
+			Entity parentEntity = enderDragonPart.parentMob;
 			
 			if (parentEntity instanceof LivingEntity livingEntity) {
 				return livingEntity;

@@ -7,7 +7,6 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.wildfire.api.IGenderArmor;
 import com.wildfire.main.WildfireGender;
 import com.wildfire.main.WildfireHelper;
-import com.wildfire.main.config.GeneralClientConfig;
 import com.wildfire.main.entitydata.Breasts;
 import com.wildfire.main.entitydata.EntityConfig;
 import com.wildfire.physics.BreastPhysics;
@@ -31,6 +30,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
@@ -53,7 +53,6 @@ import yesman.epicfight.client.renderer.patched.entity.PPlayerRenderer;
 import yesman.epicfight.client.renderer.patched.layer.PatchedLayer;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.AbstractClientPlayerPatch;
 import yesman.epicfight.compat.ICompatModule;
-import yesman.epicfight.compat.fgm.mixin.FemaleLayerAccessor;
 import yesman.epicfight.model.armature.HumanoidArmature;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
@@ -95,8 +94,8 @@ public class WildfireFGMCompat implements ICompatModule {
 
         @Override
         protected void renderLayer(AbstractClientPlayerPatch<AbstractClientPlayer> entityPatch, AbstractClientPlayer entity, @Nullable GenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> vanillaLayer, PoseStack poseStack, MultiBufferSource buffer, int packedLight, OpenMatrix4f[] poses, float bob, float yRot, float xRot, float partialTicks) {
-            if (vanillaLayer instanceof FemaleLayerAccessor<?, ?> accessor) {
-                if (!(Boolean) false && !entity.isSpectator()) {
+            if (vanillaLayer != null) {
+                if (!entity.isSpectator()) {
                     try {
                         EntityConfig entityConfig = EntityConfig.getEntity(entity);
                         if (entityConfig == null) {
@@ -111,7 +110,7 @@ public class WildfireFGMCompat implements ICompatModule {
                         }
 
                         RenderType breastRenderType = null;
-                        ResourceLocation entityTexture = accessor.getTexture(entity);
+                        ResourceLocation entityTexture = entity.getSkin().texture();
                         if (entityTexture != null) {
                             boolean bodyVisible = !entity.isInvisible();
                             Minecraft minecraft = Minecraft.getInstance();

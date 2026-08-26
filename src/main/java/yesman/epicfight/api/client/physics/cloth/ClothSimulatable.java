@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.physics.cloth;
-import net.minecraft.client.Minecraft;
 
 import javax.annotation.Nullable;
 

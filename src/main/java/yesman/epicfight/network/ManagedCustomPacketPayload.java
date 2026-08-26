@@ -1,5 +1,4 @@
 package yesman.epicfight.network;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;

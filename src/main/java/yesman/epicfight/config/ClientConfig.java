@@ -10,11 +10,10 @@ import net.minecraft.world.item.Item;
 import net.fabricmc.api.EnvType;
 
 
-import fuzs.forgeconfigapiport.api.config.v3.ModConfig;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigEvent;
+import net.neoforged.fml.config.ModConfig;
 
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec.*;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec.*;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -147,9 +146,9 @@ public class ClientConfig {
     public static boolean groundSlams = true;
 
     // Model Config values
-    public static int maxStuckProjectiles = 10;
+    public static int maxStuckProjectiles = 30;
     public static boolean enableAnimatedFirstPersonModel = true;
-    public static boolean enableOriginalModel = false;
+    public static boolean enableOriginalModel = true;
     public static boolean enableCosmetics = true;
 
     // Camera Config values
@@ -158,16 +157,16 @@ public class ClientConfig {
     /** Use {@link #getTpsActivationType()} to handle null */
     @Deprecated @ApiStatus.Internal
     public static TPSActivationType tpsType = TPSActivationType.ON_AIMING;
-    public static int cameraHorizontalLocation = 0;
+    public static int cameraHorizontalLocation = -5;
     public static int cameraVerticalLocation = 0;
-    public static int cameraZoom = 0;
-    public static int entityFocusingRange = 30;
+    public static int cameraZoom = 3;
+    public static int entityFocusingRange = 20;
     public static boolean lockOnSnapping = true;
 
     // Control Config values
-    public static int holdingThreshold = 7;
-    public static boolean autoPerspectiveSwithing = true;
-    public static CanceledVanillaActions canceledVanillaActions = CanceledVanillaActions.NONE;
+    public static int holdingThreshold = 2;
+    public static boolean autoPerspectiveSwithing = false;
+    public static CanceledVanillaActions canceledVanillaActions = CanceledVanillaActions.INTERACTION;
     public static PlayerBehaviorStrategy playerBehaviorStrategy = PlayerBehaviorStrategy.ADAPTIVE;
     public static CameraPerspectiveToggleMode cameraPerspectiveToggleMode = CameraPerspectiveToggleMode.VANILLA;
     public static Set<Item> combatCategorizedItems = new java.util.HashSet<>();
@@ -175,8 +174,8 @@ public class ClientConfig {
 
     // UI Config values
     public static boolean showTargetIndicator = true;
-    public static HealthBarVisibility healthBarVisibility = HealthBarVisibility.NONE;
-    public static boolean showEpicFightAttributesInTooltip = false;
+    public static HealthBarVisibility healthBarVisibility = HealthBarVisibility.HURT;
+    public static boolean showEpicFightAttributesInTooltip = true;
     public static double targetOutlineColor = 0.0;
     public static int packedTargetOutlineColor = 0xFFFFFFFF;
     public static BlockGuideOptions mineBlockGuideOption = BlockGuideOptions.CROSSHAIR;
@@ -202,8 +201,8 @@ public class ClientConfig {
     public static VerticalBasis chargingBarBaseY = VerticalBasis.CENTER;
 
     
-    static void epicfight$modConfigLoading(final ModConfigEvent.Loading event) {
-        if (event.getConfig().getType() != ModConfig.Type.CLIENT) {
+    public static void epicfight$modConfigLoading(final ModConfig config) {
+        if (config.getType() != ModConfig.Type.CLIENT) {
             return;
         }
 
@@ -262,7 +261,7 @@ public class ClientConfig {
         chargingBarBaseX = CHARGING_BAR_BASE_X.get();
         chargingBarBaseY = CHARGING_BAR_BASE_Y.get();
 
-        if (EpicFightServerConnectionHelper.init(event.getConfig().getFullPath().getParent().toString())) {
+        if (EpicFightServerConnectionHelper.init(config.getFullPath().getParent().toString())) {
             EpicFight.LOGGER.info("Epic Fight web server connection helper: supported");
 
             try {

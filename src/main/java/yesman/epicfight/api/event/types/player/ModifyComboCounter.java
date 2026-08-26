@@ -1,5 +1,4 @@
 package yesman.epicfight.api.event.types.player;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Sets;
 import net.minecraft.Util;

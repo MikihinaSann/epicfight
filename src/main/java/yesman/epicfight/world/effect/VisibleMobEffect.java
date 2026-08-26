@@ -1,5 +1,4 @@
 package yesman.epicfight.world.effect;
-import net.minecraft.client.Minecraft;
 
 import java.util.function.Function;
 

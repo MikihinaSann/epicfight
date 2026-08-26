@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.event.types.registry;
-import net.minecraft.client.Minecraft;
 
 import com.google.gson.JsonElement;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;

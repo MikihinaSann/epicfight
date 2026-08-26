@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.client;
-import net.minecraft.client.Minecraft;
 
 import org.joml.Vector3f;
 import org.spongepowered.asm.mixin.Mixin;

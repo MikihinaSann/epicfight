@@ -1,5 +1,4 @@
 package yesman.epicfight.api.utils;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Lists;
 import net.minecraft.core.BlockPos;

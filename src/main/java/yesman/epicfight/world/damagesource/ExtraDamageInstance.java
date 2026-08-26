@@ -1,6 +1,5 @@
 package yesman.epicfight.world.damagesource;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;

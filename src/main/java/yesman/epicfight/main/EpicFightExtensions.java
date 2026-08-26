@@ -1,5 +1,4 @@
 package yesman.epicfight.main;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.item.CreativeModeTab;
 

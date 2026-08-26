@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.emote;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import net.minecraft.core.Holder;

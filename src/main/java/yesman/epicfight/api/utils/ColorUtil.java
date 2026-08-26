@@ -1,5 +1,4 @@
 package yesman.epicfight.api.utils;
-import net.minecraft.client.Minecraft;
 
 import org.joml.Vector4f;
 import org.joml.Vector4i;

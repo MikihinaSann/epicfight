@@ -1,6 +1,5 @@
 package yesman.epicfight.registry.deferred_shim;
 import yesman.epicfight.EpicFight;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -135,12 +134,31 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof DeferredHolderShim<?, ?> that)) return false;
-        return Objects.equals(key, that.key);
+        if (o instanceof DeferredHolderShim<?, ?> that) {
+            return Objects.equals(key, that.key);
+        }
+        // Holder.Reference uses identity equals/hashCode, so we must delegate to the
+        // underlying bound holder to be compatible with maps keyed by Holder.Reference
+        // (e.g. AttributeSupplier.instances, AttributeMap.attributes).
+        if (holder != null) {
+            return holder.equals(o);
+        }
+        if (o instanceof Holder<?> other) {
+            Optional<?> otherKey = other.unwrapKey();
+            return otherKey.isPresent() && Objects.equals(key, otherKey.get());
+        }
+        return false;
     }
 
     @Override
     public int hashCode() {
+        // Delegate to the bound Holder.Reference's identity hashCode so that HashMap
+        // lookups against maps keyed by Holder.Reference (like AttributeSupplier.instances)
+        // find this shim. Holder.Reference does NOT override hashCode, so it uses
+        // System.identityHashCode — we must match that.
+        if (holder != null) {
+            return System.identityHashCode(holder);
+        }
         return key.hashCode();
     }
 }

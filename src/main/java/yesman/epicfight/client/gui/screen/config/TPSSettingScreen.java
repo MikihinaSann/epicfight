@@ -1,5 +1,4 @@
 package yesman.epicfight.client.gui.screen.config;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.math.Axis;

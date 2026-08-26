@@ -1,5 +1,4 @@
 package yesman.epicfight.registry.deferred.holders;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceKey;
 import org.jetbrains.annotations.ApiStatus;

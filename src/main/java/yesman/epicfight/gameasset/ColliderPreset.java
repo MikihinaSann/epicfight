@@ -1,5 +1,4 @@
 package yesman.epicfight.gameasset;
-import net.minecraft.client.Minecraft;
 
 import java.util.Collections;
 import java.util.Map;

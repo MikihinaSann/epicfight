@@ -1,5 +1,4 @@
 package yesman.epicfight.registry.deferred;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
@@ -25,14 +24,13 @@ public final class ItemPresetRegister extends DeferredRegisterShim<CapabilityIte
     }
 
     public DeferredWeapon registerWeapon(String name, Supplier<WeaponCapability.Builder> builder) {
-
         ResourceKey<CapabilityItem.Builder<?>> key = ResourceKey.create(
                 EpicFightRegistries.Keys.BUILDERS,
                 ResourceLocation.fromNamespaceAndPath(this.getNamespace(), name)
         );
-        this.register(name, builder);
-
-        return new DeferredWeapon(key, () -> (yesman.epicfight.world.capabilities.item.WeaponCapability.Builder) builder.get());
+        DeferredWeapon weapon = new DeferredWeapon(key, () -> (yesman.epicfight.world.capabilities.item.WeaponCapability.Builder) builder.get());
+        this.addEntry(weapon);
+        return weapon;
     }
 
     @Override
@@ -49,9 +47,8 @@ public final class ItemPresetRegister extends DeferredRegisterShim<CapabilityIte
                 this.getRegistryKey(),
                 ResourceLocation.fromNamespaceAndPath(this.getNamespace(), name)
         );
-
-        this.register(name, builder);
-
-        return new DeferredPreset<>(key, () -> null);
+        DeferredPreset<T> preset = new DeferredPreset<>(key, builder);
+        this.addEntry(preset);
+        return preset;
     }
 }

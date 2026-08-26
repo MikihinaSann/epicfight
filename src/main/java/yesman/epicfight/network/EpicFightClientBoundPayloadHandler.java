@@ -73,6 +73,10 @@ public interface EpicFightClientBoundPayloadHandler {
 			case REMOVE -> dataManager.removeData(data.skillDataKey());
 			case MODIFY -> {
 				Object value = data.skillDataKey().value().decode(data.buffer());
+				if (!dataManager.hasData(data.skillDataKey())) {
+					yesman.epicfight.EpicFight.LOGGER.warn("[EpicFight] MODIFY for unregistered key {} in slot {} — auto-registering", data.skillDataKey().getRegisteredName(), data.skillSlot());
+					dataManager.registerData(data.skillDataKey());
+				}
 				dataManager.setDataRawtype(data.skillDataKey(), value);
 			}
 			}
@@ -103,18 +107,18 @@ public interface EpicFightClientBoundPayloadHandler {
 	
 	static void handleChangeLivingMotion(final SPChangeLivingMotion data, final yesman.epicfight.network.EpicFightPayloadContext context) {
 		Entity entity = context.player().level().getEntity(data.entityId());
-		
+
 		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, LivingEntityPatch.class).ifPresent(entitypatch -> {
 			ClientAnimator animator = entitypatch.getClientAnimator();
 			animator.resetLivingAnimations();
 			animator.offAllLayers();
 			animator.resetMotion(false);
 			animator.resetCompositeMotion();
-			
+
 			for (int i = 0; i < data.livingMotions().size(); i++) {
 				entitypatch.getClientAnimator().addLivingAnimation(data.livingMotions().get(i), data.animations().get(i));
 			}
-			
+
 			if (data.setChangesAsDefault()) {
 				animator.setCurrentMotionsAsDefault();
 			}

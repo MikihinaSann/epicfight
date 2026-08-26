@@ -1,5 +1,4 @@
 package yesman.epicfight.api.event.types.entity;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import yesman.epicfight.api.event.Event;

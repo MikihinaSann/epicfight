@@ -1,5 +1,4 @@
 package yesman.epicfight.world.entity;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -22,7 +21,7 @@ public class DroppedNetherStar extends ItemEntity {
 		this.setPos(x, y, z);
 		this.setDeltaMovement(dx, dy, dz);
 		this.setItem(itemstack);
-		// TODO: lifespan is private in vanilla
+		this.setExtendedLifetime();
 		this.noPhysics = true;
 		this.setPickUpDelay(30);
 		this.setNoGravity(true);

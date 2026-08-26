@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.event.types.camera;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;

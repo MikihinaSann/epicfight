@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.emote;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceKey;
 import yesman.epicfight.client.online.cosmetics.Emote;

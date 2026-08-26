@@ -1,5 +1,4 @@
 package yesman.epicfight.registry.entries;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import yesman.epicfight.EpicFight;

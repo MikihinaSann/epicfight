@@ -1,5 +1,4 @@
 package yesman.epicfight.world.item;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;

@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.managers;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;

@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.weaponinnate;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;

@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.projectile;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.world.entity.Entity;

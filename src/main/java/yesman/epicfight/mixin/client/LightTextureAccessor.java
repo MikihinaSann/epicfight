@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.client;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.client.renderer.LightTexture;

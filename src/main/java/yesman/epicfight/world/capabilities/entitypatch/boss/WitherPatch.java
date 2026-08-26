@@ -1,7 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import com.google.common.collect.ImmutableList;
@@ -229,7 +226,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 			}
 		}
 		
-		if (this.animator.getPlayerFor(null).getAnimation().equals(Animations.WITHER_CHARGE) && this.getEntityState().attacking() && EventHooks.canEntityGrief(this.original.level(), this.original)) {
+		if (this.animator.getPlayerFor(null).getAnimation().equals(Animations.WITHER_CHARGE) && this.getEntityState().attacking() && this.original.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
 			int x = Mth.floor(this.original.getX());
 			int y = Mth.floor(this.original.getY());
 			int z = Mth.floor(this.original.getZ());
@@ -244,9 +241,7 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 						BlockPos blockpos = new BlockPos(l2, l, i1);
 						BlockState blockstate = this.original.level().getBlockState(blockpos);
 						
-						if (false && EventHooks.onEntityDestroyBlock(this.original, blockpos, blockstate)) {
-							flag = this.original.level().destroyBlock(blockpos, true, this.original) || flag;
-						}
+						flag = this.original.level().destroyBlock(blockpos, true, this.original) || flag;
 					}
 				}
 			}

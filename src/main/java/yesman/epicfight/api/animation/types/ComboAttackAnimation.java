@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;

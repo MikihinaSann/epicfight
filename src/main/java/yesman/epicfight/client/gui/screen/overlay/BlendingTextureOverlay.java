@@ -1,5 +1,4 @@
 package yesman.epicfight.client.gui.screen.overlay;
-import net.minecraft.client.Minecraft;
 
 import org.lwjgl.opengl.GL11;
 

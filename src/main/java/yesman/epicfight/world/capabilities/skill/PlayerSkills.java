@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.skill;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.HashMultimap;
 import net.minecraft.nbt.CompoundTag;

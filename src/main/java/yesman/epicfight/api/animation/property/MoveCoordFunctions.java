@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.property;
-import net.minecraft.client.Minecraft;
 
 import java.util.Optional;
 

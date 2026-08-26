@@ -1,5 +1,4 @@
 package yesman.epicfight;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import org.apache.logging.log4j.LogManager;

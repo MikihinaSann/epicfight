@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch.mob;
-import net.minecraft.client.Minecraft;
 
 import java.util.Set;
 

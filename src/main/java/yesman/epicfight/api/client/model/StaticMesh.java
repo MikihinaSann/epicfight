@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.model;
-import net.minecraft.client.Minecraft;
 
 import java.util.Collection;
 import java.util.List;

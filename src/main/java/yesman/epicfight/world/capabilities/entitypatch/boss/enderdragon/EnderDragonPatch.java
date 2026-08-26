@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent;
 
 import com.google.common.collect.Maps;

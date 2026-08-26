@@ -1,5 +1,4 @@
 package yesman.epicfight.api.ex_cap.modules.core.data;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import yesman.epicfight.api.ex_cap.provider.ProviderConditional;

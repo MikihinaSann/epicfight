@@ -12,7 +12,6 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 public class FirstPersonCompat implements ICompatModule {
 	@Override
 	public void onInitializeClient() {
-		// TODO: Port event listener to Fabric callback
 		FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
 			public boolean preventFirstperson() {
 				PlayerPatch<?> playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();

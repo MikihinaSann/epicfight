@@ -4,22 +4,23 @@ import net.minecraft.client.renderer.OutlineBufferSource;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
 
+/// Yarn mappings: teamR/G/B/A are int (not float)
 @Mixin(OutlineBufferSource.class)
 public interface OutlineBufferSourceAccessor {
     @Accessor("teamR")
-    float epicfight$getTeamR();
+    int epicfight$getTeamR();
     @Accessor("teamR")
-    void epicfight$setTeamR(float value);
+    void epicfight$setTeamR(int value);
     @Accessor("teamG")
-    float epicfight$getTeamG();
+    int epicfight$getTeamG();
     @Accessor("teamG")
-    void epicfight$setTeamG(float value);
+    void epicfight$setTeamG(int value);
     @Accessor("teamB")
-    float epicfight$getTeamB();
+    int epicfight$getTeamB();
     @Accessor("teamB")
-    void epicfight$setTeamB(float value);
+    void epicfight$setTeamB(int value);
     @Accessor("teamA")
-    float epicfight$getTeamA();
+    int epicfight$getTeamA();
     @Accessor("teamA")
-    void epicfight$setTeamA(float value);
+    void epicfight$setTeamA(int value);
 }

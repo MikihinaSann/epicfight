@@ -1,5 +1,4 @@
 package yesman.epicfight.compat.controlify;
-import net.minecraft.client.Minecraft;
 
 import dev.isxander.controlify.api.bind.InputBinding;
 import net.minecraft.resources.ResourceLocation;

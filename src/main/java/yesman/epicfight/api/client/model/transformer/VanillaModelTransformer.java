@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.model.transformer;
-import net.minecraft.client.Minecraft;
 
 import java.util.ArrayList;
 import java.util.List;

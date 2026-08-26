@@ -1,5 +1,4 @@
 package yesman.epicfight.generated;
-import net.minecraft.client.Minecraft;
 
 /// Auto-generated language key constants.
 public class LangKeys {

@@ -1,5 +1,4 @@
 package yesman.epicfight.api.animation.types.datapack;
-import net.minecraft.client.Minecraft;
 
 import com.google.gson.JsonArray;
 

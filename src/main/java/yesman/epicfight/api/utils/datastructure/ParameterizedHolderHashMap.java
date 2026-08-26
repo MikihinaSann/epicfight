@@ -1,5 +1,4 @@
 package yesman.epicfight.api.utils.datastructure;
-import net.minecraft.client.Minecraft;
 
 import java.util.Collection;
 import java.util.HashMap;

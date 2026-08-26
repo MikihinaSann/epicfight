@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import yesman.epicfight.api.utils.math.MathUtils;

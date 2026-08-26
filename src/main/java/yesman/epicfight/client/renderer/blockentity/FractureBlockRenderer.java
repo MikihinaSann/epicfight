@@ -1,5 +1,4 @@
 package yesman.epicfight.client.renderer.blockentity;
-import net.minecraft.client.Minecraft;
 
 import org.joml.Quaternionf;
 import org.joml.Vector3f;

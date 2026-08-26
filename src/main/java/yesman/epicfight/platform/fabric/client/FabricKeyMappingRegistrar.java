@@ -1,5 +1,4 @@
 package yesman.epicfight.platform.fabric.client;
-import net.minecraft.client.Minecraft;
 
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;

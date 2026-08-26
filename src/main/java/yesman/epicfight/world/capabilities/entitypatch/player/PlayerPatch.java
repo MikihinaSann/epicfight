@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch.player;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.nbt.CompoundTag;

@@ -1,5 +1,4 @@
 package yesman.epicfight.network.server;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import net.minecraft.network.RegistryFriendlyByteBuf;

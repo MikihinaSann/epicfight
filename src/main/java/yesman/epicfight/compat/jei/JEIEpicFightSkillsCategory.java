@@ -1,5 +1,4 @@
 package yesman.epicfight.compat.jei;
-import net.minecraft.client.Minecraft;
 
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;

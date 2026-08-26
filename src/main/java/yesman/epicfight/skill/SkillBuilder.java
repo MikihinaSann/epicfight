@@ -1,5 +1,4 @@
 package yesman.epicfight.skill;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTab;

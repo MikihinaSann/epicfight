@@ -1,5 +1,4 @@
 package yesman.epicfight.api.event.impl;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -342,7 +341,10 @@ public final class VanillaEntityEventHooks {
                     }
 
                     if (knockBackAmount > 0.0F) {
-                        knockBackAmount *= 40.0F / hitEntityPatchAsHurtable.getWeight();
+                        float weight = hitEntityPatchAsHurtable.getWeight();
+                        if (weight > 0.0F) {
+                            knockBackAmount *= 40.0F / weight;
+                        }
 
                         hitEntityPatchAsHurtable.knockBackEntity(sourcePosition, knockBackAmount);
                     }
@@ -440,8 +442,9 @@ public final class VanillaEntityEventHooks {
                     shouldCancel = true;
                 }
 
-                if (rayResult.getEntity() instanceof net.minecraft.world.entity.Entity) {
-                    Entity parent = null;
+                // NeoForge uses PartEntity.getParent(); in vanilla, EnderDragonPart exposes the parent via the parentMob field
+                if (rayResult.getEntity() instanceof net.minecraft.world.entity.boss.EnderDragonPart enderDragonPart) {
+                    Entity parent = enderDragonPart.parentMob;
 
                     if (projectile.getOwner().is(parent)) {
                         shouldCancel = true;

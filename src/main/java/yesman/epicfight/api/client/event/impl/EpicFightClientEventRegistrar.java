@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.event.impl;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.client.player.LocalPlayer;
 import yesman.epicfight.api.event.EpicFightEventHooks;

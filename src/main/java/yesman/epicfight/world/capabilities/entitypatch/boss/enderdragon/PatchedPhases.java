@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.boss.enderdragon.phases.EnderDragonPhase;
 

@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.provider;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.boss.EnderDragonPart;

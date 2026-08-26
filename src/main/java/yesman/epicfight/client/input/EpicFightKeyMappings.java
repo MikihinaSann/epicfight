@@ -1,5 +1,4 @@
 package yesman.epicfight.client.input;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -86,7 +85,7 @@ public class EpicFightKeyMappings {
             ));
 
     public static final KeyMapping SWITCH_MODE =
-            registerKey(new KeyMapping(
+            registerKey(new CombatKeyMapping(
                     LangKeys.KEY_SWITCH_MODE,
                     InputConstants.Type.KEYSYM,
                     InputConstants.KEY_R,
@@ -94,7 +93,7 @@ public class EpicFightKeyMappings {
             ));
 
     public static final KeyMapping LOCK_ON =
-            registerKey(new KeyMapping(
+            registerKey(new CombatKeyMapping(
                     LangKeys.KEY_LOCK_ON,
                     InputConstants.Type.KEYSYM,
                     InputConstants.KEY_G,
@@ -102,7 +101,7 @@ public class EpicFightKeyMappings {
             ));
 
     public static final KeyMapping LOCK_ON_SHIFT_LEFT =
-            registerKey(new KeyMapping(
+            registerKey(new CombatKeyMapping(
                     LangKeys.KEY_LOCK_ON_SHIFT_LEFT,
                     InputConstants.Type.KEYSYM,
                     InputConstants.KEY_LEFT,
@@ -110,7 +109,7 @@ public class EpicFightKeyMappings {
             ));
 
     public static final KeyMapping LOCK_ON_SHIFT_RIGHT =
-            registerKey(new KeyMapping(
+            registerKey(new CombatKeyMapping(
                     LangKeys.KEY_LOCK_ON_SHIFT_RIGHT,
                     InputConstants.Type.KEYSYM,
                     InputConstants.KEY_RIGHT,
@@ -118,7 +117,7 @@ public class EpicFightKeyMappings {
             ));
 
     public static final KeyMapping LOCK_ON_SHIFT_FREELY =
-            registerKey(new KeyMapping(
+            registerKey(new CombatKeyMapping(
                     LangKeys.KEY_LOCK_ON_SHIFT_FREELY,
                     InputConstants.Type.MOUSE,
                     InputConstants.MOUSE_BUTTON_MIDDLE,

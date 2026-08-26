@@ -1,5 +1,4 @@
 package yesman.epicfight.mixin.common;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;

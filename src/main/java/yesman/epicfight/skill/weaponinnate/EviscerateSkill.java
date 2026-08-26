@@ -1,5 +1,4 @@
 package yesman.epicfight.skill.weaponinnate;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;

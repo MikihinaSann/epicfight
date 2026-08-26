@@ -1,6 +1,5 @@
 package yesman.epicfight.world.capabilities.item;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;

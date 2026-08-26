@@ -1,5 +1,4 @@
 package yesman.epicfight.api.data.reloader;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Lists;

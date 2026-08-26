@@ -2,8 +2,8 @@ package yesman.epicfight.main;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec.ConfigValue;
-import fuzs.forgeconfigapiport.api.config.v3.ModConfigSpec.EnumValue;
+import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
+import net.neoforged.neoforge.common.ModConfigSpec.EnumValue;
 
 public interface AuthenticationHelper {
 	boolean valid();

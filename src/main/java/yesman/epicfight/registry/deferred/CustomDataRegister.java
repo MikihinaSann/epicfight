@@ -1,5 +1,4 @@
 package yesman.epicfight.registry.deferred;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;

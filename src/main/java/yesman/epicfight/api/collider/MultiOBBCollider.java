@@ -1,5 +1,4 @@
 package yesman.epicfight.api.collider;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.vertex.PoseStack;

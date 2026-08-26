@@ -453,7 +453,7 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
         if (entityHitResult != null) {
             Entity hitEntity = entityHitResult.getEntity();
 
-            if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof net.minecraft.world.entity.Entity) && !(hitEntity instanceof Interaction)) {
+            if (!(hitEntity instanceof LivingEntity) && !(hitEntity instanceof net.minecraft.world.entity.boss.EnderDragonPart) && !(hitEntity instanceof Interaction)) {
                 return false;
             }
         }

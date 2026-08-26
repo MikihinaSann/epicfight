@@ -16,5 +16,7 @@ public class EventHooks {
     public static boolean onUseItemStop(LivingEntity entity, ItemStack stack, int duration) { return false; }
     public static boolean onEntityDestroyBlock(Object boss, BlockPos pos, BlockState state) { return false; }
     public static boolean onEntityDestroyBlock(Level level, BlockPos pos, BlockState state) { return false; }
-    public static boolean canEntityGrief(Level level, Mob mob) { return mob != null; }
+    public static boolean canEntityGrief(Level level, Mob mob) {
+        return mob != null && level.getGameRules().getBoolean(net.minecraft.world.level.GameRules.RULE_MOBGRIEFING);
+    }
 }

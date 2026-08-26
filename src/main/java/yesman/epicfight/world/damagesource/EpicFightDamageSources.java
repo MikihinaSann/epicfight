@@ -1,5 +1,4 @@
 package yesman.epicfight.world.damagesource;
-import net.minecraft.client.Minecraft;
 
 import javax.annotation.Nullable;
 

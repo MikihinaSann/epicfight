@@ -1,5 +1,4 @@
 package yesman.epicfight.util;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;

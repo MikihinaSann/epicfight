@@ -1,5 +1,4 @@
 package yesman.epicfight.registry.deferred_shim;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -46,6 +45,17 @@ public class DeferredRegisterShim<T> {
         return holder;
     }
 
+    /// Adds a pre-created DeferredHolderShim subclass to the entries list.
+    /// Used by ItemPresetRegister to register DeferredWeapon/DeferredPreset instances
+    /// directly, so that accept() binds the same instance that is returned to the caller.
+    protected <I extends T> DeferredHolderShim<T, I> addEntry(DeferredHolderShim<T, I> holder) {
+        if (accepted) {
+            throw new IllegalStateException("Cannot register after accept() has been called");
+        }
+        entries.add(holder);
+        return holder;
+    }
+
     /// Overload that accepts a Function<ResourceLocation, I> like NeoForge's DeferredRegister.
     public <I extends T> DeferredHolderShim<T, I> register(String name, java.util.function.Function<ResourceLocation, I> factory) {
         if (accepted) {
@@ -58,7 +68,7 @@ public class DeferredRegisterShim<T> {
     }
 
     public java.util.Set<DeferredHolderShim<T, ?>> getEntries() {
-        return new java.util.HashSet<>(entries);
+        return new java.util.LinkedHashSet<>(entries);
     }
     public void accept() {
         if (accepted) {

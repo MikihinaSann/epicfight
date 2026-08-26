@@ -1,5 +1,4 @@
 package yesman.epicfight.world.entity.ai.goal;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.entity.ai.goal.SwellGoal;
 import net.minecraft.world.entity.monster.Creeper;

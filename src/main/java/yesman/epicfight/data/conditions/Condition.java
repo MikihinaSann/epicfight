@@ -1,5 +1,4 @@
 package yesman.epicfight.data.conditions;
-import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.OnlyIn;
 
 import com.google.gson.JsonElement;

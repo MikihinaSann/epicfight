@@ -1,5 +1,4 @@
 package yesman.epicfight.particle;
-import net.minecraft.client.Minecraft;
 
 import java.util.Random;
 import java.util.function.BiFunction;

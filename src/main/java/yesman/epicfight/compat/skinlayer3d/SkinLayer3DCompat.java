@@ -79,7 +79,12 @@ public class SkinLayer3DCompat implements ICompatModule {
 	@Override
 	public void onInitializeClientServer() {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
-            event.getEntityPatch().getOriginal().removeAttached(SKINLAYER_MESH);
+            SkinLayer3DMeshes skinlayerMesh = event.getEntityPatch().getOriginal().getAttached(SKINLAYER_MESH);
+            if (skinlayerMesh != null) {
+                skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
+                skinlayerMesh.partMeshes.clear();
+                event.getEntityPatch().getOriginal().removeAttached(SKINLAYER_MESH);
+            }
         });
 	}
 	

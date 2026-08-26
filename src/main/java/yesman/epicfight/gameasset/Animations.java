@@ -1,8 +1,6 @@
 package yesman.epicfight.gameasset;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.common.NeoForgeConfig;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
+import yesman.epicfight.config.ServerConfig;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
@@ -14,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -1908,7 +1907,7 @@ public class Animations {
                                         }
                                     });
 
-                                    Level.ExplosionInteraction explosion$blockinteraction = EventHooks.canEntityGrief(witherboss.level(), witherboss) ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
+                                    Level.ExplosionInteraction explosion$blockinteraction = witherboss.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
                                     witherboss.level().explode(witherboss, hitLocation.x, hitLocation.y, hitLocation.z, 0.0F, false, explosion$blockinteraction);
                                 }
                             }
@@ -2358,7 +2357,7 @@ public class Animations {
                     LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
                     lightningbolt.setVisualOnly(true);
                     lightningbolt.moveTo(Vec3.atBottomCenterOf(blockpos));
-                    // TODO: setDamage not in vanilla;
+                    // setDamage is a NeoForge extension; setVisualOnly(true) already prevents damage in vanilla
                     lightningbolt.setCause(entitypatch instanceof ServerPlayerPatch serverPlayerPatch ? serverPlayerPatch.getOriginal() : null);
 
                     DamageSource dmgSource = new DamageSource(e.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), entitypatch.getOriginal());
@@ -2408,6 +2407,22 @@ public class Animations {
             // and shoot via the existing AIM/SHOT composite layer regardless of mount type.
         };
 
+        /// Fabric-compatible ladder detection.
+        /// Replaces NeoForge's BlockState.isLadder(Level, BlockPos, LivingEntity) extension.
+        /// Checks BlockTags.CLIMBABLE (ladders, vines, scaffolding, etc.) and open trapdoors
+        /// with a climbable block below (matching vanilla onClimbable behavior).
+        private static boolean isLadderBlock(BlockState state, Level level, BlockPos pos, LivingEntity entity) {
+            if (state.is(BlockTags.CLIMBABLE)) {
+                return true;
+            }
+            if (state.hasProperty(BlockStateProperties.OPEN) && state.getValue(BlockStateProperties.OPEN)) {
+                BlockPos below = pos.below();
+                BlockState belowState = level.getBlockState(below);
+                return belowState.is(BlockTags.CLIMBABLE);
+            }
+            return false;
+        }
+
         @SuppressWarnings("incomplete-switch")
         public static final AnimationEvent.E0 UPDATE_Y_TO_NEARBY_LADDER = (entitypatch, animation, params) -> {
             LivingEntity original = entitypatch.getOriginal();
@@ -2422,8 +2437,8 @@ public class Animations {
                 direction = Direction.UP;
             }
 
-            if (NeoForgeConfig.SERVER.fullBoundingBoxLadders.get()) {
-                if (false) {
+            if (ServerConfig.fullBoundingBoxLadders) {
+                if (isLadderBlock(bs, level, bp, original)) {
                     if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                         direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                     } else {
@@ -2451,7 +2466,7 @@ public class Animations {
                         for (int z2 = mZ; z2 < bb.maxZ; z2++) {
                             BlockPos tmp = new BlockPos(x2, y2, z2);
                             bs = level.getBlockState(tmp);
-                            if (false) {
+                            if (isLadderBlock(bs, level, tmp, original)) {
                                 if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                                     direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                                 } else {

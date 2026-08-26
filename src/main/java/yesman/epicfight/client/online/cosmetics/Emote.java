@@ -1,5 +1,4 @@
 package yesman.epicfight.client.online.cosmetics;
-import net.minecraft.client.Minecraft;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;

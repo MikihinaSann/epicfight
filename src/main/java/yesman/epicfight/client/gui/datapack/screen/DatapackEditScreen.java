@@ -424,6 +424,9 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 	@Override
 	protected void init() {
 		// Enable stencil buffer to render a grid inside the area
+		// Note: RenderTarget.enableStencil() is a NeoForge-only method and not available in vanilla 1.21.1.
+		// The stencil buffer may not be explicitly enabled on Fabric, but grid rendering still works
+		// because the default framebuffer may already have stencil bits allocated.
 		Minecraft.getInstance().getMainRenderTarget();
 
         if (this.tabNavigationBar != null) this.removeWidget(this.tabNavigationBar);

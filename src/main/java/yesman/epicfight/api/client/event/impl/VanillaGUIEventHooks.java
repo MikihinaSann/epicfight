@@ -73,7 +73,7 @@ public final class VanillaGUIEventHooks {
         // TODO: (INPUT_SYSTEM_REFACTOR) This only disables putting the item to offhand inventory slot for key inputs (defaults to F).
         //  Explore a universal solution that also supports controllers and other input systems.
         //  https://github.com/Epic-Fight/epicfight/issues/2135
-        if (keyCode == minecraft.options.keySwapOffhand.getDefaultKey().getValue()) {
+        if (keyCode == yesman.epicfight.client.input.InputUtils.getKey(minecraft.options.keySwapOffhand).getValue()) {
             if (screen instanceof AbstractContainerScreen<?> abstractContainerScreen) {
                 Slot slot = ((yesman.epicfight.mixin.client.AbstractContainerScreenAccessor) abstractContainerScreen).epicfight$getHoveredSlot();
 

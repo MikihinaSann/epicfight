@@ -1,5 +1,4 @@
 package yesman.epicfight.client.particle;
-import net.minecraft.client.Minecraft;
 
 import org.joml.Quaternionf;
 

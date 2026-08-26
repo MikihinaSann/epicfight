@@ -17,7 +17,7 @@ public class SimplyTooltipsModule implements ICompatModule {
 
     @Override
 	public void onInitializeClient() {
-		TooltipProviderRegistry.register(new EpicFightTooltipProvider(), 0);
+		TooltipProviderRegistry.register(new EpicFightTooltipProvider(), 2);
     }
 
     @Override

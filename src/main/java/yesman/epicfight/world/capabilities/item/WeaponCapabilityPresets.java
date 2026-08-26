@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.item;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Tier;

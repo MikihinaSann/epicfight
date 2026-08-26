@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.emote;
-import net.minecraft.client.Minecraft;
 
 import net.minecraft.core.Holder;
 import org.jetbrains.annotations.Nullable;

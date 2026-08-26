@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.item;
-import net.minecraft.client.Minecraft;
 import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.ImmutableMap;

@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.item;
-import net.minecraft.client.Minecraft;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
