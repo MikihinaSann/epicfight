@@ -29,6 +29,7 @@ import org.joml.Vector4f;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.event.types.registry.RegisterPatchedRenderersEvent;
 import yesman.epicfight.api.client.event.types.render.PrepareModelEvent;
+import yesman.epicfight.api.extension.EntityExtension;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.MathUtils;
@@ -172,7 +173,7 @@ public abstract class PatchedLivingEntityRenderer<E extends LivingEntity, T exte
 	}
 	
 	protected void prepareVanillaModel(E entity, M model, LivingEntityRenderer<E, M> renderer, float partialTicks) {
-		boolean shouldSit = entity.isPassenger(); // NeoForge's Entity.shouldRiderSit() defaults to true in vanilla
+		boolean shouldSit = entity.isPassenger() && entity.getVehicle() != null && EntityExtension.of(entity.getVehicle()).epicfight$shouldRiderSit();
 		model.riding = shouldSit;
 		model.young = entity.isBaby();
 		float f = Mth.rotLerp(partialTicks, entity.yBodyRotO, entity.yBodyRot);

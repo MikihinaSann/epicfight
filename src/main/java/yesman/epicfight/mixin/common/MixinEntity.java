@@ -25,12 +25,13 @@ import yesman.epicfight.world.capabilities.IEpicFightEntityPatchHolder;
 import yesman.epicfight.world.capabilities.IPersistentEntityData;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
+import yesman.epicfight.api.extension.EntityExtension;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvider;
 import net.minecraft.world.entity.EntityDimensions;
 
 @Mixin(value = Entity.class)
-public abstract class MixinEntity implements IEpicFightEntityPatchHolder, IPersistentEntityData {
+public abstract class MixinEntity implements IEpicFightEntityPatchHolder, IPersistentEntityData, EntityExtension {
     @Shadow
     private boolean onGround;
 

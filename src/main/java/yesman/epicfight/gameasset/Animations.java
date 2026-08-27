@@ -60,6 +60,7 @@ import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
 import yesman.epicfight.api.animation.types.grappling.GrapplingAttackAnimation;
 import yesman.epicfight.api.animation.types.grappling.GrapplingTryAnimation;
 import yesman.epicfight.api.animation.types.procedural.*;
+import yesman.epicfight.api.extension.BlockStateExtension;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.physics.ik.InverseKinematicsSimulator.InverseKinematicsDefinition;
@@ -2546,7 +2547,7 @@ public class Animations {
 
         public static final AnimationEvent.E0 PLAY_STEPPING_SOUND = (entitypatch, animation, params) -> {
             BlockState state = entitypatch.getLevel().getBlockState(entitypatch.getOriginal().getOnPos());
-            entitypatch.playSound(state.getSoundType().getHitSound(), 0, 0);
+            entitypatch.playSound(BlockStateExtension.of(state).epicfight$getSoundType(entitypatch.getLevel(), entitypatch.getOriginal().blockPosition(), entitypatch.getOriginal()).getHitSound(), 0, 0);
         };
 
         public static final AnimationEvent.E0 TELEPORT_ATTACK_SERVER = (entitypatch, self, param) -> {

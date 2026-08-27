@@ -15,12 +15,14 @@ public class EpicFightExtensibleEnums {
     public static Rarity UNIQUE;
 
     /// Creates the UNIQUE rarity enum value.
-    /// On Fabric, we can't add enum values at runtime without bytecode manipulation.
-    /// Use a mixin @ExtendEnum or just fallback to EPIC with green color.
+    /// On Fabric, this is done via MixinRarity which injects a new enum constant
+    /// at class init time. The field is set by the mixin's <clinit> injection.
     @SuppressWarnings("unchecked")
     public static void initExtensibleEnums() {
-        // Fallback: use EPIC rarity with custom style
-        // The actual enum extension should be done via mixin @ExtendEnum
-        UNIQUE = Rarity.EPIC;
+        // MixinRarity adds the UNIQUE constant and sets this field during <clinit>.
+        // If the mixin didn't run for some reason, fall back to EPIC.
+        if (UNIQUE == null) {
+            UNIQUE = Rarity.EPIC;
+        }
     }
 }

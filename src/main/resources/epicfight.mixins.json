@@ -76,7 +76,9 @@
     "common.AreaEffectCloudAccessor",
     "common.WritableRegistryAccessor",
     "common.MixinRegistryDataLoader",
-    "common.LightningBoltAccessor"
+    "common.LightningBoltAccessor",
+    "common.MixinBlockStateBase",
+    "common.MixinRarity"
   ],
   "injectors": {
     "defaultRequire": 1

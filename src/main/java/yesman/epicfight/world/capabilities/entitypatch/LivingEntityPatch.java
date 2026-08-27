@@ -37,6 +37,7 @@ import yesman.epicfight.api.event.EntityEventListener;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.IdentifierProvider;
 import yesman.epicfight.api.event.types.entity.*;
+import yesman.epicfight.api.extension.EntityExtension;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.AttackResult.ResultType;
@@ -1084,7 +1085,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
             return true;
         }
 
-        if (this.original.getRootVehicle() == target.getRootVehicle()) {
+        if (this.original.getRootVehicle() == target.getRootVehicle() && !EntityExtension.of(target).epicfight$canRiderInteract()) {
             return true;
         }
 

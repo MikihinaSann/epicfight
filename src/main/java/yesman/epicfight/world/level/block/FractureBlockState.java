@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import yesman.epicfight.api.extension.BlockStateExtension;
 
 public class FractureBlockState extends BlockState {
 	private Vector3f translate;
@@ -82,6 +83,10 @@ public class FractureBlockState extends BlockState {
 	
 		public int getLightEmission() {
 		return this.originalBlockState != null ? this.originalBlockState.getLightEmission() : 0;
+	}
+
+	public int getLightEmission(BlockGetter level, BlockPos blockPos) {
+		return this.originalBlockState != null ? BlockStateExtension.of(this.originalBlockState).epicfight$getLightEmission(level, blockPos) : 0;
 	}
 	
 	public VoxelShape getShape(BlockGetter level, BlockPos blockPos) {

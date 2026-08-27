@@ -1,6 +1,7 @@
 package yesman.epicfight.client.renderer.patched.layer;
 import net.neoforged.neoforge.event.EventHooks;
 import net.neoforged.neoforge.client.ClientHooks;
+import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
 
 import java.util.HashMap;
 import java.util.List;
@@ -201,7 +202,8 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 				 * Copy from {@link HumanoidArmorLayer#renderArmorPiece}
 				 */
 				ArmorMaterial armormaterial = armorItem.getMaterial().value();
-				int fallbackColor = -1;
+				IClientItemExtensions extensions = IClientItemExtensions.of(itemstack);
+				int fallbackColor = extensions.getDefaultDyeColor(itemstack);
 				boolean innerModel = innerModel(slot);
 
 				AnimatedArmorTextureEvent textureEvent = EpicFightClientEventHooks.Render.ANIMATED_ARMOR_TEXTURE.post(new AnimatedArmorTextureEvent(livingentity, itemstack, slot, vanillaModel));
@@ -209,7 +211,7 @@ public class WearableItemLayer<E extends LivingEntity, T extends LivingEntityPat
 
 				for (int layerIdx = 0; layerIdx < armormaterial.layers().size(); layerIdx++) {
 					ArmorMaterial.Layer armormaterial$layer = armormaterial.layers().get(layerIdx);
-					int packedColor = ClientHooks.getArmorLayerTintColor(itemstack, livingentity, armormaterial$layer, layerIdx, fallbackColor);
+					int packedColor = extensions.getArmorLayerTintColor(itemstack, livingentity, armormaterial$layer, layerIdx, fallbackColor);
 
 					if (packedColor != 0) {
 						Vector4f color = ColorUtil.unpackToARGBF(packedColor);
