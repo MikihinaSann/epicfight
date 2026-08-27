@@ -129,7 +129,7 @@ public class PresetRenderer extends PatchedEntityRenderer<LivingEntity, LivingEn
 	}
 	
 	protected void prepareVanillaModel(LivingEntity entityIn, EntityModel<LivingEntity> model, LivingEntityRenderer<LivingEntity, EntityModel<LivingEntity>> renderer, float partialTicks) {
-		boolean shouldSit = entityIn.isPassenger() && (entityIn.getVehicle() != null && entityIn.getVehicle() != null && false);
+		boolean shouldSit = entityIn.isPassenger() && entityIn.getVehicle() != null;
 		model.riding = shouldSit;
 		model.young = entityIn.isBaby();
 		float f = Mth.rotLerp(partialTicks, entityIn.yBodyRotO, entityIn.yBodyRot);

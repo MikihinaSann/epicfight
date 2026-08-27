@@ -635,8 +635,8 @@ public final class EpicFightCameraAPI {
                     if (!(entityHitResult.getEntity() instanceof ArmorStand) && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY))) {
                         this.setFocusingEntity(livingentity);
                     }
-                } else if (entityHitResult.getEntity() instanceof net.minecraft.world.entity.Entity) {
-                    Entity parent = null;
+                } else if (entityHitResult.getEntity() instanceof net.minecraft.world.entity.boss.EnderDragonPart enderDragonPart) {
+                    Entity parent = enderDragonPart.parentMob;
 
                     if (parent instanceof LivingEntity parentLivingEntity && (!this.lockingOnTarget || InputManager.isActionActive(EpicFightInputAction.LOCK_ON_SHIFT_FREELY))) {
                         this.setFocusingEntity(parentLivingEntity);
