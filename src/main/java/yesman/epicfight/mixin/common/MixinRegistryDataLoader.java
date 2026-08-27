@@ -14,23 +14,35 @@ import yesman.epicfight.registry.EpicFightRegistries;
 import java.util.ArrayList;
 import java.util.List;
 
-/// Adds the EMOTE registry to the worldgen data pack registries.
-/// On NeoForge, this is done via [DataPackRegistryEvent.dataPackRegistry].
+/// Adds the EMOTE registry to the data pack registries.
+/// On NeoForge, this is done via [DataPackRegistryEvent.dataPackRegistry] which registers
+/// both the element codec (for JSON loading) and the network codec (for client synchronization).
 /// On Fabric, we inject into the static initializer of [RegistryDataLoader] to add our registry
-/// to [WORLDGEN_REGISTRIES], which is the list used by [WorldLoader] to load data pack registries.
+/// to both [WORLDGEN_REGISTRIES] (for data pack loading) and [SYNCHRONIZED_REGISTRIES]
+/// (for client-server synchronization in multiplayer).
 /// This makes EMOTE a dynamic registry accessible via [RegistryAccess].
 @Mixin(RegistryDataLoader.class)
 public class MixinRegistryDataLoader {
     @Shadow @Final @Mutable
     private static List<RegistryDataLoader.RegistryData<?>> WORLDGEN_REGISTRIES;
 
+    @Shadow @Final @Mutable
+    private static List<RegistryDataLoader.RegistryData<?>> SYNCHRONIZED_REGISTRIES;
+
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void epicfight$addEmoteRegistry(CallbackInfo ci) {
-        // Add EMOTE as a data pack registry.
-        // This makes it accessible via RegistryAccess.registryOrThrow(EpicFightRegistries.Keys.EMOTE)
-        // and vanilla will automatically load JSON files from data/<namespace>/emote/ using Emote.CODEC.
-        List<RegistryDataLoader.RegistryData<?>> newList = new ArrayList<>(WORLDGEN_REGISTRIES);
-        newList.add(new RegistryDataLoader.RegistryData<>(EpicFightRegistries.Keys.EMOTE, Emote.CODEC, false));
-        WORLDGEN_REGISTRIES = newList;
+        // Add EMOTE to WORLDGEN_REGISTRIES for data pack loading.
+        // Vanilla will automatically load JSON files from data/<namespace>/emote/ using Emote.CODEC.
+        List<RegistryDataLoader.RegistryData<?>> newWorldgenList = new ArrayList<>(WORLDGEN_REGISTRIES);
+        newWorldgenList.add(new RegistryDataLoader.RegistryData<>(EpicFightRegistries.Keys.EMOTE, Emote.CODEC, false));
+        WORLDGEN_REGISTRIES = newWorldgenList;
+
+        // Add EMOTE to SYNCHRONIZED_REGISTRIES for multiplayer client-server synchronization.
+        // NeoForge passes both element codec and network codec to dataPackRegistry(),
+        // which means the registry is synchronized to clients. Without this, multiplayer
+        // clients won't have the EMOTE registry and the Emote wheel will be empty.
+        List<RegistryDataLoader.RegistryData<?>> newSyncList = new ArrayList<>(SYNCHRONIZED_REGISTRIES);
+        newSyncList.add(new RegistryDataLoader.RegistryData<>(EpicFightRegistries.Keys.EMOTE, Emote.CODEC, false));
+        SYNCHRONIZED_REGISTRIES = newSyncList;
     }
 }
