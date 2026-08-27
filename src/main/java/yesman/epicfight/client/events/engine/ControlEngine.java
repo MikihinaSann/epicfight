@@ -508,17 +508,7 @@ public class ControlEngine implements IEventBasedEngine {
         }
     }
 
-    private int lastSwitchModeTick = -100;
-
     private void switchMode() {
-        // Cooldown to prevent rapid double-toggle when multiple click events accumulate
-        // before handleEpicFightKeyMappings processes them (e.g., JEI's R key mapping
-        // overwrites SWITCH_MODE in KeyMapping.MAP, causing REPEAT filtering to fail).
-        if (this.player.tickCount - this.lastSwitchModeTick < 10) {
-            return;
-        }
-        this.lastSwitchModeTick = this.player.tickCount;
-
         final boolean canSwitch = EpicFightGameRules.CAN_SWITCH_PLAYER_MODE.getRuleValue(this.playerpatch.getOriginal().level());
         if (!canSwitch) {
             this.minecraft.gui.getChat().addMessage(Component.translatable("epicfight.messages.mode_switching_disabled").withStyle(ChatFormatting.RED));

@@ -13,6 +13,7 @@ import yesman.epicfight.api.client.event.types.render.PrepareModelEvent;
 import yesman.epicfight.api.client.event.types.render.RenderEnderDragonEvent;
 import yesman.epicfight.api.client.event.types.render.RenderHandEvent;
 import yesman.epicfight.api.client.event.types.render.RenderLivingPreEvent;
+import yesman.epicfight.api.client.event.types.render.RenderNameTagEvent;
 import yesman.epicfight.api.client.event.types.render.ValidatePlayerModelEvent;
 import yesman.epicfight.api.event.*;
 import yesman.epicfight.api.utils.side.LogicalSide;
@@ -77,6 +78,7 @@ public final class EpicFightClientEventHooks {
         public static final EventHook<PrepareModelEvent> PREPARE_MODEL_TO_RENDER = EventHook.createSidedEventHook(LogicalSide.CLIENT);
         public static final EventHook<RenderEnderDragonEvent> RENDER_ENDER_DRAGON = EventHook.createSidedEventHook(LogicalSide.CLIENT);
         public static final EventHook<RenderLivingPreEvent> RENDER_LIVING_PRE = EventHook.createSidedEventHook(LogicalSide.CLIENT);
+        public static final EventHook<RenderNameTagEvent> RENDER_NAME_TAG = EventHook.createSidedEventHook(LogicalSide.CLIENT);
         public static final EventHook<RenderHandEvent> RENDER_HAND = EventHook.createSidedEventHook(LogicalSide.CLIENT);
         public static final EventHook<ValidatePlayerModelEvent> VALIDATE_PLAYER_MODEL_TO_RENDER = EventHook.createSidedEventHook(LogicalSide.CLIENT);
 

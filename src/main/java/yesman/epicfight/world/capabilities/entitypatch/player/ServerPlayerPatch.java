@@ -48,8 +48,8 @@ import java.util.Map;
 public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 	private LivingEntity attackTarget;
 	private boolean updatedMotionCurrentTick;
-	private Item prevHeldItem = Items.AIR;
-	private Item prevHeldItemOffHand = Items.AIR;
+	private ItemStack prevHeldItem = ItemStack.EMPTY;
+	private ItemStack prevHeldItemOffHand = ItemStack.EMPTY;
 
 	public ServerPlayerPatch(ServerPlayer entity) {
 		super(entity);
@@ -131,21 +131,21 @@ public class ServerPlayerPatch extends PlayerPatch<ServerPlayer> {
 		// does not fire when a player switches hotbar slots (only when setItemSlot is called),
 		// so we need to detect changes here and call updateHeldItem manually, matching NeoForge's
 		// LivingEquipmentChangeEvent behavior which fires from collectEquipmentChanges every tick.
-		Item currentMain = this.original.getMainHandItem().getItem();
-		Item currentOff = this.original.getOffhandItem().getItem();
+		ItemStack currentMain = this.original.getMainHandItem();
+		ItemStack currentOff = this.original.getOffhandItem();
 
-		if (this.prevHeldItem != currentMain) {
-			CapabilityItem fromCap = EpicFightCapabilities.getItemStackCapability(new ItemStack(this.prevHeldItem));
+		if (!ItemStack.isSameItemSameComponents(this.prevHeldItem, currentMain)) {
+			CapabilityItem fromCap = EpicFightCapabilities.getItemStackCapability(this.prevHeldItem);
 			CapabilityItem toCap = this.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-			this.updateHeldItem(fromCap, toCap, new ItemStack(this.prevHeldItem), this.original.getMainHandItem(), InteractionHand.MAIN_HAND);
-			this.prevHeldItem = currentMain;
+			this.updateHeldItem(fromCap, toCap, this.prevHeldItem, this.original.getMainHandItem(), InteractionHand.MAIN_HAND);
+			this.prevHeldItem = currentMain.copy();
 		}
 
-		if (this.prevHeldItemOffHand != currentOff) {
-			CapabilityItem fromCap = EpicFightCapabilities.getItemStackCapability(new ItemStack(this.prevHeldItemOffHand));
+		if (!ItemStack.isSameItemSameComponents(this.prevHeldItemOffHand, currentOff)) {
+			CapabilityItem fromCap = EpicFightCapabilities.getItemStackCapability(this.prevHeldItemOffHand);
 			CapabilityItem toCap = this.getHoldingItemCapability(InteractionHand.OFF_HAND);
-			this.updateHeldItem(fromCap, toCap, new ItemStack(this.prevHeldItemOffHand), this.original.getOffhandItem(), InteractionHand.OFF_HAND);
-			this.prevHeldItemOffHand = currentOff;
+			this.updateHeldItem(fromCap, toCap, this.prevHeldItemOffHand, this.original.getOffhandItem(), InteractionHand.OFF_HAND);
+			this.prevHeldItemOffHand = currentOff.copy();
 		}
 	}
 

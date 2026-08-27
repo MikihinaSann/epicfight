@@ -10,6 +10,8 @@ import net.minecraft.world.entity.LivingEntity;
 
 import yesman.epicfight.api.animation.Pose;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
+import yesman.epicfight.api.client.event.types.render.RenderNameTagEvent;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.math.MathUtils;
@@ -20,14 +22,13 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 public abstract class PatchedEntityRenderer<E extends LivingEntity, T extends LivingEntityPatch<E>, R extends EntityRenderer<E>, AM extends SkinnedMesh> {
 	public void render(E entity, T entitypatch, R renderer, MultiBufferSource buffer, PoseStack poseStack, int packedLight, float partialTick) {
-		// TODO: Port RenderNameTagEvent to Fabric
-		// Object renderNameplateEvent = new Object(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
+		RenderNameTagEvent renderNameplateEvent = new RenderNameTagEvent(entity, entity.getDisplayName(), renderer, poseStack, buffer, packedLight, partialTick);
+		EpicFightClientEventHooks.Render.RENDER_NAME_TAG.post(renderNameplateEvent);
 
 		MixinEntityRenderer entityRendererAccessor = (MixinEntityRenderer)renderer;
 
-		// Simplified: always render name tag if shouldShowName
-		if (entityRendererAccessor.invokeShouldShowName(entity)) {
-			entityRendererAccessor.invokeRenderNameTag(entity, entity.getDisplayName(), poseStack, buffer, packedLight, partialTick);
+		if (renderNameplateEvent.getResult() == RenderNameTagEvent.Result.ALWAYS_RENDER || (renderNameplateEvent.getResult() == RenderNameTagEvent.Result.DEFAULT && entityRendererAccessor.invokeShouldShowName(entity))) {
+			entityRendererAccessor.invokeRenderNameTag(entity, renderNameplateEvent.getContent(), poseStack, buffer, packedLight, partialTick);
         }
 	}
 	

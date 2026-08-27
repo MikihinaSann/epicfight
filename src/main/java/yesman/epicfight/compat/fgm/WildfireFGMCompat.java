@@ -94,7 +94,7 @@ public class WildfireFGMCompat implements ICompatModule {
 
         @Override
         protected void renderLayer(AbstractClientPlayerPatch<AbstractClientPlayer> entityPatch, AbstractClientPlayer entity, @Nullable GenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> vanillaLayer, PoseStack poseStack, MultiBufferSource buffer, int packedLight, OpenMatrix4f[] poses, float bob, float yRot, float xRot, float partialTicks) {
-            if (vanillaLayer != null) {
+            if (vanillaLayer instanceof yesman.epicfight.compat.fgm.mixin.FemaleLayerAccessor<?, ?> accessor) {
                 if (!entity.isSpectator()) {
                     try {
                         EntityConfig entityConfig = EntityConfig.getEntity(entity);
@@ -110,7 +110,7 @@ public class WildfireFGMCompat implements ICompatModule {
                         }
 
                         RenderType breastRenderType = null;
-                        ResourceLocation entityTexture = entity.getSkin().texture();
+                        ResourceLocation entityTexture = accessor.getTexture(entity);
                         if (entityTexture != null) {
                             boolean bodyVisible = !entity.isInvisible();
                             Minecraft minecraft = Minecraft.getInstance();
@@ -305,7 +305,7 @@ public class WildfireFGMCompat implements ICompatModule {
                     int color = armorStack.is(ItemTags.DYEABLE) ? DyedItemColor.getOrDefault(armorStack, -6265536) : -1;
 
                     for(ArmorMaterial.Layer layer : material.value().layers()) {
-                        ResourceLocation armorTexture = layer.texture(false);
+                        ResourceLocation armorTexture = net.neoforged.neoforge.client.ClientHooks.getArmorTexture(entity.getOriginal(), armorStack, layer, false, EquipmentSlot.CHEST);
                         RenderType armorType = RenderType.armorCutoutNoCull(armorTexture);
                         VertexConsumer armorVertexConsumer = bufferSource.getBuffer(armorType);
                         renderBox(armorBox, matrixStack, armorVertexConsumer, light, OverlayTexture.NO_OVERLAY, layer.dyeable() ? color : -1);

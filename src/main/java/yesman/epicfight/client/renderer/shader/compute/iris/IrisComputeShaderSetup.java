@@ -104,7 +104,7 @@ public class IrisComputeShaderSetup extends ComputeShaderSetup {
 			} else if (elem == VertexFormatElement.UV1) {
 				glVertexAttribIPointer(i, 2, GL_UNSIGNED_SHORT, 60, 40);
 				glEnableVertexAttribArray(i);
-			} else if (elem == VertexFormatElement.UV) {
+			} else if (elem == VertexFormatElement.UV2) {
 				glVertexAttribIPointer(i, 2, GL_UNSIGNED_SHORT, 60, 44);
 				glEnableVertexAttribArray(i);
 			}
