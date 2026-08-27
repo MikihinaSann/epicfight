@@ -230,6 +230,14 @@ public class EpicFightFabricClient implements ClientModInitializer {
                     // In NeoForge this is done in RenderLevelStageEvent.RegisterStageEvent
                     RenderItemBase.initItemRenderers(client);
                     ComputeShaderProvider.checkIfSupports();
+                    // Reset item preferences if empty — port of NeoForge's FMLClientSetupEvent
+                    try {
+                        if (yesman.epicfight.config.ClientConfig.combatCategorizedItems.isEmpty() && yesman.epicfight.config.ClientConfig.miningCategorizedItems.isEmpty()) {
+                            yesman.epicfight.client.gui.screen.config.ItemsPreferenceScreen.resetItems();
+                        }
+                    } catch (Throwable e) {
+                        EpicFight.LOGGER.warn("Failed to reset item preferences: {}", e.getMessage());
+                    }
                     // Retry compute shader registration in case the CoreShaderRegistrationCallback
                     // ran before the GL context was fully ready (or support wasn't detected then).
                     if (ComputeShaderProvider.supportComputeShader() && ComputeShaderProvider.meshComputeVanilla == null) {

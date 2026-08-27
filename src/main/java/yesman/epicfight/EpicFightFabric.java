@@ -38,6 +38,8 @@ import yesman.epicfight.network.EntityPairingPacketType;
 import yesman.epicfight.network.EntityPairingPacketTypes;
 import yesman.epicfight.platform.fabric.FabricModPlatform;
 import yesman.epicfight.registry.EpicFightRegistries;
+import yesman.epicfight.registry.entries.EpicFightCreativeTabs;
+import yesman.epicfight.registry.entries.EpicFightItems;
 import yesman.epicfight.registry.entries.*;
 import yesman.epicfight.server.commands.AnimatorCommand;
 import yesman.epicfight.server.commands.PlayerModeCommand;
@@ -235,6 +237,23 @@ public class EpicFightFabric implements ModInitializer {
 
         // Register default weapon types
         WeaponTypeReloadListener.registerDefaultWeaponTypes();
+
+        // Add Skill Books to the EpicFight creative tab — port of NeoForge's buildCreativeTabWithSkillBooks
+        // In NeoForge, BuildCreativeModeTabContentsEvent fires for each tab and adds skill book items
+        // for each learnable skill. On Fabric, we use ItemGroupEvents.modifyEntriesEvent.
+        try {
+            ItemGroupEvents.modifyEntriesEvent(EpicFightCreativeTabs.ITEMS.getKey()).register(entries -> {
+                EpicFightRegistries.SKILL.holders()
+                    .filter(skill -> skill.value().getCategory().learnable() && skill.value().getCreativeTab() == null)
+                    .forEach(holder -> {
+                        ItemStack stack = new ItemStack(EpicFightItems.SKILLBOOK.get());
+                        SkillBookItem.setContainingSkill(holder, stack);
+                        entries.accept(stack);
+                    });
+            });
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to add skill books to creative tab: " + e.getMessage());
+        }
 
         // Register gamerules
         try { EpicFightGameRules.registerGameRules(); } catch (Throwable e) { EpicFight.LOGGER.warn("Gamerule registration failed: " + e.getMessage()); }
