@@ -90,8 +90,8 @@ public abstract class Collider {
 	
 	public List<Entity> getCollideEntities(Entity entity) {
 		List<Entity> list = entity.level().getEntities(entity, this.getHitboxAABB(), (e) -> {
-			if (e instanceof net.minecraft.world.entity.Entity) {
-				if (false) {
+			if (e instanceof net.minecraft.world.entity.boss.EnderDragonPart enderDragonPart) {
+				if (enderDragonPart.parentMob.is(entity)) {
 					return false;
 				}
 			}

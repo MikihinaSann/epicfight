@@ -128,16 +128,9 @@ accessible field net/minecraft/client/gui/components/Button$Builder onPress Lnet
 accessible field net/minecraft/client/gui/components/AbstractButton SPRITES Lnet/minecraft/client/gui/components/WidgetSprites;
 accessible field net/minecraft/client/model/geom/ModelPart$Vertex u F
 accessible field net/minecraft/client/model/geom/ModelPart$Vertex v F
-accessible field net/minecraft/client/model/geom/ModelPart$Vertex u F
-accessible field net/minecraft/client/model/geom/ModelPart$Vertex v F
 extendable class net/minecraft/client/renderer/RenderType$CompositeState
 extendable class net/minecraft/client/renderer/RenderType$CompositeRenderType
 accessible field net/minecraft/client/gui/components/Button$Builder height I
-accessible field net/minecraft/client/gui/components/Button$Builder width I
-accessible field net/minecraft/client/gui/components/Button$Builder x I
-accessible field net/minecraft/client/gui/components/Button$Builder y I
-accessible field net/minecraft/client/gui/components/Button$Builder message Lnet/minecraft/network/chat/Component;
-accessible field net/minecraft/client/gui/components/Button$Builder onPress Lnet/minecraft/client/gui/components/Button$OnPress;
 accessible field net/minecraft/client/renderer/entity/EntityRenderDispatcher playerRenderers Ljava/util/Map;
 accessible field net/minecraft/client/renderer/LightTexture lightTexture Lnet/minecraft/client/renderer/texture/DynamicTexture;
 accessible field net/minecraft/world/entity/projectile/AbstractArrow inGround Z

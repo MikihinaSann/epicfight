@@ -2357,7 +2357,6 @@ public class Animations {
                     LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
                     lightningbolt.setVisualOnly(true);
                     lightningbolt.moveTo(Vec3.atBottomCenterOf(blockpos));
-                    // setDamage is a NeoForge extension; setVisualOnly(true) already prevents damage in vanilla
                     lightningbolt.setCause(entitypatch instanceof ServerPlayerPatch serverPlayerPatch ? serverPlayerPatch.getOriginal() : null);
 
                     DamageSource dmgSource = new DamageSource(e.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), entitypatch.getOriginal());

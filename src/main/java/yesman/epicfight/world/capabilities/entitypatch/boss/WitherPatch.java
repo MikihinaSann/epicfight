@@ -23,6 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.neoforge.event.EventHooks;
 
 
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
@@ -241,7 +242,9 @@ public class WitherPatch extends MobPatch<WitherBoss> implements BossPatch<Withe
 						BlockPos blockpos = new BlockPos(l2, l, i1);
 						BlockState blockstate = this.original.level().getBlockState(blockpos);
 						
-						flag = this.original.level().destroyBlock(blockpos, true, this.original) || flag;
+						if (EventHooks.onEntityDestroyBlock(this.original, blockpos, blockstate)) {
+							flag = this.original.level().destroyBlock(blockpos, true, this.original) || flag;
+						}
 					}
 				}
 			}

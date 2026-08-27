@@ -624,7 +624,7 @@ public class AzureModelTransformer extends HumanoidModelTransformer {
 		Vector4f translatedPosition = new Vector4f(original.position(), 1.0F);
 		translatedPosition.mul(matrix);
 
-		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), 0.0F, 0.0F); // TODO: original texU/texV;
+		return new ModelPart.Vertex(translatedPosition.x(), translatedPosition.y(), translatedPosition.z(), original.texU(), original.texV());
 	}
 
 	static class AnimatedVertex extends ModelPart.Vertex {

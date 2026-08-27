@@ -93,12 +93,12 @@ public abstract class MultiCollider<T extends Collider> extends Collider {
 				return false;
 			}
 			
-			if (entity instanceof net.minecraft.world.entity.Entity) {
-				if (false) {
+			if (entity instanceof net.minecraft.world.entity.boss.EnderDragonPart enderDragonPart) {
+				if (enderDragonPart.parentMob.is(entitypatch.getOriginal())) {
 					return false;
 				}
 			}
-			
+
 			for (Collider collider : colliders) {
 				if (collider.isCollide(entity)) {
 					return true;

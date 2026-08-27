@@ -250,7 +250,7 @@ public abstract class MixinWitherBoss extends Monster implements PowerableMob, R
 									BlockPos blockpos = new BlockPos(l2, l, i1);
 									BlockState blockstate = self.level().getBlockState(blockpos);
 
-									if (false && EventHooks.onEntityDestroyBlock(this, blockpos, blockstate)) {
+									if (EventHooks.onEntityDestroyBlock(this, blockpos, blockstate)) {
 										flag = self.level().destroyBlock(blockpos, true, this) || flag;
 									}
 								}
