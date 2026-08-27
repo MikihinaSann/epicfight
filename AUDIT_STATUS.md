@@ -128,22 +128,21 @@ All 26 Epic Fight item model JSON files use `"loader": "neoforge:separate_transf
 - Register a custom `ModelResourceLoader` via Fabric API's `ModelLoadingPlugin`
 - Or convert all 26 JSON files to vanilla `"parent"` + overrides format
 
-### 4. TRansition-1.0.6.jar — Not in build.gradle, not ported
+### 4. ~~TRansition-1.0.6.jar~~ — RESOLVED: Not needed
 
-- **Status**: JAR exists in `libs/` but is NOT referenced in `build.gradle`
-- **NeoForge mod**: `mods.toml` declares `neoforge` dependency. No `fabric.mod.json`.
-- **Partial port**: A source stub exists at `src/main/java/dev/tr7zw/transition/mc/PlayerUtil.java` (2 methods only)
-- **NeoForge-specific APIs**: `ModLoaderUtil` references `net.neoforged.bus.api.Event`, `net.neoforged.neoforge.client.gui.IConfigScreenFactory`
-- **Classes needing port**: 11 utility classes + 4 mixin classes + 4 wrapper classes + bootstrap/loader classes
-- **Remaining work**: Full decompile → port all NeoForge APIs → create `fabric.mod.json` → add to `build.gradle`
+- **Status**: JAR removed in commit `776cb193`. Not referenced in `build.gradle`.
+- **Analysis**: Epic Fight does NOT import `dev.tr7zw.transition` anywhere in its source code.
+- **Stub class**: `src/main/java/dev/tr7zw/transition/mc/PlayerUtil.java` exists but is not referenced by any Epic Fight code.
+- **Original usage**: Only used by `SkinLayer3DCompat.java` for `PlayerUtil.getPlayerSkin(player)`, which was replaced with direct vanilla API call `player.getSkin().texture()`.
+- **Compat impact**: FirstPerson mod needs `dev.tr7zw.transition.mc.GeneralUtil` at runtime — kept as `modCompileOnly`. Users who want FirstPerson must install TRansition separately.
+- **Conclusion**: No Fabric port needed. The NeoForge JAR was a transitive dependency, not a direct Epic Fight dependency.
 
-### 5. TRender-1.0.7.jar — Not in build.gradle, not ported
+### 5. ~~TRender-1.0.7.jar~~ — RESOLVED: Not needed
 
-- **Status**: JAR exists in `libs/` but is NOT referenced in `build.gradle`
-- **NeoForge mod**: `mods.toml` declares `neoforge` dependency. No `fabric.mod.json`.
-- **No porting started**: Zero source files for TRender classes in the project
-- **Classes**: ~100+ classes (GUI widgets, screens, rendering context, networking, config)
-- **Remaining work**: Full decompile → port all NeoForge APIs → create `fabric.mod.json` → add to `build.gradle`
+- **Status**: JAR removed in commit `776cb193`. Not referenced in `build.gradle`.
+- **Analysis**: Epic Fight does NOT import `dev.tr7zw.trender` anywhere in its source code. Zero references.
+- **Original usage**: Was a dead dependency. Epic Fight uses its own GUI widgets (AnchoredButton, etc.).
+- **Conclusion**: No Fabric port needed. Was never used by Epic Fight core.
 
 ### 6. SimplyTooltips compat — Empty TODO
 
@@ -190,7 +189,7 @@ All 26 Epic Fight item model JSON files use `"loader": "neoforge:separate_transf
 | 12 | ~~Server-to-all broadcast doesn't work~~ | ~~`sendToAll()` is empty placeholder~~ | `EpicFightNetworkManager.java` | ~~Yes~~ **FIXED** | ~~**P1**~~ |
 | 13 | ~~ItemPresetManager not functional~~ | ~~`//TODO: Implement`~~ | `ItemPresetManager.java:68` | N/A — **also TODO in NeoForge** | ~~**P2**~~ |
 | 14 | ~~ModifierManager not functional~~ | ~~`//TODO: Implement`~~ | `ModifierManager.java:27` | N/A — **also TODO in NeoForge** | ~~**P2**~~ |
-| 15 | TRansition/TRender not available | JARs not in build.gradle, are NeoForge mods | `libs/*.jar`, `build.gradle` | Yes | **P1** |
+| 15 | ~~TRansition/TRender not available~~ | ~~JARs not in build.gradle, are NeoForge mods~~ | ~~`libs/*.jar`, `build.gradle`~~ | ~~Yes~~ | ~~**P1**~~ — **RESOLVED: Not needed, JARs removed** |
 | 16 | ~~`epicfight:weight` attribute warnings~~ | `DeferredHolderShim.equals()` only matched other shims, not vanilla `Holder.Reference` keys | `EntityAttributeModificationEvent.java`, `DeferredHolderShim.java` | Yes | **FIXED** |
 | 17 | ~~`FemaleLayerAccessor` mixin crash~~ | Wildfire Gender Mod's `GenderLayer` has no `getBreastTexture(LivingEntity)` method | `WildfireFGMCompat.java`, `epicfight-compat.fgm.mixins.json` | Yes | **FIXED** |
 | 18 | ~~`AdaptiveSkinSkill` NPE on unknown damage type tag~~ | `getGlintColor()` returns null for tags not in `protectableDamageTypeTags` | `AdaptiveSkinSkill.java` | Yes | **FIXED** |
@@ -278,74 +277,35 @@ Weapon capability JSON files load via reload listeners. `ItemPresetManager` and 
 
 ---
 
-## G. TRansition Status
+## G. ~~TRansition Status~~ — RESOLVED: Not needed
 
 | Aspect | Status |
 |--------|--------|
 | Decompiled? | ✅ Yes (javap output captured) |
-| Ported? | ❌ No (only `PlayerUtil.java` stub — 2 methods) |
-| Fabric-compatible? | ❌ No — NeoForge mod, no `fabric.mod.json` |
-| Build status | ❌ Not in `build.gradle` |
-| Runtime status | ❌ Not loaded |
-| Missing dependencies | NeoForge API (`net.neoforged.bus.api.Event`, `IConfigScreenFactory`) |
+| Ported? | N/A — not needed |
+| Fabric-compatible? | N/A |
+| Build status | ✅ JAR removed, not in `build.gradle` |
+| Runtime status | N/A — not loaded, not needed |
+| Direct Epic Fight usage | ❌ Zero `import dev.tr7zw.transition` in Epic Fight source |
+| Stub class | `PlayerUtil.java` exists but unreferenced by Epic Fight code |
+| Compat impact | FirstPerson needs `GeneralUtil` at runtime — kept as `modCompileOnly` |
 
-**Classes to port** (11 utility + 4 mixin + 4 wrapper + 5 bootstrap/loader):
-
-| Class | NeoForge APIs | Porting difficulty |
-|-------|---------------|-------------------|
-| `GeneralUtil` | None — pure MC calls | Easy |
-| `ClientUtil` | None | Easy |
-| `EntityUtil` | Extension holder access | Medium |
-| `ItemUtil` | None | Easy |
-| `LightingUtil` | None | Easy |
-| `MathUtil` | None | Easy |
-| `PlayerUtil` | None — already stubbed | Easy |
-| `VertexConsumerUtil` | None | Easy |
-| `ComponentProvider` | None | Easy |
-| `InventoryUtil` | None | Easy |
-| `ModLoaderUtil` | `net.neoforged.bus.api.Event`, `IConfigScreenFactory` | **Hard** — needs Fabric event reimplementation |
-| `ModLoaderEventUtil` | NeoForge event bus | **Hard** — needs Fabric callbacks |
-| `TRansitionBootstrap` | Empty constructor | Easy |
-| `ClientTRansitionMod` | NeoForge client entry | Medium — convert to `ClientModInitializer` |
-| `ConfigScreenManager` | None | Easy |
-| `ExtensionMixin` | Mixin on EntityRenderState | Medium — verify Fabric compatibility |
-| `EntityRenderStateMixin` | Mixin | Medium |
-| `EntityRendererMixin` | Mixin | Medium |
-| `BlockEntityRenderStateMixin` | Mixin | Medium |
-| `EntityWrapper` / `LivingEntityWrapper` / `PlayerWrapper` | Pure MC | Easy |
-| `ExtensionHolder` | Interface | Easy |
-
-**Remaining work**: Create Fabric-compatible source versions of all classes, create `fabric.mod.json`, add to `build.gradle` as `implementation` or `modImplementation`.
+**Conclusion**: TRansition was a transitive dependency of compatibility mods (FirstPerson, SkinLayers3D), not a direct Epic Fight dependency. The only Epic Fight usage (`PlayerUtil.getPlayerSkin`) was replaced with `player.getSkin().texture()`. No port needed. Users who want FirstPerson must install TRansition separately.
 
 ---
 
-## H. TRender Status
+## H. ~~TRender Status~~ — RESOLVED: Not needed
 
 | Aspect | Status |
 |--------|--------|
 | Decompiled? | ✅ Yes (class list captured) |
-| Ported? | ❌ No — zero source files in project |
-| Fabric-compatible? | ❌ No — NeoForge mod, no `fabric.mod.json` |
-| Build status | ❌ Not in `build.gradle` |
-| Runtime status | ❌ Not loaded |
-| Missing dependencies | NeoForge API, mixins reference NeoForge-specific classes |
+| Ported? | N/A — not needed |
+| Fabric-compatible? | N/A |
+| Build status | ✅ JAR removed, not in `build.gradle` |
+| Runtime status | N/A — not loaded, not needed |
+| Direct Epic Fight usage | ❌ Zero `import dev.tr7zw.trender` in Epic Fight source |
 
-**Class inventory**: ~100+ classes across:
-- `dev.tr7zw.trender.gui` — GUI description, synced inventory, slots
-- `dev.tr7zw.trender.gui.client` — Screen rendering, HUD, config screens
-- `dev.tr7zw.trender.gui.impl` — Bootstrap, proxy, mixins, style system
-- `dev.tr7zw.trender.gui.impl.client` — Client proxy, focus elements, narration
-- `dev.tr7zw.trender.gui.impl.mixin.client` — Mixins (DrawContextAccessor, ScreenAccessor, etc.)
-- `dev.tr7zw.trender.gui.networking` — Screen networking
-- `dev.tr7zw.trender.gui.widget` — ~30+ widget classes (buttons, sliders, panels, labels, etc.)
-
-**Key NeoForge-specific APIs**:
-- `LibGuiClient.onInitializeClient()` — needs conversion to `ClientModInitializer`
-- `LibGuiCommon.onInitialize()` — needs conversion to `ModInitializer`
-- Mixins target `DrawContext`, `Screen`, `PauseMenuScreen` — need Fabric-compatible mixin targets
-- `LibGuiMixinPlugin` — mixin plugin needs Fabric-compatible implementation
-
-**Remaining work**: Full decompile → port all classes → create `fabric.mod.json` → port mixins → add to `build.gradle`. This is a substantial effort (~100+ classes).
+**Conclusion**: TRender was a dead dependency — never referenced by Epic Fight. Epic Fight uses its own GUI widgets. No port needed.
 
 ---
 
@@ -363,7 +323,7 @@ Weapon capability JSON files load via reload listeners. `ItemPresetManager` and 
 | GeckoLib | ✅ Runtime | curse.maven file 8350058 |
 | JEI | ✅ Runtime | curse.maven file 8678370 |
 | PlayerAnimator | ✅ Runtime | curse.maven file 7389821 |
-| FirstPerson | ❌ Compile-only | Missing `dev.tr7zw.transition.mc.GeneralUtil` at runtime — **TRansition not ported** |
+| FirstPerson | ❌ Compile-only | Missing `dev.tr7zw.transition.mc.GeneralUtil` at runtime — users must install TRansition separately |
 | Iris | ❌ Compile-only | Mixin remapping NPE in Loom dev env |
 | Sodium | ❌ Compile-only | Same Iris issue |
 | SkinLayers3D | ❌ Compile-only | Depends on Sodium |
@@ -373,8 +333,8 @@ Weapon capability JSON files load via reload listeners. `ItemPresetManager` and 
 | ShoulderSurfing | ❌ Compile-only | `implements IShoulderSurfingPlugin` compiler issue |
 | Controlify | ❌ Disabled | Malformed access widener |
 | PlayerRevive | ⚠️ Compile-only | Local JAR, `modCompileOnly files(...)` |
-| **TRansition-1.0.6.jar** | ❌ **NOT IN BUILD** | NeoForge mod, needs full port |
-| **TRender-1.0.7.jar** | ❌ **NOT IN BUILD** | NeoForge mod, needs full port |
+| ~~TRansition-1.0.6.jar~~ | ✅ **REMOVED** | Not needed — Epic Fight doesn't import `dev.tr7zw.transition` |
+| ~~TRender-1.0.7.jar~~ | ✅ **REMOVED** | Not needed — Epic Fight doesn't import `dev.tr7zw.trender` |
 | JSR-305 | ✅ Compile-only | `compileOnly` — correct |
 | Checker Framework | ✅ Compile-only | `compileOnly` — correct |
 
@@ -399,19 +359,19 @@ Based on the dependency graph of the actual codebase:
    - Register a Fabric `ModelLoadingPlugin` that handles `neoforge:separate_transforms` loader
    - Or convert all 26 item model JSONs to vanilla format
 
-### Phase 2: Port TRansition (P1 — needed by FirstPerson and other mods)
+### ~~Phase 2: Port TRansition~~ — RESOLVED: Not needed
 
-4. **Port TRansition-1.0.6.jar** — create Fabric-compatible source versions of all 25 classes, create `fabric.mod.json`, add to `build.gradle`. Most utility classes are pure Minecraft API (easy). The hard parts are `ModLoaderUtil` and `ModLoaderEventUtil` which need Fabric event reimplementation.
+4. ~~**Port TRansition-1.0.6.jar**~~ — **Not needed**. Epic Fight does not import `dev.tr7zw.transition`. The only usage (`PlayerUtil.getPlayerSkin`) was replaced with `player.getSkin().texture()`. FirstPerson compat remains `modCompileOnly` — users install TRansition separately if needed.
 
-### Phase 3: Port TRender (P1 — needed by Epic Fight GUI system)
+### ~~Phase 3: Port TRender~~ — RESOLVED: Not needed
 
-5. **Port TRender-1.0.7.jar** — create Fabric-compatible source versions of all ~100 classes. This is a large effort but the classes are mostly GUI widgets with straightforward Minecraft API usage. The mixins need Fabric-compatible targets.
+5. ~~**Port TRender-1.0.7.jar**~~ — **Not needed**. Epic Fight does not import `dev.tr7zw.trender` anywhere. Was a dead dependency. Epic Fight uses its own GUI widgets.
 
 ### Phase 4: Fix Remaining Systems (P2)
 
 6. ~~**Implement `sendToAll()`** in `EpicFightNetworkManager`~~ — **DONE**. Iterates over `server.getPlayerList().getPlayers()`.
 7. ~~**Implement `ItemPresetManager` and `ModifierManager`**~~ — **Parity confirmed**: both are `//TODO: Implement` in NeoForge 1.21.1 as well. Left as-is.
-8. **Wire remaining compat mods** — add transitive deps for Trinkets (CCA), SimplyTooltips (Kotlin), FirstPerson (TRansition).
+8. **Wire remaining compat mods** — add transitive deps for Trinkets (CCA), SimplyTooltips (Kotlin). FirstPerson requires TRansition at runtime — users install separately.
 9. **Fix `EntitySnapshot`** — implement `getRenderPasses` and `getItemColors` equivalents for Fabric.
 10. **Port MCreator compat** — uncomment and adapt MCreator compatibility code.
 
