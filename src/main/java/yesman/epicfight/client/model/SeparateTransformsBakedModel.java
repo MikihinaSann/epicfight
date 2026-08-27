@@ -2,6 +2,7 @@ package yesman.epicfight.client.model;
 
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
+import net.minecraft.client.renderer.block.model.ItemTransform;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
@@ -20,6 +21,7 @@ import java.util.Map;
 public class SeparateTransformsBakedModel implements BakedModel {
     private final BakedModel baseBaked;
     private final Map<ItemDisplayContext, BakedModel> perspectiveBaked;
+    private ItemTransforms mergedTransforms;
 
     public SeparateTransformsBakedModel(BakedModel baseBaked, Map<ItemDisplayContext, BakedModel> perspectiveBaked) {
         this.baseBaked = baseBaked;
@@ -72,7 +74,28 @@ public class SeparateTransformsBakedModel implements BakedModel {
 
     @Override
     public ItemTransforms getTransforms() {
-        return baseBaked != null ? baseBaked.getTransforms() : ItemTransforms.NO_TRANSFORMS;
+        if (baseBaked == null) {
+            return ItemTransforms.NO_TRANSFORMS;
+        }
+
+        if (mergedTransforms == null) {
+            ItemTransforms baseTransforms = baseBaked.getTransforms();
+
+            mergedTransforms = new ItemTransforms(baseTransforms) {
+                @Override
+                public ItemTransform getTransform(ItemDisplayContext context) {
+                    BakedModel perspective = perspectiveBaked.get(context);
+
+                    if (perspective != null) {
+                        return perspective.getTransforms().getTransform(context);
+                    }
+
+                    return baseTransforms.getTransform(context);
+                }
+            };
+        }
+
+        return mergedTransforms;
     }
 
     @Override

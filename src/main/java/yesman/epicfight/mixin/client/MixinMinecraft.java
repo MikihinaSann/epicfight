@@ -74,6 +74,9 @@ public class MixinMinecraft {
         } else if (ControlEngine.shouldCancelVanillaAttackOnEntity()) {
             // Blocks vanilla attacks against living entities when in vanilla mode (if gamerule disallows)
             cir.cancel();
+        } else if (ControlEngine.shouldCancelVanillaAttackOnBlock()) {
+            // Blocks vanilla attacks against blocks when holding a combat-categorized item that can't break them
+            cir.cancel();
         }
     }
 

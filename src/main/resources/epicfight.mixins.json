@@ -28,6 +28,7 @@
     "client.MixinLivingEntityJump",
     "client.MixinMeshData",
     "client.MixinMinecraft",
+    "client.MixinMultiPlayerGameMode",
     "client.MixinMouseHandler",
     "client.MixinOptions",
     "client.MixinParticleEngine",

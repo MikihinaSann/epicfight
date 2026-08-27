@@ -73,7 +73,7 @@ public class SeparateTransformsModelLoadingPlugin implements ModelLoadingPlugin 
                     // Parse base model
                     BlockModel baseModel = null;
                     if (json.has("base")) {
-                        baseModel = parseBlockModel(json.get("base"));
+                        baseModel = parseBlockModel(json.get("base"), json);
                     }
 
                     // Parse perspectives
@@ -85,7 +85,7 @@ public class SeparateTransformsModelLoadingPlugin implements ModelLoadingPlugin 
                         for (String contextName : perspectivesJson.keySet()) {
                             try {
                                 net.minecraft.world.item.ItemDisplayContext displayContext = net.minecraft.world.item.ItemDisplayContext.valueOf(contextName.toUpperCase());
-                                BlockModel perspectiveModel = parseBlockModel(perspectivesJson.get(contextName));
+                                BlockModel perspectiveModel = parseBlockModel(perspectivesJson.get(contextName), json);
 
                                 if (perspectiveModel != null) {
                                     perspectives.put(displayContext, perspectiveModel);
@@ -108,12 +108,18 @@ public class SeparateTransformsModelLoadingPlugin implements ModelLoadingPlugin 
             }
         }
 
-        private BlockModel parseBlockModel(JsonElement jsonElement) {
+        private BlockModel parseBlockModel(JsonElement jsonElement, JsonObject topLevel) {
             if (jsonElement == null || !jsonElement.isJsonObject()) {
                 return null;
             }
 
-            String json = GSON.toJson(jsonElement);
+            JsonObject modelJson = jsonElement.getAsJsonObject();
+
+            if (!modelJson.has("gui_light") && topLevel.has("gui_light")) {
+                modelJson.addProperty("gui_light", topLevel.get("gui_light").getAsString());
+            }
+
+            String json = GSON.toJson(modelJson);
             return BlockModel.fromString(json);
         }
     }

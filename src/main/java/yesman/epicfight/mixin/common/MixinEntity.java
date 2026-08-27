@@ -22,6 +22,7 @@ import yesman.epicfight.api.event.impl.VanillaEntityEventHooks;
 import yesman.epicfight.api.event.types.entity.EntityRemovedEvent;
 import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.IEpicFightEntityPatchHolder;
+import yesman.epicfight.world.capabilities.IPersistentEntityData;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
@@ -29,12 +30,15 @@ import yesman.epicfight.world.capabilities.provider.AttachmentEntityPatchProvide
 import net.minecraft.world.entity.EntityDimensions;
 
 @Mixin(value = Entity.class)
-public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
+public abstract class MixinEntity implements IEpicFightEntityPatchHolder, IPersistentEntityData {
     @Shadow
     private boolean onGround;
 
     @Unique
     private AttachmentEntityPatchProvider epicfight$entityPatchProvider;
+
+    @Unique
+    private CompoundTag epicfight$persistentData = new CompoundTag();
 
     @Override
     public AttachmentEntityPatchProvider epicfight$getEntityPatchProvider() {
@@ -44,6 +48,11 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
     @Override
     public void epicfight$setEntityPatchProvider(AttachmentEntityPatchProvider provider) {
         this.epicfight$entityPatchProvider = provider;
+    }
+
+    @Override
+    public CompoundTag epicfight$getPersistentData() {
+        return epicfight$persistentData;
     }
 
      /// Stores when {@link #onGround} was lastly true
@@ -159,10 +168,14 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	)
 	private void epicfight$saveWithoutId(Entity self, CompoundTag compoundTag, Operation<CompoundTag> operation) {
 		this.addAdditionalSaveData(compoundTag);
-		
+
 		safeGetPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
 			entitypatch.writeData(compoundTag);
 		});
+
+		if (!this.epicfight$persistentData.isEmpty()) {
+			compoundTag.put("ForgeData", this.epicfight$persistentData);
+		}
 	}
 	
 	@WrapOperation(
@@ -174,10 +187,14 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder {
 	)
 	private void epicfight$load(Entity self, CompoundTag compoundTag, Operation<Void> operation) {
 		this.readAdditionalSaveData(compoundTag);
-		
+
 		safeGetPatch(self, EntityPatch.class).ifPresent(entitypatch -> {
 			entitypatch.readData(compoundTag);
 		});
+
+		if (compoundTag.contains("ForgeData")) {
+			this.epicfight$persistentData = compoundTag.getCompound("ForgeData");
+		}
 	}
 
     /// EntityEvent.Size — fires when an entity's dimensions are refreshed, allows modifying the size

@@ -951,7 +951,13 @@ public final class EpicFightCameraAPI {
             }
         }
 
-        // First person camera correction (ported from NeoForge ComputeCameraAnglesEvent)
+        return buildCameraEventPre;
+    }
+
+    /// First person camera correction (ported from NeoForge ComputeCameraAnglesEvent)
+    /// Must be called AFTER vanilla camera setup so it can modify the final camera state
+    @ApiStatus.Internal
+    public void computeCameraAngles(Camera camera, float partialTick) {
         if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson()) {
             LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
 
@@ -1003,8 +1009,6 @@ public final class EpicFightCameraAPI {
                 }
             }
         }
-
-        return buildCameraEventPre;
     }
     @ApiStatus.Internal
     public void fireCameraBuildPost(Camera camera, float partialTick) {

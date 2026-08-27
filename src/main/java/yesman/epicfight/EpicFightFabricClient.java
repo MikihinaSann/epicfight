@@ -10,6 +10,9 @@ import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenKeyboardEvents;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.client.Minecraft;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
@@ -203,6 +206,8 @@ public class EpicFightFabricClient implements ClientModInitializer {
             InputAction.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, EpicFightInputAction.class);
             InputAction.ENUM_MANAGER.registerEnumCls("minecraft", MinecraftInputAction.class);
             InputAction.ENUM_MANAGER.loadEnum();
+            WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFight.MODID + ":color_determinator_theme", ColorDeterminator.Theme.class);
+            WidgetTheme.ENUM_MANAGER.registerEnumCls(EpicFight.MODID + ":anchored_button_built_in_theme", AnchoredButton.BuiltInTheme.class);
             WidgetTheme.ENUM_MANAGER.loadEnum();
         } catch (Throwable e) {
             EpicFight.LOGGER.warn("Client enum registration failed: {}", e.getMessage());
@@ -287,6 +292,16 @@ public class EpicFightFabricClient implements ClientModInitializer {
             } catch (Throwable e) {
                 EpicFight.LOGGER.warn("FakeLevel unload failed: {}", e.getMessage());
             }
+        });
+
+        // Wire screen event hooks — replaces NeoForge's ScreenEvent.MouseButtonPressed/Released.Pre and ScreenEvent.KeyPressed.Pre
+        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            ScreenMouseEvents.allowMouseClick(screen).register((s, mouseX, mouseY, button) ->
+                !yesman.epicfight.api.client.event.impl.VanillaGUIEventHooks.onMouseButtonPressedInScreen(screen));
+            ScreenMouseEvents.allowMouseRelease(screen).register((s, mouseX, mouseY, button) ->
+                !yesman.epicfight.api.client.event.impl.VanillaGUIEventHooks.onMouseButtonReleasedInScreen(screen));
+            ScreenKeyboardEvents.allowKeyPress(screen).register((s, key, scancode, modifiers) ->
+                !yesman.epicfight.api.client.event.impl.VanillaGUIEventHooks.onKeyboardPressedInScreen(screen, key));
         });
 
         EpicFight.LOGGER.info("Epic Fight Fabric client initialized successfully!");

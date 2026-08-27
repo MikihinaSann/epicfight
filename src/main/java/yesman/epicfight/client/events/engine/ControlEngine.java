@@ -17,6 +17,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ShieldItem;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -684,7 +685,6 @@ public class ControlEngine implements IEventBasedEngine {
     @SuppressWarnings({"JavadocReference", "removal"})
     @Deprecated(forRemoval = true)
 	private static boolean isKeyPressed(KeyMapping key, boolean eventCheck) {
-		// TODO: Port to Fabric callback (was ClientHooks.onClickInput / InputEvent.InteractionKeyMappingTriggered)
 		return key.consumeClick();
 	}
 
@@ -922,6 +922,44 @@ public class ControlEngine implements IEventBasedEngine {
         }
 
         return false;
+    }
+
+    /// Determines whether the vanilla attack action should be cancelled when targeting a block with a combat-categorized item.
+    ///
+    /// Replaces the NeoForge [InputEvent.InteractionKeyMappingTriggered] handler logic for ATTACK_DESTROY + BLOCK hit.
+    /// Called from [MixinMinecraft] when the player attempts to attack.
+    ///
+    /// @return `true` to cancel the vanilla attack action; `false` to allow it
+    @ApiStatus.Internal
+    public static boolean shouldCancelVanillaAttackOnBlock() {
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        if (playerpatch == null) {
+            return false;
+        }
+
+        if (!InputManager.isBoundToSamePhysicalInput(EpicFightInputAction.ATTACK, MinecraftInputAction.ATTACK_DESTROY)) {
+            return false;
+        }
+
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.hitResult == null || mc.hitResult.getType() != HitResult.Type.BLOCK) {
+            return false;
+        }
+
+        ItemStack combatItemForSwing;
+        if (ClientConfig.combatCategorizedItems.contains(playerpatch.getOriginal().getMainHandItem().getItem())) {
+            combatItemForSwing = playerpatch.getOriginal().getMainHandItem();
+        } else if (ClientConfig.combatCategorizedItems.contains(playerpatch.getOriginal().getOffhandItem().getItem())) {
+            combatItemForSwing = playerpatch.getOriginal().getOffhandItem();
+        } else {
+            return false;
+        }
+
+        BlockHitResult blockHitResult = (BlockHitResult) mc.hitResult;
+        BlockPos bp = blockHitResult.getBlockPos();
+        BlockState bs = mc.level.getBlockState(bp);
+
+        return !combatItemForSwing.getItem().canAttackBlock(bs, playerpatch.getOriginal().level(), bp, playerpatch.getOriginal()) || combatItemForSwing.getDestroySpeed(bs) <= 1.0F;
     }
 
 

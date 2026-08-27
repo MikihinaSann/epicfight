@@ -65,6 +65,8 @@ import yesman.epicfight.api.client.event.types.render.RenderLivingPreEvent;
 import yesman.epicfight.api.client.input.InputManager;
 import yesman.epicfight.api.client.input.action.EpicFightInputAction;
 import yesman.epicfight.api.client.model.Meshes;
+import yesman.epicfight.api.client.model.SoftBodyTranslatable;
+import yesman.epicfight.api.client.physics.cloth.ClothSimulatable;
 import yesman.epicfight.api.utils.math.MathUtils;
 import yesman.epicfight.api.utils.math.OpenMatrix4f;
 import yesman.epicfight.api.utils.math.Vec3f;
@@ -81,6 +83,7 @@ import yesman.epicfight.client.renderer.FirstPersonRenderer;
 import yesman.epicfight.client.renderer.VanillaFakeBlockRenderer;
 import yesman.epicfight.client.renderer.patched.entity.*;
 import yesman.epicfight.client.renderer.patched.item.*;
+import yesman.epicfight.client.renderer.patched.layer.WearableItemLayer;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.compat.MinecraftMod;
 import yesman.epicfight.config.ClientConfig;
@@ -536,7 +539,7 @@ public class RenderEngine implements IEventBasedEngine {
         }
     }
 
-    // FPV camera correction is handled in EpicFightCameraAPI.setupCamera() (ported from ComputeCameraAnglesEvent)
+    // FPV camera correction is handled in EpicFightCameraAPI.computeCameraAngles() via MixinCamera TAIL inject (ported from ComputeCameraAnglesEvent)
 
     private void epicfight$renderGuiPre(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         Window window = Minecraft.getInstance().getWindow();
@@ -758,12 +761,16 @@ public class RenderEngine implements IEventBasedEngine {
 
     @Override
     public void modEventBus(Object modEventBus) {
-        // Populate patched entity renderers via Fabric's feature renderer registration callback.
-        // The callback provides EntityRendererProvider.Context and fires per entity type during renderer setup.
-        // One-shot guard ensures the full renderer map is populated only once.
         LivingEntityFeatureRendererRegistrationCallback.EVENT.register((entityType, entityRenderer, registrationHelper, context) -> {
             if (!this.renderersInitialized) {
                 this.renderersInitialized = true;
+                WearableItemLayer.clearModels();
+                SoftBodyTranslatable.TRACKING_SIMULATION_SUBJECTS.removeIf(ClothSimulatable::invalid);
+                for (ClothSimulatable simOwner : SoftBodyTranslatable.TRACKING_SIMULATION_SUBJECTS) {
+                    simOwner.getClothSimulator().getAllRunningObjects().forEach((entry) -> {
+                        simOwner.getClothSimulator().restart(entry.getKey());
+                    });
+                }
                 this.epicfight$addLayers(context);
             }
         });

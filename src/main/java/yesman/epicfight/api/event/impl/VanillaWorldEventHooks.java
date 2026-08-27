@@ -1,5 +1,6 @@
 package yesman.epicfight.api.event.impl;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
@@ -50,9 +51,8 @@ public final class VanillaWorldEventHooks {
     }
 
     /// Called when datapacks are reloaded for all players.
-    public static void onDatapackSyncAll() {
-        // Send to all players
-        // This is called when datapacks are reloaded without a specific player
+    public static void onDatapackSyncAll(MinecraftServer server) {
+        server.getPlayerList().getPlayers().forEach(VanillaWorldEventHooks::sendLevelData);
     }
 
     /// Sends all EpicFight datapack data to a player.

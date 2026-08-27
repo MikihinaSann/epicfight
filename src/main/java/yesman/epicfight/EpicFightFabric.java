@@ -298,6 +298,17 @@ public class EpicFightFabric implements ModInitializer {
             }
         });
 
+        // Wire global datapack reload sync — fires when /reload is run (replaces NeoForge's OnDatapackSyncEvent with null player)
+        ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResources, success) -> {
+            if (success) {
+                try {
+                    VanillaWorldEventHooks.onDatapackSyncAll(server);
+                } catch (Throwable e) {
+                    EpicFight.LOGGER.warn("Failed to sync EpicFight datapack data to all players: " + e.getMessage());
+                }
+            }
+        });
+
         // Load compat modules
         boolean isClientSide = EpicFightSharedConstants.isPhysicalClient();
         for (MinecraftMod mod : MinecraftMod.values()) {
