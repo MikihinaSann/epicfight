@@ -2,6 +2,7 @@ package yesman.epicfight;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
@@ -159,6 +160,20 @@ public class EpicFightFabricClient implements ClientModInitializer {
 
         // Register the separate_transforms model loader plugin (handles neoforge:separate_transforms format)
         ModelLoadingPlugin.register(new SeparateTransformsModelLoadingPlugin());
+
+        // Register the built-in "epicfight_legacy" resource pack — port of NeoForge's addPackFindersEvent
+        // On NeoForge, this uses AddPackFindersEvent + Pack.readMetaAndCreate.
+        // On Fabric, we use ResourceManagerHelper.registerBuiltinResourcePack which expects
+        // the pack to be under "resourcepacks/<id path>/" in the mod JAR.
+        try {
+            net.fabricmc.fabric.api.resource.ResourceManagerHelper.registerBuiltinResourcePack(
+                EpicFight.identifier("epicfight_legacy"),
+                FabricLoader.getInstance().getModContainer(EpicFight.MODID).orElseThrow(),
+                net.fabricmc.fabric.api.resource.ResourcePackActivationType.NORMAL
+            );
+        } catch (Throwable e) {
+            EpicFight.LOGGER.warn("Failed to register epicfight_legacy resource pack: {}", e.getMessage());
+        }
 
         // Register CLIENT config via ForgeConfigAPIPort
         try {
