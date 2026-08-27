@@ -73,7 +73,8 @@
     "common.IdMapperAccessor",
     "common.EndDragonFightAccessor",
     "common.AreaEffectCloudAccessor",
-    "common.WritableRegistryAccessor"
+    "common.WritableRegistryAccessor",
+    "common.MixinRegistryDataLoader"
   ],
   "injectors": {
     "defaultRequire": 0

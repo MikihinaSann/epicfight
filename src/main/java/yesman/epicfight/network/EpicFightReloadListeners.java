@@ -14,7 +14,6 @@ import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.client.animation.property.JointMaskReloadListener;
 import yesman.epicfight.api.client.model.ItemSkinsReloadListener;
 import yesman.epicfight.api.client.model.Meshes;
-import yesman.epicfight.api.data.reloader.EmoteReloadListener;
 import yesman.epicfight.api.data.reloader.ItemCapabilityReloadListener;
 import yesman.epicfight.api.data.reloader.MobPatchReloadListener;
 import yesman.epicfight.api.data.reloader.SkillReloadListener;
@@ -67,9 +66,10 @@ public final class EpicFightReloadListeners {
         helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener()));
         helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener()));
         helper.registerReloadListener(wrap("animation_manager", AnimationManager.getInstance()));
-        helper.registerReloadListener(wrap("emote", EmoteReloadListener.INSTANCE));
+        // Emote is now loaded as a data pack registry via RegistryDataLoader (MixinRegistryDataLoader),
+        // matching the NeoForge DataPackRegistryEvent approach. No manual reload listener needed.
 
-        EpicFight.LOGGER.info("EpicFight reload listeners registered (14)");
+        EpicFight.LOGGER.info("EpicFight reload listeners registered (13)");
     }
 
     /**

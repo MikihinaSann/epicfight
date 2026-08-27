@@ -36,7 +36,9 @@ public abstract class EpicFightRegistries {
     public static final Registry<WeaponModifier.Builder> MODIFIERS = createRegistry(Keys.MODIFIERS, true);
     public static final Registry<CustomData<?>> WEAPON_DATA = createRegistry(Keys.WEAPON_DATA, true);
     public static final Registry<CustomData<?>> MOVESET_DATA = createRegistry(Keys.MOVESET_DATA, true);
-    public static final Registry<Emote> EMOTE = createRegistry(Keys.EMOTE, true);
+    // EMOTE is a data pack registry (dynamic), not a static registry.
+    // It is registered via MixinRegistryDataLoader into RegistryDataLoader.SYNCHRONIZED_REGISTRIES,
+    // matching the NeoForge DataPackRegistryEvent approach. Access it via RegistryAccess.
 
     private static <T> Registry<T> createRegistry(ResourceKey<Registry<T>> key, boolean synced) {
         var builder = FabricRegistryBuilder.createSimple(key);
