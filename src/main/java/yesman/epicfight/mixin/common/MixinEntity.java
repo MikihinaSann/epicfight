@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.Animator;
 import yesman.epicfight.api.animation.AnimationPlayer;
@@ -208,6 +209,25 @@ public abstract class MixinEntity implements IEpicFightEntityPatchHolder, IPersi
             // but the onSizingEntity hook handles EnderDragon specially via the scaler
             // In practice, the EnderDragon size is handled by the entity itself
         });
+    }
+
+    /// EntityMountEvent — fires when an entity starts riding
+    @Inject(at = @At(value = "TAIL"), method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z")
+    private void epicfight$startRiding(Entity entity, boolean force, CallbackInfoReturnable<Boolean> info) {
+        if (info.getReturnValue()) {
+            Entity self = (Entity)(Object)this;
+            VanillaEntityEventHooks.onEntityMount(self, entity, true);
+        }
+    }
+
+    /// EntityMountEvent — fires when an entity stops riding
+    @Inject(at = @At(value = "TAIL"), method = "stopRiding()V")
+    private void epicfight$stopRiding(CallbackInfo info) {
+        Entity self = (Entity)(Object)this;
+        Entity vehicle = self.getVehicle();
+        if (vehicle != null) {
+            VanillaEntityEventHooks.onEntityMount(self, vehicle, false);
+        }
     }
 
     /// Called when setting [Entity#onGround()] according to the player's movement

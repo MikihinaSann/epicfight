@@ -1,7 +1,6 @@
 package yesman.epicfight.mixin.common;
 
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.Style;
 import net.minecraft.world.item.Rarity;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -13,13 +12,11 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.function.UnaryOperator;
 
 /// Adds Rarity.UNIQUE enum constant at runtime, matching NeoForge's EnumProxy behavior.
-/// The new constant has a green chat color style, matching Epic Fight's original intent.
+/// The new constant has a green chat color, matching Epic Fight's original intent.
 @Mixin(Rarity.class)
 public abstract class MixinRarity {
     @Shadow
@@ -28,15 +25,14 @@ public abstract class MixinRarity {
     private static Rarity[] $VALUES;
 
     @Invoker("<init>")
-    private static Rarity epicfight$invokeConstructor(String name, int ordinal, UnaryOperator<Style> styleModifier) {
+    private static Rarity epicfight$invokeConstructor(int ordinal, String name, ChatFormatting color) {
         throw new AssertionError();
     }
 
     @Inject(method = "<clinit>", at = @At("TAIL"))
     private static void epicfight$addUniqueRarity(CallbackInfo ci) {
-        // Create the new UNIQUE rarity with green color style
-        UnaryOperator<Style> greenStyle = style -> style.withColor(ChatFormatting.GREEN);
-        Rarity unique = epicfight$invokeConstructor("UNIQUE", $VALUES.length, greenStyle);
+        // Create the new UNIQUE rarity with green color
+        Rarity unique = epicfight$invokeConstructor($VALUES.length, "UNIQUE", ChatFormatting.GREEN);
 
         // Add to $VALUES array
         ArrayList<Rarity> values = new ArrayList<>(Arrays.asList($VALUES));

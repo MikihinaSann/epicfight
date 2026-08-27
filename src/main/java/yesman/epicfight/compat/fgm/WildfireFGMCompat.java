@@ -110,7 +110,9 @@ public class WildfireFGMCompat implements ICompatModule {
                         }
 
                         RenderType breastRenderType = null;
-                        ResourceLocation entityTexture = accessor.getTexture(entity);
+                        // NeoForge had GenderLayer.getBreastTexture(); Fabric does not.
+                        // Get the player's skin texture directly instead.
+                        ResourceLocation entityTexture = entity.getSkin().texture();
                         if (entityTexture != null) {
                             boolean bodyVisible = !entity.isInvisible();
                             Minecraft minecraft = Minecraft.getInstance();

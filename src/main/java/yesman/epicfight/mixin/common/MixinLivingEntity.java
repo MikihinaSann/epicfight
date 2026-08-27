@@ -250,25 +250,6 @@ public abstract class MixinLivingEntity {
         }
     }
 
-    /// EntityMountEvent — fires when an entity starts riding
-    @Inject(at = @At(value = "TAIL"), method = "startRiding(Lnet/minecraft/world/entity/Entity;Z)Z")
-    private void epicfight$startRiding(Entity entity, boolean force, CallbackInfoReturnable<Boolean> info) {
-        if (info.getReturnValue()) {
-            LivingEntity self = (LivingEntity)(Object)this;
-            VanillaEntityEventHooks.onEntityMount(self, entity, true);
-        }
-    }
-
-    /// EntityMountEvent — fires when an entity stops riding
-    @Inject(at = @At(value = "TAIL"), method = "stopRiding()V")
-    private void epicfight$stopRiding(CallbackInfo info) {
-        LivingEntity self = (LivingEntity)(Object)this;
-        Entity vehicle = self.getVehicle();
-        if (vehicle != null) {
-            VanillaEntityEventHooks.onEntityMount(self, vehicle, false);
-        }
-    }
-
     /// LivingKnockBackEvent — fires when an entity is knocked back, allows canceling
     @Inject(at = @At(value = "HEAD"), method = "knockback(DDD)V", cancellable = true)
     private void epicfight$knockback(double strength, double ratioX, double ratioZ, CallbackInfo info) {
