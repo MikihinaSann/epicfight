@@ -667,15 +667,19 @@ public class RenderEngine implements IEventBasedEngine {
         EntityUI.HEALTH_BAR.tick();
     }
 
+    /// Fabric's [WorldRenderEvents#BEFORE_BLOCK_OUTLINE] is the inverse of NeoForge's
+    /// `RenderHighlightEvent.Block`: returning `false` cancels the vanilla outline and `true`
+    /// lets it render, whereas NeoForge cancels by calling `setCanceled(true)`.
+    /// Upstream only hides the outline while the player is about to swing a weapon at the block,
+    /// so every other case must return `true` or the block outline disappears entirely.
     private boolean epicfight$renderBlockHighlight(WorldRenderContext context) {
-        // Return true to cancel the vanilla block highlight
         final boolean[] cancel = {false};
         EpicFightCapabilities.getUnparameterizedEntityPatch(this.minecraft.player, LocalPlayerPatch.class).ifPresent(playerpatch -> {
             if (playerpatch.canPlayAttackAnimation()) {
                 cancel[0] = true;
             }
         });
-        return cancel[0];
+        return !cancel[0];
     }
 
     /**********************
