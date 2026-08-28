@@ -165,6 +165,17 @@ java {
 jar {
     from(rootProject.file('LICENSE'))
     from(rootProject.file('LICENSE-ASSETS'))
+
+    // Compile-only API shims for optional mods. Fabric loads every mod through one
+    // flat classloader, so shipping these would put duplicate FQCNs on the classpath
+    // and the winner between our stub and the real mod's class is arbitrary.
+    // Both are only ever loaded when the real mod is installed (Controlify reads our
+    // META-INF/services entrypoint itself; AzureArmorTransformer is gated behind the
+    // azurelibarmor MinecraftMod entry), so dropping them from the jar is safe.
+    // net/neoforged/** deliberately stays: EpicFight calls those at runtime and no
+    // Fabric mod provides them (ForgeConfigAPIPort owns a disjoint set of classes).
+    exclude 'dev/isxander/controlify/**'
+    exclude 'mod/azure/azurelibarmor/**'
 }
 
 // Include generated resources
