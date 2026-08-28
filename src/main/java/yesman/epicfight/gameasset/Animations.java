@@ -2356,9 +2356,10 @@ public class Animations {
                     Entity e = list.get(count++);
                     BlockPos blockpos = e.blockPosition();
                     LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
+                    // Suppresses vanilla thunderHit and spawnFire outright, so NeoForge's
+                    // extra setDamage(0.0F) here has no vanilla equivalent and is not needed.
                     lightningbolt.setVisualOnly(true);
                     lightningbolt.moveTo(Vec3.atBottomCenterOf(blockpos));
-                    ((yesman.epicfight.mixin.common.LightningBoltAccessor) lightningbolt).epicfight$setDamage(0.0F);
                     lightningbolt.setCause(entitypatch instanceof ServerPlayerPatch serverPlayerPatch ? serverPlayerPatch.getOriginal() : null);
 
                     DamageSource dmgSource = new DamageSource(e.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), entitypatch.getOriginal());
