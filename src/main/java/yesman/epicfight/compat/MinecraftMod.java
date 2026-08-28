@@ -15,12 +15,13 @@ import yesman.epicfight.compat.playeranimator.PlayerAnimatorCompat;
 import yesman.epicfight.compat.playerrevive.PlayerReviveCompat;
 import yesman.epicfight.compat.simplytooltips.SimplyTooltipsModule;
 import yesman.epicfight.compat.skinlayer3d.SkinLayer3DCompat;
+import yesman.epicfight.compat.trinkets.TrinketsCompat;
 
 // List of mods with custom compatibility modules.
 // Only includes mods requiring manual registration via ICompatModule.
 // Mods with official API entry-points (e.g., Shoulder Surfing, Controlify, JEI) are excluded.
 // Dropped mods (no Fabric port): KubeJS, Vampirism, Werewolves.
-// Curios replaced by Trinkets on Fabric.
+// Curios replaced by Trinkets on Fabric (see TrinketsCompat).
 public enum MinecraftMod {
     GECKO_LIB("geckolib", true, GeckolibCompat.class),
     AZURE_LIB("azurelib", true, AzureLibCompat.class),
@@ -32,7 +33,8 @@ public enum MinecraftMod {
     BETTER_THIRD_PERSON("betterthirdperson", true, BetterThirdPersonCompat.class),
     PLAYER_REVIVE("playerrevive", true, PlayerReviveCompat.class),
     WILDFIRES_GENDER_MOD("wildfire_gender", true, WildfireFGMCompat.class),
-    SIMPLY_TOOLTIPS("simplytooltips", true, SimplyTooltipsModule.class);
+    SIMPLY_TOOLTIPS("simplytooltips", true, SimplyTooltipsModule.class),
+    TRINKETS("trinkets", true, TrinketsCompat.class);
 
     private final @NotNull String modId;
     private final boolean isClientOnly;
