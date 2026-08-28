@@ -175,7 +175,10 @@ public class SodiumFakeBlockRenderer implements FakeBlockRenderer {
 	static int applyBakedLighting(int packedLight, ByteBuffer data) {
 		int bl = packedLight & 0xFFFF;
 		int sl = (packedLight >> 16) & 0xFFFF;
-		int offset = 4 * 4; // int offset for vertex 0 * 4 bytes per int
+		// DefaultVertexFormat.BLOCK is Position, Color, UV0, UV2, Normal, so the lightmap (UV2)
+		// starts at int 6 (byte 24) - this is NeoForge's IQuadTransformer.UV2, which has no
+		// Fabric equivalent. Reading int 4 here would decode the UV0 texture floats as light.
+		int offset = 6 * 4;
 		int blBaked = Short.toUnsignedInt(data.getShort(offset));
 		int slBaked = Short.toUnsignedInt(data.getShort(offset + 2));
 		bl = Math.max(bl, blBaked);
