@@ -18,6 +18,11 @@ public interface KeyMappingAccessor {
     @Accessor("key")
     InputConstants.Key epicfight$getKey();
 
+    @Accessor("ALL")
+    static Map<String, KeyMapping> epicfight$getAll() {
+        throw new RuntimeException("Mixin stub");
+    }
+
     @Accessor("MAP")
     static Map<InputConstants.Key, KeyMapping> epicfight$getMap() {
         throw new RuntimeException("Mixin stub");

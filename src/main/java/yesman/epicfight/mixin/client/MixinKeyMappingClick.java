@@ -6,71 +6,57 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import yesman.epicfight.client.input.CombatKeyMapping;
 
 import java.util.HashSet;
 import java.util.Set;
 
-/// Distributes click events to all [CombatKeyMapping] instances that share the same key,
-/// EXCEPT the one that vanilla's [KeyMapping#click] already handled (the one in the static MAP).
+/// Restores multi-binding key dispatch, which Epic Fight relies on but vanilla Fabric lacks.
 ///
-/// In vanilla Minecraft, [KeyMapping#click] only increments the click count for the first
-/// key mapping registered for a given key (stored in the static MAP). This means
-/// [CombatKeyMapping] instances (like Epic Fight's ATTACK, GUARD, etc.) never receive
-/// clicks when they share a key with a vanilla mapping (e.g., MOUSE_BUTTON_LEFT).
+/// Vanilla [KeyMapping#click] and [KeyMapping#set] both resolve a *single* mapping via the
+/// static `MAP`, and `MAP` keeps only the last [KeyMapping] constructed for a given key.
+/// Epic Fight binds both `ATTACK` and `WEAPON_INNATE_SKILL` to the left mouse button, so
+/// `MAP[LMB]` ends up owned by `key.epicfight.weapon_innate_skill` and vanilla's `key.attack`
+/// stops receiving clicks *and* press state entirely — which silently breaks block breaking,
+/// because [net.minecraft.client.Minecraft#continueAttack] is driven by `keyAttack.isDown()`
+/// and calls `stopDestroyBlock()` every tick while it reads `false`.
 ///
-/// On NeoForge, [KeyConflictContext#IN_GAME] solves this by making the key mapping system
-/// distribute clicks to all matching mappings. Fabric has no equivalent, so this mixin
-/// replicates that behavior for [CombatKeyMapping] instances specifically.
+/// NeoForge does not have this problem: it replaces `MAP` with a `KeyBindingMap` whose
+/// `lookupAll` returns *every* mapping bound to a key, so vanilla and modded mappings both
+/// observe the input. This mixin reproduces that behaviour — after vanilla has updated the
+/// single `MAP` owner, the same event is propagated to every other mapping bound to the key.
 ///
-/// IMPORTANT: We must NOT double-increment the click count for the CombatKeyMapping that
-/// is already in MAP (i.e., the one vanilla already clicked). This happens when a
-/// CombatKeyMapping is the only mapping for a key (e.g., SWITCH_MODE on R key).
-/// Double-incrementing causes toggleMode() to fire twice, immediately reverting the mode.
-///
-/// REPEAT filtering: GLFW sends PRESS (action=1) then REPEAT (action=2) events while a
-/// key is held. Vanilla [KeyboardHandler.keyPress] calls [KeyMapping.set(key, true)] BEFORE
-/// [KeyMapping.click(key)], so checking [KeyMapping#isDown] in a HEAD injection cannot
-/// distinguish PRESS from REPEAT (isDown is always true when click is called).
-/// Instead, we track pressed keys in a Set and filter REPEAT events in the TAIL injection.
+/// Suppressing vanilla actions in Epic Fight mode is *not* this class's job; that is handled
+/// by [yesman.epicfight.mixin.client.MixinMinecraft], matching upstream.
 @Mixin(KeyMapping.class)
 public abstract class MixinKeyMappingClick {
 
-    /// Tracks keys that have been pressed (PRESS) and not yet released.
-    /// Used to distinguish PRESS from REPEAT events.
+    /// Keys currently held, used to tell a GLFW PRESS from the REPEAT events that follow it.
+    /// Vanilla [net.minecraft.client.KeyboardHandler] calls [KeyMapping#set] before
+    /// [KeyMapping#click], so [KeyMapping#isDown] cannot distinguish the two on its own.
     private static final Set<InputConstants.Key> EPICFIGHT_PRESSED_KEYS = new HashSet<>();
+
+    private static boolean epicfight$boundTo(KeyMapping mapping, InputConstants.Key key) {
+        // Compare against the live "key" field rather than getDefaultKey(): MAP is never
+        // updated on rebind, so the default key would match the wrong binding afterwards.
+        return ((KeyMappingAccessor) mapping).epicfight$getKey().equals(key);
+    }
 
     @Inject(method = "click(Lcom/mojang/blaze3d/platform/InputConstants$Key;)V", at = @At("TAIL"))
     private static void epicfight$distributeClick(InputConstants.Key key, CallbackInfo ci) {
         KeyMapping vanillaClicked = KeyMappingAccessor.epicfight$getMap().get(key);
         boolean isRepeat = EPICFIGHT_PRESSED_KEYS.contains(key);
 
-        for (KeyMapping mapping : CombatKeyMapping.getCombatKeyMappings()) {
+        for (KeyMapping mapping : KeyMappingAccessor.epicfight$getAll().values()) {
             KeyMappingAccessor accessor = (KeyMappingAccessor) mapping;
-            // Use the current bound key (field "key"), not getDefaultKey().
-            // MAP is never updated when keys are rebound (setKey only updates the field),
-            // so getDefaultKey() or MAP lookup would match the wrong key after rebind.
-            boolean currentKeyMatches = accessor.epicfight$getKey().equals(key);
 
             if (mapping == vanillaClicked) {
-                // Vanilla already incremented this mapping's click count in click().
-                if (!currentKeyMatches) {
-                    // Stale MAP entry — this mapping was rebound away from this key.
-                    // Undo vanilla's erroneous increment so the old key no longer triggers it.
-                    accessor.epicfight$setClickCount(accessor.epicfight$getClickCount() - 1);
-                } else if (isRepeat) {
-                    // REPEAT event — undo vanilla's increment to prevent duplicate triggers.
+                // Vanilla already incremented this one. Undo it when the increment was wrong:
+                // either MAP is stale (this mapping was rebound away), or this is a REPEAT.
+                if (!epicfight$boundTo(mapping, key) || isRepeat) {
                     accessor.epicfight$setClickCount(accessor.epicfight$getClickCount() - 1);
                 }
-                // else: PRESS and current key matches — vanilla's increment is correct.
-            } else {
-                // Mapping was NOT handled by vanilla (not in MAP for this key).
-                // This happens when another mod (e.g., JEI) registered a mapping for the
-                // same key AFTER Epic Fight, overwriting our CombatKeyMapping in MAP.
-                if (currentKeyMatches && !isRepeat) {
-                    // Manually increment for PRESS only.
-                    accessor.epicfight$setClickCount(accessor.epicfight$getClickCount() + 1);
-                }
+            } else if (epicfight$boundTo(mapping, key) && !isRepeat) {
+                accessor.epicfight$setClickCount(accessor.epicfight$getClickCount() + 1);
             }
         }
 
@@ -79,10 +65,17 @@ public abstract class MixinKeyMappingClick {
         }
     }
 
-    /// Clear pressed keys on RELEASE so the next PRESS is detected correctly.
-    /// [KeyMapping.set] is called by [KeyboardHandler.keyPress] with pressed=false on RELEASE.
-    @Inject(method = "set(Lcom/mojang/blaze3d/platform/InputConstants$Key;Z)V", at = @At("HEAD"))
-    private static void epicfight$clearReleasedKey(InputConstants.Key key, boolean pressed, CallbackInfo ci) {
+    /// Propagates press state, so a mapping displaced from `MAP` still reports [KeyMapping#isDown].
+    @Inject(method = "set(Lcom/mojang/blaze3d/platform/InputConstants$Key;Z)V", at = @At("TAIL"))
+    private static void epicfight$distributeSet(InputConstants.Key key, boolean pressed, CallbackInfo ci) {
+        KeyMapping vanillaSet = KeyMappingAccessor.epicfight$getMap().get(key);
+
+        for (KeyMapping mapping : KeyMappingAccessor.epicfight$getAll().values()) {
+            if (mapping != vanillaSet && epicfight$boundTo(mapping, key)) {
+                mapping.setDown(pressed);
+            }
+        }
+
         if (!pressed) {
             EPICFIGHT_PRESSED_KEYS.remove(key);
         }
