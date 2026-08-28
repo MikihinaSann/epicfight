@@ -658,7 +658,7 @@ public class LangKeys {
     public static final String TEXT_STYLE = "text.epicfight.style";
     public static final String TEXT_EPICFIGT_GUARD_SKILL_CONSUMPTION = "text.epicfigt.guard_skill_consumption";
     public static final String WEAPON_CATEGORY_AXE = "weapon_category.epicfight.axe";
-    public static final String WEAPON_CATEGORY_BOW = "weapon_category.bow";
+    public static final String WEAPON_CATEGORY_BOW = "weapon_category.epicfight.bow";
     public static final String WEAPON_CATEGORY_DAGGER = "weapon_category.epicfight.dagger";
     public static final String WEAPON_CATEGORY_FIST = "weapon_category.epicfight.fist";
     public static final String WEAPON_CATEGORY_GREATSWORD = "weapon_category.epicfight.greatsword";
