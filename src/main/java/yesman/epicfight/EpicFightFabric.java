@@ -80,26 +80,17 @@ public class EpicFightFabric implements ModInitializer {
 
         // SimplyTooltips compat is handled via the MinecraftMod compat module loop below
 
-        // Register configs via ForgeConfigAPIPort (NeoForge API — ModConfigSpec implements IConfigSpec)
+        // Load COMMON and SERVER configs (NightConfig TOML, no ForgeConfigAPIPort needed)
         try {
-            // Register COMMON and SERVER config specs
-            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry.INSTANCE.register(
-                EpicFight.MODID, net.neoforged.fml.config.ModConfig.Type.COMMON,
-                yesman.epicfight.config.CommonConfig.SPEC);
-            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry.INSTANCE.register(
-                EpicFight.MODID, net.neoforged.fml.config.ModConfig.Type.SERVER,
-                yesman.epicfight.config.ServerConfig.SPEC);
-
-            // Wire config loading events
-            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents.loading(EpicFight.MODID).register(config -> {
-                if (config.getType() == net.neoforged.fml.config.ModConfig.Type.COMMON) {
-                    yesman.epicfight.config.CommonConfig.onLoad(config);
-                } else if (config.getType() == net.neoforged.fml.config.ModConfig.Type.SERVER) {
-                    yesman.epicfight.config.ServerConfig.onLoad(config);
-                }
-            });
+            java.nio.file.Path configDir = FabricLoader.getInstance().getConfigDir();
+            net.neoforged.fml.config.ModConfig commonCfg = new net.neoforged.fml.config.ModConfig(
+                net.neoforged.fml.config.ModConfig.Type.COMMON, CommonConfig.SPEC, configDir, EpicFight.MODID);
+            CommonConfig.onLoad(commonCfg);
+            net.neoforged.fml.config.ModConfig serverCfg = new net.neoforged.fml.config.ModConfig(
+                net.neoforged.fml.config.ModConfig.Type.SERVER, ServerConfig.SPEC, configDir, EpicFight.MODID);
+            ServerConfig.onLoad(serverCfg);
         } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register configs: " + e.getMessage());
+            EpicFight.LOGGER.warn("Failed to load configs: " + e.getMessage());
         }
 
         // Register extensible enums

@@ -178,20 +178,15 @@ public class EpicFightFabricClient implements ClientModInitializer {
             EpicFight.LOGGER.warn("Failed to register epicfight_legacy resource pack: {}", e.getMessage());
         }
 
-        // Register CLIENT config via ForgeConfigAPIPort
+        // Load CLIENT config (NightConfig TOML, no ForgeConfigAPIPort needed)
         try {
-            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeConfigRegistry.INSTANCE.register(
-                EpicFight.MODID, net.neoforged.fml.config.ModConfig.Type.CLIENT,
-                yesman.epicfight.config.ClientConfig.SPEC);
-
-            fuzs.forgeconfigapiport.fabric.api.neoforge.v4.NeoForgeModConfigEvents.loading(EpicFight.MODID).register(config -> {
-                if (config.getType() == net.neoforged.fml.config.ModConfig.Type.CLIENT) {
-                    yesman.epicfight.config.ClientConfig.epicfight$modConfigLoading(config);
-                    EpicFight.LOGGER.info("EpicFight client config loaded");
-                }
-            });
+            java.nio.file.Path configDir = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir();
+            net.neoforged.fml.config.ModConfig clientCfg = new net.neoforged.fml.config.ModConfig(
+                net.neoforged.fml.config.ModConfig.Type.CLIENT, yesman.epicfight.config.ClientConfig.SPEC, configDir, EpicFight.MODID);
+            yesman.epicfight.config.ClientConfig.epicfight$modConfigLoading(clientCfg);
+            EpicFight.LOGGER.info("EpicFight client config loaded");
         } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register client config: " + e.getMessage());
+            EpicFight.LOGGER.warn("Failed to load client config: " + e.getMessage());
         }
 
         // Register client-bound payload handlers with Fabric networking
