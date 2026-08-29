@@ -13,7 +13,7 @@
         "issues": "${issueTracker}"
     },
     "license": "${license}",
-    "icon": "assets/epicfight/epicfight_logo.png",
+    "icon": "epicfight_logo.png",
     "environment": "*",
     "entrypoints": {
         "main": [
