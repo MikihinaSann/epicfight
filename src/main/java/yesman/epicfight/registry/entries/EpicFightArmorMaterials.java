@@ -1,4 +1,5 @@
 package yesman.epicfight.registry.entries;
+import yesman.epicfight.EpicFight;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -11,16 +12,16 @@ import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
+import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
+import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import yesman.epicfight.main.EpicFightMod;
 
 public final class EpicFightArmorMaterials {
 	private EpicFightArmorMaterials() {}
 	
-	public static final DeferredRegister<ArmorMaterial> REGISTRY = DeferredRegister.create(Registries.ARMOR_MATERIAL, EpicFightMod.MODID);
+	public static final DeferredRegisterShim<ArmorMaterial> REGISTRY = new DeferredRegisterShim<>(Registries.ARMOR_MATERIAL, EpicFight.MODID);
 	
-	public static final DeferredHolder<ArmorMaterial, ArmorMaterial> STRAY_CLOTH =
+	public static final DeferredHolderShim<ArmorMaterial, ArmorMaterial> STRAY_CLOTH =
 		REGISTRY.register(
 			  "stray_cloth"
 			, () ->

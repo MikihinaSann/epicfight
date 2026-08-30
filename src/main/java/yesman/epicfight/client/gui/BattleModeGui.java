@@ -118,7 +118,7 @@ public class BattleModeGui {
 			String skillName = Component.translatable(String.format("skill.%s.%s", rl.getNamespace(), rl.getPath())).getString();
 			
 			int stringWidth = this.minecraft.font.width(skillName);
-			guiGraphics.drawString(this.minecraft.font, skillName, (pos.x + 120 - stringWidth * 0.5F), pos.y - 12, 16777215, true);
+			guiGraphics.drawString(this.minecraft.font, skillName, (int)(pos.x + 120 - stringWidth * 0.5F), pos.y - 12, 16777215, true);
 		}
 	}
 	
@@ -137,9 +137,9 @@ public class BattleModeGui {
 			if (slot == SkillSlots.WEAPON_INNATE) {
 				continue;
 			}
-			
+
 			SkillContainer container = playerpatch.getSkill(slot);
-			
+
 			if (!container.isEmpty()) {
 				if (!this.skillIcons.contains(container) && container.getSkill().shouldDraw(container)) {
 					this.skillIcons.add(container);
@@ -195,7 +195,7 @@ public class BattleModeGui {
 		}
 		
 		SkillContainer container = playerpatch.getSkill(SkillSlots.WEAPON_INNATE);
-		
+
 		if (!container.isEmpty() && container.getSkill().shouldDraw(container)) {
 			float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
 			Vec2i pos = ClientConfig.getWeaponInnatePosition();

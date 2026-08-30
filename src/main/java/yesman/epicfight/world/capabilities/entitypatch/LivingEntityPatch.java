@@ -1,4 +1,5 @@
 package yesman.epicfight.world.capabilities.entitypatch;
+import yesman.epicfight.platform.neoforged.event.EventHooks;
 
 import com.mojang.datafixers.util.Pair;
 import net.minecraft.client.renderer.RenderType;
@@ -17,11 +18,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
+
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -35,6 +37,7 @@ import yesman.epicfight.api.event.EntityEventListener;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.IdentifierProvider;
 import yesman.epicfight.api.event.types.entity.*;
+import yesman.epicfight.api.extension.EntityExtension;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.api.utils.AttackResult;
 import yesman.epicfight.api.utils.AttackResult.ResultType;
@@ -116,7 +119,13 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 
     @Override
     public void onConstructed(T original) {
-        this.armature = Armatures.getArmatureFor(this);
+        // Armature loading requires assets/ resources which are only available on the client.
+        // On the dedicated server, this will fail — wrap in try-catch so the animator can still be created.
+        try {
+            this.armature = Armatures.getArmatureFor(this);
+        } catch (Throwable e) {
+            yesman.epicfight.EpicFight.LOGGER.warn("[EpicFight] Failed to load armature for {}: {}", original.getType(), e.getMessage());
+        }
 
         Animator animator = EpicFightSharedConstants.getAnimator(this);
         this.animator = animator;
@@ -913,11 +922,11 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
 
         if (hand == InteractionHand.MAIN_HAND) {
             impact = (float)this.original.getAttributeValue(EpicFightAttributes.IMPACT);
-            i = this.getOriginal().getMainHandItem().getEnchantmentLevel(this.getLevel().registryAccess().holderOrThrow(Enchantments.KNOCKBACK));
+            i = EnchantmentHelper.getItemEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), this.getOriginal().getMainHandItem());
         } else {
             if (this.isOffhandItemValid()) {
                 impact = (float)this.original.getAttributeValue(EpicFightAttributes.OFFHAND_IMPACT);
-                i = this.getOriginal().getOffhandItem().getEnchantmentLevel(this.getLevel().registryAccess().holderOrThrow(Enchantments.KNOCKBACK));
+                i = EnchantmentHelper.getItemEnchantmentLevel(this.getLevel().registryAccess().registryOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT).getHolderOrThrow(Enchantments.KNOCKBACK), this.getOriginal().getOffhandItem());
             } else {
                 impact = (float)this.original.getAttribute(EpicFightAttributes.IMPACT).getBaseValue();
             }
@@ -1076,7 +1085,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
             return true;
         }
 
-        if (this.original.getRootVehicle() == target.getRootVehicle() && !target.canRiderInteract()) {
+        if (this.original.getRootVehicle() == target.getRootVehicle() && !EntityExtension.of(target).epicfight$canRiderInteract()) {
             return true;
         }
 

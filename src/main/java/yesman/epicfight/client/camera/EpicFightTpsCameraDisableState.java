@@ -1,4 +1,5 @@
 package yesman.epicfight.client.camera;
+import yesman.epicfight.EpicFight;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +19,7 @@ public final class EpicFightTpsCameraDisableState {
         Objects.requireNonNull(reason, "reason must not be null");
 
         EpicFightTpsCameraDisableState.reason = reason;
-        EpicFightMod.LOGGER.info("Epic Fight TPS mode has been disabled due to a mod conflict with {}", reason.getModName());
+        EpicFight.LOGGER.info("Epic Fight TPS mode has been disabled due to a mod conflict with {}", reason.getModName());
 
         if (!eventRegistered) {
             EpicFightClientEventHooks.Camera.ACTIVATE_TPS_CAMERA.registerEvent(e -> {

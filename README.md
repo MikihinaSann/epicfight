@@ -182,24 +182,28 @@ classified into three types:
 
 ## 🔧 **Compatibility**
 
-### **✅ Fully Supported and Compatible Mods**
+### **Mod Compatibility**
 
-<details><summary>Tap to show/hide</summary>
-
-- [Epic Fight: Skill Tree](https://modrinth.com/mod/epic-fight-skill-tree)
-- [Controlify](https://modrinth.com/mod/controlify)
-- [ParCool](https://modrinth.com/mod/parcool)
-- [Sodium](https://modrinth.com/mod/sodium)
-- [Iris Shaders](https://modrinth.com/mod/iris)
-- [3D Skin Layers](https://modrinth.com/mod/3dskinlayers)
-- [Shoulder Surfing Reloaded](https://modrinth.com/mod/shoulder-surfing-reloaded)
-- [playerAnimator](https://modrinth.com/mod/playeranimator)
-- [Geckolib](https://modrinth.com/mod/geckolib)
-- [AzureLib](https://modrinth.com/mod/azurelib)
-- [First-person Model](https://modrinth.com/mod/first-person-model)
-- [KubeJS](https://modrinth.com/mod/kubejs)
-
-</details>
+| Mod | NeoForge | Fabric | Notes |
+|-----|----------|--------|-------|
+| [AzureLib](https://modrinth.com/mod/azurelib) | ✅ | ✅ | |
+| [Female Gender](https://modrinth.com/mod/female-gender) | ✅ | ✅ | |
+| [GeckoLib](https://modrinth.com/mod/geckolib) | ✅ | ✅ | |
+| [JEI](https://modrinth.com/mod/jei) | ✅ | ✅ | |
+| [playerAnimator](https://modrinth.com/mod/playeranimator) | ✅ | ✅ | |
+| [Better Third Person](https://modrinth.com/mod/better-third-person) | ✅ | ⚠️ | Integration present, verification pending |
+| [First-person Model](https://modrinth.com/mod/first-person-model) | ✅ | ⚠️ | Integration present, verification pending |
+| [Iris Shaders](https://modrinth.com/mod/iris) | ✅ | ⚠️ | Integration present, verification pending |
+| [Sodium](https://modrinth.com/mod/sodium) | ✅ | ⚠️ | Integration present, verification pending |
+| [3D Skin Layers](https://modrinth.com/mod/3dskinlayers) | ✅ | ⚠️ | Integration present, verification pending |
+| [Shoulder Surfing Reloaded](https://modrinth.com/mod/shoulder-surfing-reloaded) | ✅ | ⚠️ | Integration present, verification pending |
+| [Simply Tooltips](https://modrinth.com/mod/simply-tooltips) | ✅ | ⚠️ | Integration present, verification pending |
+| [Trinkets](https://modrinth.com/mod/trinkets) | — | ⚠️ | Fabric equivalent of Curios; verification pending |
+| [PlayerRevive](https://modrinth.com/mod/player-revive) | ✅ | ⚠️ | Integration present, verification pending |
+| [Controlify](https://modrinth.com/mod/controlify) | ✅ | ❌ | Not currently supported on Fabric |
+| [KubeJS](https://modrinth.com/mod/kubejs) | ✅ | ❌ | Not currently supported on Fabric |
+| [Epic Fight: Skill Tree](https://modrinth.com/mod/epic-fight-skill-tree) | ✅ | — | No Fabric version available |
+| [ParCool](https://modrinth.com/mod/parcool) | ✅ | — | No Fabric version available |
 
 ### **⚠️ Incompatible Mods**
 
@@ -207,7 +211,6 @@ classified into three types:
 
 - **Optifine** (closed-source mod)
 - [Controllable](https://www.curseforge.com/minecraft/mc-mods/controllable)
-- 
 
 </details>
 

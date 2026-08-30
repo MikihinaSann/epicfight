@@ -1,4 +1,7 @@
 package yesman.epicfight.compat.skinlayer3d;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentRegistry;
+import net.fabricmc.fabric.api.attachment.v1.AttachmentType;
+import yesman.epicfight.EpicFight;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.NativeImage;
@@ -13,7 +16,7 @@ import dev.tr7zw.skinlayers.render.CustomizableModelPart;
 import dev.tr7zw.skinlayers.renderlayers.CustomLayerFeatureRenderer;
 import dev.tr7zw.skinlayers.util.NMSWrapper.WrappedNativeImage;
 import dev.tr7zw.skinlayers.versionless.util.wrapper.SolidPixelWrapper;
-import dev.tr7zw.transition.mc.PlayerUtil;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
@@ -30,12 +33,9 @@ import net.minecraft.world.entity.player.PlayerModelPart;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.AbstractSkullBlock;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.attachment.AttachmentType;
-import net.neoforged.neoforge.attachment.IAttachmentHolder;
-import net.neoforged.neoforge.registries.DeferredHolder;
-import net.neoforged.neoforge.registries.DeferredRegister;
-import net.neoforged.neoforge.registries.NeoForgeRegistries;
+
+
+
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -54,28 +54,21 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class SkinLayer3DCompat implements ICompatModule {
-	public static final DeferredRegister<AttachmentType<?>> REGISTRY = DeferredRegister.create(NeoForgeRegistries.ATTACHMENT_TYPES, EpicFightMod.MODID);
-	
-	public static final DeferredHolder<AttachmentType<?>, AttachmentType<SkinLayer3DMeshes>> SKINLAYER_MESH = REGISTRY.register(
-            "skinlayer_mesh",
-            () ->
-            	AttachmentType
-                    .builder(SkinLayer3DMeshes::new)
-                    .build()
+	public static final AttachmentType<SkinLayer3DMeshes> SKINLAYER_MESH = AttachmentRegistry.createDefaulted(
+            ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "skinlayer_mesh"),
+            () -> new SkinLayer3DMeshes(null)
     );
 	
 	@Override
-	public void onModEventBus(IEventBus eventBus) {
+	public void onInitialize() {
 	}
 
 	@Override
-	public void onGameEventBus(IEventBus eventBus) {
+	public void onInitializeServer() {
 	}
 	
 	@Override
-	public void onModEventBusClient(IEventBus eventBus) {
-		REGISTRY.register(eventBus);
-
+	public void onInitializeClient() {
         EpicFightClientEventHooks.Registry.MODIFY_PATCHED_ENTITY.registerEvent(event -> {
             if (event.get(EntityType.PLAYER) instanceof PPlayerRenderer playerrenderer) {
                 playerrenderer.addPatchedLayerAlways(CustomLayerFeatureRenderer.class, new EpicFight3DSkinLayerRenderer());
@@ -84,19 +77,21 @@ public class SkinLayer3DCompat implements ICompatModule {
 	}
 	
 	@Override
-	public void onGameEventBusClient(IEventBus eventBus) {
+	public void onInitializeClientServer() {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
-            event.getEntityPatch().getOriginal().getExistingData(SKINLAYER_MESH).ifPresent(skinlayerMesh -> {
+            SkinLayer3DMeshes skinlayerMesh = event.getEntityPatch().getOriginal().getAttached(SKINLAYER_MESH);
+            if (skinlayerMesh != null) {
                 skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
                 skinlayerMesh.partMeshes.clear();
-            });
+                event.getEntityPatch().getOriginal().removeAttached(SKINLAYER_MESH);
+            }
         });
 	}
 	
 	public static final class SkinLayer3DMeshes {
 		private final Map<PlayerModelPart, SkinnedMesh> partMeshes = Maps.newHashMap();
 		
-		public SkinLayer3DMeshes(IAttachmentHolder attachmentHolder) {
+		public SkinLayer3DMeshes(Object attachmentHolder) {
 			if (!(attachmentHolder instanceof Entity)) {
 				throw new IllegalArgumentException(attachmentHolder + " is not a subtype of Entity");
 			}
@@ -142,7 +137,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 	            return;
 			}
 			
-			SkinLayer3DMeshes skin3dlayerMeshes = player.getData(SKINLAYER_MESH);
+			SkinLayer3DMeshes skin3dlayerMeshes = player.getAttachedOrCreate(SKINLAYER_MESH);
 			int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0f);
 			
 			for (PlayerModelPart playerModelPart : PlayerModelPart.values()) {
@@ -197,7 +192,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 		
 		private static SkinnedMesh createEpicFight3DSkinLayer(AbstractClientPlayer player, PlayerModelPart playerModelPart, Mesh skinlayerModelPart, ModelPart vanillaModelPart, int width, int height, int depth, int textureU, int textureV, boolean topPivot, float rotationOffset) {
 			CustomizableCubeListBuilder builder = new CustomizableCubeListBuilder();
-            ResourceLocation skinLocation = PlayerUtil.getPlayerSkin(player);
+            ResourceLocation skinLocation = player.getSkin().texture();
 			NativeImage skinImage = SkinUtil.getTexture(skinLocation, null);
             
             if (SolidPixelWrapper.wrapBox(builder, new WrappedNativeImage(skinImage), width, height, depth, textureU, textureV, topPivot, rotationOffset) != null) {

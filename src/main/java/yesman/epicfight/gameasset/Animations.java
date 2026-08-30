@@ -1,4 +1,6 @@
 package yesman.epicfight.gameasset;
+import yesman.epicfight.EpicFight;
+import yesman.epicfight.config.ServerConfig;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.ints.IntIntPair;
@@ -10,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -28,10 +31,10 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.*;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import net.neoforged.bus.api.SubscribeEvent;
-import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.common.NeoForgeConfig;
-import net.neoforged.neoforge.event.EventHooks;
+
+
+
+
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 import yesman.epicfight.api.animation.*;
@@ -57,6 +60,7 @@ import yesman.epicfight.api.animation.types.AttackAnimation.Phase;
 import yesman.epicfight.api.animation.types.grappling.GrapplingAttackAnimation;
 import yesman.epicfight.api.animation.types.grappling.GrapplingTryAnimation;
 import yesman.epicfight.api.animation.types.procedural.*;
+import yesman.epicfight.api.extension.BlockStateExtension;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.collider.OBBCollider;
 import yesman.epicfight.api.physics.ik.InverseKinematicsSimulator.InverseKinematicsDefinition;
@@ -86,7 +90,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-@EventBusSubscriber(modid = EpicFightMod.MODID)
+
 public class Animations {
     public static DirectStaticAnimation EMPTY_ANIMATION = new DirectStaticAnimation() {
         @Override
@@ -446,9 +450,9 @@ public class Animations {
     public static AnimationAccessor<OffAnimation> OFF_ANIMATION_MIDDLE;
     public static AnimationAccessor<OffAnimation> OFF_ANIMATION_LOWEST;
 
-    @SubscribeEvent
+    
     public static void registerAnimations(AnimationRegistryEvent event) {
-        event.newBuilder(EpicFightMod.MODID, Animations::build);
+        event.newBuilder(EpicFight.MODID, Animations::build);
     }
 
     public static void build(AnimationBuilder builder) {
@@ -913,7 +917,7 @@ public class Animations {
 
         TOOL_AUTO1 = builder.nextAccessor("biped/combat/tool_auto1", (accessor) ->
             new ComboAttackAnimation(0.13F, 0.05F, 0.15F, 0.3F, null, Armatures.BIPED.get().toolR, accessor, Armatures.BIPED)
-                .setResourceLocation(EpicFightMod.MODID, "biped/combat/sword_auto1")
+                .setResourceLocation(EpicFight.MODID, "biped/combat/sword_auto1")
         );
         TOOL_AUTO2 = builder.nextAccessor("biped/combat/sword_auto4", (accessor) ->
             new ComboAttackAnimation(0.13F, 0.05F, 0.15F, 0.4F, null, Armatures.BIPED.get().toolR, accessor, Armatures.BIPED)
@@ -1075,7 +1079,7 @@ public class Animations {
                 .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 2.4F));
         DAGGER_DUAL_AIR_SLASH = builder.nextAccessor("biped/combat/dagger_dual_airslash", (accessor) -> new AirSlashAnimation(0.1F, 0.15F, 0.26F, 0.4F, ColliderPreset.DUAL_DAGGER_AIR_SLASH, Armatures.BIPED.get().torso, accessor, Armatures.BIPED)
                 .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 2.0F)
-                .setResourceLocation(EpicFightMod.MODID, "biped/combat/sword_dual_airslash"));
+                .setResourceLocation(EpicFight.MODID, "biped/combat/sword_dual_airslash"));
         AXE_AIRSLASH = builder.nextAccessor("biped/combat/axe_airslash", (accessor) -> new AirSlashAnimation(0.1F, 0.3F, 0.4F, 0.65F, null, Armatures.BIPED.get().toolR, accessor, Armatures.BIPED));
 
         SWORD_MOUNT_ATTACK = builder.nextAccessor("biped/combat/sword_mount_attack", (accessor) -> new MountAttackAnimation(0.16F, 0.1F, 0.2F, 0.25F, 0.7F, null, Armatures.BIPED.get().toolR, accessor, Armatures.BIPED));
@@ -1904,7 +1908,7 @@ public class Animations {
                                         }
                                     });
 
-                                    Level.ExplosionInteraction explosion$blockinteraction = EventHooks.canEntityGrief(witherboss.level(), witherboss) ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
+                                    Level.ExplosionInteraction explosion$blockinteraction = witherboss.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) ? Level.ExplosionInteraction.BLOCK : Level.ExplosionInteraction.NONE;
                                     witherboss.level().explode(witherboss, hitLocation.x, hitLocation.y, hitLocation.z, 0.0F, false, explosion$blockinteraction);
                                 }
                             }
@@ -1970,7 +1974,7 @@ public class Animations {
             new AttackAnimation(0.1F, 0.25F, 0.3F, 0.4F, 0.8F, null, Armatures.BIPED.get().toolR, accessor, Armatures.BIPED)
                 .addProperty(AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.2F)
                 .addProperty(StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.COMBO_ATTACK_DIRECTION_MODIFIER)
-                .setResourceLocation(EpicFightMod.MODID, "biped/combat/spear_dash")
+                .setResourceLocation(EpicFight.MODID, "biped/combat/spear_dash")
                 .addEvents(StaticAnimationProperty.ON_END_EVENTS,
                     SimpleEvent.create((entitypatch, animation, params) -> {
                         List<LivingEntity> hitEnemies = entitypatch.getCurrentlyActuallyHitEntities();
@@ -2352,9 +2356,10 @@ public class Animations {
                     Entity e = list.get(count++);
                     BlockPos blockpos = e.blockPosition();
                     LightningBolt lightningbolt = EntityType.LIGHTNING_BOLT.create(level);
+                    // Suppresses vanilla thunderHit and spawnFire outright, so NeoForge's
+                    // extra setDamage(0.0F) here has no vanilla equivalent and is not needed.
                     lightningbolt.setVisualOnly(true);
                     lightningbolt.moveTo(Vec3.atBottomCenterOf(blockpos));
-                    lightningbolt.setDamage(0.0F);
                     lightningbolt.setCause(entitypatch instanceof ServerPlayerPatch serverPlayerPatch ? serverPlayerPatch.getOriginal() : null);
 
                     DamageSource dmgSource = new DamageSource(e.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(DamageTypes.LIGHTNING_BOLT), entitypatch.getOriginal());
@@ -2404,6 +2409,22 @@ public class Animations {
             // and shoot via the existing AIM/SHOT composite layer regardless of mount type.
         };
 
+        /// Fabric-compatible ladder detection.
+        /// Replaces NeoForge's BlockState.isLadder(Level, BlockPos, LivingEntity) extension.
+        /// Checks BlockTags.CLIMBABLE (ladders, vines, scaffolding, etc.) and open trapdoors
+        /// with a climbable block below (matching vanilla onClimbable behavior).
+        private static boolean isLadderBlock(BlockState state, Level level, BlockPos pos, LivingEntity entity) {
+            if (state.is(BlockTags.CLIMBABLE)) {
+                return true;
+            }
+            if (state.hasProperty(BlockStateProperties.OPEN) && state.getValue(BlockStateProperties.OPEN)) {
+                BlockPos below = pos.below();
+                BlockState belowState = level.getBlockState(below);
+                return belowState.is(BlockTags.CLIMBABLE);
+            }
+            return false;
+        }
+
         @SuppressWarnings("incomplete-switch")
         public static final AnimationEvent.E0 UPDATE_Y_TO_NEARBY_LADDER = (entitypatch, animation, params) -> {
             LivingEntity original = entitypatch.getOriginal();
@@ -2418,8 +2439,8 @@ public class Animations {
                 direction = Direction.UP;
             }
 
-            if (NeoForgeConfig.SERVER.fullBoundingBoxLadders.get()) {
-                if (bs.isLadder(level, bp, original)) {
+            if (ServerConfig.fullBoundingBoxLadders) {
+                if (isLadderBlock(bs, level, bp, original)) {
                     if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                         direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                     } else {
@@ -2447,7 +2468,7 @@ public class Animations {
                         for (int z2 = mZ; z2 < bb.maxZ; z2++) {
                             BlockPos tmp = new BlockPos(x2, y2, z2);
                             bs = level.getBlockState(tmp);
-                            if (bs.isLadder(level, tmp, original)) {
+                            if (isLadderBlock(bs, level, tmp, original)) {
                                 if (bs.hasProperty(BlockStateProperties.HORIZONTAL_FACING)) {
                                     direction = bs.getValue(BlockStateProperties.HORIZONTAL_FACING);
                                 } else {
@@ -2527,7 +2548,7 @@ public class Animations {
 
         public static final AnimationEvent.E0 PLAY_STEPPING_SOUND = (entitypatch, animation, params) -> {
             BlockState state = entitypatch.getLevel().getBlockState(entitypatch.getOriginal().getOnPos());
-            entitypatch.playSound(state.getSoundType(entitypatch.getLevel(), entitypatch.getOriginal().blockPosition(), entitypatch.getOriginal()).getHitSound(), 0, 0);
+            entitypatch.playSound(BlockStateExtension.of(state).epicfight$getSoundType(entitypatch.getLevel(), entitypatch.getOriginal().blockPosition(), entitypatch.getOriginal()).getHitSound(), 0, 0);
         };
 
         public static final AnimationEvent.E0 TELEPORT_ATTACK_SERVER = (entitypatch, self, param) -> {

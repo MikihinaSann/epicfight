@@ -505,6 +505,7 @@
   "weapon_category.epicfight.dagger": "Dagger",
   "weapon_category.epicfight.shield": "Shield",
   "weapon_category.epicfight.ranged": "Ranged",
+  "weapon_category.epicfight.bow": "Bow",
 
   "epicfight.tip.weight": "Weight shortens stun, raises skill stamina use, and slows attack speed, especially on fast items.",
   "epicfight.tip.stun_armor": "Stun Armor extends the time between stuns, boosting overall resilience and defense.",

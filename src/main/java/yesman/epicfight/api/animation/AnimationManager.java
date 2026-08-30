@@ -15,8 +15,8 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimplePreparableReloadListener;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.profiling.ProfilerFiller;
-import net.neoforged.bus.api.Event;
-import net.neoforged.fml.event.IModBusEvent;
+
+
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.EpicFight;
@@ -476,7 +476,7 @@ public class AnimationManager extends SimplePreparableReloadListener<List<Resour
 		}
 	}
 	
-	public static class AnimationRegistryEvent extends Event implements IModBusEvent {
+	public static class AnimationRegistryEvent {
 		private final List<AnimationBuilder> builders = Lists.newArrayList();
 		private final Set<String> namespaces = Sets.newHashSet();
 		

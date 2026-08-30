@@ -1,4 +1,5 @@
 package yesman.epicfight.client.gui.screen;
+import yesman.epicfight.platform.neoforged.client.ClientHooks;
 
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -25,7 +26,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
-import net.neoforged.neoforge.client.ClientHooks;
+
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
@@ -234,7 +235,7 @@ public class SkillBookScreen extends Screen {
             )
             .bounds(this.width / 2 + 54, this.height / 2 + 90, 67, 21)
             .tooltip(Tooltip.create(tooltip, null))
-            .build(LearnButton::new);
+            .build();
 
         if (isUsing || !meetsCondition) {
             this.learnButton.active = false;
@@ -666,7 +667,7 @@ public class SkillBookScreen extends Screen {
         );
 
         protected LearnButton(Builder builder) {
-            super(builder);
+            super(builder.x, builder.y, builder.width, builder.height, builder.message, builder.onPress, Button.DEFAULT_NARRATION);
         }
 
         @Override
@@ -681,7 +682,7 @@ public class SkillBookScreen extends Screen {
             guiGraphics.setColor(1.0F, 1.0F, 1.0F, 1.0F);
             guiGraphics.pose().popPose();
 
-            int i = this.getFGColor();
+            int i = 0xFFFFFFFF;
             this.renderString(guiGraphics, minecraft.font, i | Mth.ceil(this.alpha * 255.0F) << 24);
         }
     }

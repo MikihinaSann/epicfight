@@ -45,7 +45,7 @@ public class SideBarScreen extends Screen {
     public SideBarScreen(Screen backgroundScreen, List<SideNavigationBarEntry> entries, int sideBarWidth) {
         super(Component.empty());
 
-        this.switchableScreenList = new SwitchableScreenList(backgroundScreen.getMinecraft(), sideBarWidth);
+        this.switchableScreenList = new SwitchableScreenList(Minecraft.getInstance(), sideBarWidth);
         entries.forEach(this.switchableScreenList::addScreenEntry);
 
         this.backgroundScreen = backgroundScreen;
