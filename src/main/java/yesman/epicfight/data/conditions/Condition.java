@@ -1,5 +1,5 @@
 package yesman.epicfight.data.conditions;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import com.google.gson.JsonElement;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
@@ -76,9 +76,9 @@ public interface Condition<T> {
 		}
 	}
 
-    // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    // TODO: Remove @Environment annotation and completely decouple the widget provider code
     @ClientOnly
-    @OnlyIn(EnvType.CLIENT)
+    @Environment(EnvType.CLIENT)
 	List<ParameterEditor> getAcceptingParameters(Screen screen);
 	
 	abstract class EntityPatchCondition implements Condition<LivingEntityPatch<?>> {

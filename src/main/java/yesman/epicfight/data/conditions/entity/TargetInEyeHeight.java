@@ -1,5 +1,5 @@
 package yesman.epicfight.data.conditions.entity;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -36,7 +36,7 @@ public class TargetInEyeHeight extends EntityPatchCondition {
 	}
 	
 	@Override @ClientOnly
-    @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @Environment(EnvType.CLIENT) // TODO: Remove @Environment annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		return List.of();
 	}

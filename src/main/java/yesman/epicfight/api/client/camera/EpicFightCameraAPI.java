@@ -1,5 +1,4 @@
 package yesman.epicfight.api.client.camera;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
@@ -1021,7 +1020,7 @@ public final class EpicFightCameraAPI {
     ///
     /// This method takes a [Player] instead of [LocalPlayer] because casting
     /// to the client-only [LocalPlayer] inside a mixin (e.g., in [LivingEntity])
-    /// would crash a dedicated server due to Forge's `@OnlyIn(EnvType.CLIENT)`.
+    /// would crash a dedicated server when the class loader resolves that client-only type.
     @ApiStatus.Internal
     public float getYRotForHead(Player player) {
         if (!player.isLocalPlayer()) {

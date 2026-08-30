@@ -1,6 +1,6 @@
 package yesman.epicfight.data.conditions.entity;
 import net.minecraft.client.Minecraft;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.screens.Screen;
@@ -52,7 +52,7 @@ public class HasCustomTag extends EntityCondition {
 	}
 	
 	@Override @ClientOnly
-    @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @Environment(EnvType.CLIENT) // TODO: Remove @Environment annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		ResizableEditBox editbox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("tag"), null, null);
 		return List.of(ParameterEditor.of((value) -> StringTag.valueOf(value.toString()), (tag) -> ParseUtil.nullOrToString(tag, Tag::getAsString), (AbstractWidget)editbox));

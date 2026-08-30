@@ -1,6 +1,6 @@
 package yesman.epicfight.data.conditions.entity;
 import net.minecraft.client.Minecraft;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import com.ibm.icu.text.MessageFormat;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -65,7 +65,7 @@ public class PlayerSkillActivated extends EntityPatchCondition {
 	}
 
     @Override @ClientOnly
-    @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @Environment(EnvType.CLIENT) // TODO: Remove @Environment annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		AbstractWidget popupBox = new PopupBox.RegistryPopupBox<>(screen, Minecraft.getInstance().font, 0, 0, 0, 0, null, null, Component.literal("skill"), EpicFightRegistries.SKILL, null);
 		return List.of(ParameterEditor.of(skill -> StringTag.valueOf(skill.toString()), tag -> EpicFightRegistries.SKILL.get(ResourceLocation.parse(ParseUtil.nullOrToString(tag, Tag::getAsString))), popupBox));

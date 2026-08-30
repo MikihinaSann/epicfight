@@ -1,6 +1,6 @@
 package yesman.epicfight.data.conditions.entity;
 import net.minecraft.client.Minecraft;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.screens.Screen;
@@ -47,7 +47,7 @@ public class RandomChance extends EntityPatchCondition {
 	}
 	
 	@Override @ClientOnly
-    @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @Environment(EnvType.CLIENT) // TODO: Remove @Environment annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		ResizableEditBox editbox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("chance"), null, null);
 		editbox.setFilter((context) -> StringUtil.isNullOrEmpty(context) || ParseUtil.isParsable(context, Double::parseDouble));

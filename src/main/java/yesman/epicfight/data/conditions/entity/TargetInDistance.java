@@ -1,6 +1,6 @@
 package yesman.epicfight.data.conditions.entity;
 import net.minecraft.client.Minecraft;
-import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
+import net.fabricmc.api.Environment;
 
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.screens.Screen;
@@ -56,7 +56,7 @@ public class TargetInDistance extends EntityPatchCondition {
 	}
 	
 	@Override @ClientOnly
-    @OnlyIn(EnvType.CLIENT) // TODO: Remove OnlyIn annotation and completely decouple the widget provider code
+    @Environment(EnvType.CLIENT) // TODO: Remove @Environment annotation and completely decouple the widget provider code
 	public List<ParameterEditor> getAcceptingParameters(Screen screen) {
 		ResizableEditBox minEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("min"), null, null);
 		ResizableEditBox maxEditBox = new ResizableEditBox(Minecraft.getInstance().font, 0, 0, 0, 0, Component.literal("max"), null, null);
