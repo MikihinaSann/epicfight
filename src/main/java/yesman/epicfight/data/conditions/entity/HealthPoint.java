@@ -1,6 +1,6 @@
 package yesman.epicfight.data.conditions.entity;
 import net.minecraft.client.Minecraft;
-import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
 
 import io.netty.util.internal.StringUtil;
 import net.minecraft.client.gui.components.AbstractWidget;

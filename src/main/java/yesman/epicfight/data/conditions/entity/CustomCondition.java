@@ -1,5 +1,5 @@
 package yesman.epicfight.data.conditions.entity;
-import net.neoforged.api.distmarker.OnlyIn;
+import yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn;
 
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;

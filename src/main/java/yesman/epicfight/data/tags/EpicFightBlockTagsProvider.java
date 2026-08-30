@@ -1,6 +1,6 @@
 package yesman.epicfight.data.tags;
-import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
+import yesman.epicfight.platform.neoforged.common.data.BlockTagsProvider;
+import yesman.epicfight.platform.neoforged.common.data.ExistingFileHelper;
 import yesman.epicfight.EpicFight;
 
 import java.util.concurrent.CompletableFuture;

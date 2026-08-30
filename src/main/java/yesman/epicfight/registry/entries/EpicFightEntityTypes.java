@@ -1,5 +1,5 @@
 package yesman.epicfight.registry.entries;
-import net.neoforged.neoforge.event.entity.RegisterSpawnPlacementsEvent;
+import yesman.epicfight.platform.neoforged.event.entity.RegisterSpawnPlacementsEvent;
 import yesman.epicfight.EpicFight;
 
 import net.minecraft.core.registries.Registries;

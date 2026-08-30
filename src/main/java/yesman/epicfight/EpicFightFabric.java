@@ -83,11 +83,11 @@ public class EpicFightFabric implements ModInitializer {
         // Load COMMON and SERVER configs (NightConfig TOML, no ForgeConfigAPIPort needed)
         try {
             java.nio.file.Path configDir = FabricLoader.getInstance().getConfigDir();
-            net.neoforged.fml.config.ModConfig commonCfg = new net.neoforged.fml.config.ModConfig(
-                net.neoforged.fml.config.ModConfig.Type.COMMON, CommonConfig.SPEC, configDir, EpicFight.MODID);
+            yesman.epicfight.platform.neoforged.fml.config.ModConfig commonCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
+                yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.COMMON, CommonConfig.SPEC, configDir, EpicFight.MODID);
             CommonConfig.onLoad(commonCfg);
-            net.neoforged.fml.config.ModConfig serverCfg = new net.neoforged.fml.config.ModConfig(
-                net.neoforged.fml.config.ModConfig.Type.SERVER, ServerConfig.SPEC, configDir, EpicFight.MODID);
+            yesman.epicfight.platform.neoforged.fml.config.ModConfig serverCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
+                yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.SERVER, ServerConfig.SPEC, configDir, EpicFight.MODID);
             ServerConfig.onLoad(serverCfg);
         } catch (Throwable e) {
             EpicFight.LOGGER.warn("Failed to load configs: " + e.getMessage());

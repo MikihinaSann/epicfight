@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 /// exist on the client side.
 ///
 /// For example, neoforge marks all client side classes with
-/// [net.neoforged.api.distmarker.OnlyIn] annotation, which leads to a crash
+/// [yesman.epicfight.platform.neoforged.api.distmarker.OnlyIn] annotation, which leads to a crash
 /// in a dedicated server when class loader tries to reference client only fields
 /// or methods.
 ///

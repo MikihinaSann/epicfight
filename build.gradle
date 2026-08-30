@@ -155,20 +155,21 @@ jar {
     from(rootProject.file('LICENSE'))
     from(rootProject.file('LICENSE-ASSETS'))
 
-    // Compile-only API shims for optional mods. Fabric loads every mod through one
-    // flat classloader, so shipping these would put duplicate FQCNs on the classpath
-    // and the winner between our stub and the real mod's class is arbitrary.
-    // Both are only ever loaded when the real mod is installed (Controlify reads our
+    // src/stub/java holds compile-only API shims for optional mods. Fabric loads every
+    // mod through one flat classloader, so shipping a class under someone else's FQCN
+    // makes the winner between our stub and the real mod's class arbitrary. Both are
+    // only ever touched when the real mod is installed (Controlify reads our
     // META-INF/services entrypoint itself; AzureArmorTransformer is gated behind the
     // azurelibarmor MinecraftMod entry), so dropping them from the jar is safe.
-    // net/neoforged/** deliberately stays: EpicFight uses NeoForge API stubs at runtime
-    // (ModConfigSpec backed by NightConfig, Dist, DeferredHolder, etc.).
     exclude 'dev/isxander/controlify/**'
     exclude 'mod/azure/azurelibarmor/**'
 }
 
-// Include generated resources
+// Include generated resources, plus the optional-mod API shims. The shims live outside
+// src/main/java so nothing under it claims a package we do not own; the jar task above
+// strips them back out of the published artifact.
 sourceSets.main {
+    java.srcDir layout.projectDirectory.dir('src/stub/java')
     resources.srcDir layout.projectDirectory.dir('src/generated/resources')
 }
 

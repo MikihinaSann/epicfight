@@ -1,6 +1,6 @@
 package yesman.epicfight.data;
 
-import net.neoforged.neoforge.data.event.GatherDataEvent;
+import yesman.epicfight.platform.neoforged.data.event.GatherDataEvent;
 
 import yesman.epicfight.main.EpicFightMod;
 

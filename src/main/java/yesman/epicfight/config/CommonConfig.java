@@ -1,8 +1,8 @@
 package yesman.epicfight.config;
 
-import net.neoforged.fml.config.ModConfig;
+import yesman.epicfight.platform.neoforged.fml.config.ModConfig;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
+import yesman.epicfight.platform.neoforged.common.ModConfigSpec;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.gamerule.EpicFightGameRules;
 

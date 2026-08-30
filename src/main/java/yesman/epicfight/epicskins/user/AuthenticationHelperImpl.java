@@ -17,7 +17,7 @@ import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
-import net.neoforged.neoforge.common.ModConfigSpec;
+import yesman.epicfight.platform.neoforged.common.ModConfigSpec;
 import yesman.epicfight.client.ClientEngine;
 import yesman.epicfight.client.online.EpicFightServerConnectionHelper;
 import yesman.epicfight.config.ClientConfig;

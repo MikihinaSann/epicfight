@@ -10,10 +10,10 @@ import net.minecraft.world.item.Item;
 import net.fabricmc.api.EnvType;
 
 
-import net.neoforged.fml.config.ModConfig;
+import yesman.epicfight.platform.neoforged.fml.config.ModConfig;
 
-import net.neoforged.neoforge.common.ModConfigSpec;
-import net.neoforged.neoforge.common.ModConfigSpec.*;
+import yesman.epicfight.platform.neoforged.common.ModConfigSpec;
+import yesman.epicfight.platform.neoforged.common.ModConfigSpec.*;
 import org.apache.commons.compress.utils.Lists;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;

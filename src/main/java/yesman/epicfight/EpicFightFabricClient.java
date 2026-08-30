@@ -89,8 +89,8 @@ public class EpicFightFabricClient implements ClientModInitializer {
             try {
                 ComputeShaderProvider.checkIfSupports();
                 if (ComputeShaderProvider.supportComputeShader()) {
-                    net.neoforged.neoforge.client.event.RegisterShadersEvent evt =
-                            new net.neoforged.neoforge.client.event.RegisterShadersEvent(
+                    yesman.epicfight.platform.neoforged.client.event.RegisterShadersEvent evt =
+                            new yesman.epicfight.platform.neoforged.client.event.RegisterShadersEvent(
                                     Minecraft.getInstance().getResourceManager());
                     ComputeShaderProvider.epicfight$registerComputeShaders(evt);
                 }
@@ -181,8 +181,8 @@ public class EpicFightFabricClient implements ClientModInitializer {
         // Load CLIENT config (NightConfig TOML, no ForgeConfigAPIPort needed)
         try {
             java.nio.file.Path configDir = net.fabricmc.loader.api.FabricLoader.getInstance().getConfigDir();
-            net.neoforged.fml.config.ModConfig clientCfg = new net.neoforged.fml.config.ModConfig(
-                net.neoforged.fml.config.ModConfig.Type.CLIENT, yesman.epicfight.config.ClientConfig.SPEC, configDir, EpicFight.MODID);
+            yesman.epicfight.platform.neoforged.fml.config.ModConfig clientCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
+                yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.CLIENT, yesman.epicfight.config.ClientConfig.SPEC, configDir, EpicFight.MODID);
             yesman.epicfight.config.ClientConfig.epicfight$modConfigLoading(clientCfg);
             EpicFight.LOGGER.info("EpicFight client config loaded");
         } catch (Throwable e) {
@@ -256,8 +256,8 @@ public class EpicFightFabricClient implements ClientModInitializer {
                     // Retry compute shader registration in case the CoreShaderRegistrationCallback
                     // ran before the GL context was fully ready (or support wasn't detected then).
                     if (ComputeShaderProvider.supportComputeShader() && ComputeShaderProvider.meshComputeVanilla == null) {
-                        net.neoforged.neoforge.client.event.RegisterShadersEvent evt =
-                                new net.neoforged.neoforge.client.event.RegisterShadersEvent(
+                        yesman.epicfight.platform.neoforged.client.event.RegisterShadersEvent evt =
+                                new yesman.epicfight.platform.neoforged.client.event.RegisterShadersEvent(
                                         Minecraft.getInstance().getResourceManager());
                         ComputeShaderProvider.epicfight$registerComputeShaders(evt);
                     }

@@ -1,7 +1,7 @@
 package yesman.epicfight.client.renderer.patched.layer;
-import net.neoforged.neoforge.event.EventHooks;
-import net.neoforged.neoforge.client.ClientHooks;
-import net.neoforged.neoforge.client.extensions.common.IClientItemExtensions;
+import yesman.epicfight.platform.neoforged.event.EventHooks;
+import yesman.epicfight.platform.neoforged.client.ClientHooks;
+import yesman.epicfight.platform.neoforged.client.extensions.common.IClientItemExtensions;
 
 import java.util.HashMap;
 import java.util.List;

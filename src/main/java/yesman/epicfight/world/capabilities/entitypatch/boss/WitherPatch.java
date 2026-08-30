@@ -23,7 +23,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.event.EventHooks;
+import yesman.epicfight.platform.neoforged.event.EventHooks;
 import yesman.epicfight.api.extension.BlockStateExtension;
 
 

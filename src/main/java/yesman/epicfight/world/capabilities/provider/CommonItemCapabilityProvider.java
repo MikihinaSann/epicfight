@@ -1,5 +1,5 @@
 package yesman.epicfight.world.capabilities.provider;
-import net.neoforged.neoforge.capabilities.ICapabilityProvider;
+import yesman.epicfight.platform.neoforged.capabilities.ICapabilityProvider;
 
 import java.util.HashMap;
 import java.util.Map;

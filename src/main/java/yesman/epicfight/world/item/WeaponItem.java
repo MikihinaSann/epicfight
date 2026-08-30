@@ -30,7 +30,7 @@ public class WeaponItem extends Item {
         stack.hurtAndBreak(1, attacker, EquipmentSlot.MAINHAND);
     }
 
-    public boolean canPerformAction(ItemStack stack, net.neoforged.neoforge.common.ItemAbility itemAbility) {
-        return net.neoforged.neoforge.common.ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(itemAbility);
+    public boolean canPerformAction(ItemStack stack, yesman.epicfight.platform.neoforged.common.ItemAbility itemAbility) {
+        return yesman.epicfight.platform.neoforged.common.ItemAbilities.DEFAULT_SWORD_ACTIONS.contains(itemAbility);
     }
 }

@@ -1,5 +1,5 @@
 package yesman.epicfight.mixin.common;
-import net.neoforged.neoforge.event.EventHooks;
+import yesman.epicfight.platform.neoforged.event.EventHooks;
 
 import java.util.List;
 

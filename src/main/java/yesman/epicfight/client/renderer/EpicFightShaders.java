@@ -25,7 +25,7 @@ public class EpicFightShaders {
 	}
 	
 	
-	public static void epicfight$registerShaders(net.neoforged.neoforge.client.event.RegisterShadersEvent event) throws IOException {
+	public static void epicfight$registerShaders(yesman.epicfight.platform.neoforged.client.event.RegisterShadersEvent event) throws IOException {
 		event.registerShader(new ShaderInstance(event.getResourceProvider(), EpicFight.identifier("solid_model").toString(), DefaultVertexFormat.POSITION_COLOR_NORMAL), reloadedShader -> {
 			positionColorNormalShader = reloadedShader;
 		});

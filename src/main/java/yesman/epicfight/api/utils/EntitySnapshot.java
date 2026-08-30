@@ -1,5 +1,5 @@
 package yesman.epicfight.api.utils;
-import net.neoforged.neoforge.client.ClientHooks;
+import yesman.epicfight.platform.neoforged.client.ClientHooks;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;

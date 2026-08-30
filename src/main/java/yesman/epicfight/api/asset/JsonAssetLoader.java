@@ -18,7 +18,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.world.phys.Vec3;
 
 import net.fabricmc.loader.api.FabricLoader;
-import net.neoforged.fml.loading.FMLEnvironment;
+import yesman.epicfight.platform.neoforged.fml.loading.FMLEnvironment;
 
 import yesman.epicfight.api.animation.*;
 import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
@@ -571,7 +571,7 @@ public class JsonAssetLoader {
         JsonArray array = this.rootJson.get("animation").getAsJsonArray();
         boolean action = animation instanceof MainFrameAnimation;
         boolean attack = animation instanceof AttackAnimation;
-        boolean noTransformData = !action && !attack && FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER;
+        boolean noTransformData = !action && !attack && FMLEnvironment.dist == yesman.epicfight.platform.neoforged.api.distmarker.Dist.DEDICATED_SERVER;
         boolean root = true;
         Armature armature = animation.getArmature().get();
         Set<String> allowedJoints = Sets.newLinkedHashSet();
@@ -592,7 +592,7 @@ public class JsonAssetLoader {
             JsonObject jObject = element.getAsJsonObject();
             String name = jObject.get("name").getAsString();
 
-            if (attack && FMLEnvironment.dist == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER && !allowedJoints.contains(name)) {
+            if (attack && FMLEnvironment.dist == yesman.epicfight.platform.neoforged.api.distmarker.Dist.DEDICATED_SERVER && !allowedJoints.contains(name)) {
                 if (name.equals(COORD_BONE)) {
                     root = false;
                 }
