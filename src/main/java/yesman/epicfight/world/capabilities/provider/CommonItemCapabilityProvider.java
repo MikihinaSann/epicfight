@@ -1,5 +1,4 @@
 package yesman.epicfight.world.capabilities.provider;
-import yesman.epicfight.platform.neoforged.capabilities.ICapabilityProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -27,7 +26,7 @@ import yesman.epicfight.registry.deferred.holders.DeferredPreset;
 import yesman.epicfight.registry.entries.EpicFightItemCapabilityPresets;
 import yesman.epicfight.world.capabilities.item.*;
 
-public final class CommonItemCapabilityProvider implements ICapabilityProvider<ItemStack, Void, CapabilityItem> {
+public final class CommonItemCapabilityProvider {
 	public static final CommonItemCapabilityProvider INSTANCE = new CommonItemCapabilityProvider();
 	
 	private CommonItemCapabilityProvider() {}

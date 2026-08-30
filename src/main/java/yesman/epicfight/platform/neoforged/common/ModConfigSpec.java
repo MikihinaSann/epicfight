@@ -1,14 +1,13 @@
 package yesman.epicfight.platform.neoforged.common;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import yesman.epicfight.platform.neoforged.fml.config.IConfigSpec;
 
 import java.nio.file.Path;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
-public class ModConfigSpec implements IConfigSpec<ModConfigSpec> {
+public class ModConfigSpec {
     private final Map<String, Object> defaults;
     private final Map<String, String> comments;
     private final List<ConfigValue<?>> values;

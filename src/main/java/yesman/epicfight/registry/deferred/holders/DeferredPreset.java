@@ -11,7 +11,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 /**
  * A type-safe, registry-backed proxy for {@link CapabilityItem.Builder} instances.
  * <p>
- * {@code DeferredPreset} extends NeoForge's {@link DeferredHolder} to provide a
+ * {@code DeferredPreset} extends {@link DeferredHolderShim} to provide a
  * combat-specific handle that remains synchronized with the global registry
  * throughout the mod-loading lifecycle. It is designed to handle the "lazy"
  * nature of modern registries, ensuring that weapon data is only accessible
@@ -25,13 +25,13 @@ import yesman.epicfight.registry.EpicFightRegistries;
  * <li><b>Type Specialization:</b> Utilizes generics to provide a concrete
  * {@code Builder} type at the call site, eliminating the need for
  * unsafe casting when retrieving specialized capability data.</li>
- * <li><b>Single Source of Truth:</b> Directly references the NeoForge internal
+ * <li><b>Single Source of Truth:</b> Directly references the shared registry
  * storage, making it compatible with registry remapping and data-driven
  * overrides.</li>
  * </ul>
  * @param <T> The specific subtype of {@link CapabilityItem.Builder} being held,
  * allowing for specialized capability access (e.g., {@code WeaponCapability.Builder}).
- * @see DeferredHolder
+ * @see DeferredHolderShim
  * @see CapabilityItem.Builder
  */
 public class DeferredPreset<T extends CapabilityItem.Builder<?>> extends DeferredHolderShim<CapabilityItem.Builder<?>, T> {
