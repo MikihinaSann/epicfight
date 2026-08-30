@@ -70,28 +70,17 @@ public class EpicFightFabric implements ModInitializer {
     public void onInitialize() {
         EpicFight.initialize(new FabricModPlatform());
 
-        // Register payload codecs and server-side handlers with Fabric networking
-        try {
-            EpicFightPayloadRegistration.registerCodecs();
-            EpicFightPayloadRegistration.registerServerHandlers();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register payload networking: " + e.getMessage());
-        }
+        EpicFightPayloadRegistration.registerCodecs();
+        EpicFightPayloadRegistration.registerServerHandlers();
 
-        // SimplyTooltips compat is handled via the MinecraftMod compat module loop below
-
-        // Load COMMON and SERVER configs (NightConfig TOML, no ForgeConfigAPIPort needed)
-        try {
-            java.nio.file.Path configDir = FabricLoader.getInstance().getConfigDir();
-            yesman.epicfight.platform.neoforged.fml.config.ModConfig commonCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
-                yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.COMMON, CommonConfig.SPEC, configDir, EpicFight.MODID);
-            CommonConfig.onLoad(commonCfg);
-            yesman.epicfight.platform.neoforged.fml.config.ModConfig serverCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
-                yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.SERVER, ServerConfig.SPEC, configDir, EpicFight.MODID);
-            ServerConfig.onLoad(serverCfg);
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to load configs: " + e.getMessage());
-        }
+        // Load COMMON and SERVER configs
+        java.nio.file.Path configDir = FabricLoader.getInstance().getConfigDir();
+        yesman.epicfight.platform.neoforged.fml.config.ModConfig commonCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
+            yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.COMMON, CommonConfig.SPEC, configDir, EpicFight.MODID);
+        CommonConfig.onLoad(commonCfg);
+        yesman.epicfight.platform.neoforged.fml.config.ModConfig serverCfg = new yesman.epicfight.platform.neoforged.fml.config.ModConfig(
+            yesman.epicfight.platform.neoforged.fml.config.ModConfig.Type.SERVER, ServerConfig.SPEC, configDir, EpicFight.MODID);
+        ServerConfig.onLoad(serverCfg);
 
         // Register extensible enums
         LivingMotion.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, LivingMotions.class);
@@ -102,7 +91,6 @@ public class EpicFightFabric implements ModInitializer {
         Faction.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, Factions.class);
         EntityPairingPacketType.ENUM_MANAGER.registerEnumCls(EpicFight.MODID, EntityPairingPacketTypes.class);
 
-        // Load enums
         LivingMotion.ENUM_MANAGER.loadEnum();
         SkillCategory.ENUM_MANAGER.loadEnum();
         SkillSlot.ENUM_MANAGER.loadEnum();
@@ -111,12 +99,9 @@ public class EpicFightFabric implements ModInitializer {
         Faction.ENUM_MANAGER.loadEnum();
         EntityPairingPacketType.ENUM_MANAGER.loadEnum();
 
-        // Initialize extensible enums
         EpicFightExtensibleEnums.initExtensibleEnums();
 
-        // Register animation registry event BEFORE deferred registries
-        // On NeoForge, animations are registered during FMLConstructModEvent (which fires before RegisterEvent).
-        // Skills reference Animations.BIPED_ROLL_FORWARD etc. in their constructors, so animations must be set first.
+        // Register animations before deferred registries — skills reference animation constants in their constructors
         AnimationManager.addNoWarningModId(EpicFight.EPICSKINS_MODID);
         AnimationManager.AnimationRegistryEvent animationRegistryEvent = new AnimationManager.AnimationRegistryEvent();
         Animations.registerAnimations(animationRegistryEvent);
@@ -127,143 +112,75 @@ public class EpicFightFabric implements ModInitializer {
             .sorted(java.util.Comparator.comparing(AnimationManager.AnimationBuilder::namespace))
             .forEach(builder -> builder.task().accept(builder));
 
-        // Register all deferred registries (skills reference animation accessors in their constructors)
+        // Register all deferred registries
         EpicFightBlocks.REGISTRY.accept();
         EpicFightItems.REGISTRY.accept();
         for (var dr : EpicFightRegistries.DEFERRED_REGISTRIES) {
-            try { dr.accept(); } catch (Throwable e) { EpicFight.LOGGER.warn("Failed to register some entries: " + e.getMessage()); }
+            dr.accept();
         }
 
-        // Register command argument types (must be done after deferred registries are accepted)
-        try {
-            EpicFightCommandArgumentTypes.registerArgumentTypes();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register command argument types: " + e.getMessage());
-        }
-
-        // Wire dynamic registry callbacks (for future datapack reloads) and bake registries
-        try {
-            EpicFightRegistries.registerDynamicCallbacks();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register dynamic registry callbacks: " + e.getMessage());
-        }
-        try {
-            EpicFightRegistries.bakeRegistries();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to bake registries: " + e.getMessage());
-        }
-
-        // Register entity patches (vanilla mobs + player)
-        try {
-            EpicFightCapabilities.ENTITY_PATCH_PROVIDER.registerVanillaEntityPatches();
-            EpicFight.LOGGER.info("EpicFight entity patches registered");
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register entity patches: " + e.getMessage());
-        }
+        EpicFightCommandArgumentTypes.registerArgumentTypes();
+        EpicFightRegistries.registerDynamicCallbacks();
+        EpicFightRegistries.bakeRegistries();
+        EpicFightCapabilities.ENTITY_PATCH_PROVIDER.registerVanillaEntityPatches();
 
         // Wire EntityJoinLevelEvent equivalent via Fabric API
-        // On NeoForge, EntityJoinLevelEvent fired when any entity joined a world.
-        // On Fabric, ServerEntityEvents.ENTITY_LOAD is the standard equivalent.
-        // This is critical: LivingEntityPatch.onJoinWorld sets the WEIGHT attribute,
-        // and without it, knockback calculations divide by zero (40.0F / weight = Infinity).
+        // LivingEntityPatch.onJoinWorld sets the WEIGHT attribute; without it knockback divides by zero.
         ServerEntityEvents.ENTITY_LOAD.register((entity, serverLevel) -> {
             try {
                 VanillaEntityEventHooks.onJoinLevel(entity, serverLevel, false);
 
-                // On NeoForge, Entity.onAddedToLevel() is a patched method that fires when
-                // an entity is added to the level's entity storage. Fabric doesn't have this
-                // method, so we call the entity patch's onAddedToLevel() here instead.
                 EpicFightCapabilities.getUnparameterizedEntityPatch(entity, EntityPatch.class).ifPresent(entitypatch -> {
                     try { entitypatch.onAddedToLevel(); } catch (Throwable ignored) {}
                 });
 
-                // Cancel spawning enderman on the main island where Ender Dragon exists
                 if (entity.getType() == net.minecraft.world.entity.EntityType.ENDERMAN) {
                     if (VanillaEntityEventHooks.onEnderManSapwns((net.minecraft.world.entity.monster.EnderMan) entity)) {
                         entity.discard();
                     }
                 }
             } catch (Throwable e) {
-                EpicFight.LOGGER.error("[EpicFight] ServerEntityEvents.ENTITY_LOAD exception for entity {}", entity, e);
+                EpicFight.LOGGER.error("ServerEntityEvents.ENTITY_LOAD exception for entity {}", entity, e);
             }
         });
 
-        // Register entity attributes (replaces NeoForge's EntityAttributeCreationEvent / EntityAttributeModificationEvent)
-        // On Fabric, we collect the modifications into static maps and apply them via MixinDefaultAttributes
-        try {
-            yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent creationEvent = new yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent();
-            EpicFightAttributes.EventBus.entityAttributeCreationEvent(creationEvent);
+        // Register entity attributes
+        yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent creationEvent = new yesman.epicfight.platform.fabric.event.EntityAttributeCreationEvent();
+        EpicFightAttributes.EventBus.entityAttributeCreationEvent(creationEvent);
+        yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent modificationEvent = new yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent();
+        EpicFightAttributes.EventBus.entityAttributeModificationEvent(modificationEvent);
 
-            yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent modificationEvent = new yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent();
-            EpicFightAttributes.EventBus.entityAttributeModificationEvent(modificationEvent);
-            yesman.epicfight.platform.fabric.event.EntityAttributeModificationEvent.logSummary();
+        // Register spawn placements via mixin accessor (SpawnPlacements.register is package-private)
+        yesman.epicfight.platform.fabric.mixin.SpawnPlacementsAccessor.epicfight$register(
+            EpicFightEntityTypes.WITHER_SKELETON_MINION.get(),
+            net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
+            net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
+            net.minecraft.world.entity.monster.Monster::checkAnyLightMonsterSpawnRules
+        );
 
-            EpicFight.LOGGER.info("EpicFight entity attributes registered");
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register entity attributes: " + e.getMessage());
-        }
-
-        // Register spawn placements for WitherSkeletonMinion (replaces NeoForge's RegisterSpawnPlacementsEvent)
-        // On Fabric, SpawnPlacements.register is package-private, so we use a mixin accessor.
-        try {
-            yesman.epicfight.platform.fabric.mixin.SpawnPlacementsAccessor.epicfight$register(
-                EpicFightEntityTypes.WITHER_SKELETON_MINION.get(),
-                net.minecraft.world.entity.SpawnPlacementTypes.ON_GROUND,
-                net.minecraft.world.level.levelgen.Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                net.minecraft.world.entity.monster.Monster::checkAnyLightMonsterSpawnRules
-            );
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register spawn placements: " + e.getMessage());
-        }
-
-        // Register item capability type mappings (called once, not per-item)
-        try {
-            EpicFightCapabilities.ITEM_CAPABILITY_PROVIDER.registerWeaponTypesByClass();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Item capability registration failed: " + e.getMessage());
-        }
-
-        // Register armatures
-        try { Armatures.registerEntityTypes(); } catch (Throwable e) { EpicFight.LOGGER.warn("Armatures registration failed: " + e.getMessage()); }
-
-        // Register default weapon types
+        EpicFightCapabilities.ITEM_CAPABILITY_PROVIDER.registerWeaponTypesByClass();
+        Armatures.registerEntityTypes();
         WeaponTypeReloadListener.registerDefaultWeaponTypes();
 
-        // Add Skill Books to the EpicFight creative tab — port of NeoForge's buildCreativeTabWithSkillBooks
-        // In NeoForge, BuildCreativeModeTabContentsEvent fires for each tab and adds skill book items
-        // for each learnable skill. On Fabric, we use ItemGroupEvents.modifyEntriesEvent.
-        try {
-            ItemGroupEvents.modifyEntriesEvent(EpicFightCreativeTabs.ITEMS.getKey()).register(entries -> {
-                EpicFightRegistries.SKILL.holders()
-                    .filter(skill -> skill.value().getCategory().learnable() && skill.value().getCreativeTab() == null)
-                    .forEach(holder -> {
-                        ItemStack stack = new ItemStack(EpicFightItems.SKILLBOOK.get());
-                        SkillBookItem.setContainingSkill(holder, stack);
-                        entries.accept(stack);
-                    });
-            });
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to add skill books to creative tab: " + e.getMessage());
-        }
+        // Add skill books to creative tab
+        ItemGroupEvents.modifyEntriesEvent(EpicFightCreativeTabs.ITEMS.getKey()).register(entries -> {
+            EpicFightRegistries.SKILL.holders()
+                .filter(skill -> skill.value().getCategory().learnable() && skill.value().getCreativeTab() == null)
+                .forEach(holder -> {
+                    ItemStack stack = new ItemStack(EpicFightItems.SKILLBOOK.get());
+                    SkillBookItem.setContainingSkill(holder, stack);
+                    entries.accept(stack);
+                });
+        });
 
-        // Register gamerules
-        try { EpicFightGameRules.registerGameRules(); } catch (Throwable e) { EpicFight.LOGGER.warn("Gamerule registration failed: " + e.getMessage()); }
-
-        // Register potions
+        EpicFightGameRules.registerGameRules();
         EpicFightPotions.addRecipes();
         EpicFightMobEffects.addOffhandModifier();
 
-        // Register skill book loot tables — port of NeoForge's LootTableLoadEvent + global loot modifier
-        // 1. Register the SKILLBOOK_LOOT_TABLE event callback to populate entity skill book drops
-        // 2. Register LootTableEvents.MODIFY to inject skill book pools into chest and entity loot tables
         EpicFightEventHooks.Registry.SKILLBOOK_LOOT_TABLE.registerEvent(event -> {
             EpicFightLootTables.createSkillLootTable(event);
         });
-        try {
-            EpicFightLootTables.registerLootTableEvents();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register loot table events: " + e.getMessage());
-        }
+        EpicFightLootTables.registerLootTableEvents();
 
         // Register commands
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
@@ -273,29 +190,23 @@ public class EpicFightFabric implements ModInitializer {
             AnimatorCommand.register(dispatcher);
         });
 
-        // Register reload listeners with Fabric's resource manager
-        try {
-            yesman.epicfight.network.EpicFightReloadListeners.register();
-        } catch (Throwable e) {
-            EpicFight.LOGGER.warn("Failed to register reload listeners: " + e.getMessage());
-        }
+        yesman.epicfight.network.EpicFightReloadListeners.register();
 
-        // Wire datapack sync — fires when a player joins (replaces NeoForge's OnDatapackSyncEvent)
+        // Wire datapack sync — per-player on join, all players on /reload
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             try {
                 VanillaWorldEventHooks.onDatapackSync(handler.getPlayer());
             } catch (Throwable e) {
-                EpicFight.LOGGER.warn("Failed to sync EpicFight datapack data to player: " + e.getMessage());
+                EpicFight.LOGGER.warn("Failed to sync datapack data to player: {}", handler.getPlayer().getName().getString(), e);
             }
         });
 
-        // Wire global datapack reload sync — fires when /reload is run (replaces NeoForge's OnDatapackSyncEvent with null player)
         ServerLifecycleEvents.END_DATA_PACK_RELOAD.register((server, serverResources, success) -> {
             if (success) {
                 try {
                     VanillaWorldEventHooks.onDatapackSyncAll(server);
                 } catch (Throwable e) {
-                    EpicFight.LOGGER.warn("Failed to sync EpicFight datapack data to all players: " + e.getMessage());
+                    EpicFight.LOGGER.warn("Failed to sync datapack data to all players", e);
                 }
             }
         });
@@ -311,8 +222,6 @@ public class EpicFightFabric implements ModInitializer {
         }
 
         // MCreator compat — loaded if any mod provides bedrock_animations data
-        // On NeoForge, this checks each mod file's data directory for a bedrock_animations subdirectory.
-        // On Fabric, we check each mod's source paths for the same.
         if (isClientSide) {
             try {
                 boolean hasBedrockAnimations = FabricLoader.getInstance().getAllMods().stream().anyMatch(modContainer -> {
@@ -336,10 +245,8 @@ public class EpicFightFabric implements ModInitializer {
                     ICompatModule.loadCompatModule(MCreatorPlayerAnimationsCompat.class);
                 }
             } catch (Throwable e) {
-                EpicFight.LOGGER.warn("Failed to check MCreator compat: " + e.getMessage());
+                EpicFight.LOGGER.warn("Failed to check MCreator compat", e);
             }
         }
-
-        EpicFight.LOGGER.info("Epic Fight Fabric initialized successfully!");
     }
 }

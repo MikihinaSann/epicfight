@@ -84,9 +84,6 @@ dependencies {
     modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
     modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
 
-    // Controlify has a malformed access widener — disabled until fixed
-    // modImplementation "curse.maven:controlify-835847:${project.controlify_file_id}"
-
     // PlayerRevive — local project dependency
     modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
 

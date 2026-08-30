@@ -11,9 +11,6 @@ import yesman.epicfight.client.events.engine.ControlEngine;
 @Mixin(Inventory.class)
 public class MixinInventory {
     @Inject(
-            // Note for maintainers: when porting to 1.21.2 or newer, target setSelectedHotbarSlot instead.
-            // Some adjustments may be required. Please see: https://github.com/isXander/Controlify/blob/e90c94a9dfe45bc071e4ad01c4db039a0dd2492d/src/main/java/dev/isxander/controlify/ingame/InGameInputHandler.java#L96-L102
-            // And test with Controlify to avoid regressions. Remove this comment as well.
             method = "swapPaint",
             at = @At("HEAD"),
             cancellable = true

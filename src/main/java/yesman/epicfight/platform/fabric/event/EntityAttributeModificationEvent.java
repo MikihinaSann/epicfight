@@ -4,7 +4,6 @@ import net.minecraft.core.Holder;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
-import yesman.epicfight.EpicFight;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 
 import java.util.HashMap;
@@ -34,14 +33,6 @@ public class EntityAttributeModificationEvent {
 
     public void add(EntityType<? extends LivingEntity> entityType, Holder<Attribute> attribute) {
         add(entityType, attribute, attribute.value().getDefaultValue());
-    }
-
-    /// Log a summary of all pending modifications for debugging.
-    public static void logSummary() {
-        EpicFight.LOGGER.info("[EpicFight] EntityAttributeModificationEvent: {} entity types with modifications", PENDING_MODIFICATIONS.size());
-        for (Map.Entry<EntityType<?>, Map<Holder<Attribute>, Double>> entry : PENDING_MODIFICATIONS.entrySet()) {
-            EpicFight.LOGGER.info("[EpicFight]   {} -> {} attributes", entry.getKey(), entry.getValue().size());
-        }
     }
 
     /// Returns all pending modifications. Called by MixinDefaultAttributes to inject attributes
