@@ -91,14 +91,15 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 	public void postTickClient() {
 		// Handle first person animation
 		final AssetAccessor<? extends StaticAnimation> currentPlaying = this.firstPersonLayer.animationPlayer.getRealAnimation();
-		
+
 		boolean noPovAnimation = this.getClientAnimator().iterVisibleLayersUntilFalse(layer -> {
 			if (layer.isOff()) {
 				return true;
 			}
-			
-			Optional<DirectStaticAnimation> optPovAnimation = layer.animationPlayer.getRealAnimation().get().getProperty(ClientAnimationProperties.POV_ANIMATION);
-			Optional<PovSettings> optPovSettings = layer.animationPlayer.getRealAnimation().get().getProperty(ClientAnimationProperties.POV_SETTINGS);
+
+			StaticAnimation anim = layer.animationPlayer.getRealAnimation().get();
+			Optional<DirectStaticAnimation> optPovAnimation = anim.getProperty(ClientAnimationProperties.POV_ANIMATION);
+			Optional<PovSettings> optPovSettings = anim.getProperty(ClientAnimationProperties.POV_SETTINGS);
 
             if (optPovAnimation.isPresent() && optPovSettings.isPresent()) {
                 DirectStaticAnimation povAnimation = optPovAnimation.get();
@@ -111,13 +112,13 @@ public class LocalPlayerPatch extends AbstractClientPlayerPatch<LocalPlayer> {
 
 			return optPovAnimation.isEmpty();
 		});
-		
+
 		if (noPovAnimation && !currentPlaying.equals(Animations.EMPTY_ANIMATION)) {
 			this.firstPersonLayer.off();
 		}
-		
+
 		this.firstPersonLayer.update(this);
-		
+
 		if (this.firstPersonLayer.animationPlayer.getAnimation().equals(Animations.EMPTY_ANIMATION)) {
 			this.povSettings = null;
 		}

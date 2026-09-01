@@ -13,7 +13,7 @@
         "issues": "${issueTracker}"
     },
     "license": "${license}",
-    "icon": "epicfight_logo.png",
+    "icon": "assets/epicfight/logo.png",
     "environment": "*",
     "entrypoints": {
         "main": [
@@ -51,7 +51,7 @@
         "playerrevive": "*",
         "shoulder-surfing-reloaded": "*",
         "simply-tooltips": "*",
-        "skin-layers-3d": "*",
+        "skinlayers3d": "*",
         "sodium": "*"
     }
 }

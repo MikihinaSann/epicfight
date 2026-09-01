@@ -1,38 +1,24 @@
 package yesman.epicfight.compat.firstperson;
 
-import dev.tr7zw.firstperson.api.ActivationHandler;
 import dev.tr7zw.firstperson.api.FirstPersonAPI;
 
-
+import yesman.epicfight.client.events.engine.RenderEngine;
 import yesman.epicfight.compat.ICompatModule;
-import yesman.epicfight.config.ClientConfig;
-import yesman.epicfight.world.capabilities.EpicFightCapabilities;
-import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class FirstPersonCompat implements ICompatModule {
 	@Override
 	public void onInitializeClient() {
-		FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
-			public boolean preventFirstperson() {
-				PlayerPatch<?> playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
-
-				if (playerpatch != null && (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT || !ClientConfig.enableOriginalModel) && ClientConfig.enableAnimatedFirstPersonModel) {
-					return true;
-				}
-
-				return false;
-			}
-		});
+		RenderEngine.setFirstPersonBodyOwner(FirstPersonAPI::isEnabled);
 	}
-	
+
 	@Override
 	public void onInitializeClientServer() {
 	}
-	
+
 	@Override
 	public void onInitialize() {
 	}
-	
+
 	@Override
 	public void onInitializeServer() {
 	}

@@ -56,7 +56,7 @@ import java.util.function.Function;
 public class SkinLayer3DCompat implements ICompatModule {
 	public static final AttachmentType<SkinLayer3DMeshes> SKINLAYER_MESH = AttachmentRegistry.createDefaulted(
             ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "skinlayer_mesh"),
-            () -> new SkinLayer3DMeshes(null)
+            SkinLayer3DMeshes::new
     );
 	
 	@Override
@@ -81,7 +81,7 @@ public class SkinLayer3DCompat implements ICompatModule {
         EpicFightEventHooks.Entity.ON_REMOVED.registerEvent(event -> {
             SkinLayer3DMeshes skinlayerMesh = event.getEntityPatch().getOriginal().getAttached(SKINLAYER_MESH);
             if (skinlayerMesh != null) {
-                skinlayerMesh.partMeshes.forEach((k, v) -> v.destroy());
+                skinlayerMesh.partMeshes.forEach((k, v) -> { if (v != null) v.destroy(); });
                 skinlayerMesh.partMeshes.clear();
                 event.getEntityPatch().getOriginal().removeAttached(SKINLAYER_MESH);
             }
@@ -90,29 +90,27 @@ public class SkinLayer3DCompat implements ICompatModule {
 	
 	public static final class SkinLayer3DMeshes {
 		private final Map<PlayerModelPart, SkinnedMesh> partMeshes = Maps.newHashMap();
-		
-		public SkinLayer3DMeshes(Object attachmentHolder) {
-			if (!(attachmentHolder instanceof Entity)) {
-				throw new IllegalArgumentException(attachmentHolder + " is not a subtype of Entity");
-			}
+
+		public SkinLayer3DMeshes() {
 		}
-		
+
 		public void put(PlayerModelPart playerModelPart, SkinnedMesh animatedMesh) {
-			if (this.partMeshes.containsKey(playerModelPart)) {
-				SkinnedMesh oldMesh = this.partMeshes.get(playerModelPart);
-				
-				if (oldMesh != animatedMesh) {
-					oldMesh.destroy();
-				}
+			if (animatedMesh == null) {
+				return;
 			}
-			
+
+			SkinnedMesh oldMesh = this.partMeshes.get(playerModelPart);
+			if (oldMesh != null && oldMesh != animatedMesh) {
+				oldMesh.destroy();
+			}
+
 			this.partMeshes.put(playerModelPart, animatedMesh);
 		}
 	}
 	
 	public static class EpicFight3DSkinLayerRenderer extends ModelRenderLayer<AbstractClientPlayer, AbstractClientPlayerPatch<AbstractClientPlayer>, PlayerModel<AbstractClientPlayer>, CustomLayerFeatureRenderer, HumanoidMesh> {
 		private final Map<PlayerModelPart, Function<Player, Boolean>> partVisibilities = Maps.newHashMap();
-		
+
 		public EpicFight3DSkinLayerRenderer() {
 			super(null);
 			
@@ -132,7 +130,7 @@ public class SkinLayer3DCompat implements ICompatModule {
 			if (SkinLayersModBase.config.compatibilityMode || player.isInvisible()) {
 				return;
 	        }
-			
+
 			if (Minecraft.getInstance().player.distanceToSqr(player) > SkinLayersModBase.config.renderDistanceLOD * SkinLayersModBase.config.renderDistanceLOD) {
 	            return;
 			}
@@ -140,8 +138,14 @@ public class SkinLayer3DCompat implements ICompatModule {
 			SkinLayer3DMeshes skin3dlayerMeshes = player.getAttachedOrCreate(SKINLAYER_MESH);
 			int overlay = LivingEntityRenderer.getOverlayCoords(player, 0.0f);
 			
+			boolean firstPerson = RenderEngine.isLocalPlayerInFirstPerson(player);
+
 			for (PlayerModelPart playerModelPart : PlayerModelPart.values()) {
 				if (playerModelPart == PlayerModelPart.CAPE) {
+					continue;
+				}
+
+				if (firstPerson && playerModelPart == PlayerModelPart.HAT) {
 					continue;
 				}
 				
@@ -191,22 +195,27 @@ public class SkinLayer3DCompat implements ICompatModule {
 		}
 		
 		private static SkinnedMesh createEpicFight3DSkinLayer(AbstractClientPlayer player, PlayerModelPart playerModelPart, Mesh skinlayerModelPart, ModelPart vanillaModelPart, int width, int height, int depth, int textureU, int textureV, boolean topPivot, float rotationOffset) {
-			CustomizableCubeListBuilder builder = new CustomizableCubeListBuilder();
-            ResourceLocation skinLocation = player.getSkin().texture();
+			ResourceLocation skinLocation = player.getSkin().texture();
 			NativeImage skinImage = SkinUtil.getTexture(skinLocation, null);
-            
-            if (SolidPixelWrapper.wrapBox(builder, new WrappedNativeImage(skinImage), width, height, depth, textureU, textureV, topPivot, rotationOffset) != null) {
-                return SkinLayer3DTransformer.transformMesh(
-            			player
-            		 , (skinlayerModelPart == null) ? new CustomizableModelPart(builder.getVanillaCubes(), builder.getCubes(), Collections.emptyMap()) : (CustomizableModelPart)skinlayerModelPart
-            		 , vanillaModelPart
-            		 , playerModelPart
-            		 , builder.getVanillaCubes()
-            		 , builder.getCubes()
-        	   );
-            }
-            
-            return null;
-        }
+
+			if (skinImage == null) {
+				return null;
+			}
+
+			CustomizableCubeListBuilder builder = new CustomizableCubeListBuilder();
+
+			if (SolidPixelWrapper.wrapBox(builder, new WrappedNativeImage(skinImage), width, height, depth, textureU, textureV, topPivot, rotationOffset) != null) {
+				return SkinLayer3DTransformer.transformMesh(
+						player
+					 , (skinlayerModelPart == null) ? new CustomizableModelPart(builder.getVanillaCubes(), builder.getCubes(), Collections.emptyMap()) : (CustomizableModelPart)skinlayerModelPart
+					 , vanillaModelPart
+					 , playerModelPart
+					 , builder.getVanillaCubes()
+					 , builder.getCubes()
+				);
+			}
+
+			return null;
+		}
 	}
 }

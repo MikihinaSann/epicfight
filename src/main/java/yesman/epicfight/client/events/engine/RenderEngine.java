@@ -99,6 +99,7 @@ import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -324,6 +325,11 @@ public class RenderEngine implements IEventBasedEngine {
 
     public boolean shouldRenderVanillaModel() {
         return ClientEngine.getInstance().isVanillaModelDebuggingMode() || this.modelInitTimer > 0;
+    }
+
+    public static boolean isLocalPlayerInFirstPerson(Entity entity) {
+        Minecraft minecraft = Minecraft.getInstance();
+        return entity.is(minecraft.player) && minecraft.options.getCameraType().isFirstPerson();
     }
 
     public void addBossEventOwner(UUID uuid, BossPatch bosspatch) {
@@ -585,34 +591,41 @@ public class RenderEngine implements IEventBasedEngine {
         }
     }
 
+    private static BooleanSupplier firstPersonBodyOwner = () -> false;
+
+    public static void setFirstPersonBodyOwner(BooleanSupplier owner) {
+        firstPersonBodyOwner = Objects.requireNonNull(owner, "owner must not be null");
+    }
+
     @SuppressWarnings("unchecked")
     private void epicfight$renderHand(RenderHandEvent event) {
         LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 
-        if (playerpatch != null) {
-            if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
-                RenderItemBase mainhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getMainHandItem());
-                RenderItemBase offhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getOffhandItem());
-                boolean useEpicFightModel = (mainhandItemSkin == null || !mainhandItemSkin.forceVanillaFirstPerson()) && (offhandItemSkin == null || !offhandItemSkin.forceVanillaFirstPerson());
+        if (playerpatch == null || firstPersonBodyOwner.getAsBoolean()) {
+            return;
+        }
 
-                if (useEpicFightModel) {
-                    if (this.firstPersonRenderer == null) {
-                        EpicFight.LOGGER.error("[EpicFight] firstPersonRenderer is null in epicfight$renderHand — addLayers has not been called yet");
-                        return;
-                    }
+        if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
+            RenderItemBase mainhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getMainHandItem());
+            RenderItemBase offhandItemSkin = this.getItemRenderer(playerpatch.getOriginal().getOffhandItem());
+            boolean useEpicFightModel = (mainhandItemSkin == null || !mainhandItemSkin.forceVanillaFirstPerson()) && (offhandItemSkin == null || !offhandItemSkin.forceVanillaFirstPerson());
 
-                    this.firstPersonRenderer.render(
-                          playerpatch.getOriginal()
-                        , playerpatch
-                        , (LivingEntityRenderer)this.minecraft.getEntityRenderDispatcher().getRenderer(playerpatch.getOriginal())
-                        , event.getBufferSource()
-                        , event.getPoseStack()
-                        , event.getPackedLight()
-                        , event.getPartialTick()
-                    );
-
-                    event.cancel();
+            if (useEpicFightModel) {
+                if (this.firstPersonRenderer == null) {
+                    return;
                 }
+
+                this.firstPersonRenderer.render(
+                      playerpatch.getOriginal()
+                    , playerpatch
+                    , (LivingEntityRenderer)this.minecraft.getEntityRenderDispatcher().getRenderer(playerpatch.getOriginal())
+                    , event.getBufferSource()
+                    , event.getPoseStack()
+                    , event.getPackedLight()
+                    , event.getPartialTick()
+                );
+
+                event.cancel();
             }
         }
     }
@@ -691,7 +704,6 @@ public class RenderEngine implements IEventBasedEngine {
      **********************/
     @SuppressWarnings("unchecked")
     private void epicfight$addLayers(EntityRendererProvider.Context context) {
-        EpicFight.LOGGER.info("[EpicFight] epicfight$addLayers called — initializing patched renderers and firstPersonRenderer");
         this.entityRendererProvider.clear();
         this.entityRendererProvider.put(EntityType.CREEPER, (entityType) -> new PCreeperRenderer(context, entityType).initLayerLast(context, entityType));
         this.entityRendererProvider.put(EntityType.ENDERMAN, (entityType) -> new PEndermanRenderer(context, entityType).initLayerLast(context, entityType));

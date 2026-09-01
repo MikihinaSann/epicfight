@@ -7,6 +7,7 @@ import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.main.EpicFightMod;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 
 public final class EpicFightTpsCameraDisableState {
     private EpicFightTpsCameraDisableState() {
@@ -33,5 +34,15 @@ public final class EpicFightTpsCameraDisableState {
 
     public static @Nullable EpicFightTpsCameraDisabledReason getReason() {
         return reason;
+    }
+
+    private static @Nullable Predicate<Runnable> actionDeferral = null;
+
+    public static void setActionDeferral(@NotNull Predicate<Runnable> deferral) {
+        actionDeferral = Objects.requireNonNull(deferral, "deferral must not be null");
+    }
+
+    public static boolean deferAction(@NotNull Runnable action) {
+        return actionDeferral != null && actionDeferral.test(action);
     }
 }

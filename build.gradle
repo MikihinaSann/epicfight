@@ -46,8 +46,8 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
     // NightConfig — TOML config read/write for ModConfigSpec stub
-    implementation "com.electronwill.night-config:core:3.8.0"
-    implementation "com.electronwill.night-config:toml:3.8.0"
+    include implementation("com.electronwill.night-config:core:3.8.0")
+    include implementation("com.electronwill.night-config:toml:3.8.0")
 
     // Compat mods — modImplementation for runtime availability
     // Transitive dep for SimplyTooltips (needs architectury)
@@ -156,6 +156,8 @@ jar {
     // azurelibarmor MinecraftMod entry), so dropping them from the jar is safe.
     exclude 'dev/isxander/controlify/**'
     exclude 'mod/azure/azurelibarmor/**'
+    exclude 'META-INF/services/dev.isxander.controlify.api.entrypoint.ControlifyEntrypoint'
+    exclude 'assets/controlify/**'
 }
 
 // Include generated resources, plus the optional-mod API shims. The shims live outside

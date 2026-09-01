@@ -26,6 +26,8 @@ import yesman.epicfight.api.ex_cap.listeners.ExCapDataReloadListener;
 import yesman.epicfight.world.capabilities.item.ItemKeywordReloadListener;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -62,9 +64,11 @@ public final class EpicFightReloadListeners {
         // Core datapack reload listeners — run after ExCap so weapon types are available
         helper.registerReloadListener(wrap("skill_parameters", SkillReloadListener.getInstance()));
         helper.registerReloadListener(wrap("epicfight_mobpatch", new MobPatchReloadListener()));
-        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener()));
-        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener()));
-        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener()));
+        ResourceLocation weaponTypesId = ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "weapon_types");
+        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener(),
+                ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "item_presets")));
+        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener(), weaponTypesId));
+        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener(), weaponTypesId));
         helper.registerReloadListener(wrap("animation_manager", AnimationManager.getInstance()));
         // Emote is now loaded as a data pack registry via RegistryDataLoader (MixinRegistryDataLoader),
         // matching the NeoForge DataPackRegistryEvent approach. No manual reload listener needed.
@@ -94,20 +98,25 @@ public final class EpicFightReloadListeners {
      * Wraps a {@link PreparableReloadListener} in an {@link IdentifiableResourceReloadListener}
      * with the given fabric ID.
      */
-    private static IdentifiableResourceReloadListener wrap(String id, PreparableReloadListener delegate) {
-        return new IdentifiableReloadListenerWrapper(ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, id), delegate);
+    private static IdentifiableResourceReloadListener wrap(String id, PreparableReloadListener delegate, ResourceLocation... after) {
+        return new IdentifiableReloadListenerWrapper(ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, id), delegate, List.of(after));
     }
 
-    /**
-     * Adapter that wraps any {@link PreparableReloadListener} as an {@link IdentifiableResourceReloadListener}.
-     * Catches exceptions during reload to prevent crashes from inter-listener dependency ordering issues.
-     */
-    private record IdentifiableReloadListenerWrapper(ResourceLocation fabricId, PreparableReloadListener delegate)
+    private static IdentifiableResourceReloadListener wrap(String id, PreparableReloadListener delegate) {
+        return wrap(id, delegate, new ResourceLocation[0]);
+    }
+
+    private record IdentifiableReloadListenerWrapper(ResourceLocation fabricId, PreparableReloadListener delegate, List<ResourceLocation> deps)
             implements IdentifiableResourceReloadListener {
 
         @Override
         public ResourceLocation getFabricId() {
             return fabricId;
+        }
+
+        @Override
+        public Collection<ResourceLocation> getFabricDependencies() {
+            return deps;
         }
 
         @Override

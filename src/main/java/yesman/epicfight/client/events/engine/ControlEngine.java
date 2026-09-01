@@ -46,6 +46,7 @@ import yesman.epicfight.api.client.input.action.InputAction;
 import yesman.epicfight.api.client.input.action.MinecraftInputAction;
 import yesman.epicfight.api.event.types.player.SkillCastEvent;
 import yesman.epicfight.client.ClientEngine;
+import yesman.epicfight.client.camera.EpicFightTpsCameraDisableState;
 import yesman.epicfight.client.gui.screen.EmoteWheelScreen;
 import yesman.epicfight.client.gui.screen.SkillEditScreen;
 import yesman.epicfight.client.gui.screen.config.EpicFightSettingScreen;
@@ -386,6 +387,11 @@ public class ControlEngine implements IEventBasedEngine {
         if (!this.playerpatch.isEpicFightMode() || isCurrentHoldingAction(EpicFightInputAction.ATTACK)) {
             return;
         }
+
+        if (EpicFightTpsCameraDisableState.deferAction(this::maybeAttack)) {
+            return;
+        }
+
         final MinecraftInputAction vanillaAttack = MinecraftInputAction.ATTACK_DESTROY;
         final EpicFightInputAction epicFightAttack = EpicFightInputAction.ATTACK;
 
