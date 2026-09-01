@@ -16,7 +16,6 @@ import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
 import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.network.server.SPDatapackSync;
 import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.registry.entries.EpicFightSkills;
@@ -47,7 +46,7 @@ public class SkillReloadListener extends SimpleJsonResourceReloadListener {
 		if (name.indexOf(':') >= 0) {
 			rl = ResourceLocation.parse(name);
 		} else {
-            rl = EpicFightMod.identifier(name);
+            rl = EpicFight.identifier(name);
 		}
 		
 		if (EpicFightRegistries.SKILL.containsKey(rl)) {

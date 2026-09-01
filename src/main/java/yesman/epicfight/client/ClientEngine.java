@@ -64,13 +64,6 @@ public class ClientEngine {
         return this.vanillaModelDebuggingMode;
     }
 
-    /// @Deprecated Use [EpicFightCapabilities#getCachedLocalPlayerPatch()] for better consistency of naming and modularization
-    @Deprecated(forRemoval = true, since = "1.21.1")
-    @Nullable
-    public LocalPlayerPatch getPlayerPatch() {
-        return EpicFightCapabilities.getCachedLocalPlayerPatch();
-    }
-
     public void initAuthHelper(AuthenticationHelper authHelper) {
         this.authenticationHelper = authHelper;
     }

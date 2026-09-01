@@ -13,7 +13,6 @@ import net.fabricmc.api.EnvType;
 
 
 
-import yesman.epicfight.main.EpicFightMod;
 
 
 public class EpicFightShaders {

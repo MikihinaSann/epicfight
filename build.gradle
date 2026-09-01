@@ -35,10 +35,6 @@ repositories {
         }
     }
 
-    // PlayerRevive — waiting for CurseForge approval (playerrevive-refabric)
-    // flatDir {
-    //     dir '../PlayerRevive/build/libs'
-    // }
 }
 
 dependencies {
@@ -84,8 +80,7 @@ dependencies {
     modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
     modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
 
-    // PlayerRevive — waiting for CurseForge approval (playerrevive-refabric)
-    // modCompileOnly files("../PlayerRevive/build/libs/PlayerRevive-2.1.2.jar")
+    modCompileOnly "curse.maven:playerrevive-refabric-1675622:${project.playerrevive_file_id}"
 
     // JSR-305 (javax.annotation) — used for @Nullable etc.
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

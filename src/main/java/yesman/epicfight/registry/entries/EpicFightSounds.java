@@ -6,7 +6,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
-import yesman.epicfight.main.EpicFightMod;
 
 public final class EpicFightSounds {
 	private EpicFightSounds() {}
@@ -62,13 +61,13 @@ public final class EpicFightSounds {
     public static final DeferredHolderShim<SoundEvent, SoundEvent> HOVER_WIDGET = registerVariableRangeSound("ui.hover");
 
 	public static DeferredHolderShim<SoundEvent, SoundEvent> registerVariableRangeSound(String name) {
-        ResourceLocation res = EpicFightMod.identifier(name);
+        ResourceLocation res = EpicFight.identifier(name);
 		
 		return REGISTRY.register(name, () -> SoundEvent.createVariableRangeEvent(res));
 	}
 
 	public static DeferredHolderShim<SoundEvent, SoundEvent> registerFixedRangeSound(String name, float range) {
-        ResourceLocation res = EpicFightMod.identifier(name);
+        ResourceLocation res = EpicFight.identifier(name);
 		
 		return REGISTRY.register(name, () -> SoundEvent.createFixedRangeEvent(res, range));
 	}

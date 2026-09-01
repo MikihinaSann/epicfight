@@ -47,7 +47,7 @@ import yesman.epicfight.api.utils.side.ClientOnly;
 import yesman.epicfight.client.renderer.EpicFightRenderTypes;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.gameasset.Armatures;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.EpicFight;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.mixin.common.MixinMob;
 import yesman.epicfight.mixin.common.MixinPlayer;
@@ -222,7 +222,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
             switch (packet.pairingPacketType().toEnum(EntityPairingPacketTypes.class)) {
             case BONEBREAKER_BEGIN -> {
                 this.entityDecorations.addDecorationOverlay(BonebreakerSkill.CRACKINESS, new DecorationOverlay() {
-                    static final ResourceLocation TEXTURE = EpicFightMod.identifier("textures/entity/overlay/crack_level1.png");
+                    static final ResourceLocation TEXTURE = EpicFight.identifier("textures/entity/overlay/crack_level1.png");
 
                     @Override
                     public RenderType getRenderType() {
@@ -234,7 +234,7 @@ public abstract class LivingEntityPatch<T extends LivingEntity> extends Hurtable
                 getLevel().playLocalSound(getOriginal(), EpicFightSounds.OLD_FALL.get(), SoundSource.MASTER, 50.0F, 1.0F);
 
                 this.entityDecorations.addDecorationOverlay(BonebreakerSkill.CRACKINESS, new DecorationOverlay() {
-                    static final ResourceLocation TEXTURE = EpicFightMod.identifier("textures/entity/overlay/crack_level2.png");
+                    static final ResourceLocation TEXTURE = EpicFight.identifier("textures/entity/overlay/crack_level2.png");
 
                     @Override
                     public RenderType getRenderType() {

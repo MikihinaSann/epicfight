@@ -25,15 +25,14 @@ import net.minecraft.world.entity.player.Player;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.config.ClientConfig;
 import yesman.epicfight.config.ClientConfig.HealthBarVisibility;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.Faction;
 import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.effect.VisibleMobEffect;
 
 public class HealthBar extends EntityUI {
-    public static final ResourceLocation HEALTHBARS1 = EpicFightMod.identifier("textures/gui/healthbars1.png");
-    public static final ResourceLocation HEALTHBARS2 = EpicFightMod.identifier("textures/gui/healthbars2.png");
+    public static final ResourceLocation HEALTHBARS1 = EpicFight.identifier("textures/gui/healthbars1.png");
+    public static final ResourceLocation HEALTHBARS2 = EpicFight.identifier("textures/gui/healthbars2.png");
     public static final TagKey<EntityType<?>> BOSSES = TagKey.create(BuiltInRegistries.ENTITY_TYPE.key(), EpicFight.identifier("bosses"));
 	
 	private final Map<LivingEntity, EntityAttributeTracker> trackingEntities = Maps.newConcurrentMap();

@@ -5,7 +5,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import yesman.epicfight.EpicFight;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 
@@ -18,7 +17,7 @@ public final class EpicFightCreativeTabs {
 		CreativeModeTab.builder(CreativeModeTab.Row.TOP, 6)
 			.title(Component.translatable("itemGroup.epicfight.items"))
 			.icon(() -> new ItemStack(EpicFightItems.SKILLBOOK.get()))
-			.backgroundTexture(EpicFightMod.identifier("textures/gui/container/epicfight_creative_tab.png"))
+			.backgroundTexture(EpicFight.identifier("textures/gui/container/epicfight_creative_tab.png"))
 			.hideTitle()
 			.displayItems((params, output) -> {
 				EpicFightItems.REGISTRY.getEntries().forEach(item -> {

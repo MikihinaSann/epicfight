@@ -9,7 +9,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.effect.VisibleMobEffect;
 
 public final class EpicFightMobEffects {
@@ -21,7 +20,7 @@ public final class EpicFightMobEffects {
 		new VisibleMobEffect(
                 MobEffectCategory.BENEFICIAL
                 , 16758016
-                , EpicFightMod.identifier("textures/mob_effect/stun_immunity.png")
+                , EpicFight.identifier("textures/mob_effect/stun_immunity.png")
         )
 	);
 	
@@ -34,14 +33,14 @@ public final class EpicFightMobEffects {
                 , 0
                 , (effectInstance) ->
                 Math.min(effectInstance.getAmplifier(), 2)
-                , EpicFightMod.identifier("textures/mob_effect/instability1.png")
-                , EpicFightMod.identifier("textures/mob_effect/instability2.png")
-                , EpicFightMod.identifier("textures/mob_effect/instability3.png")
+                , EpicFight.identifier("textures/mob_effect/instability1.png")
+                , EpicFight.identifier("textures/mob_effect/instability2.png")
+                , EpicFight.identifier("textures/mob_effect/instability3.png")
         )
 	);
 	
 	public static void addOffhandModifier() {
-		MobEffects.DIG_SPEED.value().addAttributeModifier(EpicFightAttributes.OFFHAND_ATTACK_SPEED, EpicFightMod.identifier("offhand_dig_modifier"), 0.1D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
-		MobEffects.DIG_SLOWDOWN.value().addAttributeModifier(EpicFightAttributes.OFFHAND_ATTACK_SPEED, EpicFightMod.identifier("offhand_dig_modifier"), -0.1D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+		MobEffects.DIG_SPEED.value().addAttributeModifier(EpicFightAttributes.OFFHAND_ATTACK_SPEED, EpicFight.identifier("offhand_dig_modifier"), 0.1D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+		MobEffects.DIG_SLOWDOWN.value().addAttributeModifier(EpicFightAttributes.OFFHAND_ATTACK_SPEED, EpicFight.identifier("offhand_dig_modifier"), -0.1D, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 	}
 }

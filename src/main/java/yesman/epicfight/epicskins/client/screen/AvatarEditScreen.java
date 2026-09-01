@@ -39,7 +39,7 @@ import yesman.epicfight.epicskins.user.AuthenticationHelperImpl.CapeProperties;
 import yesman.epicfight.epicskins.user.Cosmetic;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.main.AuthenticationHelper;
-import yesman.epicfight.main.EpicFightMod;
+import yesman.epicfight.EpicFight;
 
 import java.util.Arrays;
 import java.util.List;
@@ -758,7 +758,7 @@ public class AvatarEditScreen extends Screen {
 		}
 
 		public class CapeBlock extends CosmeticBlock {
-            private static final ResourceLocation LOCK_ICON = EpicFightMod.identifier("textures/gui/lock.png");
+            private static final ResourceLocation LOCK_ICON = EpicFight.identifier("textures/gui/lock.png");
 			private final ModelPreviewer modelPreviewer;
 			private Cosmetic cosmetic;
 

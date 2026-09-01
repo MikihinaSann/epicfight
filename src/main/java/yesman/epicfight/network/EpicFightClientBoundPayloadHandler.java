@@ -281,7 +281,9 @@ public interface EpicFightClientBoundPayloadHandler {
 	}
 	
 	static void handleSetSkillContainerValue(final SPSetSkillContainerValue data, final yesman.epicfight.network.EpicFightPayloadContext context) {
-		EpicFightCapabilities.getUnparameterizedEntityPatch(context.player(), PlayerPatch.class).ifPresent(playerpatch -> {
+		Entity entity = context.player().level().getEntity(data.entityId());
+
+		EpicFightCapabilities.getUnparameterizedEntityPatch(entity, PlayerPatch.class).ifPresent(playerpatch -> {
 			SkillContainer container = playerpatch.getSkill(data.skillSlot());
 			
 			switch (data.target()) {

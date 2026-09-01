@@ -69,7 +69,6 @@ import yesman.epicfight.api.utils.HitEntityList.Priority;
 import yesman.epicfight.api.utils.LevelUtil;
 import yesman.epicfight.api.utils.TimePairList;
 import yesman.epicfight.api.utils.math.*;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.main.EpicFightSharedConstants;
 import yesman.epicfight.mixin.common.MixinWitherBossAccessor;
 import yesman.epicfight.model.armature.types.ToolHolderArmature;
@@ -470,9 +469,9 @@ public class Animations {
                     return dot < 0.0D ? 1 : 0;
                 },
                 accessor,
-                new DirectStaticAnimation(EpicFightSharedConstants.GENERAL_ANIMATION_TRANSITION_TIME, true, EpicFightMod.identifier("biped/living/creative_fly_forward"), Armatures.BIPED)
+                new DirectStaticAnimation(EpicFightSharedConstants.GENERAL_ANIMATION_TRANSITION_TIME, true, EpicFight.identifier("biped/living/creative_fly_forward"), Armatures.BIPED)
                     .addProperty(StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.FLYING_CORRECTION),
-                new DirectStaticAnimation(EpicFightSharedConstants.GENERAL_ANIMATION_TRANSITION_TIME, true, EpicFightMod.identifier("biped/living/creative_fly_backward"), Armatures.BIPED)
+                new DirectStaticAnimation(EpicFightSharedConstants.GENERAL_ANIMATION_TRANSITION_TIME, true, EpicFight.identifier("biped/living/creative_fly_backward"), Armatures.BIPED)
                     .addProperty(StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.FLYING_CORRECTION2)
             )
         );
@@ -526,8 +525,8 @@ public class Animations {
             new SelectiveAnimation(
                 (entitypatch) -> entitypatch.getOriginal().swingingArm == InteractionHand.OFF_HAND ? 1 : 0,
                 accessor,
-                new DirectStaticAnimation(0.1F, true, EpicFightMod.identifier("biped/living/dig_mainhand"), Armatures.BIPED),
-                new DirectStaticAnimation(0.1F, true, EpicFightMod.identifier("biped/living/dig_offhand"), Armatures.BIPED)
+                new DirectStaticAnimation(0.1F, true, EpicFight.identifier("biped/living/dig_mainhand"), Armatures.BIPED),
+                new DirectStaticAnimation(0.1F, true, EpicFight.identifier("biped/living/dig_offhand"), Armatures.BIPED)
             )
         );
 

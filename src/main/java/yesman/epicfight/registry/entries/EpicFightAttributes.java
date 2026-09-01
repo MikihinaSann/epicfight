@@ -19,7 +19,6 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import yesman.epicfight.registry.deferred_shim.DeferredHolderShim;
 import yesman.epicfight.registry.deferred_shim.DeferredRegisterShim;
 import yesman.epicfight.EpicFight;
-import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.world.capabilities.entitypatch.boss.WitherGhostPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.WitherPatch;
 import yesman.epicfight.world.capabilities.entitypatch.boss.enderdragon.EnderDragonPatch;
@@ -60,11 +59,11 @@ public final class EpicFightAttributes {
 	public static final DeferredHolderShim<Attribute, Attribute> OFFHAND_IMPACT = REGISTRY.register("offhand_impact", () -> new RangedAttribute("attribute.name." + EpicFight.MODID + ".offhand_impact", 0.5D, 0.0D, 1024.0).setSyncable(true));
 	
 	// Modifier ids for epicfight attribute
-	public static final ResourceLocation ARMOR_NEGATION_MODIFIER = EpicFightMod.identifier("armor_negation");
+	public static final ResourceLocation ARMOR_NEGATION_MODIFIER = EpicFight.identifier("armor_negation");
 	public static final ResourceLocation MAX_STRIKE_MODIFIER = EpicFight.identifier("max_strikes");
 	public static final ResourceLocation IMPACT_MODIFIER = EpicFight.identifier("impact");
-	public static final ResourceLocation ATTACK_DAMAGE_MODIFIER = EpicFightMod.identifier("attack_damage");
-	public static final ResourceLocation ATTACK_SPEED_MODIFIER = EpicFightMod.identifier("attack_speed");
+	public static final ResourceLocation ATTACK_DAMAGE_MODIFIER = EpicFight.identifier("attack_damage");
+	public static final ResourceLocation ATTACK_SPEED_MODIFIER = EpicFight.identifier("attack_speed");
     
 	public static AttributeModifier getArmorNegationModifier(double value) {
 		return new AttributeModifier(ARMOR_NEGATION_MODIFIER, value, AttributeModifier.Operation.ADD_VALUE);

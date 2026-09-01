@@ -805,7 +805,7 @@ public class DatapackEditScreen extends Screen implements ExtraEntryProvider {
 										} else {
 											grid.setValueChangeEnabled(false);
 											int rowposition = grid.addRowWithDefaultValues("pack_item", EpicFightMod.prefix(""));
-											this.packList.add(rowposition, PackEntry.of(EpicFightMod.identifier(""), CompoundTag::new));
+											this.packList.add(rowposition, PackEntry.of(EpicFight.identifier(""), CompoundTag::new));
 											grid.setGridFocus(rowposition, "pack_item");
 											grid.setValueChangeEnabled(true);
 										}
