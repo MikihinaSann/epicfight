@@ -14,7 +14,7 @@ public class FirstPersonCompat implements ICompatModule {
 	public void onInitializeClient() {
 		FirstPersonAPI.getActivationHandlers().add(new ActivationHandler() {
 			public boolean preventFirstperson() {
-				PlayerPatch<?> playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+				PlayerPatch<?> playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 
 				if (playerpatch != null && (playerpatch.getPlayerMode() == PlayerPatch.PlayerMode.EPICFIGHT || !ClientConfig.enableOriginalModel) && ClientConfig.enableAnimatedFirstPersonModel) {
 					return true;

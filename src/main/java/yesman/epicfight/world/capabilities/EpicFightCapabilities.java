@@ -1,7 +1,5 @@
 package yesman.epicfight.world.capabilities;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -10,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.utils.side.ClientOnly;
-import yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
@@ -84,50 +81,6 @@ public class EpicFightCapabilities {
         return null;
     }
 
-    /// A compact version of [#getEntityPatch(Entity, Class)] to extract [LocalPlayerPatch] from [LocalPlayer]
-    /// Conducts null checking
-    public static @Nullable LocalPlayerPatch getLocalPlayerPatch(@Nullable LocalPlayer localPlayer) {
-        if (localPlayer != null) {
-            AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(localPlayer);
-            EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
-
-            if (entitypatch != null && LocalPlayerPatch.class.isAssignableFrom(entitypatch.getClass())) {
-                return (LocalPlayerPatch)entitypatch;
-            }
-        }
-
-        return null;
-    }
-
-    /// Returns [LocalPlayerPatch] from cached player in [Minecraft]
-    /// Warning: developers must check physical & logical side before calling this method
-    @ClientOnly
-    public static @Nullable LocalPlayerPatch getCachedLocalPlayerPatch() {
-        if (Minecraft.getInstance().player == null) {
-            return null;
-        }
-
-        AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(Minecraft.getInstance().player);
-        EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
-
-        if (entitypatch instanceof LocalPlayerPatch localplayerpatch) {
-            return localplayerpatch;
-        }
-
-        return null;
-    }
-
-    /// Returns [LocalPlayerPatch] as an optional object from cached player in [Minecraft]
-    /// Warning: developers must check physical & logical side before calling this method
-    @ClientOnly
-    public static Optional<LocalPlayerPatch> getCachedLocalPlayerPatchAsOptional() {
-        if (Minecraft.getInstance().player == null) {
-            return Optional.empty();
-        }
-
-        return Optional.ofNullable(getLocalPlayerPatch(Minecraft.getInstance().player));
-    }
-
 	/// Returns entity patch with unparameterized original entity
 	/// This is useful to reduce the amount of code when type-casting for [EntityPatch#getOriginal] is unnecessary.
     ///
@@ -182,23 +135,6 @@ public class EpicFightCapabilities {
         return Optional.empty();
     }
 
-    /// Returns [LocalPlayerPatch] from a local player
-    /// Warning: developers must check physical & logical side before calling this method
-    ///
-    /// @param entity A player to extract the entity patch
-    public static Optional<LocalPlayerPatch> getLocalPlayerPatchAsOptional(@Nullable Entity entity) {
-        if (entity != null) {
-            AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(entity);
-            EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
-
-            if (entitypatch instanceof LocalPlayerPatch localplayerpatch) {
-                return Optional.of(localplayerpatch);
-            }
-        }
-
-        return Optional.empty();
-    }
-
     /// Returns [ServerPlayerPatch] from a server player
     /// Warning: developers must check logical side before calling this method
     ///
@@ -218,8 +154,8 @@ public class EpicFightCapabilities {
 
     /// Gets or creates the entity patch provider for an entity.
     /// On Fabric, this uses a mixin-injected field on Entity.
-    private static AttachmentEntityPatchProvider getEntityPatchProvider(Entity entity) {
-        // Use the mixin-injected interface if available, otherwise create on demand
+    /// Package-private: ClientModule needs access and Fabric's classloader breaks nestmate visibility.
+    static AttachmentEntityPatchProvider getEntityPatchProvider(Entity entity) {
         if (entity instanceof IEpicFightEntityPatchHolder holder) {
             AttachmentEntityPatchProvider provider = holder.epicfight$getEntityPatchProvider();
             if (provider == null) {
@@ -229,7 +165,60 @@ public class EpicFightCapabilities {
             return provider;
         }
         EpicFight.LOGGER.warn("[EpicFight] getEntityPatchProvider: entity {} is not IEpicFightEntityPatchHolder", entity.getClass().getName());
-        // Fallback — should not happen if mixin is applied
         return new AttachmentEntityPatchProvider(entity);
+    }
+
+    // Client-only methods live in a separate class file to avoid loading
+    // client types (LocalPlayer, Minecraft) on a dedicated server.
+    @ClientOnly
+    public static class ClientModule {
+        public static @Nullable yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch getLocalPlayerPatch(@Nullable net.minecraft.client.player.LocalPlayer localPlayer) {
+            if (localPlayer != null) {
+                AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(localPlayer);
+                EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
+
+                if (entitypatch != null && yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch.class.isAssignableFrom(entitypatch.getClass())) {
+                    return (yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch) entitypatch;
+                }
+            }
+
+            return null;
+        }
+
+        public static @Nullable yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch getCachedLocalPlayerPatch() {
+            if (net.minecraft.client.Minecraft.getInstance().player == null) {
+                return null;
+            }
+
+            AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(net.minecraft.client.Minecraft.getInstance().player);
+            EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
+
+            if (entitypatch instanceof yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch localplayerpatch) {
+                return localplayerpatch;
+            }
+
+            return null;
+        }
+
+        public static Optional<yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch> getCachedLocalPlayerPatchAsOptional() {
+            if (net.minecraft.client.Minecraft.getInstance().player == null) {
+                return Optional.empty();
+            }
+
+            return Optional.ofNullable(getLocalPlayerPatch(net.minecraft.client.Minecraft.getInstance().player));
+        }
+
+        public static Optional<yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch> getLocalPlayerPatchAsOptional(@Nullable Entity entity) {
+            if (entity != null) {
+                AttachmentEntityPatchProvider attachmentEntitypatchProvider = getEntityPatchProvider(entity);
+                EntityPatch<?> entitypatch = attachmentEntitypatchProvider.getCapability();
+
+                if (entitypatch instanceof yesman.epicfight.client.world.capabilites.entitypatch.player.LocalPlayerPatch localplayerpatch) {
+                    return Optional.of(localplayerpatch);
+                }
+            }
+
+            return Optional.empty();
+        }
     }
 }

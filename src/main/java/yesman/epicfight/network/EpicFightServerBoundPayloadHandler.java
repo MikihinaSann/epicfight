@@ -167,7 +167,7 @@ public interface EpicFightServerBoundPayloadHandler {
 	}
 
     static void handleSyncEmoteSlot(final BiDirectionalSyncEmoteSlots data, final yesman.epicfight.network.EpicFightPayloadContext context) {
-        EpicFightCapabilities.getLocalPlayerPatchAsOptional(context.player().level().getEntity(data.playerId())).ifPresent(playerpatch -> {
+        EpicFightCapabilities.getPlayerPatchAsOptional(context.player().level().getEntity(data.playerId())).ifPresent(playerpatch -> {
             playerpatch.getEmoteSlots().deserialize(data.compoundTag(), playerpatch.getOriginal().registryAccess());
         });
     }

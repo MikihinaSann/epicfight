@@ -958,7 +958,7 @@ public final class EpicFightCameraAPI {
     @ApiStatus.Internal
     public void computeCameraAngles(Camera camera, float partialTick) {
         if (ClientConfig.enableFirstPersonCameraMove && this.minecraft.options.getCameraType().isFirstPerson()) {
-            LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+            LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 
             if (playerpatch != null && playerpatch.isEpicFightMode() && !playerpatch.getFirstPersonLayer().isOff()) {
                 if (this.isLerpingFpv()) {

@@ -80,7 +80,8 @@ dependencies {
     modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
     modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
 
-    modCompileOnly "curse.maven:playerrevive-refabric-1675622:${project.playerrevive_file_id}"
+    modImplementation "curse.maven:playerrevive-refabric-1675622:${project.playerrevive_file_id}"
+    modImplementation "curse.maven:creativecore-257814:8127283"
 
     // JSR-305 (javax.annotation) — used for @Nullable etc.
     compileOnly "com.google.code.findbugs:jsr305:3.0.2"

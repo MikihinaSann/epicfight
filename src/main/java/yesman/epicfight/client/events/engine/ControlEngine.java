@@ -768,7 +768,7 @@ public class ControlEngine implements IEventBasedEngine {
     @SuppressWarnings("JavadocReference")
     @ApiStatus.Internal
     public static boolean shouldDisableVanillaAttack() {
-        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         if (playerpatch == null) {
             return false;
         }
@@ -798,7 +798,7 @@ public class ControlEngine implements IEventBasedEngine {
     @SuppressWarnings("JavadocReference")
     @ApiStatus.Internal
     public static boolean shouldDisableSwapHandItems() {
-        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         if (playerpatch == null) {
             return false;
         }
@@ -813,7 +813,7 @@ public class ControlEngine implements IEventBasedEngine {
     /// @return `true` to cancel the vanilla use-item action; `false` to allow it
     @ApiStatus.Internal
     public static boolean shouldCancelVanillaUseItem() {
-        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         if (playerpatch == null) {
             return false;
         }
@@ -892,7 +892,7 @@ public class ControlEngine implements IEventBasedEngine {
     /// @return `true` to cancel the vanilla attack action; `false` to allow it
     @ApiStatus.Internal
     public static boolean shouldCancelVanillaAttackOnEntity() {
-        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         if (playerpatch == null) {
             return false;
         }
@@ -922,7 +922,7 @@ public class ControlEngine implements IEventBasedEngine {
     /// @return `true` to cancel the vanilla attack action; `false` to allow it
     @ApiStatus.Internal
     public static boolean shouldCancelVanillaAttackOnBlock() {
-        final LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         if (playerpatch == null) {
             return false;
         }
@@ -1104,7 +1104,7 @@ public class ControlEngine implements IEventBasedEngine {
     @ApiStatus.Internal
     public static boolean isHotbarCyclingDisabled() {
         final Minecraft minecraft = Minecraft.getInstance();
-        final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
         return minecraft.player != null && localPlayerPatch != null && !localPlayerPatch.getEntityState().canSwitchHoldingItem() && minecraft.screen == null;
     }
 

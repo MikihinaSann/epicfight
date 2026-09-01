@@ -65,7 +65,7 @@ public class BattleModeGui {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -97,7 +97,7 @@ public class BattleModeGui {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -127,7 +127,7 @@ public class BattleModeGui {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;
@@ -188,7 +188,7 @@ public class BattleModeGui {
 			return;
 		}
 		
-		LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();;
+		LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();;
 		
 		if (playerpatch == null || !playerpatch.getOriginal().isAlive() || playerpatch.getOriginal().isSpectator()) {
 			return;

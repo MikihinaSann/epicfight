@@ -85,7 +85,7 @@ public class SkillReloadListener extends SimpleJsonResourceReloadListener {
 			EpicFightRegistries.SKILL.get(ResourceLocation.parse(tag.getString("id"))).loadDatapackParameters(tag);
 		}
 		
-		LocalPlayerPatch localplayerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+		LocalPlayerPatch localplayerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 		
 		if (localplayerpatch != null) {
 			PlayerSkills skillCapability = localplayerpatch.getPlayerSkills();

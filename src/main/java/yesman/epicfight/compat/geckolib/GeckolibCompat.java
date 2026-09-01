@@ -65,10 +65,10 @@ public class GeckolibCompat implements ICompatModule {
 					canceled = true;
 					renderEngine.renderEntityArmatureModel(livingentity, entitypatch, event.getRenderer(), event.getBufferSource(), event.getPoseStack(), event.getPackedLight(), event.getPartialTick());
 					
-					if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+					if (EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
 						for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
-							if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPartialTick())) {
-								entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
+							if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch(), event.getPartialTick())) {
+								entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
 							}
 						}
 					}
@@ -93,12 +93,12 @@ public class GeckolibCompat implements ICompatModule {
 		if (entity instanceof LivingEntity livingentity) {
 			RenderEngine renderEngine = RenderEngine.getInstance();
 			
-			if (EpicFightCapabilities.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
+			if (EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch() != null && !renderEngine.minecraft.options.hideGui && !EpicFightGameRules.DISABLE_ENTITY_UI.getRuleValue(livingentity.level())) {
 				LivingEntityPatch<?> entitypatch = EpicFightCapabilities.getEntityPatch(livingentity, LivingEntityPatch.class);
 				
 				for (EntityUI entityIndicator : EntityUI.ENTITY_UI_LIST) {
-					if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPartialTick())) {
-						entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
+					if (entityIndicator.shouldDraw(livingentity, entitypatch, EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch(), event.getPartialTick())) {
+						entityIndicator.draw(livingentity, entitypatch, EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch(), event.getPoseStack(), event.getBufferSource(), event.getPartialTick());
 					}
 				}
 			}

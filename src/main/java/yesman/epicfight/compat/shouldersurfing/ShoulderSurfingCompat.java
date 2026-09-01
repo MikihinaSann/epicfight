@@ -68,7 +68,7 @@ public class ShoulderSurfingCompat implements IShoulderSurfingPlugin {
             event.setResult(InputManager.isActionActive(EpicFightInputAction.ATTACK) || InputManager.isActionActive(MinecraftInputAction.ATTACK_DESTROY));
         });
         eventBus.register((ComputeTemporaryFirstPersonStateEventHandler) event -> {
-            final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+            final LocalPlayerPatch localPlayerPatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
             if (localPlayerPatch != null) {
                 event.setResult(localPlayerPatch.isHoldingAny());
             }

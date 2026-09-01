@@ -543,7 +543,7 @@ public class RenderEngine implements IEventBasedEngine {
 
     private void epicfight$renderGuiPre(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         Window window = Minecraft.getInstance().getWindow();
-        LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 
         if (playerpatch != null) {
             playerpatch.getPlayerSkills().listSkillContainers().filter(skillContainer -> skillContainer.getSkill() != null).forEach(skillContainer -> {
@@ -587,7 +587,7 @@ public class RenderEngine implements IEventBasedEngine {
 
     @SuppressWarnings("unchecked")
     private void epicfight$renderHand(RenderHandEvent event) {
-        LocalPlayerPatch playerpatch = EpicFightCapabilities.getCachedLocalPlayerPatch();
+        LocalPlayerPatch playerpatch = EpicFightCapabilities.ClientModule.getCachedLocalPlayerPatch();
 
         if (playerpatch != null) {
             if (playerpatch.isEpicFightMode() && ClientConfig.enableAnimatedFirstPersonModel) {
