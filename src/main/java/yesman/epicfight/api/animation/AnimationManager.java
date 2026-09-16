@@ -447,7 +447,7 @@ public class AnimationManager extends SimplePreparableReloadListener<List<Resour
 		
 		@Override
 		public A get() {
-			if (!INSTANCE.animations.containsKey(this)) {
+			if (!INSTANCE.animations.containsKey(this) || INSTANCE.animations.get(this) == null) {
 				INSTANCE.animations.put(this, this.onLoad.apply(this));
 			}
 			

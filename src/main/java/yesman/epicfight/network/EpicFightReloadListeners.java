@@ -65,11 +65,13 @@ public final class EpicFightReloadListeners {
         helper.registerReloadListener(wrap("skill_parameters", SkillReloadListener.getInstance()));
         helper.registerReloadListener(wrap("epicfight_mobpatch", new MobPatchReloadListener()));
         ResourceLocation weaponTypesId = ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "weapon_types");
-        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener(),
-                ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "item_presets")));
-        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener(), weaponTypesId));
-        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener(), weaponTypesId));
+        ResourceLocation animationManagerId = ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "animation_manager");
         helper.registerReloadListener(wrap("animation_manager", AnimationManager.getInstance()));
+        helper.registerReloadListener(wrap("weapon_types", new WeaponTypeReloadListener(),
+                ResourceLocation.fromNamespaceAndPath(EpicFight.MODID, "item_presets"),
+                animationManagerId));
+        helper.registerReloadListener(wrap("capabilities", new ItemCapabilityReloadListener(), weaponTypesId, animationManagerId));
+        helper.registerReloadListener(wrap("item_keywords", new ItemKeywordReloadListener(), weaponTypesId));
         // Emote is now loaded as a data pack registry via RegistryDataLoader (MixinRegistryDataLoader),
         // matching the NeoForge DataPackRegistryEvent approach. No manual reload listener needed.
 
