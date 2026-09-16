@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -264,6 +265,10 @@ public final class InputManager {
     /// See [issue #2170](https://github.com/Epic-Fight/epicfight/issues/2170) for details.
     @ApiStatus.Internal
     private static boolean isPhysicalKeyDown(@NotNull KeyMapping keyMapping) {
+        if (!RenderSystem.isOnRenderThread()) {
+            return keyMapping.isDown();
+        }
+
         final InputConstants.Key key = InputUtils.getKey(keyMapping);
         final int keyValue = key.getValue();
         final long windowPointer = Minecraft.getInstance().getWindow().getWindow();

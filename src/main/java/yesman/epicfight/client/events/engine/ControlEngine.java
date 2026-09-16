@@ -1,6 +1,7 @@
 package yesman.epicfight.client.events.engine;
 
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -656,6 +657,9 @@ public class ControlEngine implements IEventBasedEngine {
 	@SuppressWarnings({"JavadocReference", "DeprecatedIsStillUsed"})
     @Deprecated(forRemoval = true)
     public static boolean isKeyDown(KeyMapping key) {
+        if (!RenderSystem.isOnRenderThread()) {
+            return key.isDown();
+        }
 		InputConstants.Key inputKey = InputUtils.getKey(key);
 		if (inputKey.getType() == InputConstants.Type.KEYSYM) {
 			return key.isDown() || GLFW.glfwGetKey(Minecraft.getInstance().getWindow().getWindow(), inputKey.getValue()) > 0;
