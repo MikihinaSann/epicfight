@@ -1,8 +1,10 @@
 package yesman.epicfight.client.renderer.shader.compute.loader;
 
 
+import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GL33C;
 import org.lwjgl.opengl.GL43;
+import org.lwjgl.opengl.GLCapabilities;
 import yesman.epicfight.EpicFight;
 import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.client.renderer.shader.compute.ComputeShaderSetup;
@@ -56,9 +58,12 @@ public class ComputeShaderProvider {
     	String glVersion = GL33C.glGetString(GL33C.GL_VERSION);
         int major = GL33C.glGetInteger(GL33C.GL_MAJOR_VERSION);
         int minor = GL33C.glGetInteger(GL33C.GL_MINOR_VERSION);
+        GLCapabilities capabilities = GL.getCapabilities();
 
-        supportComputeShader = ((major > 4) || (major == 4 && minor >= 3));
-        supportPersistentMapping = ((major > 4) || (major == 4 && minor >= 6));
+        supportComputeShader = ((major > 4) || (major == 4 && minor >= 3))
+                || (capabilities.GL_ARB_compute_shader && capabilities.GL_ARB_shader_storage_buffer_object);
+        supportPersistentMapping = ((major > 4) || (major == 4 && minor >= 6))
+                || capabilities.GL_ARB_buffer_storage;
 
         EpicFight.LOGGER.warn("[Computer Shader Acceleration] OpenGL Version: {}", glVersion);
         EpicFight.LOGGER.warn("[Computer Shader Acceleration] Compute Shader: {}", (supportComputeShader ? "Supported" : "Unsupported"));

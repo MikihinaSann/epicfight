@@ -329,7 +329,7 @@ public class RenderEngine implements IEventBasedEngine {
 
     public static boolean isLocalPlayerInFirstPerson(Entity entity) {
         Minecraft minecraft = Minecraft.getInstance();
-        return entity.is(minecraft.player) && minecraft.options.getCameraType().isFirstPerson();
+        return entity.is(minecraft.player) && minecraft.screen == null && minecraft.options.getCameraType().isFirstPerson();
     }
 
     public void addBossEventOwner(UUID uuid, BossPatch bosspatch) {
