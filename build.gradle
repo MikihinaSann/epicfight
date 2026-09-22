@@ -191,3 +191,20 @@ artifacts {
     archives apiJar
     archives apiSourcesJar
 }
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifactId = project.mod_id
+            from components.java
+            artifact apiJar
+            artifact apiSourcesJar
+        }
+    }
+    repositories {
+        maven {
+            name = 'projectLocal'
+            url = layout.projectDirectory.dir('local-maven')
+        }
+    }
+}
