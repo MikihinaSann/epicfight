@@ -289,18 +289,22 @@ public class MathUtils {
 	}
 	
 	private static final Matrix4f BUFFER4F = new Matrix4f();
-	
-	/// Delegates to [PoseStack#mulPose(Matrix4f)] so the normal matrix is updated alongside the pose.
-	///
-	/// This previously multiplied `pose()` by hand and then multiplied `normal()` by a `Matrix3f`
-	/// buffer that was never written to — i.e. by the identity — so normals were never rotated with
-	/// the geometry. Diffuse lighting is computed from those normals, which is why held items came
-	/// out with flat, uniform shading instead of vanilla's per-face shading. Vanilla additionally
-	/// skips pure translations, uses the rotation part when the matrix is orthonormal, and otherwise
-	/// recomputes the inverse-transpose, all of which we get for free by calling it.
+	private static final Matrix3f BUFFER3F = new Matrix3f();
+	private static final OpenMatrix4f NORMAL_MAT_BUFFER = new OpenMatrix4f();
+
+	/// Multiplies the pose matrix by [mat] directly instead of delegating to
+	/// [PoseStack#mulPose(Matrix4f)]: mulPose recomputes the normal matrix as the
+	/// inverse-transpose of the *entire* pose when the input isn't orthonormal, which
+	/// inherits the GUI entity renderer's scale(30,30,-30) and shrinks normals to ~0
+	/// (the "dark player in inventory" bug upstream fixed in PR #2313 by not touching
+	/// normals at all). We instead rotate normals by the local matrix's rotation —
+	/// scale stripped via orthonormalization — so held items keep correct directional
+	/// shading in world renders too.
 	public static void mulStack(PoseStack poseStack, OpenMatrix4f mat) {
 		OpenMatrix4f.exportToMojangMatrix(mat, BUFFER4F);
-		poseStack.mulPose(BUFFER4F);
+		poseStack.last().pose().mul(BUFFER4F);
+		OpenMatrix4f.exportToMojangMatrix(OpenMatrix4f.removeScale(mat, NORMAL_MAT_BUFFER), BUFFER4F);
+		poseStack.last().normal().mul(BUFFER3F.set(BUFFER4F));
 	}
 
     public static double getAngleBetween(Vec3f a, Vec3f b) {
