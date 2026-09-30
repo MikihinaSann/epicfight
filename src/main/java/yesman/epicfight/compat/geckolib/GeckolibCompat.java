@@ -80,7 +80,7 @@ public class GeckolibCompat implements ICompatModule {
 			}
 		}
 
-		return canceled;
+		return !canceled;
 	}
 	
 	public void geoEntityRenderPostEvent(GeoRenderEvent.Entity.Post event) {
