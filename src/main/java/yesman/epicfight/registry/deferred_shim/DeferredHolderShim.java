@@ -90,9 +90,9 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
 
     @Override
     public com.mojang.datafixers.util.Either<ResourceKey<T>, T> unwrap() {
-        if (value != null) {
-            return com.mojang.datafixers.util.Either.right(value);
-        }
+        // Must always be left(key): registry holders serialize by ID. Returning
+        // right(value) makes holder codecs treat this as an inline unregistered
+        // value and crash with "Unregistered holder" during NBT save.
         return com.mojang.datafixers.util.Either.left(key);
     }
 
@@ -103,7 +103,7 @@ public class DeferredHolderShim<T, I extends T> implements Holder<T> {
 
     @Override
     public boolean canSerializeIn(net.minecraft.core.HolderOwner<T> owner) {
-        return true;
+        return holder != null ? holder.canSerializeIn(owner) : false;
     }
 
     @Override
