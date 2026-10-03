@@ -23,6 +23,12 @@ import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 
 public class SkillBookItem extends Item {
 	public static void setContainingSkill(Holder<Skill> skill, ItemStack stack) {
+		// DeferredHolderShim isn't a registry Reference — resolve the canonical
+		// holder from the skill registry so the component survives NBT save.
+		skill = skill.unwrapKey()
+				.flatMap(yesman.epicfight.registry.EpicFightRegistries.SKILL::getHolder)
+				.map(reference -> (Holder<Skill>) reference)
+				.orElse(skill);
 		stack.applyComponents(DataComponentPatch.builder().set(EpicFightDataComponentTypes.SKILL.get(), skill).build());
 	}
 	
