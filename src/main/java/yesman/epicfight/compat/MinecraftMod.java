@@ -15,6 +15,7 @@ import yesman.epicfight.compat.playeranimator.PlayerAnimatorCompat;
 import yesman.epicfight.compat.playerrevive.PlayerReviveCompat;
 import yesman.epicfight.compat.simplytooltips.SimplyTooltipsModule;
 import yesman.epicfight.compat.skinlayer3d.SkinLayer3DCompat;
+import yesman.epicfight.compat.spatialgui.SpatialGUICompat;
 import yesman.epicfight.compat.trinkets.TrinketsCompat;
 
 // List of mods with custom compatibility modules.
@@ -34,6 +35,7 @@ public enum MinecraftMod {
     PLAYER_REVIVE("playerrevive", false, PlayerReviveCompat.class),
     WILDFIRES_GENDER_MOD("wildfire_gender", true, WildfireFGMCompat.class),
     SIMPLY_TOOLTIPS("simplytooltips", true, SimplyTooltipsModule.class),
+    SPATIAL_GUI("spatial-gui", true, SpatialGUICompat.class),
     TRINKETS("trinkets", true, TrinketsCompat.class);
 
     private final @NotNull String modId;

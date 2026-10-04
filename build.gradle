@@ -79,6 +79,7 @@ dependencies {
     modCompileOnly "curse.maven:simply-tooltips-1475755:${project.simplytooltips_file_id}"
     modCompileOnly "curse.maven:better-third-person-435044:${project.betterthirdperson_file_id}"
     modCompileOnly "curse.maven:shoulder-surfing-reloaded-243190:${project.shouldersurfing_file_id}"
+    modCompileOnly "maven.modrinth:spatial-gui:1.6-fabric+1.21.1"
 
     modImplementation "curse.maven:playerrevive-refabric-1675622:${project.playerrevive_file_id}"
     modImplementation "curse.maven:creativecore-257814:8127283"

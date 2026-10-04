@@ -28,7 +28,8 @@
         "epicfight-platform.fabric.mixins.json",
         "epicfight-compat.fgm.mixins.json",
         "epicfight-compat.geckolib.mixins.json",
-        "epicfight-compat.skinlayers3d.mixins.json"
+        "epicfight-compat.skinlayers3d.mixins.json",
+        "epicfight-compat.spatialgui.mixins.json"
     ],
     "accessWidener": "epicfight.accesswidener",
     "depends": {
